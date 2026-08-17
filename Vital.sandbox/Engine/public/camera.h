@@ -28,6 +28,7 @@ namespace Vital::Engine {
         private:
             godot::Ref<godot::CameraAttributesPractical> attributes;
 
+            
             // Instantiators //
             Camera() = default;
             ~Camera() override;

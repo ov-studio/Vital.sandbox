@@ -27,6 +27,8 @@
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+#include <Vital.sandbox/API/core/audio_2d.h>
+#include <Vital.sandbox/API/core/audio_3d.h>
 
 #include <Vital.sandbox/API/utility/math.h>
 #include <Vital.sandbox/API/utility/string.h>
@@ -44,12 +46,18 @@
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/API/utility/monitor.h>
 
+#include <Vital.sandbox/API/light/directional_light.h>
+#include <Vital.sandbox/API/light/point_light.h>
+#include <Vital.sandbox/API/light/spot_light.h>
+#include <Vital.sandbox/API/light/area_light.h>
+
+#include <Vital.sandbox/API/gfx/environment.h>
+#include <Vital.sandbox/API/gfx/adjustment.h>
+#include <Vital.sandbox/API/gfx/antialiasing.h>
 #include <Vital.sandbox/API/gfx/sky.h>
 #include <Vital.sandbox/API/gfx/sky_panorama.h>
 #include <Vital.sandbox/API/gfx/sky_physical.h>
 #include <Vital.sandbox/API/gfx/sky_procedural.h>
-#include <Vital.sandbox/API/gfx/environment.h>
-#include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/glow.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
@@ -79,6 +87,8 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Texture>(),
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
+            vm_module::make_api<Audio_2D>(),
+            vm_module::make_api<Audio_3D>(),
 
             // Utility //
             vm_module::make_api<Math>(),
@@ -97,9 +107,16 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Input>(),
             vm_module::make_api<Monitor>(),
 
+            // Light //
+            vm_module::make_api<Directional_Light>(),
+            vm_module::make_api<Point_Light>(),
+            vm_module::make_api<Spot_Light>(),
+            vm_module::make_api<Area_Light>(),
+
             // GFX //
             vm_module::make_api<Environment>(),
             vm_module::make_api<Adjustment>(),
+            vm_module::make_api<Antialiasing>(),
             vm_module::make_api<Sky>(),
             vm_module::make_api<Sky_Panorama>(),
             vm_module::make_api<Sky_Physical>(),

@@ -34,6 +34,7 @@ namespace Vital::Manager {
         Tool::Stack scripts;
         Tool::Stack files;
         Tool::Stack models;
+        Tool::Stack dependencies;
         for (const auto& s : manifest.scripts) {
             Tool::Stack entry;
             entry.object["src"] = Tool::StackValue(s.src);
@@ -45,10 +46,12 @@ namespace Vital::Manager {
         out.object["files"] = Tool::StackValue(std::move(files));
         for (const auto& f : manifest.models) models.array.push_back(Tool::StackValue(f));
         out.object["models"] = Tool::StackValue(std::move(models));
+        for (const auto& d : manifest.dependencies) dependencies.array.push_back(Tool::StackValue(d));
+        out.object["dependencies"] = Tool::StackValue(std::move(dependencies));
         return out;
     }
 
-    void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models) {
+    void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies) {
         if (const auto* sv = arguments.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
@@ -66,6 +69,11 @@ namespace Vital::Manager {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             models.reserve(nested.array.size());
             for (const auto& entry : nested.array) models.push_back(entry.as<std::string>());
+        }
+        if (const auto* sv = arguments.get("dependencies")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            dependencies.reserve(nested.array.size());
+            for (const auto& entry : nested.array) dependencies.push_back(entry.as<std::string>());
         }
     }
 
@@ -177,7 +185,7 @@ namespace Vital::Manager {
     }
 
     #if defined(VSDK_Client)
-    bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
+    bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies) {
         Tool::assert_main_thread("Resource::Internal::register_resource");
         auto rm = Resource::get_singleton();
         {
@@ -190,6 +198,7 @@ namespace Vital::Manager {
             manifest.scripts = scripts;
             manifest.files = files;
             manifest.models = models;
+            manifest.dependencies = dependencies;
             rm -> resources.push_back(std::move(manifest));
         }
         rm -> log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
@@ -203,6 +212,7 @@ namespace Vital::Manager {
         resource.scripts.clear();
         resource.files.clear();
         resource.models.clear();
+        resource.dependencies.clear();
         resource.script_hashes.clear();
         resource.file_hashes.clear();
         if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
@@ -231,7 +241,74 @@ namespace Vital::Manager {
                 }
             }
         }
+        if (manifest.has("dependencies") && manifest.get_root()["dependencies"].is_seq()) {
+            for (ryml::ConstNodeRef node : manifest.get_root()["dependencies"]) {
+                std::string dependency;
+                node >> dependency;
+                if (!Resource::is_name(dependency)) { errors.push_back(fmt::format("dependency `{}` has an invalid name", dependency)); continue; }
+                if (dependency == resource.ref) { errors.push_back("resource cannot list itself as a dependency"); continue; }
+                resource.dependencies.push_back(dependency);
+            }
+        }
         return errors.empty();
+    }
+
+    bool Resource::Internal::reload_manifest(const std::string& name, std::vector<std::string>& errors) {
+        auto rm = Resource::get_singleton();
+        const std::string base = Resource::get_resource_base(name);
+        if (!Tool::File::exists(base, "manifest.yaml")) { errors.push_back("manifest.yaml not found"); return false; }
+
+        std::string content;
+        try { content = Tool::File::read_text(base, "manifest.yaml"); }
+        catch (...) { errors.push_back("failed to read manifest.yaml"); return false; }
+
+        Tool::YAML manifest;
+        try { manifest.parse(content); }
+        catch (const std::exception& e) { errors.push_back(fmt::format("malformed yaml — {}", e.what())); return false; }
+
+        std::lock_guard<std::mutex> lock(rm -> mutex);
+        auto it = std::find_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; });
+        if (it == rm -> resources.end()) { errors.push_back("resource not loaded"); return false; }
+        return Internal::parse_manifest(*it, manifest, base, errors);
+    }
+
+    bool Resource::Internal::resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack) {
+        auto rm = Resource::get_singleton();
+        auto cycle_start = std::find(stack.begin(), stack.end(), name);
+        if (cycle_start != stack.end()) {
+            std::string chain;
+            for (auto it = cycle_start; it != stack.end(); ++it) chain += fmt::format("`{}` -> ", *it);
+            chain += fmt::format("`{}`", name);
+            errors.push_back(fmt::format("circular dependency detected: {}", chain));
+            return false;
+        }
+        
+        std::vector<std::string> dependencies;
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            auto resource = Internal::get_resource(name);
+            if (!resource) {
+                errors.push_back(fmt::format("dependency `{}` not found", name));
+                return false;
+            }
+            dependencies = resource -> dependencies;
+        }
+        stack.push_back(name);
+        
+        bool ok = true;
+        for (const auto& dependency : dependencies) {
+            if (std::find(order.begin(), order.end(), dependency) != order.end()) continue;
+            bool already_running;
+            {
+                std::lock_guard<std::mutex> lock(rm -> mutex);
+                already_running = Internal::is_running(dependency);
+            }
+            if (already_running) continue;
+            if (!Internal::resolve_dependencies(dependency, order, errors, stack)) ok = false;
+        }
+        stack.pop_back();
+        if (ok) order.push_back(name);
+        return ok;
     }
 
     Tool::Stack Resource::Internal::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) {
@@ -243,6 +320,7 @@ namespace Vital::Manager {
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
             packet.object["models"] = std::move(packed.object["models"]);
+            packet.object["dependencies"] = std::move(packed.object["dependencies"]);
         }
         return packet;
     }
@@ -289,14 +367,16 @@ namespace Vital::Manager {
         auto rm = Resource::get_singleton();
         std::vector<const Manifest*> result;
         switch (type) {
-            case State::Loaded:
+            case State::Loaded: {
                 result.reserve(rm -> resources.size());
                 for (const auto& r : rm -> resources) result.push_back(&r);
                 break;
-            case State::Running:
+            }
+            case State::Running: {
                 result.reserve(rm -> running.size());
                 for (const auto& name : rm -> running) result.push_back(get_resource(name));
                 break;
+            }
         }
         return result;
     }
@@ -317,18 +397,53 @@ namespace Vital::Manager {
             if (Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
             #endif
         }
+
         #if !defined(VSDK_Client)
-            {
-                std::lock_guard<std::mutex> lock(rm -> mutex);
-                auto resource = Internal::get_resource(name);
-                std::vector<std::string> asset_paths;
-                for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-                for (const auto& script : resource -> scripts) {
-                    if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
-                }
-                am -> register_assets(asset_paths, name);
-                am -> broadcast_manifest(-1, true);
+        {
+            std::vector<std::string> reload_errors;
+            if (!Internal::reload_manifest(name, reload_errors)) {
+                std::string report = fmt::format("resource `{}` failed to start\n", name);
+                report += fmt::format("> Errors ({}):\n", reload_errors.size());
+                for (const auto& err : reload_errors) report += fmt::format("> {}\n", err);
+                rm -> log("error", report);
+                return false;
             }
+        }
+        {
+            std::vector<std::string> order;
+            std::vector<std::string> errors;
+            std::vector<std::string> stack;
+            if (!Internal::resolve_dependencies(name, order, errors, stack)) {
+                std::string report = fmt::format("resource `{}` failed to start\n", name);
+                report += fmt::format("> Errors ({}):\n", errors.size());
+                for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                rm -> log("error", report);
+                return false;
+            }
+            for (const auto& dependency : order) {
+                if (dependency == name) continue;
+                bool already_running;
+                {
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
+                    already_running = Internal::is_running(dependency);
+                }
+                if (!already_running && !Internal::start(dependency)) {
+                    rm -> log("error", fmt::format("cannot start `{}` — dependency `{}` failed to start", name, dependency));
+                    return false;
+                }
+            }
+        }
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            auto resource = Internal::get_resource(name);
+            std::vector<std::string> asset_paths;
+            for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
+            for (const auto& script : resource -> scripts) {
+                if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            }
+            am -> register_assets(asset_paths, name);
+            am -> broadcast_manifest(-1, true);
+        }
         #endif
         Internal::execute_resource(name);
         return true;
@@ -384,6 +499,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::stop_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "stopping all resources...");
+
         int count = 0;
         std::unordered_set<std::string> snapshot;
         {
@@ -465,63 +581,64 @@ namespace Vital::Manager {
             if (!Internal::is_running(name)) { rm -> log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
         }
 
-        const std::string base = Resource::get_resource_base(name);
-        if (!Tool::File::exists(base, "manifest.yaml")) {
-            std::lock_guard<std::mutex> lock(rm -> mutex);
-            rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
-            rm -> log("error", fmt::format("resource `{}` manifest not found — unregistered", name));
-            return false;
-        }
-        std::string content;
-        try { content = Tool::File::read_text(base, "manifest.yaml"); }
-        catch (...) { rm -> log("error", fmt::format("resource `{}` failed to read manifest — skipping restart", name)); return false; }
-        Tool::YAML manifest;
-        try { manifest.parse(content); }
-        catch (const std::exception& e) { rm -> log("error", fmt::format("resource `{}` malformed yaml — {} — skipping restart", name, e.what())); return false; }
-
-        std::string change_report;
+        std::unordered_map<std::string, std::string> old_script_hashes;
+        std::unordered_map<std::string, std::string> old_file_hashes;
+        std::vector<std::string> old_dependencies;
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            for (auto& resource : rm -> resources) {
-                if (resource.ref != name) continue;
-                const auto old_script_hashes = resource.script_hashes;
-                const auto old_file_hashes = resource.file_hashes;
-                std::vector<std::string> errors;
-                if (!Internal::parse_manifest(resource, manifest, base, errors)) {
-                    if (!errors.empty()) {
-                        std::string report = fmt::format("resource `{}` restart aborted\n", name);
-                        report += fmt::format("> Errors ({}):\n", errors.size());
-                        for (const auto& err : errors) report += fmt::format("> {}\n", err);
-                        rm -> log("error", report);
-                    }
-                    else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping restart", name));
-                    return false;
+            const auto* resource = Internal::get_resource(name);
+            if (!resource) return false;
+            old_script_hashes = resource -> script_hashes;
+            old_file_hashes = resource -> file_hashes;
+            old_dependencies = resource -> dependencies;
+        }
+        {
+            std::vector<std::string> errors;
+            if (!Internal::reload_manifest(name, errors)) {
+                if (!errors.empty()) {
+                    std::string report = fmt::format("resource `{}` restart aborted\n", name);
+                    report += fmt::format("> Errors ({}):\n", errors.size());
+                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                    rm -> log("error", report);
                 }
-
-                auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
-                    for (const auto& [k, v] : old_map) {
-                        if (!new_map.count(k)) changes.push_back(fmt::format("`{}` ({} deleted)", k, label));
-                        else if (new_map.at(k) != v) changes.push_back(fmt::format("`{}` ({} modified)", k, label));
-                    }
-                    for (const auto& [k, v] : new_map) {
-                        if (!old_map.count(k)) changes.push_back(fmt::format("`{}` ({} added)", k, label));
-                    }
-                };
-
-                std::vector<std::string> changes;
-                diff(old_script_hashes, resource.script_hashes, "script", changes);
-                diff(old_file_hashes, resource.file_hashes, "file", changes);
-                std::string report = fmt::format("resource `{}` restarted\n", name);
-                if (changes.empty()) report += "> No changes detected";
-                else {
-                    report += fmt::format("> Changes ({}):\n", changes.size());
-                    for (const auto& change : changes) report += fmt::format("> {}\n", change);
-                }
-                change_report = report;
-                break;
+                else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping restart", name));
+                return false;
             }
         }
-        rm -> log("sbox", change_report);
+
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            const auto* resource = Internal::get_resource(name);
+            if (!resource) return false;
+
+            auto to_map = [](const std::vector<std::string>& values) {
+                std::unordered_map<std::string, std::string> map;
+                for (const auto& value : values) map[value] = value;
+                return map;
+            };
+
+            auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
+                for (const auto& [k, v] : old_map) {
+                    if (!new_map.count(k)) changes.push_back(fmt::format("`{}` ({} deleted)", k, label));
+                    else if (new_map.at(k) != v) changes.push_back(fmt::format("`{}` ({} modified)", k, label));
+                }
+                for (const auto& [k, v] : new_map) {
+                    if (!old_map.count(k)) changes.push_back(fmt::format("`{}` ({} added)", k, label));
+                }
+            };
+
+            std::vector<std::string> changes;
+            diff(old_script_hashes, resource -> script_hashes, "script", changes);
+            diff(old_file_hashes, resource -> file_hashes, "file", changes);
+            diff(to_map(old_dependencies), to_map(resource -> dependencies), "dependency", changes);
+            std::string report = fmt::format("resource `{}` restarted\n", name);
+            if (changes.empty()) report += "> No changes detected";
+            else {
+                report += fmt::format("> Changes ({}):\n", changes.size());
+                for (const auto& change : changes) report += fmt::format("> {}\n", change);
+            }
+            rm -> log("sbox", report);
+        }
         stop(name);
         Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
         return true;
@@ -531,6 +648,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::start_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "starting all resources...");
+
         int count = 0;
         std::vector<const Manifest*> all;
         {
@@ -551,6 +669,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::restart_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "restarting all resources...");
+
         int count = 0;
         std::unordered_set<std::string> snapshot;
         {
@@ -592,14 +711,15 @@ namespace Vital::Manager {
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
                     std::vector<std::string> models;
-                    Internal::unpack_manifest(arguments, scripts, files, models);
+                    std::vector<std::string> dependencies;
+                    Internal::unpack_manifest(arguments, scripts, files, models, dependencies);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     bool already;
                     {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
                         already = Internal::is_running(name);
                     }
-                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() { Internal::register_resource(name, scripts, files, models, dependencies); });
                 }
                 else if (event == "resource:stopped") {
                     auto rm = Resource::get_singleton();
@@ -609,7 +729,21 @@ namespace Vital::Manager {
             });
         #else
             scan();
-
+    
+            Engine::Core::get_singleton() -> enqueue([]() {
+                auto rm = Manager::Resource::get_singleton();
+                const auto& cfg = Manager::Network::get_singleton() -> get_server_config();
+                const std::vector<std::string> bootstrap = cfg.get_bootstrap();
+                if (bootstrap.empty()) return;
+                rm -> log("sbox", fmt::format("bootstrapping {} resource(s)...", bootstrap.size()));
+                
+                int count = 0;
+                for (const auto& name : bootstrap) {
+                    if (Internal::start(name)) count++;
+                }
+                rm -> log("sbox", fmt::format("bootstrap complete — {} resource(s) started", count));
+            });
+    
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
                 const int peer_id = arguments.array[0].as<int32_t>();

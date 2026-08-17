@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
@@ -55,9 +56,13 @@ namespace Vital::Engine {
         return fmt::format(
             "Version:\n"
             "> Vital.sandbox: `{}`\n"
-            "> Vital.kit: `{}`\n",
-            Vital::Build.to_string(),
-            Manager::Kit::get_version()
+            "> Vital.kit: `{}`\n"
+            "> Vital.wry: `{}`\n"
+            "> Vital.godot: `{}`\n",
+            Tool::Version::get("sdk"),
+            Tool::Version::get("kit"),
+            Tool::Version::get("wry"),
+            Tool::Version::get("godot")
         );
     }
     
@@ -266,14 +271,19 @@ namespace Vital::Engine {
     Console::Console() {
         #if defined(VSDK_Client)
             Engine::Webview::Options options;
+            options.z_index = Engine::Webview::system_z_floor + 1;
             options.fullscreen = true;
             options.transparent = true;
             options.incognito = true;
             options.autoplay = false;
             options.zoomable = false;
+            options.forward_input = false;
+            options.overlay = false;
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
-            webview -> set_message_handler(std::bind(&Console::on_message, this, std::placeholders::_1));
+            webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
+                if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+            });
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 Engine::Core::get_singleton() -> enqueue([this]() {
@@ -486,6 +496,16 @@ namespace Vital::Engine {
 
 
     // Managers //
+    #if defined(VSDK_Client)
+    bool Console::is_ready() {
+        return webview_ready.load();
+    }
+
+    bool Console::is_visible() {
+        return webview ? webview -> is_visible() : false;
+    }
+    #endif
+
     void Console::init() {
         #if !defined(VSDK_Client)
         ready();
@@ -494,6 +514,7 @@ namespace Vital::Engine {
 
     void Console::ready() {
         #if defined(VSDK_Client)
+        webview_ready.store(true);
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -532,7 +553,7 @@ namespace Vital::Engine {
         }
         #endif
     }
- 
+
     void Console::update() {
         #if !defined(VSDK_Client)
             std::lock_guard<std::mutex> lock(stdout_mutex);
@@ -616,6 +637,7 @@ namespace Vital::Engine {
         if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid print mode");
         if (message.empty()) return;
         #if defined(VSDK_Client)
+            if (!is_ready()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -657,6 +679,7 @@ namespace Vital::Engine {
     void Console::clear(bool signal) {
         if (signal) return print("sbox", "Console cleared successfully!");
         #if defined(VSDK_Client)
+            if (!is_ready()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -683,7 +706,11 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Client)
     void Console::toggle() {
-        webview -> set_visible(!webview -> is_visible());
+        if (!is_ready()) return;
+        const bool state = !is_visible();
+        if (Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible() && state) return;
+        webview -> set_visible(state);
+        if (state) webview -> set_focussed(true);
     }
     #endif
 

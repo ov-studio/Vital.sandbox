@@ -70,8 +70,8 @@ namespace Vital::Manager {
 
     void Asset::clear() {
         registered_assets.clear();
-        spawn_queue.clear();
         #if defined(VSDK_Client)
+        spawn_queue.clear();
         group_pending_counts.clear();
         group_generations.clear();
         cancel_all();
@@ -107,7 +107,7 @@ namespace Vital::Manager {
             registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
-                report += fmt::format("> `{}` — {}", path, registered_assets[path].hash);
+                report += fmt::format("> `{}`", path);
                 log("sbox", report);
             }
         }
@@ -123,7 +123,7 @@ namespace Vital::Manager {
         }
         if (registered.empty()) return;
         std::string report = fmt::format("registered {} asset(s) for group `{}`:\n", registered.size(), group.empty() ? "(none)" : group);
-        for (const auto& path : registered) report += fmt::format("> `{}` — {}\n", path, registered_assets[path].hash);
+        for (const auto& path : registered) report += fmt::format("> `{}`\n", path);
         log("sbox", report);
     }
 
@@ -210,7 +210,7 @@ namespace Vital::Manager {
             document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(cfg.get_network_port()), alloc);
             document.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(cfg.get_http_port()), alloc);
             document.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(cfg.get_max_clients()), alloc);
-            document.AddMember(rapidjson::StringRef("discord_invite"), rapidjson::Value(cfg.get_discord().c_str(), alloc), alloc);
+            document.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(cfg.get_discord().c_str(), alloc), alloc);
             document.AddMember(rapidjson::StringRef("website"), rapidjson::Value(cfg.get_website().c_str(), alloc), alloc);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -318,9 +318,9 @@ namespace Vital::Manager {
             group_pending_counts[group] += n;
         }
 
-        std::vector<std::string> to_download;
-        std::vector<std::string> up_to_date;
-        std::vector<std::string> in_progress;
+        int up_to_date = 0;
+        int in_progress = 0;
+        int to_download = 0;
 
         for (int i = 0; i < count; i++) {
             const std::string path  = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
@@ -328,7 +328,7 @@ namespace Vital::Manager {
             const std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             if (active_downloads.count(path)) {
-                in_progress.push_back(path);
+                in_progress++;
                 continue;
             }
 
@@ -340,32 +340,19 @@ namespace Vital::Manager {
             catch (...) { hash_matches = false; }
 
             if (hash_matches) {
-                up_to_date.push_back(path);
+                up_to_date++;
                 // Cached — immediately mark as ready for this group.
                 _on_file_ready(path, group);
             }
             else {
-                to_download.push_back(path);
+                to_download++;
                 download_file(path, hash, base_url, group);
             }
         }
 
-        std::string report = fmt::format("manifest received — {} asset(s) total\n", count);
-        if (!up_to_date.empty()) {
-            report += fmt::format("> Cached ({}):\n", up_to_date.size());
-            for (const auto& p : up_to_date) report += fmt::format("> `{}`\n", p);
-        }
-        if (!in_progress.empty()) {
-            report += fmt::format("> Downloading ({}):\n", in_progress.size());
-            for (const auto& p : in_progress) report += fmt::format("> `{}`\n", p);
-        }
-        if (!to_download.empty()) {
-            report += fmt::format("> Queued ({}):\n", to_download.size());
-            for (const auto& p : to_download) report += fmt::format("> `{}`\n", p);
-        }
-        log("sbox", report);
+        log("sbox", fmt::format("manifest received — {} asset(s) total ({} cached, {} downloading, {} queued)", count, up_to_date, in_progress, to_download));
 
-        if (to_download.empty() && in_progress.empty()) {
+        if (to_download == 0 && in_progress == 0) {
             log("sbox", "all assets ready (cached)");
             Tool::Event::emit("asset:ready", {});
         }

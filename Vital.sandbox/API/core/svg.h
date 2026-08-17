@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/utility/file.h>
 
 
@@ -52,34 +53,57 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<SVG>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path)")
-                    .require(1, &Machine::is_string);
+                vm_args(vm, id, "(path, mipmaps = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
+                auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg(base, path);
+                instance -> texture = base_class::create_svg(base, path, mipmaps);
                 instance -> store(true);
                 return 1;
             });
 
             API::bind(vm, base_scope, "create_from_raw", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(raw)")
-                    .require(1, &Machine::is_string);
+                vm_args(vm, id, "(raw, mipmaps = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto raw = vm -> get_string(1);
+                auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg_from_raw(raw);
+                instance -> texture = base_class::create_svg_from_raw(raw, mipmaps);
                 instance -> store(true);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> texture -> has_mipmaps());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                auto size = self -> texture -> get_size();
                 vm -> push_value(self -> texture -> get_size());
-                return 2;
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, API::Texture::texture_filter_registry);
+
+                auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
+                self -> texture -> set_filter(mode);
+                vm -> push_value(true);
+                return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
@@ -91,6 +115,10 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "svg_filter", API::Texture::texture_filter_registry);
         }
 
         static void clean(const std::string& env) {

@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/API/core/node_3d.h>
 
 
 /////////////////////////
@@ -47,6 +48,10 @@ namespace Vital::Sandbox::API {
             using Owner = Camera;
             base_class* camera = nullptr;
 
+            auto get_node() { 
+                return camera;
+            }
+
             bool is_alive() const {
                 return camera ? true : false;
             }
@@ -74,6 +79,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Camera>(vm);
+            API::Node_3D::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -102,6 +108,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            API::Node_3D::methods<Instance, Node_3D::Type::Camera>(vm);
+
             vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> is_active());
                 return 1;
@@ -150,12 +158,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_near", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_near_clip", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_near());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_far", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_far_clip", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_far());
                 return 1;
             });
@@ -185,7 +193,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_keep_aspect_mode", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_keep_aspect", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_keep_aspect_mode());
                 return 1;
             });
@@ -266,7 +274,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_near", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_near_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_near)", true)
                     .require(2, &Machine::is_number);
 
@@ -276,7 +284,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_far", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_far_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_far)", true)
                     .require(2, &Machine::is_number);
 
@@ -316,7 +324,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_keep_aspect_mode", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_keep_aspect", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, keep_aspect_registry);
 
@@ -337,11 +345,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_auto_exposure_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_auto_exposure_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -397,11 +405,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_dof_blur_far_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -427,11 +435,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_dof_blur_near_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -505,6 +513,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
+            API::Node_3D::inject<Instance>(vm);
             vm -> scope_set_enum(base_scope, "projection", projection_registry);
             vm -> scope_set_enum(base_scope, "keep_aspect", keep_aspect_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);

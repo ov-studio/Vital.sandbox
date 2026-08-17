@@ -34,10 +34,15 @@ namespace Vital::Tool {
                 bool autoincrement = false;
                 bool nullable = true;
             };
-
+            
+            enum class SchemaActionType { 
+                Add, 
+                Drop, 
+                Modify
+            };
+            
             struct SchemaAction {
-                enum class Type { Add, Drop, Modify }; // TODO: MOVE IT OUTSIDE???
-                Type type;
+                SchemaActionType type;
                 std::string column;
                 Column definition;
             };
@@ -122,6 +127,15 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
+            static std::string escape_connection_value(const std::string& value) {
+                std::string out = "'";
+                for (char c : value) {
+                    if (c == '\'' || c == '\\') out += '\\';
+                    out += c;
+                }
+                return out + "'";
+            }
+
             std::string build_column(const std::string& column, const Column& definition) const {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
@@ -155,17 +169,19 @@ namespace Vital::Tool {
 
             static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
                 auto db = new Database();
-                std::string connection = fmt::format("host={} port={} user={} dbname={}", host, port, user, database);
-                if (!password.empty()) connection += fmt::format(" password={}", password);
+                std::string connection = fmt::format("host={} port={} user={} dbname={}", escape_connection_value(host), port, escape_connection_value(user), escape_connection_value(database));
+                if (!password.empty()) connection += fmt::format(" password={}", escape_connection_value(password));
                 db -> session = std::make_unique<soci::session>(soci::mysql, connection);
                 return db;
             }
 
             void destroy() {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (session) {
-                    session -> close();
-                    session.reset();
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    if (session) {
+                        session -> close();
+                        session.reset();
+                    }
                 }
                 delete this;
             }
@@ -247,11 +263,11 @@ namespace Vital::Tool {
                         if (row_out.get_indicator(i) == soci::i_null) cell = nullptr;
                         else {
                             switch (props.get_data_type()) {
-                                case soci::dt_string:    cell = row_out.get<std::string>(i); break;
-                                case soci::dt_integer:   cell = static_cast<int32_t>(row_out.get<int>(i)); break;
+                                case soci::dt_string:    cell = row_out.get<std::string>(i);                     break;
+                                case soci::dt_integer:   cell = static_cast<int32_t>(row_out.get<int>(i));       break;
                                 case soci::dt_long_long: cell = static_cast<int64_t>(row_out.get<long long>(i)); break;
-                                case soci::dt_double:    cell = row_out.get<double>(i); break;
-                                default:                 cell = row_out.get<std::string>(i); break;
+                                case soci::dt_double:    cell = row_out.get<double>(i);                          break;
+                                default:                 cell = row_out.get<std::string>(i);                     break;
                             }
                         }
                         row.emplace_back(props.get_name(), cell);
@@ -273,9 +289,9 @@ namespace Vital::Tool {
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
-                        case SchemaAction::Type::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
-                        case SchemaAction::Type::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column); break;
-                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
+                        case SchemaActionType::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition));    break;
+                        case SchemaActionType::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column);                                  break;
+                        case SchemaActionType::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
                     }
                 }
                 *session << sql;
@@ -283,9 +299,9 @@ namespace Vital::Tool {
                 auto& table_schema = schema[table];
                 for (const auto& action : actions) {
                     switch (action.type) {
-                        case SchemaAction::Type::Add:
-                        case SchemaAction::Type::Modify: table_schema[action.column] = action.definition; break;
-                        case SchemaAction::Type::Drop:   table_schema.erase(action.column); break;
+                        case SchemaActionType::Add:
+                        case SchemaActionType::Modify: table_schema[action.column] = action.definition; break;
+                        case SchemaActionType::Drop:   table_schema.erase(action.column);               break;
                     }
                 }
             }
@@ -302,7 +318,7 @@ namespace Vital::Tool {
                 assert_session_and_table(table);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
-            
+
             bool execute(Query* query) {
                 std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(query -> table);

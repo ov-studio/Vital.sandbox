@@ -22,49 +22,49 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type { sbox, info, warn, error };
+    enum class Type : std::size_t { 
+        sbox, 
+        info, 
+        warn, 
+        error 
+    };
+
+    inline constexpr std::string_view type_labels[] = { "sbox", "info", "warn", "error" };
 
     struct Command {
         std::string_view code;
         std::string_view message;
     };
 
-    template <std::string_view const& L>
+    inline constexpr Command error_list[] = {
+        { "invalid-argument", "invalid argument {}" },
+        { "request-failed",   "request failed {}"   },
+    };
+
+    template <Type T>
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = L;
+        static constexpr std::string_view label = type_labels[static_cast<std::size_t>(T)];
     };
 
-    inline constexpr std::string_view
-        Label_sbox = "sbox",
-        Label_info = "info",
-        Label_warn = "warn", 
-        Label_error = "error";
+    using sbox = Entry<Type::sbox>;
+    using info = Entry<Type::info>;
+    using warn = Entry<Type::warn>;
+    using error = Entry<Type::error>;
 
-    using sbox = Entry<Label_sbox>;
-    using info = Entry<Label_info>;
-    using warn = Entry<Label_warn>;
-    using error = Entry<Label_error>;
 
-    inline const std::unordered_set<std::string_view> runtime_levels = { 
-        "info", 
-        "warn", 
-        "error" 
-    };
+    // Helpers //
+    inline constexpr std::string_view type_label(Type t) {
+        return type_labels[static_cast<std::size_t>(t)];
+    }
 
-    inline constexpr Command error_list[] = {
-        {"invalid-argument", "invalid argument {}"},
-        {"request-failed", "request failed {}"}
-    };
-
-    template <typename... Types>
-    inline bool is_type_impl(std::string_view label) { return (... || (label == Types::label)); }
     inline bool is_type(std::string_view label) {
-        return is_type_impl<sbox, info, warn, error>(label);
+        for (const auto& l : type_labels) if (l == label) return true;
+        return false;
     }
 
     inline bool is_runtime_level(std::string_view label) {
-        return runtime_levels.count(label) > 0;
+        return label != type_label(Type::sbox) && is_type(label);
     }
 
     inline std::string_view resolve(std::string_view code) {

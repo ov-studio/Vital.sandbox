@@ -30,8 +30,8 @@ namespace Vital::Engine {
             };
 
             enum class Format {
-                PNG,
                 JPG,
+                PNG,
                 WEBP,
                 BMP,
                 DDS,
@@ -68,6 +68,7 @@ namespace Vital::Engine {
             Command command;
             uint64_t reference_tick = 0;
             std::string reference_key = "";
+            godot::Ref<godot::CanvasTexture> canvas_texture;
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};
 
 
@@ -82,21 +83,28 @@ namespace Vital::Engine {
 
 
             // Checkers //
+            bool has_mipmaps() const;
             bool is_compressed() const;
 
 
             // Getters //
             static Texture* get_from_reference(const std::string& reference);
             godot::Ref<godot::ImageTexture> get_texture() const;
+            godot::Ref<godot::Texture2D> get_canvas_texture() const;
             godot::Vector2i get_size() const;
+            godot::CanvasItem::TextureFilter get_filter() const;
+
+
+            // Setters //
+            void set_filter(godot::CanvasItem::TextureFilter mode);
 
 
             // Misc //
-            static Texture* create_texture_2d(const std::string& base, const std::string& path, const std::string& reference = "");
-            static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
-            static Texture* create_svg(const std::string& base, const std::string& path, const std::string& reference = "");
-            static Texture* create_svg_from_raw(const std::string& raw, const std::string& reference = "");
-            static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
+            static Texture* create_texture_2d(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
+            static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
+            static Texture* create_svg(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
+            static Texture* create_svg_from_raw(const std::string& raw, bool mipmaps = false, const std::string& reference = "");
+            static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
             void update_svg_from_raw(const std::string& raw);
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
             void convert(godot::Image::Format format);

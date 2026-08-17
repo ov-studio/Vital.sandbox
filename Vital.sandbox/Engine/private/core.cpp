@@ -20,6 +20,7 @@
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/Manager/public/masterlist.h>
 
 
 //////////////////////////
@@ -147,6 +148,10 @@ namespace Vital::Engine {
         Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
             Tool::print("sbox", "Core: shut down successfully!");
+            // TODO: Use some hook? maybe teardown needs to be called here? but then asset etc should be torn down when disconnect instead of just shutdown...
+            #if !defined(VSDK_Client)
+            Manager::Masterlist::get_singleton() -> stop();
+            #endif
             Engine::Console::get_singleton() -> teardown();
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
@@ -170,6 +175,10 @@ namespace Vital::Engine {
 
     godot::RenderingServer* Core::get_rendering_server() {
         return godot::RenderingServer::get_singleton();
+    }
+
+    godot::AudioServer* Core::get_audio_server() {
+        return godot::AudioServer::get_singleton();
     }
 
     godot::Ref<godot::Environment> Core::get_environment() {

@@ -74,6 +74,7 @@ namespace Vital::Engine {
             #if defined(VSDK_Client)
             static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();
+            static godot::AudioServer* get_audio_server();
             static godot::Ref<godot::Environment> get_environment();
             static godot::Ref<godot::Sky> get_sky();
             static void free_environment();

@@ -3,11 +3,13 @@ sys.path.append("./Vital.sandbox")
 from vital import *
 
 class Build:
-    def __init__(self, script_dir, platform_type, build_type, verbose=False):
+    def __init__(self, script_dir, platform_type, build_type, verbose=False, wry_version=None, godot_version=None):
         self.script_dir = script_dir
         self.platform_type = platform_type
         self.build_type = build_type
         self.verbose = verbose
+        self.wry_version = wry_version or "unknown"
+        self.godot_version = godot_version or "unknown"
         self.os_info = Fetch_OS()
         self.info = Fetch_Build_Info()
 
@@ -26,8 +28,13 @@ class Build:
         b = self.init()
         if b["sandbox_dir"] not in sys.path:
             sys.path.insert(0, b["sandbox_dir"])
-        from Bootstrap.vendor import Vendor
         Vendor(None).build()
+
+    def reload_wry(self):
+        b = self.init()
+        if b["sandbox_dir"] not in sys.path:
+            sys.path.insert(0, b["sandbox_dir"])
+        return Wry(self.script_dir, os.path.join(self.script_dir, "Vital.client")).build()
 
     def build_godot_cpp(self, force=False):
         b = self.init()
@@ -83,6 +90,7 @@ class Build:
             "use_static_crt=no",
             "build_library=no",
             f"debug_symbols={'yes' if self.build_type == 'Debug' else 'no'}",
+            f'extra_cppdefines=VSDK_WRY_VERSION=\\"{self.wry_version}\\";VSDK_GODOT_VERSION=\\"{self.godot_version}\\"',
             f"-j{int(self.os_info['nproc'])}",
         ]
 
@@ -309,12 +317,15 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose)
+    godot_version = Godot(None).get_version(script_dir)
+
+    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
     b.reload_vendors()
     b.build_godot_cpp(force=args.rebuild_godot)
+    wry_version = b.reload_wry()
 
     for platform_type in platforms:
-        build = Build(script_dir, platform_type, build_type, verbose=args.verbose)
+        build = Build(script_dir, platform_type, build_type, verbose=args.verbose, wry_version=wry_version, godot_version=godot_version)
         build.build_sandbox()
         if not args.skip_export:
             build.export()

@@ -58,7 +58,6 @@ namespace Vital::Manager {
             void _on_download_failed(const std::string& path);
             void _on_file_ready(const std::string& path, const std::string& group);
             #else
-            std::unordered_map<std::string, int> spawn_queue; // TODO: unused on server, kept for symmetry, remove it
             Tool::HTTP::Server http_server;
             std::unordered_set<int> pending_manifest_peers;
             #endif

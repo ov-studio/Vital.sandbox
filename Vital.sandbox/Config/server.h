@@ -87,7 +87,7 @@ namespace Vital::Config {
 
 
             // Identity //
-            std::string get_server_name() const { return get_str("server", "name", "Vital Sandbox Server"); }
+            std::string get_server_name() const { return get_str("server", "name", "Vital.sandbox Server"); }
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
 
@@ -98,22 +98,30 @@ namespace Vital::Config {
             int get_http_port() const { return get_int("http", "port", 7778); }
 
 
-            // Discord //
-            bool get_discord_enabled() const { return get_bool("discord", "enabled", false); }
-            std::string get_discord_state() const { return get_str("discord", "state", "Playing on {server_name}"); }
-            std::string get_discord_details() const { return get_str("discord", "details", "{player_count}/{max_players} players"); }
-            std::string get_discord_large_image_key() const { return get_str("discord", "large_image_key",  ""); }
-            std::string get_discord_large_image_text() const { return get_str("discord", "large_image_text", ""); }
-            std::string get_discord_small_image_key() const { return get_str("discord", "small_image_key",  ""); }
-            std::string get_discord_small_image_text() const { return get_str("discord", "small_image_text", ""); }
-            uint64_t get_discord_application_id() const {
-                try { return std::stoull(get_str("discord", "application_id", "")); }
-                catch (...) { return 0; }
+            // Bootstrap //
+            std::vector<std::string> get_bootstrap() const {
+                std::vector<std::string> result;
+                if (!loaded || !yaml.has("bootstrap")) return result;
+                const auto& list = yaml.get_root()["bootstrap"];
+                if (!list.is_seq()) return result;
+                for (ryml::ConstNodeRef node : list) {
+                    std::string name;
+                    node >> name;
+                    if (!name.empty()) result.push_back(name);
+                }
+                return result;
             }
 
 
             // Social //
-            std::string get_discord() const { return get_str("social", "discord_invite", ""); }
+            std::string get_discord() const { return get_str("social", "discord", ""); }
             std::string get_website() const { return get_str("social", "website", ""); }
+
+
+            // Masterlist //
+            // TODO: Improve maybe just token instead of id + secret?
+            bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
+            std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
+            std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://vital.site/api/masterlist"); }
     };
 }

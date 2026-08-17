@@ -29,6 +29,7 @@ namespace Vital::Engine {
         private:
             #if defined(VSDK_Client)
             Webview* webview = nullptr;
+            std::atomic<bool> webview_ready { false };
             #else
             std::mutex stdout_mutex;
             std::thread stdin_thread;
@@ -70,10 +71,14 @@ namespace Vital::Engine {
             Console();
             ~Console();
         public:
-            static constexpr const char* Name = "Console.manager";
+            static constexpr const char* Name = "Console.engine";
 
 
             // Managers //
+            #if defined(VSDK_Client)
+            bool is_ready();
+            bool is_visible();
+            #endif
             void init();
             void ready();
             void update();

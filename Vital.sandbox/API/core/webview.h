@@ -47,7 +47,7 @@ namespace Vital::Sandbox::API {
             }
         };
         inline static vm_registry<Instance> registry;
-    
+
         static std::string build_url(Machine* vm, const std::string& input) {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, input);
             const std::string mounted_path = resource.empty() ? fmt::format("resources/{}", relative) : fmt::format("resources/{}/{}", resource, relative);
@@ -59,6 +59,27 @@ namespace Vital::Sandbox::API {
             return build_url(vm, input);
         }
 
+        static int clamp_z_index(int value) {
+            return std::clamp(value, 0, base_class::system_z_floor);
+        }
+
+        static void wire_handlers(std::shared_ptr<Instance> instance) {
+            for (const auto& type : base_class::signal_registry) {
+                if (!Instance::find_unlocked(instance)) continue;
+
+                instance -> webview -> set_handler(type, [instance, type](base_class::Payload payload) {
+                    if (!Instance::find_unlocked(instance)) return;
+                    auto webview = Tool::StackValue(instance);
+                    auto signal = "webview:" + type;
+                    std::visit([&](auto&& value) {
+                        using V = std::decay_t<decltype(value)>;
+                        if constexpr (std::is_same_v<V, std::monostate>) Manager::Sandbox::get_singleton() -> signal(signal, webview);
+                        else Manager::Sandbox::get_singleton() -> signal(signal, webview, Tool::StackValue(value));
+                    }, payload);
+                });
+            }
+        }
+        
         static void bind(Machine* vm) {
             vm_module::register_type<Webview>(vm);
 
@@ -68,16 +89,22 @@ namespace Vital::Sandbox::API {
 
                 base_class::Options options;
                 if (vm -> is_table(1)) {
+                    vm -> table_get_value("z_index", 1); options.z_index = vm -> is_number(-1) ? vm -> get_int(-1) : options.z_index;
                     vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
                     vm -> table_get_value("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
+                    vm -> table_get_value("overlay", 1); options.overlay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.overlay;
                     vm -> table_get_value("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
                     vm -> table_get_value("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
                     vm -> table_get_value("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
-                    vm -> pop(5);
+                    vm -> table_get_value("forward_input", 1); options.forward_input = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.forward_input;
+                    vm -> pop(8);
                 }
+                options.z_index = clamp_z_index(options.z_index);
+
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
                 instance -> store(true);
+                wire_handlers(instance);
                 return 1;
             });
         }
@@ -98,6 +125,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "is_overlay", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_overlay());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "is_incognito", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_incognito());
                 return 1;
@@ -110,6 +142,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "is_zoomable", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_zoomable());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_forward_input", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_forward_input());
                 return 1;
             });
 
@@ -128,12 +165,27 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_z_index", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> get_z_index());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 auto state = vm -> get_bool(2);
                 self -> webview -> set_visible(state);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_focussed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_focussed(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -158,6 +210,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_z_index", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(value)", true)
+                    .require(2, &Machine::is_number);
+
+                auto value = clamp_z_index(vm -> get_int(2));
+                self -> webview -> set_z_index(value);
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -168,29 +230,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(handler)", true)
-                    .require(2, &Machine::is_function);
-
-                auto instance_id = self -> id;
-                self -> set_reference(self -> value_reference("exec"), 2);
-                self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
-                    auto instance = Instance::find(instance_id);
-                    if (!instance) return;
-                    instance -> get_reference(instance -> value_reference("exec"), true);
-                    vm -> push_value(Tool::to_std_string(message));
-                    vm -> call(1, 0);
-                });
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_message_handler", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> reset_message_handler();
-                vm -> push_value(true);
-                return 1;
-            });
-            
             vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
@@ -217,12 +256,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "focus", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> focus();
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "reload", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> reload();
                 vm -> push_value(true);
@@ -235,12 +268,6 @@ namespace Vital::Sandbox::API {
 
                 auto value = vm -> get_float(2);
                 self -> webview -> zoom(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> update();
                 vm -> push_value(true);
                 return 1;
             });

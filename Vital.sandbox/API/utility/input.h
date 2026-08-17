@@ -264,14 +264,18 @@ namespace Vital::Sandbox::API {
             { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED  }
         };
 
-        struct Handler {
+        struct BindHandler {
             int exec_ref = LUA_NOREF;
             bool down;
         };
 
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> key_binds;
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> mouse_binds;
+        struct CommandHandler {
+            int exec_ref = LUA_NOREF;
+        };
 
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> key_binds;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> mouse_binds;
+        inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_list;
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.second == code; });
@@ -292,16 +296,18 @@ namespace Vital::Sandbox::API {
             return resolve_direction(direction, down);
         }
 
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        template <typename KeyT, typename HandlerT, typename MakeFn>
+        static bool add_handler(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, int exec_index, MakeFn make) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
-            map[code][env].push_back({ref, down});
+            map[key][env].push_back(make(ref));
             return true;
         }
 
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        template <typename KeyT, typename HandlerT, typename MatchFn>
+        static bool remove_handler(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, int exec_index, MatchFn matches) {
             auto env = vm -> get_environment_id();
-            auto mit = map.find(code);
+            auto mit = map.find(key);
             if (mit == map.end()) return false;
             auto eit = mit -> second.find(env);
             if (eit == mit -> second.end()) return false;
@@ -310,7 +316,7 @@ namespace Vital::Sandbox::API {
             bool removed = false;
             auto& handlers = eit -> second;
             for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
-                if (vit -> down != down) continue;
+                if (!matches(*vit)) continue;
                 vm -> get_raw_reference(lookup_ref);
                 vm -> get_raw_reference(vit -> exec_ref);
                 bool eq = lua_rawequal(vm -> get_state(), -1, -2);
@@ -327,20 +333,62 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool pressed) {
-            auto it = map.find(code);
+        template <typename KeyT, typename HandlerT, typename FilterFn, typename PushArgsFn>
+        static void execute_handler(const std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, FilterFn filter, PushArgsFn push_args) {
+            auto it = map.find(key);
             if (it == map.end()) return;
+
             auto snapshot = it -> second;
-            const std::string direction = pressed ? "down" : "up";
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
-                    if (entry.down != pressed) continue;
+                    if (!filter(entry)) continue;
                     vm -> get_raw_reference(entry.exec_ref);
-                    vm -> push_value(code);
-                    vm -> push_value(direction);
-                    vm -> call(2, 0);
+                    int argc = push_args(vm);
+                    vm -> call(argc, 0);
                 }
             }
+        }
+
+        template <typename KeyT, typename HandlerT>
+        static void release_env(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const std::string& env) {
+            for (auto mit = map.begin(); mit != map.end(); ) {
+                auto eit = mit -> second.find(env);
+                if (eit != mit -> second.end()) {
+                    for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
+                    mit -> second.erase(eit);
+                }
+                if (mit -> second.empty()) mit = map.erase(mit);
+                else ++mit;
+            }
+        }
+
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
+            const std::string direction = pressed ? "down" : "up";
+            execute_handler(map, vm, code,
+                [pressed](const BindHandler& h) { return h.down == pressed; },
+                [code, &direction](Machine* vm) {
+                    vm -> push_value(code);
+                    vm -> push_value(direction);
+                    return 2;
+                }
+            );
+        }
+
+        static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
+            if (command_list.find(name) == command_list.end()) return false;
+
+            execute_handler(command_list, vm, name,
+                [](const CommandHandler&) { return true; },
+                [&args](Machine* vm) {
+                    vm -> create_table();
+                    for (int i = 0; i < (int)args.size(); ++i) {
+                        vm -> push_value(args[i]);
+                        vm -> set_table_field(i + 1, -2);
+                    }
+                    return 1;
+                }
+            );
+            return true;
         }
 
         static void init(Machine* vm) {
@@ -360,6 +408,21 @@ namespace Vital::Sandbox::API {
                 if (!resolve_key(code, key, mouse)) return;
                 if (mouse) dispatch_handler(mouse_binds, vm, code, pressed);
                 else dispatch_handler(key_binds, vm, code, pressed);
+            });
+
+            Tool::Event::bind("sandbox:console_input", [](Tool::Stack args) {
+                if (args.array.size() < 2) return;
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+
+                auto name = args.array[0].as<std::string>();
+                auto arg_stack_ptr = args.array[1].as<std::shared_ptr<Tool::Stack>>();
+                if (!arg_stack_ptr) return;
+                std::vector<std::string> arguments;
+                arguments.reserve(arg_stack_ptr -> array.size());
+                for (auto& value : arg_stack_ptr -> array) arguments.push_back(value.as<std::string>());
+
+                dispatch_command(vm, name, arguments);
             });
         }
 
@@ -426,7 +489,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? bind_handler(mouse_binds, vm, code, down, 3) : bind_handler(key_binds, vm, code, down, 3);
+                auto ok = add_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](int ref) { return BindHandler{ref, down}; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -444,7 +507,59 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? unbind_handler(mouse_binds, vm, code, down, 3) : unbind_handler(key_binds, vm, code, down, 3);
+                auto ok = remove_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](const BindHandler& handle) { return handle.down == down; });
+                vm -> push_value(ok);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "register", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, exec)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_function);
+
+                auto name = vm -> get_string(1);
+                auto ok = add_handler(command_list, vm, name, 2, [](int ref) { return CommandHandler{ref}; });
+                vm -> push_value(ok);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "unregister", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, exec)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_function);
+
+                auto name = vm -> get_string(1);
+                auto ok = remove_handler(command_list, vm, name, 2, [](const CommandHandler& handle) { return true; });
+                vm -> push_value(ok);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
+                vm -> create_table();
+                int i = 0;
+                for (auto& [name, _] : command_list) {
+                    vm -> push_value(name);
+                    vm -> set_table_field(++i, -2);
+                }
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "execute", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, args = {})")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_table);
+
+                auto name = vm -> get_string(1);
+                std::vector<std::string> args;
+                if (vm -> get_count() >= 2 && vm -> is_table(2)) {
+                    int len = vm -> get_length(2);
+                    for (int i = 1; i <= len; ++i) {
+                        vm -> get_table_field(i, 2);
+                        args.push_back(vm -> to_string(-1));
+                        vm -> pop(1);
+                    }
+                }
+                auto ok = dispatch_command(vm, name, args);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -459,19 +574,9 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            auto release = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {
-                for (auto mit = map.begin(); mit != map.end(); ) {
-                    auto eit = mit -> second.find(env);
-                    if (eit != mit -> second.end()) {
-                        for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
-                        mit -> second.erase(eit);
-                    }
-                    if (mit -> second.empty()) mit = map.erase(mit);
-                    else ++mit;
-                }
-            };
-            release(key_binds);
-            release(mouse_binds);
+            release_env(key_binds, vm, env);
+            release_env(mouse_binds, vm, env);
+            release_env(command_list, vm, env);
         }
     };
 }

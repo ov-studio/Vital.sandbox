@@ -248,7 +248,7 @@ namespace Vital::Sandbox::API {
                 auto ref = path;
                 auto base = API::File::assert_file(vm, path);
                 auto map_texture = Vital::Engine::Texture::get_from_reference(ref);
-                if (!map_texture) map_texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
+                if (!map_texture) map_texture = Vital::Engine::Texture::create_texture_2d(base, path, false, ref);
                 base_class::get_environment() -> set_glow_map(map_texture -> get_texture());
                 vm -> push_value(path);
                 vm -> set_reference("sandbox", map_reference, -1);

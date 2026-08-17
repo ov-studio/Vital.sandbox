@@ -26,11 +26,14 @@
 
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
+#include <Vital.sandbox/Manager/public/masterlist.h>
 static Vital::Config::Server g_server_config;
 #endif
 
 void shutdown() {
     #if !defined(VSDK_Client)
+    Vital::Manager::Masterlist::get_singleton() -> stop();
+    Vital::Manager::Masterlist::free_singleton();
     Vital::Manager::Network::get_singleton() -> close();
     #endif
     #if defined(VSDK_Client)
@@ -62,16 +65,19 @@ void setup() {
     nm -> set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("network:host", [](Vital::Tool::Stack) {
-
+        Vital::Manager::Masterlist::get_singleton() -> start(g_server_config);
     });
     Vital::Tool::Event::bind("network:peer:join", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:peer:leave", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player left: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:close", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Server closed");
+        Vital::Manager::Masterlist::get_singleton() -> stop();
     });
     #endif
 }
@@ -79,6 +85,9 @@ void setup() {
 void vsdk_initialize() {
     // Core //
     Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
+        #if defined(VSDK_Client)
+        Vital::Engine::Splash::get_singleton();
+        #endif
         Vital::Engine::Console::get_singleton();
     });
 
@@ -88,7 +97,7 @@ void vsdk_initialize() {
         Vital::Engine::Monitor::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
-        Vital::Manager::Sandbox::get_singleton() -> ready();
+        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
         Vital::Manager::Asset::get_singleton();
         Vital::Manager::Resource::get_singleton();
         setup();
@@ -96,6 +105,7 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("core:free", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
+        Vital::Engine::Splash::free_singleton();
         Vital::Engine::Canvas::free_singleton();
         Vital::Engine::Monitor::free_singleton();
         Vital::Manager::Discord::free_singleton();
@@ -104,12 +114,6 @@ void vsdk_initialize() {
         Vital::Manager::Sandbox::free_singleton();
         Vital::Manager::Resource::free_singleton();
         shutdown();
-    });
-
-
-    // Sandbox //
-    Vital::Tool::Event::bind("sandbox:ready", [](Vital::Tool::Stack arguments) {
-        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
     });
 
 

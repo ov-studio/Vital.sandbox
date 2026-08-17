@@ -10,12 +10,17 @@ env.name = "vital.sdk"
 env.Args = ARGUMENTS
 env.Args["platform_type"] = env.Args.get("platform_type", "Server")
 env.Args["build_type"] = env.Args.get("build_type", "Debug")
+env.Args["extra_cppdefines"] = env.Args.get("extra_cppdefines", "")
 
 
 # Flags
 env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.Append(CPPDEFINES=["CPPHTTPLIB_OPENSSL_SUPPORT"])
+if env.Args["extra_cppdefines"]:
+    for _define in env.Args["extra_cppdefines"].split(";"):
+        if _define.strip():
+            env.Append(CPPDEFINES=[_define.strip()])
 
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["VSDK_Client"])

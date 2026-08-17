@@ -77,17 +77,17 @@ namespace Vital::Tool {
         // Converters //
         template<typename T = void>
         godot::Variant to_variant() const {
-            return std::visit([](auto&& val) -> godot::Variant {
-                using V = std::decay_t<decltype(val)>;
+            return std::visit([](auto&& v) -> godot::Variant {
+                using V = std::decay_t<decltype(v)>;
                 if constexpr (std::is_same_v<V, std::nullptr_t>)              return godot::Variant();
-                else if constexpr (std::is_same_v<V, bool>)                   return val;
-                else if constexpr (std::is_same_v<V, int32_t>)                return (int64_t)val;
-                else if constexpr (std::is_same_v<V, int64_t>)                return val;
-                else if constexpr (std::is_same_v<V, float>)                  return (double)val;
-                else if constexpr (std::is_same_v<V, double>)                 return val;
-                else if constexpr (std::is_same_v<V, std::string>)            return godot::String(val.c_str());
+                else if constexpr (std::is_same_v<V, bool>)                   return v;
+                else if constexpr (std::is_same_v<V, int32_t>)                return (int64_t)v;
+                else if constexpr (std::is_same_v<V, int64_t>)                return v;
+                else if constexpr (std::is_same_v<V, float>)                  return (double)v;
+                else if constexpr (std::is_same_v<V, double>)                 return v;
+                else if constexpr (std::is_same_v<V, std::string>)            return godot::String(v.c_str());
                 else if constexpr (std::is_same_v<V, std::shared_ptr<void>>)  return godot::Variant();
-                else if constexpr (std::is_same_v<V, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
+                else if constexpr (std::is_same_v<V, std::shared_ptr<Stack>>) return v ? v -> to_dict() : godot::Variant();
                 return godot::Variant();
             }, value);
         }
@@ -134,7 +134,7 @@ namespace Vital::Tool {
     };
 
     struct Stack {
-        uint16_t version = Vital::Build.major;
+        uint16_t version = Tool::Version::SDK.major;
         std::vector<StackValue> array;
         std::map<std::string, StackValue> object;
 

@@ -1,0 +1,47 @@
+/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Engine: audio_2d.h
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Audio 2D Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
+#if defined(VSDK_Client)
+#include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/audio_bus.h>
+
+
+//////////////////////////////
+// Vital: Engine: Audio_2D //
+//////////////////////////////
+
+namespace Vital::Engine {
+    class Audio_2D : public godot::Node2D, public Audio_Bus {
+        private:
+            godot::Ref<godot::AudioStream> stream;
+            godot::AudioStreamPlayer2D* player = nullptr;
+
+
+            // Instantiators //
+            Audio_2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
+            ~Audio_2D();
+        public:
+            // Managers //
+            static Audio_2D* create(const std::string& base, const std::string& path, bool autoplay = false);
+            static Audio_2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
+            void destroy();
+
+
+            // Getters //
+            godot::Ref<godot::AudioStream> get_stream() const;
+            godot::AudioStreamPlayer2D* get_player() const;
+    };
+}
+#endif

@@ -29,7 +29,7 @@ namespace Vital::Engine {
         GDCLASS(Canvas, godot::Node2D)
         friend class Tool::Base<Canvas>;
         public:
-            static constexpr const char* Name = "Canvas";
+            static constexpr const char* Name = "Canvas.engine";
 
             enum class Type {
                 Line,

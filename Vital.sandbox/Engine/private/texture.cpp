@@ -55,13 +55,17 @@ namespace Vital::Engine {
                 expired.push_back(reference_cache.first);
             }
         }
-        for (const auto& key : expired) {
-            reference_cache[key] -> destroy();
-        }
+        for (const auto& key : expired) reference_cache[key] -> destroy();
     }
 
 
     // Checkers //
+    bool Texture::has_mipmaps() const {
+        auto texture = get_texture();
+        if (!texture.is_valid()) return false;
+        return texture -> get_image() -> has_mipmaps();
+    }
+    
     bool Texture::is_compressed() const {
         if (command.type != Type::Texture2D) return false;
         auto texture = get_texture();
@@ -84,19 +88,48 @@ namespace Vital::Engine {
         return godot::Ref<godot::ImageTexture>();
     }
 
+    godot::Ref<godot::Texture2D> Texture::get_canvas_texture() const {
+        if (canvas_texture.is_valid()) return canvas_texture;
+        return get_texture();
+    }
+
     godot::Vector2i Texture::get_size() const {
         auto texture = get_texture();
         if (!texture.is_valid()) return godot::Vector2i();
         return texture -> get_size();
     }
 
-
-    // Misc //
-    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, const std::string& reference) {
-        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), reference);
+    godot::CanvasItem::TextureFilter Texture::get_filter() const {
+        return canvas_texture.is_valid() ? canvas_texture -> get_texture_filter() : godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE;
     }
 
-    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
+
+    // Setters //
+    void Texture::set_filter(godot::CanvasItem::TextureFilter mode) {
+        if (mode == godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE) canvas_texture.unref();
+        else {
+            auto texture = get_texture();
+            bool wants_mipmaps = (
+                mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+            );
+            if (wants_mipmaps && !has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: requested filter mode requires mipmaps, but texture has none");
+            if (!canvas_texture.is_valid()) canvas_texture.instantiate();
+            canvas_texture -> set_diffuse_texture(texture);
+            canvas_texture -> set_texture_filter(mode);
+        }
+        heartbeat();
+    }
+
+
+    // Misc //
+    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
+        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
+    }
+
+    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -111,28 +144,31 @@ namespace Vital::Engine {
             default: break;
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
         Texture2D payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::Texture2D, payload}, reference));
     }
 
-    Texture* Texture::create_svg(const std::string& base, const std::string& path, const std::string& reference) {
-        return create_svg_from_buffer(Tool::File::read_binary(base, path), reference);
+    Texture* Texture::create_svg(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
+        return create_svg_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }
 
-    Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {
+    Texture* Texture::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
         SVG payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::SVG, payload}, reference));
     }
 
-    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
+    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
         SVG payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::SVG, payload}, reference));

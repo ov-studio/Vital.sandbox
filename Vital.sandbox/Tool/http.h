@@ -44,7 +44,7 @@ namespace Vital::Tool::HTTP {
             host = host_part;
             port = (scheme == "https") ? 443 : 80;
         }
-        httplib::Client cli(scheme + "://" + host + ":" + std::to_string(port));
+        httplib::Client cli = (scheme == "https") ? httplib::Client(scheme + "://" + host + ":" + std::to_string(port)) : httplib::Client(host, port);
         cli.set_connection_timeout(connect_timeout, 0);
         cli.set_read_timeout(timeout, 0);
         cli.set_follow_location(follow_redirects);
@@ -53,7 +53,7 @@ namespace Vital::Tool::HTTP {
 
     inline httplib::Headers make_headers(const http_headers& headers, std::string* out_content_type = nullptr) {
         httplib::Headers result;
-        result.insert({ "User-Agent", "Vital.sandbox/" + Vital::Build.to_string() });
+        result.insert({ "User-Agent", "Vital.sandbox/" + Tool::Version::get("sdk") });
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
             if (colon_pos == std::string::npos) continue;
@@ -92,7 +92,18 @@ namespace Vital::Tool::HTTP {
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
         if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
-        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status) + " - " + res -> body);
+        return res -> body;
+    }
+
+    inline std::string del(const std::string& url, const std::string& body, const http_headers& headers = {}, int timeout = 60) {
+        std::string path;
+        auto cli = make_client(url, path, 10, timeout, false);
+        std::string content_type = "application/json";
+        auto httplib_headers = make_headers(headers, &content_type);
+        auto res = cli.Delete(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
+        if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status) + " - " + res -> body);
         return res -> body;
     }
 

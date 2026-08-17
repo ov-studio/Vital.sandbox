@@ -28,26 +28,81 @@ namespace Vital::Engine {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
         if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: webview plugin missing");
         else webview = godot::Object::cast_to<godot::Control>(object);
+        this -> options = options;
+        buffer.push_back(this);
+        webview -> set("window_z_index", options.z_index);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
+        webview -> set("overlay", options.overlay);
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
-
-        Engine::Core::get_singleton() -> enqueue([this]() {
-            Engine::Canvas::get_singleton() -> add_child(webview);
-            webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-            webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
-            load_url("https://github.com/ov-studio/Vital.sandbox");
-            set_visible(false);
-            set_devtools_visible(false);
-        });
+        Engine::Canvas::get_singleton() -> add_child(webview);
+        webview -> connect("page_load_started", godot::Callable(this, "on_preload"));
+        webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
+        webview -> connect("resized", godot::Callable(this, "on_resize"));
+        webview -> connect("ipc_message", godot::Callable(this, "on_message"));
+        set_visible(false);
+        set_devtools_visible(false);
     }
 
     Webview::~Webview() {
         if (!webview) return;
+        pause_input_forwarder();
+        buffer.erase(std::remove(buffer.begin(), buffer.end(), this), buffer.end());
+        update_input_forwarder();
         webview -> queue_free();
         webview = nullptr;
+    }
+
+
+    // Helpers //
+    void Webview::pause_input_forwarder() {
+        if (input_forwarder != this) return;
+        eval("window.vsdk_forward_input = false;");
+        input_forwarder = nullptr;
+        webview -> call_deferred("focus_parent");
+    }
+
+    Webview* Webview::select_input_forwarder() {
+        std::vector<Webview*> candidates;
+        for (Webview* instance : buffer) {
+            if (instance -> options.overlay) continue;
+            if (!instance -> options.forward_input) continue;
+            if (!instance -> is_visible()) continue;
+            candidates.push_back(instance);
+        }
+        if (candidates.empty()) return nullptr;
+
+        std::vector<Webview*> fullscreen_candidates;
+        for (Webview* instance : candidates) {
+            if (instance -> is_fullscreen()) fullscreen_candidates.push_back(instance);
+        }
+
+        std::vector<Webview*> pool;
+        if (!fullscreen_candidates.empty()) pool = fullscreen_candidates;
+        else {
+            float best_area = -1.0f;
+            for (Webview* instance : candidates) {
+                godot::Vector2 size = instance -> get_size();
+                float area = size.x * size.y;
+                if (area > best_area) {
+                    best_area = area;
+                    pool.clear();
+                    pool.push_back(instance);
+                }
+                else if (area == best_area) pool.push_back(instance);
+            }
+        }
+        static std::mt19937 rng{std::random_device{}()};
+        std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
+        return pool[dist(rng)];
+    }
+
+    void Webview::update_input_forwarder() {
+        if (input_forwarder != nullptr) return;
+        auto fallback = select_input_forwarder();
+        if (fallback) fallback -> set_focussed(true);
     }
 
 
@@ -74,6 +129,10 @@ namespace Vital::Engine {
         return webview -> get("transparent");
     }
 
+    bool Webview::is_overlay() {
+        return options.overlay;
+    }
+
     bool Webview::is_incognito() {
         return webview -> get("incognito");
     }
@@ -86,6 +145,10 @@ namespace Vital::Engine {
         return webview -> get("zoom_hotkeys");
     }
 
+    bool Webview::is_forward_input() {
+        return options.forward_input;
+    }
+
     bool Webview::is_devtools_visible() {
         return webview -> call("is_devtools_open");
     }
@@ -93,26 +156,63 @@ namespace Vital::Engine {
 
     // Getters //
     godot::Vector2 Webview::get_position() {
-        return webview -> get_position();
+        return webview -> get_global_position();
     }
 
     godot::Vector2 Webview::get_size() {
         return webview -> get_size();
     }
 
+    int Webview::get_z_index() {
+        return webview -> get("window_z_index");
+    }
+
 
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
-        webview -> call("focus_parent");
+        eval(fmt::format("window.dispatchEvent(new CustomEvent('webview:visible', {{ detail: {{ visible: {} }} }}));", state ? "true" : "false"));
+        if (state) update_input_forwarder();
+        else {
+            if (input_forwarder == this) {
+                pause_input_forwarder();
+                update_input_forwarder();
+            }
+            else webview -> call_deferred("focus_parent");
+        }
+    }
+
+    void Webview::set_focussed(bool state) {
+        if (options.overlay) return;
+        if (state) {
+            if (!is_visible()) return;
+            webview -> call_deferred("focus");
+            if (!options.forward_input) return;
+            if (input_forwarder == this) return;
+            if (input_forwarder) input_forwarder -> pause_input_forwarder();
+            input_forwarder = this;
+            eval("window.vsdk_forward_input = true;");
+        }
+        else {
+            if (input_forwarder == this) {
+                pause_input_forwarder();
+                update_input_forwarder();
+            }
+            else webview -> call_deferred("focus_parent");
+        }
     }
 
     void Webview::set_position(const godot::Vector2& position) {
-        webview -> set_position(position);
+        webview -> set_global_position(position);
     }
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
+    }
+
+    void Webview::set_z_index(int value) {
+        webview -> set("window_z_index", value);
+        set_focussed(true);
     }
 
     void Webview::set_devtools_visible(bool state) {
@@ -120,12 +220,12 @@ namespace Vital::Engine {
         else webview -> call_deferred("close_devtools");
     }
 
-    void Webview::set_message_handler(std::function<void(godot::String)> handler) {
-        message_handler = std::move(handler);
+    void Webview::set_handler(const std::string& type, std::function<void(Payload)> handler) {
+        handlers[type] = std::move(handler);
     }
 
-    void Webview::reset_message_handler() {
-        message_handler = nullptr;
+    void Webview::reset_handler(const std::string& type) {
+        handlers.erase(type);
     }
 
 
@@ -142,21 +242,12 @@ namespace Vital::Engine {
         webview -> call_deferred("clear_all_browsing_data");
     }
 
-    void Webview::focus() {
-        webview -> call_deferred("focus");
-    }
-
     void Webview::reload() {
         webview -> call_deferred("reload");
     }
 
     void Webview::zoom(float value) {
         webview -> call_deferred("zoom", value);
-    }
-
-    void Webview::update() {
-        webview -> call_deferred("resize");
-        webview -> call_deferred("update_visibility");
     }
 
     void Webview::eval(const std::string& input) {
@@ -167,21 +258,35 @@ namespace Vital::Engine {
         webview -> call_deferred("post_message", Tool::to_godot_string(input));
     }
 
-
-    // Events //
-    void Webview::on_message(godot::String message) {
-        if (!message_handler) return;
-        message_handler(message);
+    void Webview::signal(const std::string& type, Payload payload) {
+        auto it = handlers.find(type);
+        if (it == handlers.end()) return;
+        it -> second(payload);
     }
 
-    void Webview::on_page_loaded(godot::String url) {
+
+    // Events //
+    void Webview::on_preload(godot::String url) {
         std::ostringstream js;
         js << "(function() {";
-        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) {
-            js << content << "\n";
-        }
+        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) js << content << "\n";
         js << "})();";
         eval(js.str());
+        if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
+        signal("preload", Tool::to_std_string(url));
+    }
+
+    void Webview::on_load(godot::String url) {
+        signal("load", Tool::to_std_string(url));
+    }
+
+    void Webview::on_resize() {
+        update_input_forwarder();
+        signal("resize");
+    }
+
+    void Webview::on_message(godot::String message) {
+        signal("message", Tool::to_std_string(message));
     }
 }
 #endif
