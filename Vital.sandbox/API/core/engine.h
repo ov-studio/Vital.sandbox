@@ -155,29 +155,12 @@ namespace Vital::Sandbox::API {
 
             #if defined(VSDK_Client)
             API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path = \"\")")
-                    .optional(1, &Machine::is_string);
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
 
-                std::string base, filename;
-                if (vm -> is_string(1) && !vm -> get_string(1).empty()) {
-                    auto path = vm -> get_string(1);
-                    base = File::get_base(vm, path);
-                    filename = path;
-                } else {
-                    auto timestamp = Tool::get_timestamp();
-                    base = Tool::get_directory("screenshots");
-                    filename = fmt::format(
-                        "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
-                        timestamp.object.at("year").as<int32_t>(),
-                        timestamp.object.at("month").as<int32_t>(),
-                        timestamp.object.at("day").as<int32_t>(),
-                        timestamp.object.at("hour").as<int32_t>(),
-                        timestamp.object.at("minute").as<int32_t>(),
-                        timestamp.object.at("second").as<int32_t>()
-                    );
-                }
-
-                vm -> push_value(base_class::get_singleton() -> screenshot(base, filename));
+                auto path = vm -> get_string(1);
+                base_class::get_singleton() -> screenshot(API::File::get_base(vm, path), path);
+                vm -> push_value(true);
                 return 1;
             });
             #endif
