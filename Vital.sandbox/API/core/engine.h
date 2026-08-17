@@ -65,6 +65,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_timestamp_tag", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_timestamp_tag());
+                return 1;
+            });
+
             #if defined(VSDK_Client)
             API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_singleton() -> get_resolution());
