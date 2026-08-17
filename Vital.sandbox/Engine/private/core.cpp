@@ -89,7 +89,7 @@ namespace Vital::Engine {
             if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
                 auto timestamp = Tool::get_timestamp();
                 screenshot(Tool::get_directory("screenshots"), fmt::format(
-                    "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
+                    "{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
                     timestamp.object.at("year").as<int32_t>(),
                     timestamp.object.at("month").as<int32_t>(),
                     timestamp.object.at("day").as<int32_t>(),
@@ -236,9 +236,9 @@ namespace Vital::Engine {
     std::string Core::screenshot(const std::string& base, const std::string& path) {
         godot::Ref<godot::Image> image = get_scene_root() -> get_texture() -> get_image();
         if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to capture screenshot");
-        auto target = Tool::to_godot_string(base) + godot::String("/") + Tool::to_godot_string(path);
-        godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
-        if (image -> save_png(target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to save screenshot to `{}`", path));
+        auto target = base + "/" + path;
+        godot::DirAccess::make_dir_recursive_absolute(Tool::to_godot_string(target).get_base_dir());
+        if (image -> save_png(Tool::to_godot_string(target)) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to save screenshot to `{}`", path));
         Tool::print("sbox", fmt::format("Core: screenshot saved to {}/{}", base, path));
         return target;
     }
