@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 /////////////////////////
@@ -157,13 +158,26 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(path = \"\")")
                     .optional(1, &Machine::is_string);
 
-                const std::string path = vm -> is_string(1) ? vm -> get_string(1) : "";
-                if (!path.empty() && !Tool::File::sanitize(path))
-                    throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: screenshot path is invalid or targets an unsafe location");
+                std::string base, filename;
+                if (vm -> is_string(1) && !vm -> get_string(1).empty()) {
+                    auto path = vm -> get_string(1);
+                    base = File::get_base(vm, path);
+                    filename = path;
+                } else {
+                    auto timestamp = Tool::get_timestamp();
+                    base = Tool::get_directory("screenshots");
+                    filename = fmt::format(
+                        "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
+                        timestamp.object.at("year").as<int32_t>(),
+                        timestamp.object.at("month").as<int32_t>(),
+                        timestamp.object.at("day").as<int32_t>(),
+                        timestamp.object.at("hour").as<int32_t>(),
+                        timestamp.object.at("minute").as<int32_t>(),
+                        timestamp.object.at("second").as<int32_t>()
+                    );
+                }
 
-                const std::string result = base_class::get_singleton() -> screenshot(path);
-                if (result.empty()) vm -> push_value(false);
-                else vm -> push_value(result);
+                vm -> push_value(base_class::get_singleton() -> screenshot(base, filename));
                 return 1;
             });
             #endif

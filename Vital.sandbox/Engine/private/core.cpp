@@ -85,14 +85,21 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
-
         if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
-                screenshot();
+                auto timestamp = Tool::get_timestamp();
+                screenshot(Tool::get_directory("screenshots"), fmt::format(
+                    "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
+                    timestamp.object.at("year").as<int32_t>(),
+                    timestamp.object.at("month").as<int32_t>(),
+                    timestamp.object.at("day").as<int32_t>(),
+                    timestamp.object.at("hour").as<int32_t>(),
+                    timestamp.object.at("minute").as<int32_t>(),
+                    timestamp.object.at("second").as<int32_t>()
+                ));
                 return;
             }
         }
-
         Manager::Sandbox::get_singleton() -> input(event);
     }
     #endif
@@ -218,10 +225,6 @@ namespace Vital::Engine {
         get_environment();
     }
 
-    std::string Core::get_screenshot_directory() {
-        return Tool::get_directory("screenshots");
-    }
-
     godot::Vector2 Core::get_resolution() {
         return get_display_server() -> window_get_size();
     }
@@ -230,34 +233,13 @@ namespace Vital::Engine {
         return http_server.get_url(path);
     }
 
-    std::string Core::screenshot(const std::string& path) {
-        std::string base, filename;
+    std::string Core::screenshot(const std::string& base, const std::string& path) {
         godot::Ref<godot::Image> image = get_scene_root() -> get_texture() -> get_image();
-        if (path.empty()) {
-            auto timestamp = Tool::get_timestamp();
-            base = get_screenshot_directory();
-            filename = fmt::format(
-                "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
-                timestamp.object.at("year").as<int32_t>(),
-                timestamp.object.at("month").as<int32_t>(),
-                timestamp.object.at("day").as<int32_t>(),
-                timestamp.object.at("hour").as<int32_t>(),
-                timestamp.object.at("minute").as<int32_t>(),
-                timestamp.object.at("second").as<int32_t>()
-            );
-        }
-        else {
-            if (!Tool::File::sanitize(path)) return "";
-            base = Tool::get_directory("resources");
-            filename = path;
-        }
-
-        auto gd_target = Tool::to_godot_string(base) + godot::String("/") + Tool::to_godot_string(filename);
+        if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to capture screenshot");
+        auto gd_target = Tool::to_godot_string(base) + godot::String("/") + Tool::to_godot_string(path);
         godot::DirAccess::make_dir_recursive_absolute(gd_target.get_base_dir());
-        if (image -> save_png(gd_target) != godot::OK) return "";
-
-        std::string target = base + "/" + filename;
-        Tool::print("sbox", fmt::format("Core: screenshot saved to {}", target));
+        if (image -> save_png(gd_target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to save screenshot to `{}`", path));
+        Tool::print("sbox", fmt::format("Core: screenshot saved to {}/{}", base, path));
         return target;
     }
     #endif
