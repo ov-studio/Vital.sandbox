@@ -93,6 +93,19 @@ namespace Vital::Tool {
         return timestamp;
     }
 
+    inline std::string get_timestamp_tag() {
+        auto timestamp = get_timestamp();
+        return fmt::format(
+            "{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}",
+            timestamp.object.at("year").as<int32_t>(),
+            timestamp.object.at("month").as<int32_t>(),
+            timestamp.object.at("day").as<int32_t>(),
+            timestamp.object.at("hour").as<int32_t>(),
+            timestamp.object.at("minute").as<int32_t>(),
+            timestamp.object.at("second").as<int32_t>()
+        );
+    }
+
     template<typename... Args>
     inline std::string get_directory(Args&&... args) {
         std::string base = Tool::to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
