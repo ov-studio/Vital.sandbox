@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
@@ -62,20 +63,24 @@ namespace Vital::Manager {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
             if (event_key -> is_pressed()) {
-                bool handled = true;
+                bool handled = false;
                 auto keycode = event_key -> get_keycode();
                 auto resolve = [](const std::string& config, const std::string& key) {
                     const auto bind = Manager::Kit::fetch_json_value(config, key);
                     return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
                 };
 
-                if (keycode == resolve("config/console", "bind")) Engine::Console::get_singleton() -> toggle();
-                else if (keycode == resolve("config/screenshot", "bind")) {
-                    auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
-                    Engine::Core::get_singleton() -> capture_screenshot(Tool::get_directory("screenshots"), path);
-                    log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
+                if (keycode == resolve("config/console", "bind")) {
+                    handled = true;
+                    Engine::Console::get_singleton() -> toggle();
+                else if ((keycode == resolve("config/screenshot", "bind"))) {
+                    if (Manager::Network::get_singleton() -> is_connected()) {
+                        handled = true;
+                        auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
+                        Engine::Core::get_singleton() -> capture_screenshot(Tool::get_directory("screenshots"), path);
+                        log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
+                    }
                 }
-                else handled = false;
                 if (handled) { Engine::Core::get_scene_root() -> set_input_as_handled(); return; }
             }
 
