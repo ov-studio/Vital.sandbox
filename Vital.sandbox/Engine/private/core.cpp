@@ -85,14 +85,6 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
-        if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
-            if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
-                auto filename = fmt::format("{}.png", Tool::get_timestamp_tag());
-                capture_screenshot(Tool::get_directory("screenshots"), filename);
-                Tool::print("sbox", fmt::format("Core: screenshot saved to screenshots/{}", filename));
-                return;
-            }
-        }
         Manager::Sandbox::get_singleton() -> input(event);
     }
     #endif
@@ -232,6 +224,31 @@ namespace Vital::Engine {
         godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
         if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to capture screenshot");
         if (image -> save_png(target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to save screenshot"));
+    }
+    #endif
+
+
+    // Events //
+    #if defined(VSDK_Client)
+    bool Core::on_key(int keycode) {
+        auto resolve = [](const std::string& config, const std::string& key) {
+            const auto bind = Manager::Kit::fetch_json_value(config, key);
+            return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
+        };
+
+        if (keycode == resolve("config/console", "bind")) {
+            Engine::Console::get_singleton() -> toggle();
+            get_viewport() -> set_input_as_handled();
+            return true;
+        }
+        else if (keycode == resolve("config/screenshot", "bind")) {
+            auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
+            capture_screenshot(Tool::get_directory("screenshots"), path);
+            Tool::print("sbox", fmt::format("Core: screenshot saved to screenshots/{}", path));
+            get_viewport() -> set_input_as_handled();
+            return true;
+        }
+        return false;
     }
     #endif
 }

@@ -94,7 +94,6 @@ namespace Vital::Engine {
             // Events //
             #if defined(VSDK_Client)
             void on_message(godot::String message);
-            bool on_key(int keycode);
             #endif
     };
 }

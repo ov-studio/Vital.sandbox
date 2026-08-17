@@ -60,7 +60,7 @@ namespace Vital::Manager {
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
-            if (event_key -> is_pressed() && Engine::Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
+            if (event_key -> is_pressed() && Engine::Core::get_singleton() -> on_key(event_key -> get_keycode())) return;
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_key -> get_keycode())),
                 Tool::StackValue(event_key -> is_pressed())
