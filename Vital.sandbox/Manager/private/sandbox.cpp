@@ -76,7 +76,7 @@ namespace Vital::Manager {
                     log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
                 }
                 else handled = false;
-                if (handled) { get_viewport() -> set_input_as_handled(); return; }
+                if (handled) { Engine::Core::get_scene_root() -> set_input_as_handled(); return; }
             }
 
             signal("sandbox:key_input",
