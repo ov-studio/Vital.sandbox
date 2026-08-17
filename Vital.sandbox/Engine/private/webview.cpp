@@ -43,6 +43,9 @@ namespace Vital::Engine {
         webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
         webview -> connect("resized", godot::Callable(this, "on_resize"));
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
+        // Offscreen texture-ready notifications — see the comment on cached_texture_id
+        // in webview.h for why get_texture() needs this instead of a direct call().
+        webview -> connect("texture_ready", godot::Callable(this, "on_texture_ready"));
         set_visible(false);
         set_devtools_visible(false);
     }
@@ -176,25 +179,37 @@ namespace Vital::Engine {
 
     Vital::Engine::Texture* Webview::get_texture() {
         if (!options.offscreen) return nullptr;
-        godot::Variant result = webview -> call("get_texture");
-        if (result.get_type() != godot::Variant::INT) Tool::print("warn", "bad"); return nullptr;
-        Tool::print("warn", "bad 2");
-        int64_t instance_id = result.operator int64_t();
-        if (instance_id <= 0) return nullptr;
-        Tool::print("warn", "bad 3");
+        // No live call() here anymore — cached_texture_id is kept current by
+        // on_texture_ready(), which fires from the "texture_ready" signal Rust
+        // emits from the main thread every time a new frame is captured. Reading
+        // an atomic here is safe from any thread; a direct call() into the
+        // GDExtension object from a non-main thread was not (see webview.h).
+        int64_t instance_id = cached_texture_id.load(std::memory_order_acquire);
+        Tool::print("info", "get_texture(): cached_texture_id = " + std::to_string(instance_id));
+        // NOTE: instance_id == 0 means "not ready yet" — that's the only invalid case.
+        // Godot instance ids for RefCounted-derived objects (Resource, Texture2D,
+        // ImageTexture all qualify) have their top bit set as a "is ref counted" flag.
+        // That's a perfectly valid id as u64, but reads as a large NEGATIVE number once
+        // stored in a signed int64_t — which every ImageTexture id will, always. The
+        // previous `instance_id <= 0` check rejected every one of those as if they were
+        // invalid, so get_texture() could never succeed once the texture existed, no
+        // matter how correct the capture pipeline was.
+        if (instance_id == 0) return nullptr;
         godot::Object* obj = godot::ObjectDB::get_instance(godot::ObjectID((uint64_t)instance_id));
-        if (!obj) return nullptr;
-        Tool::print("warn", "bad 4");
+        if (!obj) {
+            Tool::print("warn", "get_texture(): ObjectDB::get_instance returned null for id " + std::to_string(instance_id));
+            return nullptr;
+        }
         godot::ImageTexture* img_tex = godot::Object::cast_to<godot::ImageTexture>(obj);
-        if (!img_tex) return nullptr;
-        Tool::print("warn", "bad 5");
+        if (!img_tex) {
+            Tool::print("warn", "get_texture(): cast_to<ImageTexture> failed for id " + std::to_string(instance_id));
+            return nullptr;
+        }
         if (!offscreen_texture) {
-            Tool::print("warn", "bad 6");
             offscreen_texture = Vital::Engine::Texture::create_from_ref(
                 godot::Ref<godot::Texture2D>(img_tex)
             );
         }
-        Tool::print("warn", "bad 7");
         return offscreen_texture;
     }
 
@@ -319,6 +334,11 @@ namespace Vital::Engine {
 
     void Webview::on_message(godot::String message) {
         signal("message", Tool::to_std_string(message));
+    }
+
+    void Webview::on_texture_ready(int64_t instance_id) {
+        Tool::print("info", "on_texture_ready() received id " + std::to_string(instance_id));
+        cached_texture_id.store(instance_id, std::memory_order_release);
     }
 }
 #endif
