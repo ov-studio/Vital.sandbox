@@ -87,16 +87,9 @@ namespace Vital::Engine {
         if (!is_ready()) return;
         if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
-                auto timestamp = Tool::get_timestamp();
-                screenshot(Tool::get_directory("screenshots"), fmt::format(
-                    "{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
-                    timestamp.object.at("year").as<int32_t>(),
-                    timestamp.object.at("month").as<int32_t>(),
-                    timestamp.object.at("day").as<int32_t>(),
-                    timestamp.object.at("hour").as<int32_t>(),
-                    timestamp.object.at("minute").as<int32_t>(),
-                    timestamp.object.at("second").as<int32_t>()
-                ));
+                auto filename = fmt::format("{}.png", Tool::get_timestamp_tag());
+                screenshot(Tool::get_directory("screenshots"), filename);
+                Tool::print("sbox", fmt::format("Core: screenshot saved to screenshots/{}", filename));
                 return;
             }
         }
