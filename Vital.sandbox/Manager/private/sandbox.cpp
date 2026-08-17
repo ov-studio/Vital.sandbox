@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
 
@@ -60,7 +61,25 @@ namespace Vital::Manager {
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
-            if (event_key -> is_pressed() && Engine::Core::get_singleton() -> on_key(event_key -> get_keycode())) return;
+            if (event_key -> is_pressed()) {
+                bool handled = true;
+                auto keycode = event_key -> get_keycode();
+                auto resolve = [](const std::string& config, const std::string& key) {
+                    const auto bind = Manager::Kit::fetch_json_value(config, key);
+                    return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
+                };
+                if (keycode == resolve("config/console", "bind")) {
+                    Engine::Console::get_singleton() -> toggle();
+                }
+                else if (keycode == resolve("config/screenshot", "bind")) {
+                    auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
+                    Engine::Core::get_singleton() -> capture_screenshot(Tool::get_directory("screenshots"), path);
+                    Tool::print("sbox", fmt::format("Core: screenshot saved to screenshots/{}", path));
+                }
+                else handled = false;
+                if (handled) { get_viewport() -> set_input_as_handled(); return; }
+            }
+
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_key -> get_keycode())),
                 Tool::StackValue(event_key -> is_pressed())

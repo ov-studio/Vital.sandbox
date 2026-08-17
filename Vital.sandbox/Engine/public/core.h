@@ -83,11 +83,5 @@ namespace Vital::Engine {
             std::string get_http_url(const std::string& path = "") const;
             void capture_screenshot(const std::string& base, const std::string& path);
             #endif
-
-
-            // Events //
-            #if defined(VSDK_Client)
-            bool on_key(int keycode);
-            #endif
     };
 }
