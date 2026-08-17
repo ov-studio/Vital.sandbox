@@ -234,13 +234,18 @@ namespace Vital::Engine {
 
         std::string target = path;
         if(target.empty()) {
-            godot::Dictionary dt = godot::Time::get_singleton() -> get_datetime_dict_from_system();
+            auto ts = Tool::get_timestamp();
             godot::String pictures = godot::OS::get_singleton() -> get_system_dir(godot::OS::SYSTEM_DIR_PICTURES);
             std::string base = Tool::to_std_string(pictures) + "/Vital.sandbox";   // subfolder in Pictures
             target = base + "/" + fmt::format(
                 "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
-                int(dt["year"]), int(dt["month"]), int(dt["day"]),
-                int(dt["hour"]), int(dt["minute"]), int(dt["second"]));
+                ts.object.at("year").as<int32_t>(), 
+                ts.object.at("month").as<int32_t>(), 
+                ts.object.at("day").as<int32_t>(),
+                ts.object.at("hour").as<int32_t>(), 
+                ts.object.at("minute").as<int32_t>(), 
+                ts.object.at("second").as<int32_t>()
+            );
         }
 
         auto gd_target = Tool::to_godot_string(target);
