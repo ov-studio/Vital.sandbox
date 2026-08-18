@@ -156,7 +156,7 @@ namespace Vital::Manager::Kit {
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             std::string src = i.GetString();
-            result.emplace_back(src, std::string(Internal::fetch_content(name + "/" + src)));
+            result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", name, src))));
         }
         return result;
     }
