@@ -36,6 +36,7 @@
 #include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/utility/thread.h>
+#include <Vital.sandbox/API/utility/easing.h>
 #include <Vital.sandbox/API/utility/file.h>
 #include <Vital.sandbox/API/utility/http.h>
 #include <Vital.sandbox/API/utility/crypto.h>
