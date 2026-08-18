@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::sine_in(progress));
+                vm -> push_value(Tool::Easing::Sine::in(progress));
                 return 1;
             });
 
@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::sine_out(progress));
+                vm -> push_value(Tool::Easing::Sine::out(progress));
                 return 1;
             });
 
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::sine_in_out(progress));
+                vm -> push_value(Tool::Easing::Sine::in_out(progress));
                 return 1;
             });
 
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quad_in(progress));
+                vm -> push_value(Tool::Easing::Quad::in(progress));
                 return 1;
             });
 
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quad_out(progress));
+                vm -> push_value(Tool::Easing::Quad::out(progress));
                 return 1;
             });
 
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quad_in_out(progress));
+                vm -> push_value(Tool::Easing::Quad::in_out(progress));
                 return 1;
             });
 
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::cubic_in(progress));
+                vm -> push_value(Tool::Easing::Cubic::in(progress));
                 return 1;
             });
 
@@ -115,7 +115,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::cubic_out(progress));
+                vm -> push_value(Tool::Easing::Cubic::out(progress));
                 return 1;
             });
 
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::cubic_in_out(progress));
+                vm -> push_value(Tool::Easing::Cubic::in_out(progress));
                 return 1;
             });
 
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quart_in(progress));
+                vm -> push_value(Tool::Easing::Quart::in(progress));
                 return 1;
             });
 
@@ -142,7 +142,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quart_out(progress));
+                vm -> push_value(Tool::Easing::Quart::out(progress));
                 return 1;
             });
 
@@ -151,7 +151,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quart_in_out(progress));
+                vm -> push_value(Tool::Easing::Quart::in_out(progress));
                 return 1;
             });
 
@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quint_in(progress));
+                vm -> push_value(Tool::Easing::Quint::in(progress));
                 return 1;
             });
 
@@ -169,7 +169,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quint_out(progress));
+                vm -> push_value(Tool::Easing::Quint::out(progress));
                 return 1;
             });
 
@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::quint_in_out(progress));
+                vm -> push_value(Tool::Easing::Quint::in_out(progress));
                 return 1;
             });
 
@@ -187,7 +187,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::expo_in(progress));
+                vm -> push_value(Tool::Easing::Expo::in(progress));
                 return 1;
             });
 
@@ -196,7 +196,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::expo_out(progress));
+                vm -> push_value(Tool::Easing::Expo::out(progress));
                 return 1;
             });
 
@@ -205,7 +205,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::expo_in_out(progress));
+                vm -> push_value(Tool::Easing::Expo::in_out(progress));
                 return 1;
             });
 
@@ -214,7 +214,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::circ_in(progress));
+                vm -> push_value(Tool::Easing::Circ::in(progress));
                 return 1;
             });
 
@@ -223,7 +223,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::circ_out(progress));
+                vm -> push_value(Tool::Easing::Circ::out(progress));
                 return 1;
             });
 
@@ -232,7 +232,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::circ_in_out(progress));
+                vm -> push_value(Tool::Easing::Circ::in_out(progress));
                 return 1;
             });
 
@@ -243,7 +243,7 @@ namespace Vital::Sandbox::API {
 
                 auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_in(progress, overshoot));
+                vm -> push_value(Tool::Easing::Back::in(progress, overshoot));
                 return 1;
             });
 
@@ -254,7 +254,7 @@ namespace Vital::Sandbox::API {
 
                 auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_out(progress, overshoot));
+                vm -> push_value(Tool::Easing::Back::out(progress, overshoot));
                 return 1;
             });
 
@@ -265,7 +265,7 @@ namespace Vital::Sandbox::API {
 
                 auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_in_out(progress, overshoot));
+                vm -> push_value(Tool::Easing::Back::in_out(progress, overshoot));
                 return 1;
             });
 
@@ -278,7 +278,7 @@ namespace Vital::Sandbox::API {
                 auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.3;
-                vm -> push_value(Tool::Easing::elastic_in(progress, amplitude, period));
+                vm -> push_value(Tool::Easing::Elastic::in(progress, amplitude, period));
                 return 1;
             });
 
@@ -291,7 +291,7 @@ namespace Vital::Sandbox::API {
                 auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.3;
-                vm -> push_value(Tool::Easing::elastic_out(progress, amplitude, period));
+                vm -> push_value(Tool::Easing::Elastic::out(progress, amplitude, period));
                 return 1;
             });
 
@@ -304,7 +304,7 @@ namespace Vital::Sandbox::API {
                 auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.45;
-                vm -> push_value(Tool::Easing::elastic_in_out(progress, amplitude, period));
+                vm -> push_value(Tool::Easing::Elastic::in_out(progress, amplitude, period));
                 return 1;
             });
 
@@ -313,7 +313,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::bounce_in(progress));
+                vm -> push_value(Tool::Easing::Bounce::in(progress));
                 return 1;
             });
 
@@ -322,7 +322,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::bounce_out(progress));
+                vm -> push_value(Tool::Easing::Bounce::out(progress));
                 return 1;
             });
 
@@ -331,7 +331,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto progress = vm -> get_double(1);
-                vm -> push_value(Tool::Easing::bounce_in_out(progress));
+                vm -> push_value(Tool::Easing::Bounce::in_out(progress));
                 return 1;
             });
         }
