@@ -39,134 +39,200 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "linear", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::linear(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::linear(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "sine_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::sine_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::sine_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "sine_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::sine_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::sine_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "sine_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::sine_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::sine_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quad_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quad_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quad_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quad_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quad_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quad_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quad_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quad_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quad_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "cubic_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::cubic_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::cubic_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "cubic_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::cubic_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::cubic_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "cubic_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::cubic_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::cubic_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quart_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quart_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quart_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quart_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quart_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quart_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quart_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quart_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quart_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quint_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quint_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quint_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quint_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quint_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quint_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "quint_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::quint_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::quint_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "expo_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::expo_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::expo_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "expo_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::expo_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::expo_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "expo_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::expo_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::expo_in_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "circ_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::circ_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::circ_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "circ_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::circ_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::circ_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "circ_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::circ_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::circ_in_out(progress));
                 return 1;
             });
 
@@ -175,8 +241,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_in(vm -> get_double(1), overshoot));
+                vm -> push_value(Tool::Easing::back_in(progress, overshoot));
                 return 1;
             });
 
@@ -185,8 +252,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_out(vm -> get_double(1), overshoot));
+                vm -> push_value(Tool::Easing::back_out(progress, overshoot));
                 return 1;
             });
 
@@ -195,8 +263,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto overshoot = vm -> is_number(2) ? vm -> get_double(2) : 1.70158;
-                vm -> push_value(Tool::Easing::back_in_out(vm -> get_double(1), overshoot));
+                vm -> push_value(Tool::Easing::back_in_out(progress, overshoot));
                 return 1;
             });
 
@@ -206,9 +275,10 @@ namespace Vital::Sandbox::API {
                     .optional(2, &Machine::is_number)
                     .optional(3, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.3;
-                vm -> push_value(Tool::Easing::elastic_in(vm -> get_double(1), amplitude, period));
+                vm -> push_value(Tool::Easing::elastic_in(progress, amplitude, period));
                 return 1;
             });
 
@@ -218,9 +288,10 @@ namespace Vital::Sandbox::API {
                     .optional(2, &Machine::is_number)
                     .optional(3, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.3;
-                vm -> push_value(Tool::Easing::elastic_out(vm -> get_double(1), amplitude, period));
+                vm -> push_value(Tool::Easing::elastic_out(progress, amplitude, period));
                 return 1;
             });
 
@@ -230,27 +301,37 @@ namespace Vital::Sandbox::API {
                     .optional(2, &Machine::is_number)
                     .optional(3, &Machine::is_number);
 
+                auto progress = vm -> get_double(1);
                 auto amplitude = vm -> is_number(2) ? vm -> get_double(2) : 1.0;
                 auto period = vm -> is_number(3) ? vm -> get_double(3) : 0.45;
-                vm -> push_value(Tool::Easing::elastic_in_out(vm -> get_double(1), amplitude, period));
+                vm -> push_value(Tool::Easing::elastic_in_out(progress, amplitude, period));
                 return 1;
             });
 
             API::bind(vm, base_scope, "bounce_in", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::bounce_in(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::bounce_in(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "bounce_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::bounce_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::bounce_out(progress));
                 return 1;
             });
 
             API::bind(vm, base_scope, "bounce_in_out", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(progress)").require(1, &Machine::is_number);
-                vm -> push_value(Tool::Easing::bounce_in_out(vm -> get_double(1)));
+                vm_args(vm, id, "(progress)")
+                    .require(1, &Machine::is_number);
+
+                auto progress = vm -> get_double(1);
+                vm -> push_value(Tool::Easing::bounce_in_out(progress));
                 return 1;
             });
         }
