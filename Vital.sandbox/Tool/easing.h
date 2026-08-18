@@ -121,9 +121,7 @@ namespace Vital::Tool::Easing {
         }
 
         inline double in_out(double progress) {
-            return progress < 0.5
-                ? (1.0 - std::sqrt(1.0 - std::pow(2.0*progress, 2)))*0.5
-                : (std::sqrt(1.0 - std::pow(-2.0*progress + 2.0, 2)) + 1.0)*0.5;
+            return progress < 0.5 ? (1.0 - std::sqrt(1.0 - std::pow(2.0*progress, 2)))*0.5 : (std::sqrt(1.0 - std::pow(-2.0*progress + 2.0, 2)) + 1.0)*0.5;
         }
     }
 
@@ -143,9 +141,7 @@ namespace Vital::Tool::Easing {
         inline double in_out(double progress, double overshoot = 1.70158) {
             double c1 = overshoot;
             double c2 = c1*1.525;
-            return progress < 0.5
-                ? (std::pow(2.0*progress, 2)*((c2 + 1.0)*2.0*progress - c2))*0.5
-                : (std::pow(2.0*progress - 2.0, 2)*((c2 + 1.0)*(progress*2.0 - 2.0) + c2) + 2.0)*0.5;
+            return progress < 0.5 ? (std::pow(2.0*progress, 2)*((c2 + 1.0)*2.0*progress - c2))*0.5 : (std::pow(2.0*progress - 2.0, 2)*((c2 + 1.0)*(progress*2.0 - 2.0) + c2) + 2.0)*0.5;
         }
     }
 
@@ -198,9 +194,7 @@ namespace Vital::Tool::Easing {
         }
 
         inline double in_out(double progress) {
-            return progress < 0.5
-                ? (1.0 - out(1.0 - 2.0*progress))*0.5
-                : (1.0 + out(2.0*progress - 1.0))*0.5;
+            return progress < 0.5 ? (1.0 - out(1.0 - 2.0*progress))*0.5 : (1.0 + out(2.0*progress - 1.0))*0.5;
         }
     }
 }
