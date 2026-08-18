@@ -65,7 +65,7 @@ namespace Vital::Manager::Kit {
     
         inline const std::string& get_version() {
             if (!version.empty()) return version;
-            const std::string checksum_path = std::string(toolkit_base) + "/" + std::string(toolkit_name) + "/checksum.json";
+            const std::string checksum_path = fmt::format("{}/{}/checksum.json", std::string(toolkit_base), std::string(toolkit_name));
             std::ifstream file(checksum_path, std::ios::binary);
             if (!file) return version;
             std::string raw{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
