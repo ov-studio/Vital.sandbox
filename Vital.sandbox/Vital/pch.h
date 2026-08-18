@@ -20,6 +20,7 @@
 #include <iostream>
 #include <algorithm>
 #include <optional>
+#include <cmath>
 #include <random>
 #include <mutex>
 #include <atomic>

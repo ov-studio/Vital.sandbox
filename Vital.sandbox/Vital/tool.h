@@ -17,8 +17,9 @@
 #include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/yaml.h>
 #include <Vital.sandbox/Tool/stack.h>
-#include <Vital.sandbox/Tool/thread.h>
 #include <Vital.sandbox/Tool/timer.h>
+#include <Vital.sandbox/Tool/thread.h>
+#include <Vital.sandbox/Tool/easing.h>
 #include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Tool/format.h>
 #include <Vital.sandbox/Tool/event.h>
