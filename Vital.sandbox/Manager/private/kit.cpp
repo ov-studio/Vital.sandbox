@@ -63,8 +63,8 @@ namespace Vital::Manager::Kit {
     }
 
     bool ensure() {
-        const std::string kit_dir = std::string(Internal::toolkit_base) + "/" + std::string(Internal::toolkit_name);
-        const std::string zip_path = std::string(Internal::toolkit_base) + "/" + std::string(Internal::toolkit_name) + ".zip";
+        const std::string kit_dir = fmt::format("{}/{}", std::string(Internal::toolkit_base), std::string(Internal::toolkit_name));
+        const std::string zip_path = fmt::format("{}/{}.zip", std::string(Internal::toolkit_base), std::string(Internal::toolkit_name));
         auto [tag, zip_url, checksum_url] = fetch_release();
 
         if (tag.empty() || zip_url.empty()) {
