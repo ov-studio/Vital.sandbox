@@ -146,7 +146,7 @@ namespace Vital::Manager::Kit {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         auto& document = Internal::fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("source")) return "";
-        return std::string(Internal::fetch_content(name + "/" + document["source"].GetString()));
+        return std::string(Internal::fetch_content(fmt::format("{}/{}", name, document["source"].GetString())));
     }
 
     inline std::vector<std::pair<std::string, std::string>> fetch_modules(const std::string& name) {
