@@ -35,8 +35,7 @@ namespace Vital::Tool {
                     ryml::Callbacks cb = prev;
                     cb.m_error = [](const char*, size_t, ryml::Location loc, void*) {
                         std::string detail = "parse error";
-                        if (loc.line > 0)
-                            detail += " at line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col);
+                        if (loc.line > 0) detail += " at line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col);
                         throw std::runtime_error(detail);
                     };
                     ryml::set_callbacks(cb);
@@ -57,15 +56,9 @@ namespace Vital::Tool {
 
             void parse(const std::string& input) {
                 ErrorScope scope;
-                try {
-                    tree = ryml::parse_in_arena(ryml::to_csubstr(input));
-                }
-                catch (const std::runtime_error& e) {
-                    throw std::runtime_error(e.what());
-                }
-                catch (...) {
-                    throw std::runtime_error("unknown");
-                }
+                try { tree = ryml::parse_in_arena(ryml::to_csubstr(input)); }
+                catch (const std::runtime_error& e) { throw std::runtime_error(e.what()); }
+                catch (...) { throw std::runtime_error("unknown"); }
                 root = tree.rootref();
                 if (!root.is_map()) throw std::runtime_error("root is not a map");
             }
