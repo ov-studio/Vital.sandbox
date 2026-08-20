@@ -81,6 +81,19 @@ namespace Vital::Tool {
         #endif
     }
 
+    #if defined(VSDK_Client)
+    inline std::string get_username() {
+        godot::String username;
+        #if defined(_WIN32)
+            username = godot::OS::get_singleton() -> get_environment("USERNAME");
+        #else
+            username = godot::OS::get_singleton() -> get_environment("USER");
+            if (username.is_empty()) username = godot::OS::get_singleton() -> get_environment("LOGNAME");
+        #endif
+        return username.is_empty() ? "Unnamed" : Tool::to_std_string(username);
+    }
+    #endif
+
     inline Tool::Stack get_timestamp() {
         Tool::Stack timestamp;
         godot::Dictionary datetime = godot::Time::get_singleton() -> get_datetime_dict_from_system();
