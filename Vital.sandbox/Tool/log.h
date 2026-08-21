@@ -81,8 +81,4 @@ namespace Vital::Tool::Log {
             default:         return error(body);
         }
     }
-
-    inline std::string to_lua(const std::string& source, const std::string& message) {
-        return message.empty() ? source : fmt::format("{}\n> Reason: {}", source, message);
-    }
 }
