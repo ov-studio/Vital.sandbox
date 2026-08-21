@@ -269,7 +269,7 @@ namespace Vital::Engine {
     void Webview::on_preload(godot::String url) {
         std::ostringstream js;
         js << "(function() {";
-        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) js << content << "\n";
+        for (const auto& [src, content] : Manager::Kit::fetch_module("js")) js << content << "\n";
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");

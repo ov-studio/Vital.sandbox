@@ -27,7 +27,7 @@ namespace Vital::Sandbox {
     vm_apis Machine::apis = API::make_apis();
 
     void Machine::load_modules(Machine* vm) {
-        for (auto& [name, source] : Manager::Kit::fetch_modules("lua")) {
+        for (auto& [name, source] : Manager::Kit::fetch_module("lua")) {
             vm -> load_string(source, name);
         }
     }

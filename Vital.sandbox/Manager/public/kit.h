@@ -142,21 +142,15 @@ namespace Vital::Manager::Kit {
         return {};
     }
 
-    inline std::string fetch_module(const std::string& name) {
-        std::lock_guard<std::mutex> lock(Internal::mutex);
-        auto& document = Internal::fetch_json(name + "/manifest");
-        if (document.HasParseError() || !document.HasMember("source")) return "";
-        return std::string(Internal::fetch_content(fmt::format("{}/{}", name, document["source"].GetString())));
-    }
-
-    inline std::vector<std::pair<std::string, std::string>> fetch_modules(const std::string& name) {
+    inline std::vector<std::pair<std::string, std::string>> fetch_module(const std::string& name) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         std::vector<std::pair<std::string, std::string>> result;
-        auto& document = Internal::fetch_json(name + "/manifest");
+        const std::string module_name = "module/" + name;
+        auto& document = Internal::fetch_json(module_name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             std::string src = i.GetString();
-            result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", name, src))));
+            result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", module_name, src))));
         }
         return result;
     }
