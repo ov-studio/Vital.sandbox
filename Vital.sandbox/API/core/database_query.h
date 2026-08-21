@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
 
                 int count = vm -> get_count();
                 for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
+                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("invalid column name #{}", i - 1));
                     self -> query -> select.push_back(vm -> get_string(i));
                 }
                 self -> push_self(vm);
@@ -208,7 +208,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 vm -> pop(1);
-                if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no actions specified");
+                if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "no actions specified");
 
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
