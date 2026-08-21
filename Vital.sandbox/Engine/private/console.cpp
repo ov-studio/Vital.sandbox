@@ -634,7 +634,7 @@ namespace Vital::Engine {
     }
 
     void Console::print(const std::string& mode, const std::string& message) {
-        if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid print mode");
+        if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid print mode");
         if (message.empty()) return;
         #if defined(VSDK_Client)
             if (!is_ready()) return;

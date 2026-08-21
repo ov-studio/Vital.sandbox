@@ -67,7 +67,7 @@ namespace Vital::Tool {
                     for (int i = 0; i < (int)where.size(); i++) {
                         const auto& [column, op, value] = where[i];
                         db -> assert_column(table, column);
-                        if (!valid_ops.count(op)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid 'WHERE' clause operator '{}'", op));
+                        if (!valid_ops.count(op)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid 'WHERE' clause operator '{}'", op));
                         if (i > 0) clause += " AND ";
                         clause += fmt::format("`{}` {} :w{}", column, op, i);
                         binds.push_back(value);
@@ -102,23 +102,23 @@ namespace Vital::Tool {
             std::mutex mutex;
 
             void assert_identifier(const std::string& name) const {
-                if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid identifier '{}'", name));
+                if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid identifier '{}'", name));
                 for (char c : name) {
-                    if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid identifier '{}'", name));
+                    if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid identifier '{}'", name));
                 }
             }
 
             void assert_session() const {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no active session");
+                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "no active session");
             }
 
             void assert_table(const std::string& table) const {
-                if (schema.find(table) == schema.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: table '{}' non-existent in schema", table));
+                if (schema.find(table) == schema.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("table '{}' non-existent in schema", table));
             }
 
             void assert_column(const std::string& table, const std::string& column) const {
                 auto it = schema.find(table);
-                if (it == schema.end() || it->second.find(column) == it->second.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
+                if (it == schema.end() || it->second.find(column) == it->second.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("column '{}' non-existent in table '{}'", column, table));
             }
 
             void assert_session_and_table(const std::string& table) const {
@@ -279,7 +279,7 @@ namespace Vital::Tool {
             void alter(const std::string& table, const SchemaActions& actions) {
                 std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(table);
-                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no actions specified");
+                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "no actions specified");
 
                 std::string sql = fmt::format("ALTER TABLE `{}` ", table);
                 bool first = true;
@@ -324,14 +324,14 @@ namespace Vital::Tool {
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
                 if (query -> query_type == "insert") {
-                    if (query -> insert_rows.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no rows to insert");
+                    if (query -> insert_rows.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "no rows to insert");
                     std::vector<std::string> column_order;
                     for (const auto& [k, v] : query -> insert_rows[0]) column_order.push_back(k);
                     for (std::size_t r = 0; r < query -> insert_rows.size(); r++) {
                         const auto& row = query -> insert_rows[r];
-                        if (row.size() != column_order.size()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: insert row #{} has a different column set than row #1", r + 1));
+                        if (row.size() != column_order.size()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("insert row #{} has a different column set than row #1", r + 1));
                         for (const auto& column : column_order) {
-                            if (!row.count(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: insert row #{} is missing column '{}'", r + 1, column));
+                            if (!row.count(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("insert row #{} is missing column '{}'", r + 1, column));
                         }
                     }
 
@@ -375,7 +375,7 @@ namespace Vital::Tool {
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table, sets);
                     query -> apply_where(sql, binds, bind_names);
                 }
-                else throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid query type '{}'", query -> query_type));
+                else throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid query type '{}'", query -> query_type));
                 run_statement(sql, binds, bind_names, nullptr);
                 return true;
             }

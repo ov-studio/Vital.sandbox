@@ -115,7 +115,7 @@ namespace Vital::Engine {
                 mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
                 mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
             );
-            if (wants_mipmaps && !has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: requested filter mode requires mipmaps, but texture has none");
+            if (wants_mipmaps && !has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "requested filter mode requires mipmaps, but texture has none");
             if (!canvas_texture.is_valid()) canvas_texture.instantiate();
             canvas_texture -> set_diffuse_texture(texture);
             canvas_texture -> set_texture_filter(mode);
@@ -143,8 +143,8 @@ namespace Vital::Engine {
             case Format::EXR:  status = image -> load_exr_from_buffer(buffer);  break;
             default: break;
         }
-        if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
+        if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid texture buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
         Texture2D payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::Texture2D, payload}, reference));
@@ -157,8 +157,8 @@ namespace Vital::Engine {
     Texture* Texture::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
+        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
         SVG payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::SVG, payload}, reference));
@@ -167,33 +167,33 @@ namespace Vital::Engine {
     Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate mipmaps");
+        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
+        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
         SVG payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
         return memnew(Texture({Type::SVG, payload}, reference));
     }
 
     void Texture::update_svg_from_raw(const std::string& raw) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
         get_texture() -> update(image);
         heartbeat();
     }
 
     void Texture::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
         get_texture() -> update(image);
         heartbeat();
     }
 
     void Texture::convert(godot::Image::Format format) {
-        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
         auto image = get_texture() -> get_image();
         image -> convert(format);
         get_texture() -> update(image);
@@ -201,10 +201,10 @@ namespace Vital::Engine {
     }
 
     void Texture::compress(godot::Image::CompressMode mode) {
-        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
         auto image = get_texture() -> get_image();
-        if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
-        if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: compression failed");
+        if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "texture is already compressed");
+        if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "compression failed");
         get_texture() -> update(image);
         heartbeat();
     }

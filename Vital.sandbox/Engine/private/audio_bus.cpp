@@ -63,7 +63,7 @@ namespace Vital::Engine {
             case Format::UNKNOWN:
             default:              loaded = godot::AudioStreamMP3::load_from_buffer(buffer);       break;
         }
-        if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid audio buffer");
+        if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid audio buffer");
         return loaded;
     }
 

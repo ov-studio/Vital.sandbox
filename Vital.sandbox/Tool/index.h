@@ -57,7 +57,7 @@ namespace Vital::Tool {
 
     inline void assert_main_thread(const char* fn_name) {
         if (is_main_thread()) return;
-        throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `{}()` called off the main thread. Wrap the call in `Engine::Core::execute()`.", fn_name));
+        throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("`{}()` called off the main thread. Wrap the call in `Engine::Core::execute()`.", fn_name));
     }
 
     inline bool is_runtime() { 

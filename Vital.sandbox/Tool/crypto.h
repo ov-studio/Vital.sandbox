@@ -32,14 +32,14 @@ namespace Vital::Tool::Crypto {
             if (mode == "sha256") return EVP_sha256();
             if (mode == "sha384") return EVP_sha384();
             if (mode == "sha512") return EVP_sha512();
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid hash mode '{}'", std::string(mode)));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("invalid hash mode '{}'", std::string(mode)));
         }
 
         inline const EVP_CIPHER* cipher_mode(std::string_view mode) {
             if (mode == "aes128") return EVP_aes_128_cbc();
             if (mode == "aes192") return EVP_aes_192_cbc();
             if (mode == "aes256") return EVP_aes_256_cbc();
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid cipher mode '{}'", std::string(mode)));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("invalid cipher mode '{}'", std::string(mode)));
         }
 
         inline std::string base64_encode(std::string_view in) {
@@ -71,8 +71,8 @@ namespace Vital::Tool::Crypto {
         inline std::string cipher_run(const EVP_CIPHER* algo, bool encrypt, std::string_view data, std::string_view key, std::string_view iv) {
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
             if (!ctx) throw Tool::Log::fetch("cipher-context-failed", Tool::Log::Type::error);
-            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid cipher key '{}'", std::string(key)));
-            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid cipher iv '{}'", std::string(iv)));
+            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("invalid cipher key '{}'", std::string(key)));
+            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("invalid cipher iv '{}'", std::string(iv)));
             std::string out;
             int outLen1 = 0;
             int outLen2 = 0;
