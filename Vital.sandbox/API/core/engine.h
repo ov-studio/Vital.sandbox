@@ -30,6 +30,11 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "is_sandbox_ui_visible", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_singleton() -> is_sandbox_ui_visible());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "is_splash_visible", [](auto vm, auto& id) -> int {
                 vm -> push_value(Vital::Engine::Splash::has_singleton() && Vital::Engine::Splash::get_singleton() -> is_visible());
                 return 1;
@@ -37,11 +42,6 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "is_console_visible", [](auto vm, auto& id) -> int {
                 vm -> push_value(Vital::Engine::Console::has_singleton() && Vital::Engine::Console::get_singleton() -> is_visible());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_sandbox_ui_visible", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_singleton() -> is_sandbox_ui_visible());
                 return 1;
             });
             #endif
