@@ -501,6 +501,7 @@ namespace Vital::Sandbox {
                 const std::string source = fetch_source();
                 Tool::print(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
                 error_handled = true;
+                push_string(fmt::format("{}:\n> Reason: {}", source, e.partial));
                 if (halt) lua_error(state);
             }
 
