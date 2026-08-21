@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/asset.h>
@@ -105,6 +106,16 @@ namespace Vital::Engine {
     bool Core::is_ready() {
         return Tool::is_runtime() && kit_ready.load();
     }
+
+    #if defined(VSDK_Client)
+    bool Core::is_sandbox_ui_visible() {
+        static const std::vector<std::function<bool()>> checks = {
+            [] { return Console::has_singleton() && Console::get_singleton() -> is_visible(); },
+            [] { return Splash::has_singleton() && Splash::get_singleton() -> is_visible(); }
+        };
+        return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
+    }
+    #endif
 
     void Core::execute(std::function<void()> exec) {
         if (Tool::is_main_thread()) exec();
