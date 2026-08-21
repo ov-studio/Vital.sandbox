@@ -58,7 +58,7 @@ namespace Vital::Tool {
             void parse(const std::string& input) {
                 ErrorScope scope;
                 try { tree = ryml::parse_in_arena(ryml::to_csubstr(input)); }
-                catch (const Tool::Log::fetch&) { throw; }
+                catch (const std::runtime_error& e) { throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, e.what()); }
                 catch (...) { throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, "unknown yaml error"); }
                 root = tree.rootref();
                 if (!root.is_map()) throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, "yaml root is not a map");
