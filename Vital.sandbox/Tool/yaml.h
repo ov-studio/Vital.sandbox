@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.sandbox/Tool/log.h>
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 
@@ -36,7 +37,7 @@ namespace Vital::Tool {
                     cb.m_error = [](const char*, size_t, ryml::Location loc, void*) {
                         std::string detail = "parse error";
                         if (loc.line > 0) detail += " at line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col);
-                        throw std::runtime_error(detail);
+                        throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, detail);
                     };
                     ryml::set_callbacks(cb);
                 }
@@ -57,10 +58,10 @@ namespace Vital::Tool {
             void parse(const std::string& input) {
                 ErrorScope scope;
                 try { tree = ryml::parse_in_arena(ryml::to_csubstr(input)); }
-                catch (const std::runtime_error& e) { throw std::runtime_error(e.what()); }
-                catch (...) { throw std::runtime_error("unknown"); }
+                catch (const Tool::Log::fetch&) { throw; }
+                catch (...) { throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, "unknown yaml parse error"); }
                 root = tree.rootref();
-                if (!root.is_map()) throw std::runtime_error("root is not a map");
+                if (!root.is_map()) throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, "yaml root is not a map");
             }
 
             ryml::ConstNodeRef get_root() const {
