@@ -37,9 +37,8 @@ namespace Vital::Tool::Log {
     };
 
     inline constexpr Command error_list[] = {
-        { "invalid-argument", "invalid argument {}" },
-        { "request-failed",   "request failed {}"   },
-        { "parse-failed",     "parse failed {}"     }
+        { "invalid-argument", "invalid argument: {}" },
+        { "request-failed",   "request failed: {}" }
     };
 
     template <Type T>
