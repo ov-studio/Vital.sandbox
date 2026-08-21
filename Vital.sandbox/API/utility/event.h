@@ -105,10 +105,10 @@ namespace Vital::Sandbox::API {
         #if !defined(VSDK_Client)
         static void verify_peer(const std::string& caller, int peer_id, bool required) {
             if (peer_id <= 0) {
-                if (required) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: {} — 'options.peer' is required for remote {} on server", caller, caller));
+                if (required) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — 'options.peer' is required for remote {} on server", caller, caller));
                 return;
             }
-            if (!Manager::Network::get_singleton() -> get_connected_peers().count(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: {} — peer '{}' is not connected", caller, peer_id));
+            if (!Manager::Network::get_singleton() -> get_connected_peers().count(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — peer '{}' is not connected", caller, peer_id));
         }
         #endif
 
