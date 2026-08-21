@@ -145,12 +145,12 @@ namespace Vital::Manager::Kit {
     inline std::vector<std::pair<std::string, std::string>> fetch_module(const std::string& name) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         std::vector<std::pair<std::string, std::string>> result;
-        const std::string module_name = "module/" + name;
-        auto& document = Internal::fetch_json(module_name + "/manifest");
+        const std::string path = "module/" + name;
+        auto& document = Internal::fetch_json(path + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             std::string src = i.GetString();
-            result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", module_name, src))));
+            result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", path, src))));
         }
         return result;
     }
