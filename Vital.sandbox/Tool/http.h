@@ -26,7 +26,7 @@ namespace Vital::Tool::HTTP {
 
     inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {
         size_t protocol_end = url.find("://");
-        if (protocol_end == std::string::npos) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "invalid url: missing protocol scheme");
+        if (protocol_end == std::string::npos) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "url missing protocol scheme");
         std::string scheme = url.substr(0, protocol_end);
         std::string rest = url.substr(protocol_end + 3);
         size_t path_start = rest.find("/");
@@ -38,7 +38,7 @@ namespace Vital::Tool::HTTP {
         if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
             host = host_part.substr(0, port_pos);
             try { port = std::stoi(host_part.substr(port_pos + 1)); }
-            catch (const std::exception&) { throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "invalid url: malformed port number"); }
+            catch (const std::exception&) { throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "url contains malformed port number"); }
         }
         else {
             host = host_part;
@@ -79,9 +79,9 @@ namespace Vital::Tool::HTTP {
         });
         if (!res) {
             if (cancelled && res.error() == httplib::Error::Canceled) return "";
-            throw std::runtime_error(httplib::to_string(res.error()));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
         }
-        if (res -> status != 200) throw std::runtime_error(std::to_string(res -> status));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, res -> status);
         return buffer;
     }
 
@@ -91,8 +91,8 @@ namespace Vital::Tool::HTTP {
         std::string content_type = "application/json";
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
-        if (!res) throw std::runtime_error(httplib::to_string(res.error()));
-        if (res -> status != 200) throw std::runtime_error(std::to_string(res -> status));
+        if (!res) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, res -> status);
         return res -> body;
     }
 
@@ -102,8 +102,8 @@ namespace Vital::Tool::HTTP {
         std::string content_type = "application/json";
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Delete(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
-        if (!res) throw std::runtime_error(httplib::to_string(res.error()));
-        if (res -> status != 200) throw std::runtime_error(std::to_string(res -> status));
+        if (!res) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, res -> status);
         return res -> body;
     }
 
