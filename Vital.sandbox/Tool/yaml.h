@@ -35,7 +35,7 @@ namespace Vital::Tool {
                     prev = ryml::get_callbacks();
                     ryml::Callbacks cb = prev;
                     cb.m_error = [](const char*, size_t, ryml::Location loc, void*) {
-                        std::string detail = "parse error";
+                        std::string detail = "error";
                         if (loc.line > 0) detail += " at line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col);
                         throw Tool::Log::fetch("parse-failed", Tool::Log::Type::error, detail);
                     };
