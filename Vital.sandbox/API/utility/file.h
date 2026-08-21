@@ -28,14 +28,14 @@ namespace Vital::Sandbox::API {
         static std::string get_base(Machine* vm, std::string& path, bool sanitize = false) {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, path);
             path = relative;
-            if (sanitize && !Tool::File::sanitize(path)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", path));
+            if (sanitize && !Tool::File::sanitize(path)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid file path `{}`", path));
             return resource.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(resource);
         }
 
         static std::string assert_file(Machine* vm, std::string& path) {
             const std::string original = path;
             const std::string base = get_base(vm, path);
-            if (!Tool::File::exists(base, path)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", original));
+            if (!Tool::File::exists(base, path)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("file `{}` non-existent", original));
             return base;
         }
     
