@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <httplib.h>
 
 
@@ -26,7 +26,7 @@ namespace Vital::Tool::HTTP {
 
     inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {
         size_t protocol_end = url.find("://");
-        if (protocol_end == std::string::npos) throw std::runtime_error("invalid url");
+        if (protocol_end == std::string::npos) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "invalid url: missing protocol scheme");
         std::string scheme = url.substr(0, protocol_end);
         std::string rest = url.substr(protocol_end + 3);
         size_t path_start = rest.find("/");
@@ -38,7 +38,7 @@ namespace Vital::Tool::HTTP {
         if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
             host = host_part.substr(0, port_pos);
             try { port = std::stoi(host_part.substr(port_pos + 1)); }
-            catch (const std::exception&) { throw std::runtime_error("invalid url"); }
+            catch (const std::exception&) { throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "invalid url: malformed port number"); }
         }
         else {
             host = host_part;
