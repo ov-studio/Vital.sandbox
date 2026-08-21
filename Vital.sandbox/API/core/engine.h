@@ -39,6 +39,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(Vital::Engine::Console::has_singleton() && Vital::Engine::Console::get_singleton() -> is_visible());
                 return 1;
             });
+
+            API::bind(vm, base_scope, "is_sandbox_ui_visible", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_singleton() -> is_sandbox_ui_visible());
+                return 1;
+            });
             #endif
 
             API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
