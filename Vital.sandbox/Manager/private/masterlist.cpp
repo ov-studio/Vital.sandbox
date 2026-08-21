@@ -53,17 +53,9 @@ namespace Vital::Manager {
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.Accept(writer);
-
-        try {
-            Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15);
-        }
-        catch (const std::exception& e) {
-            std::string msg = e.what();
-            log("warn", fmt::format("heartbeat failed — {}", msg.empty() ? "(empty exception message — see below)" : msg));
-        }
-        catch (...) {
-            log("warn", "heartbeat failed — non-standard exception thrown (not derived from std::exception)");
-        }
+        try { Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15); }
+        catch (const std::exception& e) { log("warn", fmt::format("heartbeat failed — {}", e.what())); }
+        catch (...) { log("warn", "heartbeat failed)"); }
     }
 
     void Masterlist::send_offline() const {
