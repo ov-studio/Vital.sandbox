@@ -144,6 +144,10 @@
 #include <godot_cpp/classes/physics_material.hpp>
 #include <godot_cpp/classes/vehicle_body3d.hpp>
 #include <godot_cpp/classes/vehicle_wheel3d.hpp>
+#include <godot_cpp/classes/physics_direct_space_state3d.hpp>
+#include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
+#include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
+#include <godot_cpp/classes/physics_point_query_parameters3d.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
