@@ -64,11 +64,11 @@ namespace Vital::Sandbox::API {
 
         // Resolves any of the physics body/area API types to their underlying Node3D owner. //
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
-            if (vm_module::is_userdata<Rigid_Body>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Static_Body>(vm, idx)) return vm_module::get_userdata_object<Static_Body>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Character_Body>(vm, idx)) return vm_module::get_userdata_object<Character_Body>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Animatable_Body>(vm, idx)) return vm_module::get_userdata_object<Animatable_Body>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Area>(vm, idx)) return vm_module::get_userdata_object<Area>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Character_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Character_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Animatable_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Animatable_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
             return nullptr;
         }
 

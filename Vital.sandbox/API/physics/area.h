@@ -182,15 +182,15 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "overlaps_body", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
                     .require(2, [](Machine* vm, int idx) {
-                        return vm_module::is_userdata<Rigid_Body>(vm, idx) || vm_module::is_userdata<Static_Body>(vm, idx) ||
-                               vm_module::is_userdata<Character_Body>(vm, idx) || vm_module::is_userdata<Animatable_Body>(vm, idx);
+                        return vm_module::is_userdata<Rigid_Body::Instance>(vm, idx) || vm_module::is_userdata<Static_Body::Instance>(vm, idx) ||
+                               vm_module::is_userdata<Character_Body::Instance>(vm, idx) || vm_module::is_userdata<Animatable_Body::Instance>(vm, idx);
                     });
 
                 godot::Node* target = nullptr;
-                if (vm_module::is_userdata<Rigid_Body>(vm, 2)) target = vm_module::get_userdata_object<Rigid_Body>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Static_Body>(vm, 2)) target = vm_module::get_userdata_object<Static_Body>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Character_Body>(vm, 2)) target = vm_module::get_userdata_object<Character_Body>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Animatable_Body>(vm, 2)) target = vm_module::get_userdata_object<Animatable_Body>(vm, 2) -> get_node();
+                if (vm_module::is_userdata<Rigid_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Rigid_Body::Instance>(vm, 2) -> get_node();
+                else if (vm_module::is_userdata<Static_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Static_Body::Instance>(vm, 2) -> get_node();
+                else if (vm_module::is_userdata<Character_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Character_Body::Instance>(vm, 2) -> get_node();
+                else if (vm_module::is_userdata<Animatable_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Animatable_Body::Instance>(vm, 2) -> get_node();
 
                 vm -> push_value(target ? self -> body -> overlaps_body(target) : false);
                 return 1;
@@ -198,9 +198,9 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "overlaps_area", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(area)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Area>(vm, idx); });
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Area::Instance>(vm, idx); });
 
-                auto other = vm_module::get_userdata_object<Area>(vm, 2);
+                auto other = vm_module::get_userdata_object<Area::Instance>(vm, 2);
                 vm -> push_value(other ? self -> body -> overlaps_area(other -> get_node()) : false);
                 return 1;
             });
