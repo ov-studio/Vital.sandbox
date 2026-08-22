@@ -25,21 +25,28 @@ namespace Vital::Engine {
     class Network : public godot::Node {
         GDCLASS(Network, godot::Node)
         private:
-            static void _bind_methods() { 
-                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
-                godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"),        &Network::_receive);
+                godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"),               &Network::setup_rpc);
+                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_model",  "net_id", "name", "authority"), &Network::_spawn_model);
+                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_model","net_id"), &Network::_destroy_model);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
-                godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"),   &Network::_on_connection_failed);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
                 #else
-                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &Network::_on_peer_connected);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected",    "id"), &Network::_on_peer_connected);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &Network::_on_peer_disconnected);
                 #endif
             }
         public:
             void _receive(godot::Dictionary data);
             void setup_rpc();
+
+            // Called on clients by the server to instantiate a replicated model.
+            void _spawn_model(int net_id, godot::String name, int authority);
+            // Called on clients by the server to remove a replicated model.
+            void _destroy_model(int net_id);
 
             #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;

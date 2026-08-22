@@ -407,12 +407,12 @@ namespace Vital::Sandbox::API {
             });
 
             #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "set_sync_authority", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(peer_id)", true)
                     .require(2, &Machine::is_number);
 
                 auto peer_id = vm -> get_int(2);
-                self -> model -> set_sync_authority(peer_id);
+                self -> model -> set_syncer((int)peer_id);
                 vm -> push_value(true);
                 return 1;
             });
