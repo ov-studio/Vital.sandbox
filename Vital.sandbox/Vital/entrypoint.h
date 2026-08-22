@@ -38,6 +38,12 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Point_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Spot_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Area_Light>(true);
+    godot::ClassDB::register_class<Vital::Engine::Rigid_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Static_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Character_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Animatable_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Area>(true);
+    godot::ClassDB::register_class<Vital::Engine::Collision_Shape>(true);
     #endif
     vsdk_initialize();
 }

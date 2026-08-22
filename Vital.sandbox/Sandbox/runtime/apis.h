@@ -68,6 +68,13 @@
 #include <Vital.sandbox/API/gfx/fog.h>
 #include <Vital.sandbox/API/gfx/vol_fog.h>
 
+#include <Vital.sandbox/API/physics/rigid_body.h>
+#include <Vital.sandbox/API/physics/static_body.h>
+#include <Vital.sandbox/API/physics/character_body.h>
+#include <Vital.sandbox/API/physics/animatable_body.h>
+#include <Vital.sandbox/API/physics/area.h>
+#include <Vital.sandbox/API/physics/collision_shape.h>
+
 
 /////////////////////
 // Vital: Sandbox //
@@ -130,7 +137,15 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<SDFGI>(),
             vm_module::make_api<SSAO>(),
             vm_module::make_api<Fog>(),
-            vm_module::make_api<Vol_Fog>()
+            vm_module::make_api<Vol_Fog>(),
+
+            // Physics //
+            vm_module::make_api<Rigid_Body>(),
+            vm_module::make_api<Static_Body>(),
+            vm_module::make_api<Character_Body>(),
+            vm_module::make_api<Animatable_Body>(),
+            vm_module::make_api<Area>(),
+            vm_module::make_api<Collision_Shape>()
         };
     }
 }
