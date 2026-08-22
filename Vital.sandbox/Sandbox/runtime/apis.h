@@ -74,6 +74,8 @@
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/area.h>
 #include <Vital.sandbox/API/physics/collision_shape.h>
+#include <Vital.sandbox/API/physics/vehicle_body.h>
+#include <Vital.sandbox/API/physics/vehicle_wheel.h>
 
 
 /////////////////////
@@ -145,7 +147,9 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Character_Body>(),
             vm_module::make_api<Animatable_Body>(),
             vm_module::make_api<Area>(),
-            vm_module::make_api<Collision_Shape>()
+            vm_module::make_api<Collision_Shape>(),
+            vm_module::make_api<Vehicle_Body>(),
+            vm_module::make_api<Vehicle_Wheel>()
         };
     }
 }

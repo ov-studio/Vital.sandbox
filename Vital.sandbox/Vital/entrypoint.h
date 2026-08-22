@@ -44,6 +44,8 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Animatable_Body>(true);
     godot::ClassDB::register_class<Vital::Engine::Area>(true);
     godot::ClassDB::register_class<Vital::Engine::Collision_Shape>(true);
+    godot::ClassDB::register_class<Vital::Engine::Vehicle_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Vehicle_Wheel>(true);
     #endif
     vsdk_initialize();
 }
