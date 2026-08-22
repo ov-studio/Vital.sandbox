@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+#include <Vital.sandbox/API/core/shader.h>
 
 
 /////////////////////////
@@ -180,6 +181,38 @@ namespace Vital::Sandbox::API {
                     auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
                 }
+                vm -> push_value(true);
+                return 1;
+            });
+
+
+            // TODO: Use draw_image and accept shader as 'material' instead
+            // engine.draw_shader(position, size, shader, rotation=0, pivot={0,0}, color={1,1,1,1})
+            // Draws a shader-material rect into the canvas (or active RT) at the given
+            // position/size.  Rendering order is the same as draw_image — call it between
+            // other draw_* calls to control layering exactly.  The shader must be a
+            // canvas_item shader.  The `color` argument is forwarded as a "modulate"
+            // uniform so shaders can optionally read it.
+            API::bind(vm, base_scope, "draw_shader", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(position, size, shader, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1})")
+                    .require(1, &Machine::is_vector2)
+                    .require(2, &Machine::is_vector2)
+                    .require(3, [](Machine* vm, int idx) {
+                        return vm_module::is_userdata<API::Shader::Instance>(vm, idx);
+                    })
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_vector2)
+                    .optional(6, &Machine::is_color);
+
+                auto position = vm -> get_vector2(1);
+                auto size = vm -> get_vector2(2);
+                auto shader_inst = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
+                auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
+                auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
+                base_class::get_singleton() -> draw_shader(
+                    position, size, shader_inst -> shader, rotation, pivot, color
+                );
                 vm -> push_value(true);
                 return 1;
             });
