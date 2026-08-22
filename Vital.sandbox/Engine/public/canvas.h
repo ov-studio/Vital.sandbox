@@ -21,6 +21,7 @@
 // Vital: Engine: Canvas //
 ////////////////////////////
 
+// TODO: Use draw_image and accept shader as 'material' instead
 namespace Vital::Engine {
     class Font;
     class Texture;

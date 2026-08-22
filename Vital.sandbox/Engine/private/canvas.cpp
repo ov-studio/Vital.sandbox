@@ -18,12 +18,15 @@
 #include <Vital.sandbox/Engine/public/font.h>
 #include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
+#include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
 ////////////////////////////
 // Vital: Engine: Canvas //
 ////////////////////////////
+
+// TODO: Use draw_image and accept shader as 'material' instead
 
 namespace Vital::Engine {
     // Hooks //
@@ -153,6 +156,29 @@ namespace Vital::Engine {
                         false,
                         payload.color
                     );
+                    break;
+                }
+                case Type::SHADER: {
+                    const auto& payload = std::get<Shader_Draw>(command.payload);
+                    if (!payload.material.is_valid()) break;
+                    auto pivot = payload.rect.size * 0.5f + payload.pivot;
+                    // Forward the modulate tint as a shader uniform so canvas_item shaders
+                    // can read it as "uniform vec4 modulate;" without extra C++ plumbing.
+                    payload.material -> set_shader_parameter("modulate",
+                        godot::Variant(payload.color));
+                    // In Godot 4, _draw() calls inherit the CanvasItem's `material` property.
+                    // We temporarily swap the node's material, draw a white rect of the
+                    // requested size, then restore, so every other draw is unaffected.
+                    auto prev_material = node -> get_material();
+                    node -> set_material(payload.material);
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
+                    node -> draw_rect(
+                        godot::Rect2(-pivot, payload.rect.size),
+                        godot::Color(1, 1, 1, 1),
+                        true, -1, true
+                    );
+                    node -> set_material(prev_material);
+                    node -> draw_set_transform({0, 0}, 0, {1, 1});
                     break;
                 }
                 case Type::TEXT: {
@@ -390,6 +416,36 @@ namespace Vital::Engine {
         payload.pivot = pivot;
         payload.color = color;
         push({Type::IMAGE, payload});
+    }
+
+    void Canvas::draw_shader(
+        godot::Vector2 position,
+        godot::Vector2 size,
+        Shader* shader,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
+        if (!shader || !shader -> is_valid()) return;
+        draw_shader(position, size, shader -> get_material(), rotation, pivot, color);
+    }
+
+    void Canvas::draw_shader(
+        godot::Vector2 position,
+        godot::Vector2 size,
+        const godot::Ref<godot::ShaderMaterial>& material,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
+        if (!material.is_valid()) return;
+        Shader_Draw payload;
+        payload.material = material;
+        payload.rect = {position, size};
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = pivot;
+        payload.color = color;
+        push({Type::SHADER, payload});
     }
 
     void Canvas::draw_text(
