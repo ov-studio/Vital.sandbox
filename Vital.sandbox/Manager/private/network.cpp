@@ -482,10 +482,11 @@ namespace Vital::Manager {
     void Network::send_full_state_to_peer(int peer_id) {
         if (!peer.is_valid() || !is_connected()) return;
 
+        // sync_pending was already flushed by _on_peer_connected before this call.
         std::vector<Engine::Model*> snapshot;
         {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            snapshot = sync_models; // copy under lock, work outside
+            snapshot = sync_models;
         }
 
         if (snapshot.empty()) return;
@@ -534,9 +535,39 @@ namespace Vital::Manager {
         connected_peers.insert(id);
         log("sbox", fmt::format("peer joined -> {}  total: {}", id, (int)connected_peers.size()));
 
-        // Send the full world state so the late-joiner snaps to correct
-        // transforms immediately — even for sleeping (static) models that
-        // won't emit another sync tick until they move again.
+        // 1. Flush pending so newly created models are in sync_models before we iterate.
+        //    (send_full_state_to_peer does this too, but we need the list for spawns first.)
+        {
+            std::vector<Engine::Model*> incoming;
+            {
+                std::lock_guard<std::mutex> lock(sync_pending_mutex);
+                incoming.swap(sync_pending);
+            }
+            if (!incoming.empty()) {
+                std::lock_guard<std::mutex> lock(sync_models_mutex);
+                for (auto* m : incoming) {
+                    if (!m->sync_registered) {
+                        sync_models.push_back(m);
+                        sync_id_map[m->get_net_id()] = m;
+                        m->sync_registered = true;
+                    }
+                }
+            }
+        }
+
+        // 2. Send _spawn_model for every existing model so the late-joiner
+        //    creates the nodes before the transform state dump arrives.
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* model : sync_models) {
+                node->rpc_id(id, "_spawn_model",
+                    (int)model->get_net_id(),
+                    Tool::to_godot_string(model->get_model_name()),
+                    model->get_sync_authority());
+            }
+        }
+
+        // 3. Send transform state dump (reliable) so models snap to correct positions.
         send_full_state_to_peer(id);
 
         Tool::Stack args;
