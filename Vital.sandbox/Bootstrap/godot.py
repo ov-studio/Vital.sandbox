@@ -1,6 +1,8 @@
 from Bootstrap.utils import *
 from Bootstrap.download import *
 
+TARGET_MAJOR_VERSION = 4
+
 class Godot:
     def __init__(self, env):
         self.env = env
@@ -33,7 +35,9 @@ class Godot:
             return None
         return (major, minor, patch), tag
 
-    def _fetch_latest_stable_version(self, major_filter=4):
+    def _fetch_latest_stable_version(self, major_filter=None):
+        if major_filter is None:
+            major_filter = TARGET_MAJOR_VERSION
         releases = self._fetch_release_list()
         if not releases:
             return None
@@ -113,7 +117,7 @@ class Godot:
         except Exception:
             pass
 
-        major_filter = 4
+        major_filter = TARGET_MAJOR_VERSION
         try:
             result = subprocess.run(
                 ["git", "-C", godot_cpp_dir, "rev-parse", "--abbrev-ref", "HEAD"],
