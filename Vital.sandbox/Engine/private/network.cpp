@@ -26,15 +26,47 @@
 namespace Vital::Engine {
 
     void Network::setup_rpc() {
-        // Channel 0, reliable — used for RPC events and model spawn/destroy signals.
-        godot::Dictionary cfg;
-        cfg["rpc_mode"]     = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
-        cfg["transfer_mode"]= (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-        cfg["call_local"]   = false;
-        cfg["channel"]      = 0;
-        rpc_config("_receive",      cfg);
-        rpc_config("_spawn_model",  cfg);
-        rpc_config("_destroy_model",cfg);
+        // Reliable channel 0 — events, spawn, destroy.
+        godot::Dictionary reliable;
+        reliable["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
+        reliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
+        reliable["call_local"]    = false;
+        reliable["channel"]       = 0;
+        rpc_config("_receive",      reliable);
+        rpc_config("_spawn_model",  reliable);
+        rpc_config("_destroy_model",reliable);
+        rpc_config("_sync_state",   reliable);  // late-join full snapshot, must arrive
+
+        // Unreliable ordered channel 0 — per-frame position/rotation sync.
+        // We stay on channel 0 and use UNRELIABLE_ORDERED so Godot's RPC layer
+        // routes it correctly without conflicting with scene_cache_interface.
+        godot::Dictionary unreliable;
+        unreliable["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
+        unreliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
+        unreliable["call_local"]    = false;
+        unreliable["channel"]       = 0;
+        rpc_config("_sync_models",  unreliable);  // server -> all clients
+        rpc_config("_sync_client",  unreliable);  // authority client -> server
+    }
+
+    // Received on clients — batch of model transforms from server.
+    void Network::_sync_models(godot::PackedByteArray data) {
+        Manager::Network::get_singleton()->dispatch_sync_batch(data, false);
+    }
+
+    // Received on clients — reliable full state dump for late-joiners.
+    void Network::_sync_state(godot::PackedByteArray data) {
+        Manager::Network::get_singleton()->dispatch_sync_batch(data, true);
+    }
+
+    // Received on server — client-authority position upload.
+    void Network::_sync_client(godot::PackedByteArray data) {
+        #if !defined(VSDK_Client)
+        auto tree = godot::Object::cast_to<godot::SceneTree>(
+            godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        Manager::Network::get_singleton()->dispatch_client_sync(data, sender);
+        #endif
     }
 
     void Network::_receive(godot::Dictionary data) {
@@ -66,6 +98,9 @@ namespace Vital::Engine {
         }
 
         Core::get_singleton()->add_child(object);
+
+        // Register with the network sync registry.
+        Manager::Network::get_singleton()->enqueue_model_registration(object);
 
         if (Model::on_spawned_callback) Model::on_spawned_callback(object, true);
         godot::UtilityFunctions::print("_spawn_model: net_id=", net_id, " name=", name);

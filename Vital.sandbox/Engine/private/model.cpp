@@ -166,70 +166,19 @@ namespace Vital::Engine {
         return parse_sync_packet_at(buf, 0, out_id, out_pos, out_rot);
     }
 
-    void Model::sync_tick(float delta) {
-        if (placeholder || !is_inside_tree()) return;
-
-        auto net = Manager::Network::get_singleton();
-        int my_peer = net->get_peer_id();
-
-        // Only the authority peer sends.
-        // Server (peer_id==1) handles server-auth models.
-        // A specific client handles its own client-auth model.
-        bool is_authority = false;
-        #if defined(VSDK_Client)
-            is_authority = (sync_authority > 1) && (my_peer == sync_authority);
-        #else
-            is_authority = (sync_authority == 1);
-        #endif
-        if (!is_authority) return;
-
-        godot::Vector3 cur_pos = get_global_position();
-        godot::Vector3 cur_rot = get_rotation_degrees();
-
-        // Drift check — put to sleep when static.
-        bool moved = (cur_pos - sync_last_pos).length() > SYNC_THRESHOLD
-                  || (cur_rot - sync_last_rot).length() > SYNC_THRESHOLD;
-
-        if (!moved) {
-            if (sync_sleeping) return;
-            // One final packet when we first go static so clients settle.
-            sync_sleeping = true;
-        } else {
-            sync_sleeping = false;
-        }
-
-        sync_accum += delta;
-        if (sync_accum < SYNC_RATE && !sync_sleeping) return;
-        sync_accum = 0.0f;
-
-        sync_last_pos = cur_pos;
-        sync_last_rot = cur_rot;
-
-        godot::PackedByteArray pkt = build_sync_packet(net_id, cur_pos, cur_rot);
-
-        #if defined(VSDK_Client)
-            // Client-auth: stamp own peer_id into the packet so the server can
-            // validate authority without needing MultiplayerAPI::get_remote_sender_id().
-            godot::PackedByteArray client_pkt = build_client_sync_packet(
-                (uint32_t)my_peer, net_id, cur_pos, cur_rot);
-            net->send_sync_to_server(client_pkt);
-        #else
-            // Server-auth: broadcast plain 28-byte packet to all clients.
-            net->broadcast_sync(pkt);
-        #endif
-    }
+    // sync_tick removed — dirty-check, rate-limiting, and batching are
+    // handled centrally in Manager::Network::poll() for all models at once.
+    // This eliminates per-model RPC overhead and allows O(1) batched sends.
 
     void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot) {
-        // Called on non-authority peers. Interpolation can be layered
-        // on top by the scripter; for now we snap directly.
-        // Enqueue to main thread (safe from network thread).
-        Engine::Core::get_singleton()->enqueue([this, pos, rot]() {
-            set_global_position(pos);
-            set_rotation_degrees(rot);
-            sync_last_pos = pos;
-            sync_last_rot = rot;
-            sync_sleeping = false;
-        });
+        // Called from dispatch_sync_batch which runs inside the RPC handler on
+        // the main thread — safe to apply directly, no enqueue needed.
+        if (!is_inside_tree()) return;
+        set_global_position(pos);
+        set_rotation_degrees(rot);
+        sync_last_pos = pos;
+        sync_last_rot = rot;
+        sync_sleeping = false;
     }
 
 
@@ -444,6 +393,10 @@ namespace Vital::Engine {
                 godot::UtilityFunctions::print("Model::create (deferred) -> net_id=",
                     captured_net_id, " name=", captured_name);
 
+                // Use enqueue_model_registration so poll() picks it up via the
+                // pending queue rather than the O(N) child scan.
+                Manager::Network::get_singleton()->enqueue_model_registration(object);
+
                 auto net_node = Manager::Network::get_singleton()->get_node();
                 if (net_node) {
                     net_node->rpc("_spawn_model",
@@ -495,8 +448,9 @@ namespace Vital::Engine {
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
         if (!sync_registered) {
-            Manager::Network::get_singleton()->register_model(this);
-            sync_registered = true;
+            // hydrate() runs on the main thread (asset download callback),
+            // use enqueue_model_registration for consistency with the pending queue.
+            Manager::Network::get_singleton()->enqueue_model_registration(this);
         }
         set_visible(true);
         if (on_spawned_callback) on_spawned_callback(this, true);

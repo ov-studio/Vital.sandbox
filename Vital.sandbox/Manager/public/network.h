@@ -26,7 +26,6 @@
 namespace Vital::Engine { class Model; }
 
 namespace Vital::Manager {
-    // TODO: Improve
     class Network : public godot::Node, public Tool::Base<Network> {
         friend class Tool::Base<Network>;
         public:
@@ -36,7 +35,6 @@ namespace Vital::Manager {
             //   0 — reliable RPC (events, handshakes)     TRANSFER_MODE_RELIABLE
             //   1 — unreliable sync (position/rotation)   TRANSFER_MODE_UNRELIABLE_ORDERED
             static constexpr int CHANNEL_RPC  = 0;
-            static constexpr int CHANNEL_SYNC = 1;
 
             // Magic for batched late-join state dump packets ("VSST").
             // Defined here so both server (sender) and client (receiver) see it.
@@ -50,6 +48,20 @@ namespace Vital::Manager {
             // poll() can drive sync_tick() without touching the scene tree.
             std::vector<Engine::Model*> sync_models;
             std::mutex sync_models_mutex;
+
+            // Persistent net_id -> Model* map — updated on register/unregister,
+            // used by dispatch_client_sync and dispatch_sync_batch for O(1) lookup
+            // without rebuilding a temporary map every packet.
+            std::unordered_map<uint32_t, Engine::Model*> sync_id_map;
+
+            // Pending registration queue — models added from enqueue() callbacks
+            // post to this instead of directly into sync_models, avoiding the
+            // O(N) child-scan in poll().
+            std::vector<Engine::Model*> sync_pending;
+            std::mutex sync_pending_mutex;
+
+            // Per-frame dirty batch buffer reused across frames (avoids realloc).
+            godot::PackedByteArray sync_batch_buf;
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -72,13 +84,7 @@ namespace Vital::Manager {
             void wire_signals();
             void unwire_signals();
 
-            // Low-level raw packet send on CHANNEL_SYNC (unreliable-ordered).
-            // peerID == 0 => broadcast to all connected peers (server-side).
-            // peerID == 1 => send to server (client-side).
-            bool send_raw(const godot::PackedByteArray& data, int peerID, bool unreliable);
 
-            // Drain inbound raw sync packets and route them to the correct Model.
-            void drain_sync_packets();
 
         public:
             Network() = default;
@@ -93,6 +99,9 @@ namespace Vital::Manager {
             // Model sync registry //
             void register_model(Engine::Model* model);
             void unregister_model(Engine::Model* model);
+            // Called from deferred enqueue() context — posts to pending queue
+            // instead of directly modifying sync_models under poll().
+            void enqueue_model_registration(Engine::Model* model);
 
 
             // State //
@@ -126,15 +135,15 @@ namespace Vital::Manager {
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
 
-            // Sync transport (channel 1, unreliable-ordered) //
-            // Called by Model::sync_tick internally.
-            bool broadcast_sync(const godot::PackedByteArray& data);      // server -> all clients
-            bool send_sync_to_server(const godot::PackedByteArray& data);  // client -> server
+            // Sync transport — routed through Godot's RPC layer (avoids scene_cache conflict).
+            bool broadcast_sync(const godot::PackedByteArray& data);      // server -> all clients (unreliable)
+            bool send_sync_to_server(const godot::PackedByteArray& data);  // client -> server (unreliable)
+
+            // Inbound dispatch — called by Engine::Network RPC handlers.
+            void dispatch_sync_batch(const godot::PackedByteArray& data, bool is_state_dump);
+            void dispatch_client_sync(const godot::PackedByteArray& data, int sender_id);
 
             #if !defined(VSDK_Client)
-            // Late-join full state dump — sends the current transform of every
-            // registered model to peer_id via the reliable channel so they arrive
-            // guaranteed and in-order after the MultiplayerSpawner spawn signals.
             void send_full_state_to_peer(int peer_id);
             #endif
 

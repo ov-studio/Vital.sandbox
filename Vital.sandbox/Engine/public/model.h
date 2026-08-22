@@ -143,10 +143,6 @@ namespace Vital::Engine {
             void _ready() override;
             void _notification(int what);
 
-            // Sync tick — called by Manager::Network::poll each frame.
-            // Sends position+rotation if authority matches and state has changed.
-            void sync_tick(float delta);
-
             // Apply an inbound sync packet (called on non-authority peers).
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot);
 

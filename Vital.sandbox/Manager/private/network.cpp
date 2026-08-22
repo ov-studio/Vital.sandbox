@@ -23,7 +23,6 @@
 //////////////////////////////
 
 namespace Vital::Manager {
-    // TODO: Improve
 
     //--------------------//
     //   Network: Init    //
@@ -117,6 +116,7 @@ namespace Vital::Manager {
     void Network::register_model(Engine::Model* model) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         sync_models.push_back(model);
+        sync_id_map[model->get_net_id()] = model;
     }
 
     void Network::unregister_model(Engine::Model* model) {
@@ -125,6 +125,13 @@ namespace Vital::Manager {
             std::remove(sync_models.begin(), sync_models.end(), model),
             sync_models.end()
         );
+        sync_id_map.erase(model->get_net_id());
+    }
+
+    // Posts to the pending queue — safe to call from any thread/enqueue context.
+    void Network::enqueue_model_registration(Engine::Model* model) {
+        std::lock_guard<std::mutex> lock(sync_pending_mutex);
+        sync_pending.push_back(model);
     }
 
 
@@ -181,155 +188,111 @@ namespace Vital::Manager {
     //-----------------------------------//
     //
     // We bypass Godot's RPC layer for sync packets and talk directly
-    // to ENetMultiplayerPeer::put_packet().  This lets us:
-    //   • Pick TRANSFER_MODE_UNRELIABLE_ORDERED (drop-on-lag, no head-of-line blocking)
-    //   • Use a dedicated channel (CHANNEL_SYNC = 1) so sync never delays RPC
-    //   • Keep packets tiny (28 bytes) — no JSON/dictionary overhead
-    //
-    // Server flow (server-auth model):
-    //   server calls broadcast_sync() -> peer->set_target_peer(0) -> put_packet
-    //
-    // Client-auth flow:
-    //   authority client calls send_sync_to_server() -> peer->set_target_peer(1) -> put_packet
-    //   server receives in drain_sync_packets(), finds the model, relays to all others
-    //
-    // In both cases non-authority peers call Model::apply_sync() which snaps
-    // the transform. Scripters can layer interpolation on top.
-    //-----------------------------------//
-
-    bool Network::send_raw(const godot::PackedByteArray& data, int peerID, bool unreliable) {
-        if (!peer.is_valid()) return false;
-        peer->set_transfer_channel(CHANNEL_SYNC);
-        peer->set_transfer_mode(unreliable
-            ? godot::MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED
-            : godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-        peer->set_target_peer(peerID);
-        peer->put_packet(data);
-        return true;
-    }
+    // Sync is routed through Godot's RPC layer (_sync_models / _sync_client / _sync_state)
+    // to avoid scene_cache_interface intercepting raw put_packet calls on channel 1.
 
     bool Network::broadcast_sync(const godot::PackedByteArray& data) {
         #if defined(VSDK_Client)
-        return false; // clients never broadcast; they send to server
+        return false;
         #else
-        if (!is_connected()) return false;
-        return send_raw(data, 0 /* broadcast */, true);
+        if (!node || !is_connected()) return false;
+        node->rpc("_sync_models", data);
+        return true;
         #endif
     }
 
     bool Network::send_sync_to_server(const godot::PackedByteArray& data) {
         #if !defined(VSDK_Client)
-        return false; // server doesn't send to itself
+        return false;
         #else
-        if (!is_connected()) return false;
-        return send_raw(data, 1 /* server */, true);
+        if (!node || !is_connected()) return false;
+        node->rpc_id(1, "_sync_client", data);
+        return true;
         #endif
     }
 
-    // Drain all pending raw packets on CHANNEL_SYNC and route them.
-    // Called every frame from poll().
-    void Network::drain_sync_packets() {
-        if (!peer.is_valid()) return;
+    // Called by Engine::Network::_sync_models (unreliable) and _sync_state (reliable).
+    // All sync packets now use VSST batch format — no single-model packets.
+    void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool /*is_state_dump*/) {
+        if (data.size() < 8) return;
+        if (Engine::Model::read_u32_public(data, 0) != STATE_DUMP_MAGIC) return;
+        uint32_t count = Engine::Model::read_u32_public(data, 4);
+        if ((int)data.size() < 8 + (int)count * 28) return;
 
-        // Build a quick lookup from net_id -> Model* for O(1) dispatch.
-        // We rebuild it each frame because the registry can change.
-        // For 200 models this is negligible (< 1 µs).
-        std::unordered_map<uint32_t, Engine::Model*> id_map;
+        int my_id = get_peer_id();
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+
+        for (uint32_t i = 0; i < count; i++) {
+            int offset = 8 + (int)i * 28;
+            uint32_t net_id = 0;
+            godot::Vector3 pos, rot;
+            if (!Engine::Model::parse_sync_packet_at(data, offset, net_id, pos, rot)) continue;
+
+            auto it = sync_id_map.find(net_id);
+            if (it == sync_id_map.end()) continue;
+            Engine::Model* model = it->second;
+            if (model->get_sync_authority() == my_id) continue;
+            model->apply_sync(pos, rot);
+        }
+    }
+
+    // Called by Engine::Network::_sync_client — batched client-auth upload on server.
+    // Client packet layout: [sender u32][VSST magic u32][count u32][N*28 bytes]
+    void Network::dispatch_client_sync(const godot::PackedByteArray& data, int sender_id) {
+        #if !defined(VSDK_Client)
+        if (data.size() < 12) return;
+        if (connected_peers.find(sender_id) == connected_peers.end()) return;
+        if ((int)Engine::Model::read_u32_public(data, 0) != sender_id) return; // anti-spoof
+        if (Engine::Model::read_u32_public(data, 4) != STATE_DUMP_MAGIC) return;
+
+        uint32_t count = Engine::Model::read_u32_public(data, 8);
+        if ((int)data.size() < 12 + (int)count * 28) return;
+
+        // Relay the same batch to all other clients — strip the sender prefix,
+        // replace with our VSST header so clients can use dispatch_sync_batch.
+        // We build the relay buffer once and broadcast it.
+        godot::PackedByteArray relay;
+        relay.resize(8 + (int)count * 28);
+        auto wu32_r = [&](int off, uint32_t v) {
+            relay[off]   =  v        & 0xFF;
+            relay[off+1] = (v >>  8) & 0xFF;
+            relay[off+2] = (v >> 16) & 0xFF;
+            relay[off+3] = (v >> 24) & 0xFF;
+        };
+        wu32_r(0, STATE_DUMP_MAGIC);
+        wu32_r(4, count);
+
+        uint32_t valid = 0;
         {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            id_map.reserve(sync_models.size());
-            for (auto* m : sync_models) id_map[m->get_net_id()] = m;
-        }
+            for (uint32_t i = 0; i < count; i++) {
+                int src = 12 + (int)i * 28;
+                uint32_t net_id = 0;
+                godot::Vector3 pos, rot;
+                if (!Engine::Model::parse_sync_packet_at(data, src, net_id, pos, rot)) continue;
 
-        #if !defined(VSDK_Client)
-        // Server: drain client-authority sync packets and relay to all other peers.
-        //
-        // Packet layout from client (32 bytes):
-        //   [0..3]   uint32  sender_peer_id  — client stamps its own peer ID
-        //   [4..7]   uint32  net_id
-        //   [8..11]  float   pos.x
-        //   [12..15] float   pos.y
-        //   [16..19] float   pos.z
-        //   [20..23] float   rot.x
-        //   [24..27] float   rot.y
-        //   [28..31] float   rot.z
-        //
-        // The server reads sender_peer_id from the payload (no get_remote_sender_id
-        // on ENetMultiplayerPeer — that API lives on MultiplayerAPI and is only
-        // valid during RPC dispatch). The server validates the sender is actually
-        // the registered authority before applying/relaying.
-        while (peer->get_available_packet_count() > 0) {
-            godot::PackedByteArray pkt = peer->get_packet();
-            if (pkt.size() < 32) continue;
+                auto it = sync_id_map.find(net_id);
+                if (it == sync_id_map.end()) continue;
+                Engine::Model* model = it->second;
+                if (model->get_sync_authority() != sender_id) continue;
 
-            uint32_t sender_id = Engine::Model::read_u32_public(pkt, 0);
+                // Apply locally on server.
+                model->apply_sync(pos, rot);
 
-            // Validate sender is a connected peer (basic anti-spoof).
-            if (connected_peers.find((int)sender_id) == connected_peers.end()) continue;
-
-            uint32_t net_id = 0;
-            godot::Vector3 pos, rot;
-            if (!Engine::Model::parse_sync_packet_at(pkt, 4, net_id, pos, rot)) continue;
-
-            auto it = id_map.find(net_id);
-            if (it == id_map.end()) continue;
-            Engine::Model* model = it->second;
-
-            // Only honour if the sender is the registered authority.
-            if (model->get_sync_authority() != (int)sender_id) continue;
-
-            // Apply locally — server holds ground truth.
-            model->apply_sync(pos, rot);
-
-            // Build a stripped 28-byte relay packet (drop sender prefix) and
-            // broadcast to all other peers.
-            godot::PackedByteArray relay = pkt.slice(4);
-            for (int pid : connected_peers) {
-                if (pid == (int)sender_id) continue;
-                send_raw(relay, pid, true);
+                // Write into relay buffer.
+                int dst = 8 + (int)valid * 28;
+                // Copy the 28-byte entry from source packet (offset src) to relay (offset dst).
+                for (int b = 0; b < 28; b++) relay[dst + b] = data[src + b];
+                valid++;
             }
         }
-        #else
-        // Client: drain packets from server.
-        // Two packet formats:
-        //   State dump (magic 0x56535354) — batched reliable snapshot for late-joiners.
-        //   Normal 28-byte sync packet    — per-model unreliable tick.
-        int my_id = get_peer_id();
 
-        auto apply_one = [&](const godot::PackedByteArray& pkt, int offset) {
-            uint32_t net_id = 0;
-            godot::Vector3 pos, rot;
-            if (!Engine::Model::parse_sync_packet_at(pkt, offset, net_id, pos, rot)) return;
-            auto it = id_map.find(net_id);
-            if (it == id_map.end()) return;
-            Engine::Model* model = it->second;
-            if (model->get_sync_authority() == my_id) return;
-            model->apply_sync(pos, rot);
-        };
-
-        while (peer->get_available_packet_count() > 0) {
-            godot::PackedByteArray pkt = peer->get_packet();
-            if (pkt.size() < 4) continue;
-
-            uint32_t magic = (uint8_t)pkt[0]
-                           | ((uint8_t)pkt[1] << 8)
-                           | ((uint8_t)pkt[2] << 16)
-                           | ((uint8_t)pkt[3] << 24);
-
-            if (magic == STATE_DUMP_MAGIC) {
-                // Batched late-join state dump.
-                if (pkt.size() < 8) continue;
-                uint32_t count = (uint8_t)pkt[4]
-                               | ((uint8_t)pkt[5] << 8)
-                               | ((uint8_t)pkt[6] << 16)
-                               | ((uint8_t)pkt[7] << 24);
-                if ((int)pkt.size() < 8 + (int)count * 28) continue;
-                for (uint32_t i = 0; i < count; i++) {
-                    apply_one(pkt, 8 + (int)i * 28);
-                }
-            } else {
-                // Normal unreliable sync tick.
-                apply_one(pkt, 0);
+        if (valid > 0 && node) {
+            relay.resize(8 + (int)valid * 28);
+            wu32_r(4, valid);
+            for (int pid : connected_peers) {
+                if (pid == sender_id) continue;
+                node->rpc_id(pid, "_sync_models", relay);
             }
         }
         #endif
@@ -337,6 +300,7 @@ namespace Vital::Manager {
 
 
     //------------------//
+    //  Client Methods  //    //------------------//
     //  Client Methods  //
     //------------------//
 
@@ -349,9 +313,9 @@ namespace Vital::Manager {
         create();
         peer.instantiate();
 
-        // ENet channel count: 2 (RPC + SYNC)
+        // ENet with default channel count (RPC via MultiplayerAPI)
         godot::Error err = peer->create_client(godot::String(ip.c_str()), port,
-                                                0, 0, 0, 2 /* channel_count */);
+                                                0, 0, 0, 0 /* channel_count: default */);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
@@ -458,9 +422,9 @@ namespace Vital::Manager {
         create();
         peer.instantiate();
 
-        // ENet channel count: 2 (RPC + SYNC)
+        // ENet with default channel count (RPC via MultiplayerAPI)
         godot::Error err = peer->create_server(net_port, config.get_max_clients(),
-                                                0, 0, 2 /* channel_count */);
+                                                0, 0, 0 /* channel_count: default */);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
             peer.unref();
@@ -559,11 +523,8 @@ namespace Vital::Manager {
             offset += 28;
         }
 
-        // Send reliable (channel 0) unicast to the joining peer.
-        peer->set_transfer_channel(CHANNEL_RPC);
-        peer->set_transfer_mode(godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-        peer->set_target_peer(peer_id);
-        peer->put_packet(buf);
+        // Send reliable unicast to the joining peer via RPC.
+        if (node) node->rpc_id(peer_id, "_sync_state", buf);
 
         log("sbox", fmt::format("state dump -> peer {}  ({} models, {} bytes)",
             peer_id, count, buf.size()));
@@ -642,33 +603,176 @@ namespace Vital::Manager {
         }
         #endif
 
-        // Lazy registration: any Model that is now inside the scene tree
-        // but hasn't been registered yet (because _ready fired during create()
-        // before we had a chance to register it) gets picked up here.
-        // This runs on the main thread inside poll() — always safe.
+        // Flush the pending registration queue — models posted via
+        // enqueue_model_registration() from deferred add_child callbacks.
+        // O(pending) not O(all children), so it scales cleanly.
         {
-            auto core = Engine::Core::get_singleton();
-            if (core) {
-                for (int i = 0; i < core->get_child_count(); i++) {
-                    auto* model = godot::Object::cast_to<Engine::Model>(core->get_child(i));
-                    if (model && !model->sync_registered && model->is_inside_tree()) {
-                        std::lock_guard<std::mutex> lock(sync_models_mutex);
+            std::vector<Engine::Model*> incoming;
+            {
+                std::lock_guard<std::mutex> lock(sync_pending_mutex);
+                incoming.swap(sync_pending);
+            }
+            if (!incoming.empty()) {
+                std::lock_guard<std::mutex> lock(sync_models_mutex);
+                for (auto* model : incoming) {
+                    if (!model->sync_registered) {
                         sync_models.push_back(model);
+                        sync_id_map[model->get_net_id()] = model;
                         model->sync_registered = true;
                     }
                 }
             }
         }
 
-        // Drive all registered models' sync tick.
+        // Collect dirty models and build one batched sync packet per frame.
+        // Server-auth: one broadcast per frame (not per model).
+        // Client-auth: each authority client sends one upload per frame.
+        // Packet layout reuses the VSST format:
+        //   [0..3]  uint32  STATE_DUMP_MAGIC  (0x56535354)
+        //   [4..7]  uint32  count
+        //   [8..]   count * 28 bytes  (standard sync entries)
+        // This means one _sync_models RPC per frame replaces N RPCs.
+        #if !defined(VSDK_Client)
         {
-            std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* model : sync_models) {
-                model->sync_tick(static_cast<float>(delta));
+            // Server: tick all models, collect dirty ones into a single batch.
+            std::vector<Engine::Model*> snapshot;
+            {
+                std::lock_guard<std::mutex> lock(sync_models_mutex);
+                snapshot = sync_models;
+            }
+
+            // Two passes: (1) tick each model so it updates sync_last_*, then
+            // (2) if the model has a dirty transform, write it into the batch.
+            // We reuse sync_batch_buf to avoid reallocation every frame.
+            uint32_t dirty_count = 0;
+            sync_batch_buf.resize(8 + (int)snapshot.size() * 28);
+
+            // Write header placeholders.
+            auto wu32 = [&](int off, uint32_t v) {
+                sync_batch_buf[off]   =  v        & 0xFF;
+                sync_batch_buf[off+1] = (v >>  8) & 0xFF;
+                sync_batch_buf[off+2] = (v >> 16) & 0xFF;
+                sync_batch_buf[off+3] = (v >> 24) & 0xFF;
+            };
+            auto wf32 = [&](int off, float v) {
+                uint32_t raw; memcpy(&raw, &v, 4); wu32(off, raw);
+            };
+
+            for (auto* model : snapshot) {
+                // tick() returns true if this model produced a dirty packet.
+                // We pass a lambda that writes directly into our batch buffer.
+                if (!model->is_inside_tree()) continue;
+
+                // Only server-auth models are batched here.
+                if (model->get_sync_authority() != 1) continue;
+
+                // Check sleep / rate — same logic as before but inline so we
+                // write directly into the batch rather than allocating a packet.
+                godot::Vector3 cur_pos = model->get_global_position();
+                godot::Vector3 cur_rot = model->get_rotation_degrees();
+
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
+                          || (cur_rot - model->sync_last_rot).length() > 0.001f;
+
+                if (!moved) {
+                    if (model->sync_sleeping) continue;
+                    model->sync_sleeping = true;
+                } else {
+                    model->sync_sleeping = false;
+                }
+
+                model->sync_accum += static_cast<float>(delta);
+                if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
+                model->sync_accum = 0.0f;
+                model->sync_last_pos = cur_pos;
+                model->sync_last_rot = cur_rot;
+
+                int base = 8 + (int)dirty_count * 28;
+                wu32(base,      model->get_net_id());
+                wf32(base +  4, cur_pos.x);
+                wf32(base +  8, cur_pos.y);
+                wf32(base + 12, cur_pos.z);
+                wf32(base + 16, cur_rot.x);
+                wf32(base + 20, cur_rot.y);
+                wf32(base + 24, cur_rot.z);
+                dirty_count++;
+            }
+
+            if (dirty_count > 0 && node && is_connected()) {
+                sync_batch_buf.resize(8 + (int)dirty_count * 28);
+                wu32(0, STATE_DUMP_MAGIC);
+                wu32(4, dirty_count);
+                node->rpc("_sync_models", sync_batch_buf);
             }
         }
+        #else
+        {
+            // Client: tick client-auth models and batch their uploads to server.
+            std::vector<Engine::Model*> snapshot;
+            {
+                std::lock_guard<std::mutex> lock(sync_models_mutex);
+                snapshot = sync_models;
+            }
 
-        // Drain inbound raw sync packets and dispatch.
-        drain_sync_packets();
+            int my_id = get_peer_id();
+            uint32_t dirty_count = 0;
+            // Client packet: [sender_peer_id u32][VSST magic u32][count u32][entries...]
+            // = 12 byte header + N*28 bytes
+            sync_batch_buf.resize(12 + (int)snapshot.size() * 28);
+
+            auto wu32 = [&](int off, uint32_t v) {
+                sync_batch_buf[off]   =  v        & 0xFF;
+                sync_batch_buf[off+1] = (v >>  8) & 0xFF;
+                sync_batch_buf[off+2] = (v >> 16) & 0xFF;
+                sync_batch_buf[off+3] = (v >> 24) & 0xFF;
+            };
+            auto wf32 = [&](int off, float v) {
+                uint32_t raw; memcpy(&raw, &v, 4); wu32(off, raw);
+            };
+
+            for (auto* model : snapshot) {
+                if (!model->is_inside_tree()) continue;
+                if (model->get_sync_authority() != my_id) continue;
+
+                godot::Vector3 cur_pos = model->get_global_position();
+                godot::Vector3 cur_rot = model->get_rotation_degrees();
+
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
+                          || (cur_rot - model->sync_last_rot).length() > 0.001f;
+
+                if (!moved) {
+                    if (model->sync_sleeping) continue;
+                    model->sync_sleeping = true;
+                } else {
+                    model->sync_sleeping = false;
+                }
+
+                model->sync_accum += static_cast<float>(delta);
+                if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
+                model->sync_accum = 0.0f;
+                model->sync_last_pos = cur_pos;
+                model->sync_last_rot = cur_rot;
+
+                int base = 12 + (int)dirty_count * 28;
+                wu32(base,      model->get_net_id());
+                wf32(base +  4, cur_pos.x);
+                wf32(base +  8, cur_pos.y);
+                wf32(base + 12, cur_pos.z);
+                wf32(base + 16, cur_rot.x);
+                wf32(base + 20, cur_rot.y);
+                wf32(base + 24, cur_rot.z);
+                dirty_count++;
+            }
+
+            if (dirty_count > 0 && node && is_connected()) {
+                sync_batch_buf.resize(12 + (int)dirty_count * 28);
+                wu32(0, (uint32_t)my_id);   // sender stamp
+                wu32(4, STATE_DUMP_MAGIC);
+                wu32(8, dirty_count);
+                node->rpc_id(1, "_sync_client", sync_batch_buf);
+            }
+        }
+        #endif
+
     }
 }
