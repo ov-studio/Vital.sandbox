@@ -19,17 +19,48 @@ class Godot:
             "templates_dir": self._get_templates_dir(version, os_info["type"]) if version else None,
         }
 
-    def _fetch_latest_stable_version(self):
+    def _parse_stable_tag(self, tag, major_filter=None):
+        tag = tag.strip().lstrip("v")
+        if not tag.endswith("-stable"):
+            return None
+        core = tag[: -len("-stable")]
+        parts = core.split(".")
+        if not all(p.isdigit() for p in parts) or len(parts) < 2:
+            return None
+        nums = tuple(int(p) for p in parts) + (0, 0, 0)
+        major, minor, patch = nums[0], nums[1], nums[2]
+        if major_filter is not None and major != major_filter:
+            return None
+        return (major, minor, patch), tag
+
+    def _fetch_latest_stable_version(self, major_filter=4):
+        releases = self._fetch_release_list()
+        if not releases:
+            return None
+        candidates = []
+        for release in releases:
+            tag = release.get("tag_name", "")
+            if not tag:
+                continue
+            parsed = self._parse_stable_tag(tag, major_filter)
+            if parsed:
+                candidates.append(parsed)
+        if not candidates:
+            return None
+        candidates.sort(key=lambda c: c[0], reverse=True)
+        return candidates[0][1]
+
+    def _fetch_release_list(self):
         try:
             import urllib.request, json as _json
             req = urllib.request.Request(
-                "https://api.github.com/repos/godotengine/godot/releases/latest",
+                "https://api.github.com/repos/godotengine/godot/releases?per_page=100",
                 headers={"User-Agent": "Vital.sandbox-bootstrap"}
             )
             with urllib.request.urlopen(req, timeout=10) as resp:
-                tag = _json.load(resp).get("tag_name", "").strip()
-                if tag:
-                    return tag
+                data = _json.load(resp)
+                if isinstance(data, list):
+                    return data
         except Exception:
             pass
 
@@ -38,13 +69,13 @@ class Godot:
             result = subprocess.run(
                 ["curl", "-s", "-L",
                  "-H", "User-Agent: Vital.sandbox-bootstrap",
-                 "https://api.github.com/repos/godotengine/godot/releases/latest"],
+                 "https://api.github.com/repos/godotengine/godot/releases?per_page=100"],
                 capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
-                tag = _json.loads(result.stdout).get("tag_name", "").strip()
-                if tag:
-                    return tag
+                data = _json.loads(result.stdout)
+                if isinstance(data, list):
+                    return data
         except Exception:
             pass
 
@@ -82,9 +113,22 @@ class Godot:
         except Exception:
             pass
 
-        latest = self._fetch_latest_stable_version()
+        major_filter = 4
+        try:
+            result = subprocess.run(
+                ["git", "-C", godot_cpp_dir, "rev-parse", "--abbrev-ref", "HEAD"],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                branch = result.stdout.strip()
+                if branch and branch[0].isdigit():
+                    major_filter = int(branch.split(".")[0])
+        except Exception:
+            pass
+
+        latest = self._fetch_latest_stable_version(major_filter)
         if latest:
-            log_warn(f"Could not detect Godot version from godot-cpp — using latest stable release {latest}")
+            log_warn(f"Could not detect Godot version from godot-cpp — using latest stable {major_filter}.x release {latest}")
             return latest
 
         Throw_Error("Could not detect Godot version from godot-cpp and failed to fetch latest release from GitHub")
