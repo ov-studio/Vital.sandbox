@@ -27,6 +27,7 @@
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+#include <Vital.sandbox/API/core/shader.h>
 #include <Vital.sandbox/API/core/audio_2d.h>
 #include <Vital.sandbox/API/core/audio_3d.h>
 
@@ -88,6 +89,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Texture>(),
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
+            vm_module::make_api<Shader>(),
             vm_module::make_api<Audio_2D>(),
             vm_module::make_api<Audio_3D>(),
 
