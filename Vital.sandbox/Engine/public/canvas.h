@@ -22,10 +22,12 @@
 ////////////////////////////
 
 // TODO: Use draw_image and accept shader as 'material' instead
+
 namespace Vital::Engine {
     class Font;
     class Texture;
     class Rendertarget;
+    class Shader;
     class Canvas : public godot::Node2D, public Tool::Base<Canvas> {
         GDCLASS(Canvas, godot::Node2D)
         friend class Tool::Base<Canvas>;
@@ -38,6 +40,7 @@ namespace Vital::Engine {
                 Rectangle,
                 Circle,
                 IMAGE,
+                SHADER,
                 TEXT
             };
         
@@ -103,9 +106,19 @@ namespace Vital::Engine {
                 godot::Vector2 pivot;
             };
         
+            // Shader_Draw — draws a rect on the canvas using a ShaderMaterial.
+            // The material is ref-counted; the Shader instance must outlive the draw call.
+            struct Shader_Draw {
+                godot::Ref<godot::ShaderMaterial> material;
+                godot::Rect2 rect;
+                float rotation;
+                godot::Vector2 pivot;
+                godot::Color color;  // modulate tint forwarded as shader param "modulate"
+            };
+
             struct Command {
                 Type type;
-                std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
+                std::variant<Line, Polygon, Rectangle, Circle, Image, Shader_Draw, Text> payload;
             };
         private:
             std::vector<Command> queue;
@@ -202,6 +215,29 @@ namespace Vital::Engine {
                 godot::Vector2 position,
                 godot::Vector2 size,
                 const godot::Ref<godot::Texture2D>& texture,
+                float rotation = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
+                const godot::Color& color = {1, 1, 1, 1}
+            );
+
+            // draw_shader — pushes a SHADER command into the canvas/RT queue.
+            // The ShaderMaterial's canvas_item shader runs on a rect of (position, size).
+            // `color` is forwarded as a "modulate" shader parameter so shaders can tint
+            // or use it as an alpha; if the shader doesn't declare that uniform it is
+            // silently ignored by Godot.
+            void draw_shader(
+                godot::Vector2 position,
+                godot::Vector2 size,
+                Shader* shader,
+                float rotation = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
+                const godot::Color& color = {1, 1, 1, 1}
+            );
+
+            void draw_shader(
+                godot::Vector2 position,
+                godot::Vector2 size,
+                const godot::Ref<godot::ShaderMaterial>& material,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
