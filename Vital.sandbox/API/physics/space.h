@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
         }
 
         static godot::PhysicsDirectSpaceState3D* get_space_state() {
-            auto core = Engine::Core::get_singleton();
+            auto core = Vital::Engine::Core::get_singleton();
             if (!core || !core -> get_viewport() || !core -> get_viewport() -> get_world_3d().is_valid()) return nullptr;
             return core -> get_viewport() -> get_world_3d() -> get_direct_space_state();
         }
