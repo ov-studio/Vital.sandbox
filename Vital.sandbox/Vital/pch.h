@@ -149,6 +149,8 @@
 #include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
 #include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
 #include <godot_cpp/classes/physics_point_query_parameters3d.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
