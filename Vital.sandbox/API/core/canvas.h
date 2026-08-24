@@ -187,14 +187,17 @@ namespace Vital::Sandbox::API {
 
 
             // TODO: Use draw_image and accept shader as 'material' instead
-            // engine.draw_shader(position, size, shader, rotation=0, pivot={0,0}, color={1,1,1,1})
+            // engine.draw_shader(position, size, shader, rotation=0, pivot={0,0}, color={1,1,1,1}, z_index=0)
             // Draws a shader-material rect into the canvas (or active RT) at the given
-            // position/size.  Rendering order is the same as draw_image — call it between
-            // other draw_* calls to control layering exactly.  The shader must be a
-            // canvas_item shader.  The `color` argument is forwarded as a "modulate"
+            // position/size.  Rendering order is the same as every other draw_* call —
+            // whatever order you call draw_image/draw_shader/draw_text in each tick is
+            // the order they stack, no special-casing needed.  z_index (-4096..4096) is
+            // an optional manual override on top of that if you need one shader to always
+            // sit above/below everything else regardless of call order.  The shader must
+            // be a canvas_item shader.  The `color` argument is forwarded as a "modulate"
             // uniform so shaders can optionally read it.
             API::bind(vm, base_scope, "draw_shader", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position, size, shader, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1})")
+                vm_args(vm, id, "(position, size, shader, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1}, z_index = 0)")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_vector2)
                     .require(3, [](Machine* vm, int idx) {
@@ -202,7 +205,8 @@ namespace Vital::Sandbox::API {
                     })
                     .optional(4, &Machine::is_number)
                     .optional(5, &Machine::is_vector2)
-                    .optional(6, &Machine::is_color);
+                    .optional(6, &Machine::is_color)
+                    .optional(7, &Machine::is_number);
 
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
@@ -210,8 +214,9 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
                 auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
+                auto z_index = vm -> is_number(7) ? vm -> get_int(7) : 0;
                 base_class::get_singleton() -> draw_shader(
-                    position, size, shader_inst -> shader, rotation, pivot, color
+                    position, size, shader_inst -> shader, rotation, pivot, color, z_index
                 );
                 vm -> push_value(true);
                 return 1;
