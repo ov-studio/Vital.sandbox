@@ -82,6 +82,7 @@ namespace Vital::Config {
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
                 append_field(oss, "Max Peers", std::to_string(get_max_clients()));
+                append_field(oss, "Sync Rate", std::to_string(get_sync_rate()) + " Hz");
                 return oss.str();
             }
 
