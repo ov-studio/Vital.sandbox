@@ -185,6 +185,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // TODO: Use draw_image and accept shader as 'material' instead
             API::bind(vm, base_scope, "draw_shader", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, size, shader, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2)
