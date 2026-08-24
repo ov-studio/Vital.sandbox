@@ -249,9 +249,7 @@ namespace Vital::Engine {
                 -piv - godot::Vector2(stroke*0.5f, stroke*0.5f),
                 size + godot::Vector2(stroke, stroke)
             );
-            if (stroke >= r.size.width || stroke >= r.size.height) {
-                rs -> canvas_item_add_rect(item, r.grow(0.5f*stroke), stroke_color, true);
-            }
+            if (stroke >= r.size.width || stroke >= r.size.height) rs -> canvas_item_add_rect(item, r.grow(0.5f*stroke), stroke_color, true);
             else {
                 godot::PackedVector2Array pts;
                 pts.resize(5);
@@ -284,9 +282,7 @@ namespace Vital::Engine {
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + pivot));
 
         if (stroke > 0.0f) {
-            if (stroke >= 2.0f*godot::Math::max(radius, radius)) {
-                rs -> canvas_item_add_ellipse(item, -pivot, radius + 0.5f*stroke, radius + 0.5f*stroke, stroke_color, true);
-            }
+            if (stroke >= 2.0f*godot::Math::max(radius, radius)) rs -> canvas_item_add_ellipse(item, -pivot, radius + 0.5f*stroke, radius + 0.5f*stroke, stroke_color, true);
             else {
                 constexpr int SEGMENTS = 64;
                 constexpr float TAU = 6.283185307179586f;
