@@ -20,6 +20,7 @@
 // Vital: Engine: Model //
 ///////////////////////////
 
+// TOOD: Improve
 namespace Vital::Manager { class Network; }
 
 namespace Vital::Engine {
