@@ -671,14 +671,12 @@ namespace Vital::Manager {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
                 snapshot = sync_models;
             }
+            if (snapshot.empty() || !node || !is_connected()) return;
 
             // Two passes: (1) tick each model so it updates sync_last_*, then
-            // (2) if the model has a dirty transform, write it into the batch.
-            // We reuse sync_batch_buf to avoid reallocation every frame.
             uint32_t dirty_count = 0;
             sync_batch_buf.resize(8 + (int)snapshot.size() * 28);
 
-            // Write header placeholders.
             auto wu32 = [&](int off, uint32_t v) {
                 sync_batch_buf[off]   =  v        & 0xFF;
                 sync_batch_buf[off+1] = (v >>  8) & 0xFF;
@@ -691,14 +689,11 @@ namespace Vital::Manager {
 
             for (auto* model : snapshot) {
                 // tick() returns true if this model produced a dirty packet.
-                // We pass a lambda that writes directly into our batch buffer.
                 if (!model->is_inside_tree()) continue;
 
-                // Only server-auth models are batched here.
                 if (model->get_sync_authority() != 1) continue;
 
                 // Check sleep / rate — same logic as before but inline so we
-                // write directly into the batch rather than allocating a packet.
                 godot::Vector3 cur_pos = model->get_global_position();
                 godot::Vector3 cur_rot = model->get_rotation_degrees();
 
@@ -714,6 +709,7 @@ namespace Vital::Manager {
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
+                if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
                 model->sync_accum = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
@@ -730,6 +726,7 @@ namespace Vital::Manager {
             }
 
             if (dirty_count > 0 && node && is_connected()) {
+            if (dirty_count > 0) {
                 sync_batch_buf.resize(8 + (int)dirty_count * 28);
                 wu32(0, STATE_DUMP_MAGIC);
                 wu32(4, dirty_count);
@@ -738,17 +735,15 @@ namespace Vital::Manager {
         }
         #else
         {
-            // Client: tick client-auth models and batch their uploads to server.
             std::vector<Engine::Model*> snapshot;
             {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
                 snapshot = sync_models;
             }
+            if (snapshot.empty() || !node || !is_connected()) return;
 
             int my_id = get_peer_id();
             uint32_t dirty_count = 0;
-            // Client packet: [sender_peer_id u32][VSST magic u32][count u32][entries...]
-            // = 12 byte header + N*28 bytes
             sync_batch_buf.resize(12 + (int)snapshot.size() * 28);
 
             auto wu32 = [&](int off, uint32_t v) {
@@ -780,6 +775,7 @@ namespace Vital::Manager {
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
+                if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
                 model->sync_accum = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
@@ -796,8 +792,10 @@ namespace Vital::Manager {
             }
 
             if (dirty_count > 0 && node && is_connected()) {
+            if (dirty_count > 0) {
                 sync_batch_buf.resize(12 + (int)dirty_count * 28);
                 wu32(0, (uint32_t)my_id);   // sender stamp
+                wu32(0, (uint32_t)my_id);
                 wu32(4, STATE_DUMP_MAGIC);
                 wu32(8, dirty_count);
                 node->rpc_id(1, "_sync_client", sync_batch_buf);
