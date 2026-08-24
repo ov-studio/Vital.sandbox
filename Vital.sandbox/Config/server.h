@@ -97,6 +97,7 @@ namespace Vital::Config {
             int get_network_port() const { return get_int("network", "port", 7777); }
             int get_max_clients() const { return get_int("network", "max_peers", 32); }
             int get_http_port() const { return get_int("http", "port", 7778); }
+            int get_sync_rate() const { return std::clamp(get_int("network", "sync_rate", 20), 1, 128); }
 
 
             // Bootstrap //
