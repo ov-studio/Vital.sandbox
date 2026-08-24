@@ -147,10 +147,10 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Static_Body>(),
             vm_module::make_api<Character_Body>(),
             vm_module::make_api<Animatable_Body>(),
-            vm_module::make_api<Area>(),
-            vm_module::make_api<Collision_Shape>(),
             vm_module::make_api<Vehicle_Body>(),
             vm_module::make_api<Vehicle_Wheel>(),
+            vm_module::make_api<Area>(),
+            vm_module::make_api<Collision_Shape>(),
             vm_module::make_api<Space>()
         };
     }

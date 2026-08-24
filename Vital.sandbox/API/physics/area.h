@@ -23,9 +23,9 @@
 #include <Vital.sandbox/API/physics/animatable_body.h>
 
 
-////////////////////////
+///////////////////////
 // Vital: API: Area //
-////////////////////////
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct Area : vm_module {
