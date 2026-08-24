@@ -23,6 +23,7 @@
 // Vital: Manager: Masterlist //
 ///////////////////////////////////
 
+// TOOD: Improve
 namespace Vital::Manager {
     // Reports this server's presence + live stats to the Vital.site
     // masterlist API on an interval, so it shows up in the public server

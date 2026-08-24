@@ -28,6 +28,7 @@
 // Vital: Manager: Masterlist //
 ///////////////////////////////////
 
+// TOOD: Improve
 namespace Vital::Manager {
     // Internal //
     void Masterlist::send_heartbeat() const {
