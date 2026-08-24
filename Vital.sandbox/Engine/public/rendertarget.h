@@ -28,7 +28,7 @@ namespace Vital::Engine {
             godot::SubViewport* viewport = nullptr;
             inline static Rendertarget* active = nullptr;
         private:
-            std::vector<Engine::Canvas::Command> queue;
+            Engine::Canvas::Draw_Pool pool;
             bool instant = false;
 
 
@@ -38,16 +38,18 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         public:
             // Hooks //
-            void _draw() override { draw(); };
+            void _process(double delta) override { 
+                pool.end_frame(delta); 
+                instant = false; 
+            }
 
 
             // Managers //
             static Rendertarget* create(godot::Vector2 size, bool transparent = false);
             void destroy();
-            void push(Engine::Canvas::Command command);
             void clear(bool clear, bool instant);
             void update();
-            void draw();
+            void notify_drawn();
 
 
             // Checkers //
@@ -59,6 +61,7 @@ namespace Vital::Engine {
             godot::Vector2 get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
+            Engine::Canvas::Draw_Pool& get_pool();
 
 
             // Setters //
