@@ -24,6 +24,7 @@
 namespace Vital::Engine {
     // Instantiators //
     Rendertarget::~Rendertarget() {
+        pool.free_all();
         if (!viewport) return;
         if (active == this) active = nullptr;
         viewport -> queue_free();
@@ -41,6 +42,7 @@ namespace Vital::Engine {
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
         rt -> viewport -> add_child(rt);
         Engine::Canvas::get_singleton() -> add_child(rt -> viewport);
+        rt -> set_process(true);
         return rt;
     }
 
@@ -48,16 +50,9 @@ namespace Vital::Engine {
         queue_free();
     }
 
-    void Rendertarget::push(Engine::Canvas::Command command) {
-        queue.push_back(command);
-        queue_redraw();
-        if (instant) update();
-    }
-
     void Rendertarget::clear(bool clear, bool instant) {
         this -> instant = instant;
         viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
-        if (clear) queue_redraw();
         if (instant) update();
     }
 
@@ -69,9 +64,8 @@ namespace Vital::Engine {
         rs -> viewport_set_active(viewport_main, true);
     }
 
-    void Rendertarget::draw() {
-        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        instant = false;
+    void Rendertarget::notify_drawn() {
+        if (instant) update();
     }
 
 
@@ -96,6 +90,10 @@ namespace Vital::Engine {
 
     godot::Ref<godot::ViewportTexture> Rendertarget::get_texture() {
         return viewport -> get_texture();
+    }
+
+    Engine::Canvas::Draw_Pool& Rendertarget::get_pool() {
+        return pool;
     }
 
 
