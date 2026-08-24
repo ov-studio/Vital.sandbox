@@ -688,12 +688,9 @@ namespace Vital::Manager {
             };
 
             for (auto* model : snapshot) {
-                // tick() returns true if this model produced a dirty packet.
                 if (!model->is_inside_tree()) continue;
-
                 if (model->get_sync_authority() != 1) continue;
 
-                // Check sleep / rate — same logic as before but inline so we
                 godot::Vector3 cur_pos = model->get_global_position();
                 godot::Vector3 cur_rot = model->get_rotation_degrees();
 
@@ -708,7 +705,6 @@ namespace Vital::Manager {
                 }
 
                 model->sync_accum += static_cast<float>(delta);
-                if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
                 model->sync_accum = 0.0f;
                 model->sync_last_pos = cur_pos;
@@ -725,7 +721,6 @@ namespace Vital::Manager {
                 dirty_count++;
             }
 
-            if (dirty_count > 0 && node && is_connected()) {
             if (dirty_count > 0) {
                 sync_batch_buf.resize(8 + (int)dirty_count * 28);
                 wu32(0, STATE_DUMP_MAGIC);
@@ -774,7 +769,6 @@ namespace Vital::Manager {
                 }
 
                 model->sync_accum += static_cast<float>(delta);
-                if (model->sync_accum < (1.0f / 20.0f) && !model->sync_sleeping) continue;
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
                 model->sync_accum = 0.0f;
                 model->sync_last_pos = cur_pos;
@@ -791,10 +785,8 @@ namespace Vital::Manager {
                 dirty_count++;
             }
 
-            if (dirty_count > 0 && node && is_connected()) {
             if (dirty_count > 0) {
                 sync_batch_buf.resize(12 + (int)dirty_count * 28);
-                wu32(0, (uint32_t)my_id);   // sender stamp
                 wu32(0, (uint32_t)my_id);
                 wu32(4, STATE_DUMP_MAGIC);
                 wu32(8, dirty_count);
