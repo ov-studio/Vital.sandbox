@@ -26,26 +26,56 @@
 // Vital: Engine: Canvas //
 ////////////////////////////
 
-// TODO: Use draw_image and accept shader as 'material' instead
-
 namespace Vital::Engine {
+    // Draw_Pool //
+    godot::RID Canvas::Draw_Pool::next(godot::RID parent) {
+        auto* rs = godot::RenderingServer::get_singleton();
+        idle_time = 0.0;
+        if (used >= items.size()) {
+            godot::RID item = rs -> canvas_item_create();
+            rs -> canvas_item_set_parent(item, parent);
+            items.push_back(item);
+        }
+        godot::RID item = items[used++];
+        rs -> canvas_item_clear(item);
+        rs -> canvas_item_set_visible(item, true);
+        rs -> canvas_item_set_z_index(item, 0);
+        rs -> canvas_item_set_material(item, godot::RID());
+        return item;
+    }
+
+    void Canvas::Draw_Pool::end_frame(double delta) {
+        auto* rs = godot::RenderingServer::get_singleton();
+        for (size_t i = used; i < items.size(); i++)
+            rs -> canvas_item_set_visible(items[i], false);
+        if (used == 0 && !items.empty()) {
+            idle_time += delta;
+            if (idle_time >= IDLE_SECONDS) free_all();
+        }
+        else idle_time = 0.0;
+        used = 0;
+    }
+
+    void Canvas::Draw_Pool::free_all() {
+        auto* rs = godot::RenderingServer::get_singleton();
+        for (auto& item : items) rs -> free_rid(item);
+        items.clear();
+        idle_time = 0.0;
+    }
+
+
     // Hooks //
     void Canvas::_ready() {
-        queue.reserve(256);
         set_as_top_level(true);
         set_visible(true);
         set_process(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
     }
 
-    void Canvas::_process(double) {
-        queue_redraw();
+    void Canvas::_process(double delta) {
         Engine::Texture::flush();
-    }
-
-    void Canvas::_draw() {
-        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         Manager::Sandbox::get_singleton() -> draw(this);
+        pool.end_frame(delta);
     }
 
 
@@ -57,164 +87,29 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+    void Canvas::teardown() {
+        pool.free_all();
+    }
+
 
     // Managers //
     void Canvas::init() {
         Engine::Core::get_singleton() -> add_child(singleton);
     }
 
-    void Canvas::push(Command command) {
+
+    // Helpers //
+    std::pair<Canvas::Draw_Pool*, godot::RID> Canvas::target() {
         auto rt = Engine::Rendertarget::get_active();
-        if (rt) return rt -> push(command);
-        queue.push_back(command);
+        if (rt) return {&rt -> get_pool(), rt -> get_canvas_item()};
+        auto* self = Canvas::get_singleton();
+        return {&self -> pool, self -> get_canvas_item()};
     }
 
-    void Canvas::execute(godot::Node2D* node, std::vector<Command>& queue) {
-        for (const auto &command : queue) {
-            switch (command.type) {
-                case Type::Line: {
-                    const auto& payload = std::get<Line>(command.payload);
-                    node -> draw_set_transform({0, 0}, 0, {1, 1});
-                    node -> draw_polyline(
-                        payload.points,
-                        payload.color,
-                        payload.thickness,
-                        true
-                    );
-                    break;
-                }
-                case Type::Polygon: {
-                    const auto& payload = std::get<Polygon>(command.payload);
-                    node -> draw_set_transform(payload.rect.position + payload.pivot, payload.rotation, {1, 1});
-                    if (payload.stroke > 0.0f) {
-                        node -> draw_polyline(
-                            payload.stroke_points,
-                            payload.stroke_color,
-                            payload.stroke,
-                            true
-                        );
-                    }
-                    node -> draw_colored_polygon(
-                        payload.points,
-                        payload.color
-                    );
-                    break;
-                }
-                case Type::Rectangle: {
-                    const auto& payload = std::get<Rectangle>(command.payload);
-                    auto pivot = payload.rect.size*0.5f + payload.pivot;
-                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-                    if (payload.stroke > 0.0f) {
-                        node -> draw_rect(
-                            godot::Rect2(-pivot - godot::Vector2(payload.stroke*0.5, payload.stroke*0.5), payload.rect.size + godot::Vector2(payload.stroke, payload.stroke)),
-                            payload.stroke_color,
-                            false,
-                            payload.stroke,
-                            true
-                        );
-                    }
-                    node -> draw_rect(
-                        godot::Rect2(-pivot, payload.rect.size),
-                        payload.color,
-                        true,
-                        -1,
-                        true
-                    );
-                    break;
-                }
-                case Type::Circle: {
-                    const auto& payload = std::get<Circle>(command.payload);
-                    auto pivot = payload.pivot;
-                    node -> draw_set_transform(payload.position + pivot, payload.rotation, {1, 1});
-                    if (payload.stroke > 0.0f) {
-                        node -> draw_circle(
-                            -pivot,
-                            payload.radius + payload.stroke*0.5,
-                            payload.stroke_color,
-                            false,
-                            payload.stroke,
-                            true
-                        );
-                    }
-                    node -> draw_circle(
-                        -pivot,
-                        payload.radius,
-                        payload.color,
-                        true,
-                        -1,
-                        true
-                    );
-                    break;
-                }
-                case Type::IMAGE: {
-                    const auto& payload = std::get<Image>(command.payload);
-                    auto pivot = payload.rect.size*0.5f + payload.pivot;
-                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-                    node -> draw_texture_rect(
-                        payload.texture,
-                        godot::Rect2(-pivot, payload.rect.size),
-                        false,
-                        payload.color
-                    );
-                    break;
-                }
-                case Type::SHADER: {
-                    const auto& payload = std::get<Shader_Draw>(command.payload);
-                    if (!payload.material.is_valid()) break;
-                    auto pivot = payload.rect.size * 0.5f + payload.pivot;
-                    // Forward the modulate tint as a shader uniform so canvas_item shaders
-                    // can read it as "uniform vec4 modulate;" without extra C++ plumbing.
-                    payload.material -> set_shader_parameter("modulate",
-                        godot::Variant(payload.color));
-                    // In Godot 4, _draw() calls inherit the CanvasItem's `material` property.
-                    // We temporarily swap the node's material, draw a white rect of the
-                    // requested size, then restore, so every other draw is unaffected.
-                    auto prev_material = node -> get_material();
-                    node -> set_material(payload.material);
-                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-                    node -> draw_rect(
-                        godot::Rect2(-pivot, payload.rect.size),
-                        godot::Color(1, 1, 1, 1),
-                        true, -1, true
-                    );
-                    node -> set_material(prev_material);
-                    node -> draw_set_transform({0, 0}, 0, {1, 1});
-                    break;
-                }
-                case Type::TEXT: {
-                    const auto& payload = std::get<Text>(command.payload);
-                    auto pivot = payload.rect.size*0.5f + payload.pivot;
-                    pivot.y -= payload.font_ascent;
-                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-                    if (payload.stroke > 0) {
-                        node -> draw_multiline_string_outline(
-                            payload.font,
-                            -pivot,
-                            payload.text,
-                            godot::HORIZONTAL_ALIGNMENT_LEFT,
-                            payload.rect.size.x,
-                            payload.font_size,
-                            -1,
-                            payload.stroke,
-                            payload.stroke_color
-                        );
-                    }
-                    node -> draw_multiline_string(
-                        payload.font,
-                        -pivot,
-                        payload.text,
-                        godot::HORIZONTAL_ALIGNMENT_LEFT,
-                        payload.rect.size.x,
-                        payload.font_size,
-                        -1,
-                        payload.color
-                    );
-                    break;
-                }
-            }
-        }
-        queue.clear();
-    };
+    void Canvas::notify_drawn() {
+        auto rt = Engine::Rendertarget::get_active();
+        if (rt) rt -> notify_drawn();
+    }
 
 
     // Misc //
@@ -254,11 +149,14 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (points.size() < 2) return;
-        Line payload;
-        payload.points = points;
-        payload.thickness = thickness;
-        payload.color = color;
-        push({Type::Line, payload});
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D());
+        godot::PackedColorArray colors;
+        colors.push_back(color);
+        rs -> canvas_item_add_polyline(item, points, colors, thickness, true);
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_polygon(
@@ -270,7 +168,6 @@ namespace Vital::Engine {
         godot::Vector2 pivot
     ) {
         if (points.size() < 3) return;
-        Polygon payload;
         godot::Vector2 min = points[0];
         godot::Vector2 max = points[0];
         for (int i = 1; i < points.size(); i++) {
@@ -280,32 +177,29 @@ namespace Vital::Engine {
             max.x = godot::Math::max(max.x, p.x);
             max.y = godot::Math::max(max.y, p.y);
         }
-        payload.rect = {min, max - min};
-        payload.points = godot::PackedVector2Array();
-        payload.points.resize(points.size());
-        payload.color = color;
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = payload.rect.size*0.5f + pivot;
+        godot::Rect2 rect = {min, max - min};
+        godot::Vector2 local_pivot = rect.size*0.5f + pivot;
+        godot::PackedVector2Array local_points;
+        local_points.resize(points.size());
         for (int i = 0; i < points.size(); i++) {
-            payload.points[i] = points[i] - payload.rect.position - payload.pivot;
+            local_points[i] = points[i] - rect.position - local_pivot;
         }
-        payload.stroke = stroke;
-        payload.stroke_points = godot::PackedVector2Array();
-        payload.stroke_color = stroke_color;
-        payload.stroke_points.resize(payload.points.size() + 1);
-        if (payload.stroke > 0.0f) {
+        godot::PackedVector2Array stroke_points;
+        stroke_points.resize(local_points.size() + 1);
+
+        if (stroke > 0.0f) {
             float area = 0.0f;
-            for (int i = 0; i < payload.points.size(); i++) {
-                const godot::Vector2 &a = payload.points[i];
-                const godot::Vector2 &b = payload.points[(i + 1)%payload.points.size()];
+            for (int i = 0; i < local_points.size(); i++) {
+                const godot::Vector2 &a = local_points[i];
+                const godot::Vector2 &b = local_points[(i + 1)%local_points.size()];
                 area += (b.x - a.x)*(b.y + a.y);
             }
             bool clockwise = area > 0.0f;
-            int count = payload.points.size();
+            int count = local_points.size();
             for (int i = 0; i < count; i++) {
-                const godot::Vector2 &prev = payload.points[(i - 1 + count)%count];
-                const godot::Vector2 &curr = payload.points[i];
-                const godot::Vector2 &next = payload.points[(i + 1)%count];
+                const godot::Vector2 &prev = local_points[(i - 1 + count)%count];
+                const godot::Vector2 &curr = local_points[i];
+                const godot::Vector2 &next = local_points[(i + 1)%count];
                 godot::Vector2 d1 = (curr - prev).normalized();
                 godot::Vector2 d2 = (next - curr).normalized();
                 godot::Vector2 n1 = {-d1.y, d1.x};
@@ -315,11 +209,24 @@ namespace Vital::Engine {
                     n2 = -n2;
                 }
                 godot::Vector2 n = (n1 + n2).normalized();
-                payload.stroke_points[i] = curr - n*payload.stroke*0.5;
+                stroke_points[i] = curr - n*stroke*0.5;
             }
-            payload.stroke_points[payload.points.size()] = payload.stroke_points[0];
+            stroke_points[local_points.size()] = stroke_points[0];
         }
-        push({Type::Polygon, payload});
+
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + local_pivot));
+        if (stroke > 0.0f) {
+            godot::PackedColorArray stroke_colors;
+            stroke_colors.push_back(stroke_color);
+            rs -> canvas_item_add_polyline(item, stroke_points, stroke_colors, stroke, true);
+        }
+        godot::PackedColorArray colors;
+        colors.push_back(color);
+        rs -> canvas_item_add_polygon(item, local_points, colors, godot::PackedVector2Array(), godot::RID());
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_rectangle(
@@ -331,14 +238,35 @@ namespace Vital::Engine {
         float rotation,
         godot::Vector2 pivot
     ) {
-        Rectangle payload;
-        payload.rect = {position, size};
-        payload.color = color;
-        payload.stroke = stroke;
-        payload.stroke_color = stroke_color;
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        push({Type::Rectangle, payload});
+        auto piv = size*0.5f + pivot;
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
+
+        if (stroke > 0.0f) {
+            godot::Rect2 r(
+                -piv - godot::Vector2(stroke*0.5f, stroke*0.5f),
+                size + godot::Vector2(stroke, stroke)
+            );
+            if (stroke >= r.size.width || stroke >= r.size.height) {
+                rs -> canvas_item_add_rect(item, r.grow(0.5f*stroke), stroke_color, true);
+            }
+            else {
+                godot::PackedVector2Array pts;
+                pts.resize(5);
+                pts[0] = r.position;
+                pts[1] = r.position + godot::Vector2(r.size.x, 0);
+                pts[2] = r.position + r.size;
+                pts[3] = r.position + godot::Vector2(0, r.size.y);
+                pts[4] = r.position;
+                godot::PackedColorArray cols;
+                cols.push_back(stroke_color);
+                rs -> canvas_item_add_polyline(item, pts, cols, stroke, true);
+            }
+        }
+        rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), color, true);
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_circle(
@@ -350,15 +278,33 @@ namespace Vital::Engine {
         float rotation,
         godot::Vector2 pivot
     ) {
-        Circle payload;
-        payload.position = position;
-        payload.radius = radius;
-        payload.color = color;
-        payload.stroke = stroke;
-        payload.stroke_color = stroke_color;
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        push({Type::Circle, payload});
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + pivot));
+
+        if (stroke > 0.0f) {
+            if (stroke >= 2.0f*godot::Math::max(radius, radius)) {
+                rs -> canvas_item_add_ellipse(item, -pivot, radius + 0.5f*stroke, radius + 0.5f*stroke, stroke_color, true);
+            }
+            else {
+                constexpr int SEGMENTS = 64;
+                constexpr float TAU = 6.283185307179586f;
+                godot::PackedVector2Array pts;
+                pts.resize(SEGMENTS + 1);
+                float step = TAU/SEGMENTS;
+                for (int i = 0; i < SEGMENTS; i++) {
+                    float angle = i*step;
+                    pts[i] = godot::Vector2(godot::Math::cos(angle)*radius, godot::Math::sin(angle)*radius) - pivot;
+                }
+                pts[SEGMENTS] = pts[0];
+                godot::PackedColorArray cols;
+                cols.push_back(stroke_color);
+                rs -> canvas_item_add_polyline(item, pts, cols, stroke, true);
+            }
+        }
+        rs -> canvas_item_add_ellipse(item, -pivot, radius, radius, color, true);
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_image(
@@ -409,13 +355,13 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
-        Image payload;
-        payload.texture = texture;
-        payload.rect = {position, size};
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        payload.color = color;
-        push({Type::IMAGE, payload});
+        auto piv = size*0.5f + pivot;
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
+        texture -> draw_rect(item, godot::Rect2(-piv, size), false, color);
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_shader(
@@ -424,10 +370,11 @@ namespace Vital::Engine {
         Shader* shader,
         float rotation,
         godot::Vector2 pivot,
-        const godot::Color& color
+        const godot::Color& color,
+        int z_index
     ) {
         if (!shader || !shader -> is_valid()) return;
-        draw_shader(position, size, shader -> get_material(), rotation, pivot, color);
+        draw_shader(position, size, shader -> get_material(), rotation, pivot, color, z_index);
     }
 
     void Canvas::draw_shader(
@@ -436,16 +383,20 @@ namespace Vital::Engine {
         const godot::Ref<godot::ShaderMaterial>& material,
         float rotation,
         godot::Vector2 pivot,
-        const godot::Color& color
+        const godot::Color& color,
+        int z_index
     ) {
         if (!material.is_valid()) return;
-        Shader_Draw payload;
-        payload.material = material;
-        payload.rect = {position, size};
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        payload.color = color;
-        push({Type::SHADER, payload});
+        material -> set_shader_parameter("modulate", godot::Variant(color));
+        auto piv = size*0.5f + pivot;
+        auto [pool, parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_material(item, material -> get_rid());
+        if (z_index != 0) rs -> canvas_item_set_z_index(item, z_index);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
+        rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), godot::Color(1, 1, 1, 1), true);
+        Canvas::notify_drawn();
     }
 
     void Canvas::draw_text(
@@ -482,34 +433,42 @@ namespace Vital::Engine {
         godot::Vector2 pivot
     ) {
         if (!font.is_valid() || text.empty()) return;
-        Text payload;
-        payload.text = Tool::to_godot_string(text);
-        payload.rect = {start_at, end_at - start_at};
-        payload.font = font;
-        payload.font_size = font_size;
-        payload.font_ascent = payload.font -> get_ascent(payload.font_size);
-        payload.color = color;
-        payload.alignment = alignment;
-        payload.clip = clip;
-        payload.wordwrap = wordwrap;
-        payload.stroke = stroke;
-        payload.stroke_color = stroke_color;
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        payload.rect.position.y += payload.font_ascent;
-        payload.text_size = payload.font -> get_multiline_string_size(
-            payload.text,
+        godot::String gd_text = Tool::to_godot_string(text);
+        godot::Rect2 rect = {start_at, end_at - start_at};
+        float font_ascent = font -> get_ascent(font_size);
+        rect.position.y += font_ascent;
+        godot::Vector2 text_size = font -> get_multiline_string_size(
+            gd_text,
             godot::HORIZONTAL_ALIGNMENT_LEFT,
-            payload.wordwrap ? payload.rect.size.x : -1,
-            payload.font_size
+            wordwrap ? rect.size.x : -1,
+            font_size
         );
-        if (payload.alignment.first == godot::HORIZONTAL_ALIGNMENT_CENTER) payload.rect.position.x += (payload.rect.size.x - payload.text_size.x)*0.5f;
-        else if (payload.alignment.first == godot::HORIZONTAL_ALIGNMENT_RIGHT) payload.rect.position.x += payload.rect.size.x - payload.text_size.x;
-        if (payload.alignment.second == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
-        else if (payload.alignment.second == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
-        payload.rect.size.x = payload.text_size.x;
-        payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
-        push({Type::TEXT, payload});
+        if (alignment.first == godot::HORIZONTAL_ALIGNMENT_CENTER) rect.position.x += (rect.size.x - text_size.x)*0.5f;
+        else if (alignment.first == godot::HORIZONTAL_ALIGNMENT_RIGHT) rect.position.x += rect.size.x - text_size.x;
+        if (alignment.second == godot::VERTICAL_ALIGNMENT_CENTER) rect.position.y += (rect.size.y - text_size.y)*0.5f;
+        else if (alignment.second == godot::VERTICAL_ALIGNMENT_BOTTOM) rect.position.y += rect.size.y - text_size.y;
+        rect.size.x = text_size.x;
+        rect.size.y = wordwrap ? text_size.y : rect.size.y;
+        godot::Vector2 piv = rect.size*0.5f + pivot;
+        piv.y -= font_ascent;
+
+        auto [pool, item_parent] = target();
+        auto* rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(item_parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + piv));
+        if (stroke > 0) {
+            font -> draw_multiline_string_outline(
+                item, -piv, gd_text,
+                godot::HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size,
+                -1, stroke, stroke_color
+            );
+        }
+        font -> draw_multiline_string(
+            item, -piv, gd_text,
+            godot::HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size,
+            -1, color
+        );
+        Canvas::notify_drawn();
     }
 }
 #endif
