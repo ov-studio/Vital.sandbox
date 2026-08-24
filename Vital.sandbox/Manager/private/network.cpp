@@ -655,17 +655,8 @@ namespace Vital::Manager {
             }
         }
 
-        // Collect dirty models and build one batched sync packet per frame.
-        // Server-auth: one broadcast per frame (not per model).
-        // Client-auth: each authority client sends one upload per frame.
-        // Packet layout reuses the VSST format:
-        //   [0..3]  uint32  STATE_DUMP_MAGIC  (0x56535354)
-        //   [4..7]  uint32  count
-        //   [8..]   count * 28 bytes  (standard sync entries)
-        // This means one _sync_models RPC per frame replaces N RPCs.
         #if !defined(VSDK_Client)
         {
-            // Server: tick all models, collect dirty ones into a single batch.
             std::vector<Engine::Model*> snapshot;
             {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
@@ -673,7 +664,6 @@ namespace Vital::Manager {
             }
             if (snapshot.empty() || !node || !is_connected()) return;
 
-            // Two passes: (1) tick each model so it updates sync_last_*, then
             uint32_t dirty_count = 0;
             sync_batch_buf.resize(8 + (int)snapshot.size() * 28);
 
