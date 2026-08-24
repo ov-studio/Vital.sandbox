@@ -151,8 +151,7 @@ namespace Vital::Engine {
                 Shader* shader,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
-                const godot::Color& color = {1, 1, 1, 1},
-                int z_index = 0
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_shader(
@@ -161,8 +160,7 @@ namespace Vital::Engine {
                 const godot::Ref<godot::ShaderMaterial>& material,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
-                const godot::Color& color = {1, 1, 1, 1},
-                int z_index = 0
+                const godot::Color& color = {1, 1, 1, 1}
             );
             
             void draw_text(

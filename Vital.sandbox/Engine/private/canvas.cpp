@@ -363,11 +363,10 @@ namespace Vital::Engine {
         Shader* shader,
         float rotation,
         godot::Vector2 pivot,
-        const godot::Color& color,
-        int z_index
+        const godot::Color& color
     ) {
         if (!shader || !shader -> is_valid()) return;
-        draw_shader(position, size, shader -> get_material(), rotation, pivot, color, z_index);
+        draw_shader(position, size, shader -> get_material(), rotation, pivot, color);
     }
 
     void Canvas::draw_shader(
@@ -376,8 +375,7 @@ namespace Vital::Engine {
         const godot::Ref<godot::ShaderMaterial>& material,
         float rotation,
         godot::Vector2 pivot,
-        const godot::Color& color,
-        int z_index
+        const godot::Color& color
     ) {
         if (!material.is_valid()) return;
         material -> set_shader_parameter("modulate", godot::Variant(color));
@@ -386,7 +384,6 @@ namespace Vital::Engine {
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_material(item, material -> get_rid());
-        if (z_index != 0) rs -> canvas_item_set_z_index(item, z_index);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
         rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), godot::Color(1, 1, 1, 1), true);
         Canvas::notify_drawn();
