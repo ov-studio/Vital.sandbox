@@ -21,8 +21,6 @@
 // Vital: Engine: Canvas //
 ////////////////////////////
 
-// TODO: Use draw_image and accept shader as 'material' instead
-
 namespace Vital::Engine {
     class Font;
     class Texture;
@@ -34,115 +32,42 @@ namespace Vital::Engine {
         public:
             static constexpr const char* Name = "Canvas.engine";
 
-            enum class Type {
-                Line,
-                Polygon,
-                Rectangle,
-                Circle,
-                IMAGE,
-                SHADER,
-                TEXT
-            };
-        
-            struct Line {
-                godot::PackedVector2Array points;
-                float thickness;
-                godot::Color color;
-            };
+            struct Draw_Pool {
+                std::vector<godot::RID> items;
+                size_t used = 0;
+                double idle_time = 0.0;
+                static constexpr double IDLE_SECONDS = 5.0;
 
-            struct Polygon {
-                godot::PackedVector2Array points;
-                godot::Rect2 rect;
-                godot::Color color;
-                float stroke;
-                godot::PackedVector2Array stroke_points;
-                godot::Color stroke_color;
-                float rotation;
-                godot::Vector2 pivot;
-            };
-
-            struct Rectangle {
-                godot::Rect2 rect;
-                godot::Color color;
-                float stroke;
-                godot::Color stroke_color;
-                float rotation;
-                godot::Vector2 pivot;
-            };
-
-            struct Circle {
-                godot::Vector2 position;
-                float radius;
-                godot::Color color;
-                float stroke;
-                godot::Color stroke_color;
-                float rotation;
-                godot::Vector2 pivot;
-            };
-
-            struct Image {
-                godot::Ref<godot::Texture2D> texture;
-                godot::Rect2 rect;
-                float rotation;
-                godot::Vector2 pivot;
-                godot::Color color;
-            };
-        
-            struct Text {
-                godot::String text;
-                godot::Rect2 rect;
-                godot::Vector2 text_size;
-                godot::Ref<godot::Font> font;
-                int font_size;
-                float font_height;
-                float font_ascent;
-                godot::Color color;
-                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment;
-                bool clip;
-                bool wordwrap;
-                int stroke;
-                godot::Color stroke_color;
-                float rotation;
-                godot::Vector2 pivot;
-            };
-        
-            // Shader_Draw — draws a rect on the canvas using a ShaderMaterial.
-            // The material is ref-counted; the Shader instance must outlive the draw call.
-            struct Shader_Draw {
-                godot::Ref<godot::ShaderMaterial> material;
-                godot::Rect2 rect;
-                float rotation;
-                godot::Vector2 pivot;
-                godot::Color color;  // modulate tint forwarded as shader param "modulate"
-            };
-
-            struct Command {
-                Type type;
-                std::variant<Line, Polygon, Rectangle, Circle, Image, Shader_Draw, Text> payload;
+                godot::RID next(godot::RID parent);
+                void end_frame(double delta);
+                void free_all();
             };
         private:
-            std::vector<Command> queue;
+            Draw_Pool pool;
 
 
             // Instantiators //
             Canvas() = default;
             ~Canvas() override = default;
             static void _bind_methods() {}
+
+
+            // Helpers //
+            static std::pair<Draw_Pool*, godot::RID> target();
+            static void notify_drawn();
         public:
             // Hooks //
             void _ready() override;
             void _process(double delta) override;
-            void _draw() override;
 
 
             // Singleton //
             static void free_singleton();
+            void teardown();
 
 
             // Managers //
             void init();
-            void push(Command command);
-            static void execute(godot::Node2D* node, std::vector<Command>& queue);
 
 
             // Misc //
@@ -220,18 +145,14 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            // draw_shader — pushes a SHADER command into the canvas/RT queue.
-            // The ShaderMaterial's canvas_item shader runs on a rect of (position, size).
-            // `color` is forwarded as a "modulate" shader parameter so shaders can tint
-            // or use it as an alpha; if the shader doesn't declare that uniform it is
-            // silently ignored by Godot.
             void draw_shader(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 Shader* shader,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
-                const godot::Color& color = {1, 1, 1, 1}
+                const godot::Color& color = {1, 1, 1, 1},
+                int z_index = 0
             );
 
             void draw_shader(
@@ -240,7 +161,8 @@ namespace Vital::Engine {
                 const godot::Ref<godot::ShaderMaterial>& material,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
-                const godot::Color& color = {1, 1, 1, 1}
+                const godot::Color& color = {1, 1, 1, 1},
+                int z_index = 0
             );
             
             void draw_text(
