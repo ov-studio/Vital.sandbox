@@ -29,7 +29,7 @@
 namespace Vital::Engine {
     // Draw_Pool //
     godot::RID Canvas::Draw_Pool::next(godot::RID parent) {
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         idle_time = 0.0;
         if (used >= items.size()) {
             godot::RID item = rs -> canvas_item_create();
@@ -45,7 +45,7 @@ namespace Vital::Engine {
     }
 
     void Canvas::Draw_Pool::end_frame(double delta) {
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         for (size_t i = used; i < items.size(); i++)
             rs -> canvas_item_set_visible(items[i], false);
         if (used == 0 && !items.empty()) {
@@ -57,7 +57,7 @@ namespace Vital::Engine {
     }
 
     void Canvas::Draw_Pool::free_all() {
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         for (auto& item : items) rs -> free_rid(item);
         items.clear();
         idle_time = 0.0;
@@ -102,7 +102,7 @@ namespace Vital::Engine {
     std::pair<Canvas::Draw_Pool*, godot::RID> Canvas::target() {
         auto rt = Engine::Rendertarget::get_active();
         if (rt) return {&rt -> get_pool(), rt -> get_canvas_item()};
-        auto* self = Canvas::get_singleton();
+        auto self = Canvas::get_singleton();
         return {&self -> pool, self -> get_canvas_item()};
     }
 
@@ -150,7 +150,7 @@ namespace Vital::Engine {
     ) {
         if (points.size() < 2) return;
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D());
         godot::PackedColorArray colors;
@@ -215,7 +215,7 @@ namespace Vital::Engine {
         }
 
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + local_pivot));
         if (stroke > 0.0f) {
@@ -240,7 +240,7 @@ namespace Vital::Engine {
     ) {
         auto piv = size*0.5f + pivot;
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
 
@@ -279,7 +279,7 @@ namespace Vital::Engine {
         godot::Vector2 pivot
     ) {
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + pivot));
 
@@ -357,7 +357,7 @@ namespace Vital::Engine {
         if (!texture.is_valid()) return;
         auto piv = size*0.5f + pivot;
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
         texture -> draw_rect(item, godot::Rect2(-piv, size), false, color);
@@ -390,7 +390,7 @@ namespace Vital::Engine {
         material -> set_shader_parameter("modulate", godot::Variant(color));
         auto piv = size*0.5f + pivot;
         auto [pool, parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_material(item, material -> get_rid());
         if (z_index != 0) rs -> canvas_item_set_z_index(item, z_index);
@@ -453,7 +453,7 @@ namespace Vital::Engine {
         piv.y -= font_ascent;
 
         auto [pool, item_parent] = target();
-        auto* rs = godot::RenderingServer::get_singleton();
+        auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(item_parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + piv));
         if (stroke > 0) {
