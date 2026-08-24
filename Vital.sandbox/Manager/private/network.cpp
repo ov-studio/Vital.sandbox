@@ -437,10 +437,11 @@ namespace Vital::Manager {
         wire_signals();
         try {
             server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
-            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back()))
-                server_ip.pop_back();
+            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
         catch (...) {}
+        sync_interval = 1.0f / static_cast<float>(config.get_sync_rate());
+
         log("sbox", fmt::format(
             "Server is live!\n"
             "> IP — `{}`\n"
