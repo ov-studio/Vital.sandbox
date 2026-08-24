@@ -23,6 +23,8 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
+// TOOD: Improve
+
 namespace Vital::Engine { class Model; }
 
 namespace Vital::Manager {
@@ -62,6 +64,12 @@ namespace Vital::Manager {
 
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
             godot::PackedByteArray sync_batch_buf;
+
+            // Sync interval in seconds — set from config on host(), read each poll().
+            // Default 1/20 = 20 Hz. Configurable via network.sync_rate in config.yaml.
+            float sync_interval = 1.0f / 20.0f;
+
+
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -142,6 +150,7 @@ namespace Vital::Manager {
             // Inbound dispatch — called by Engine::Network RPC handlers.
             void dispatch_sync_batch(const godot::PackedByteArray& data, bool is_state_dump);
             void dispatch_client_sync(const godot::PackedByteArray& data, int sender_id);
+
 
             #if !defined(VSDK_Client)
             void send_full_state_to_peer(int peer_id);
