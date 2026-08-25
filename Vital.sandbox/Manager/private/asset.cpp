@@ -309,9 +309,8 @@ namespace Vital::Manager {
             if (active_downloads.count(path)) {
                 // Already in flight — attach our group and it will decrement when done.
                 active_downloads[path] -> groups.insert(group);
-            } else {
-                batch_counts[group]++;
             }
+            else batch_counts[group]++;
         }
         for (auto& [group, n] : batch_counts) {
             group_generations[group]++;   // invalidate any callbacks from a prior registration
