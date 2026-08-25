@@ -268,6 +268,76 @@ namespace Vital::Engine {
 
 namespace Vital::Engine {
     // Instantiators //
+    void Console::parse_log_line(const std::string& line) {
+        // Godot log format (from image):
+        //   [Godot ERR] <message>        — internal engine error
+        //   [Godot WRY] <message>        — internal engine warning
+        //   ERROR: <message>             — runtime error
+        //   SHADER ERROR: <message>      — shader compile error
+        //     at: <location>             — continuation lines (indented)
+        //   -- Main Shader --            — shader source dump header
+        //   N | <source line>            — shader source dump (numbered)
+        //   E N-> <source line>          — shader source dump error line
+
+        // Skip blank lines and pure source dump lines (we get the error message itself)
+        if (line.empty()) return;
+
+        // Determine mode and strip prefix
+        std::string mode;
+        std::string message;
+
+        auto starts_with = [&](const char* prefix) {
+            return line.rfind(prefix, 0) == 0;
+        };
+
+        if (starts_with("[Godot ERR]")) {
+            mode = "error";
+            message = line.substr(12);
+        } 
+        else if (starts_with("[Godot WRY]")) {
+            mode = "warn";
+            message = line.substr(12);
+        } 
+        else if (starts_with("SHADER ERROR:")) {
+            mode = "error";
+            message = line;
+        } 
+        else if (starts_with("ERROR:")) {
+            mode = "error";
+            message = line;
+        } 
+        else if (starts_with("WARNING:")) {
+            mode = "warn";
+            message = line;
+        } 
+        else if (starts_with("  at:") || starts_with("\tat:")) {
+            // Continuation line — attach to previous error context
+            // Print as same mode "error" so it groups visually
+            mode = "error";
+            message = line;
+        } 
+        else return;
+
+        // Trim leading/trailing whitespace
+        auto trim = [](std::string s) {
+            s.erase(0, s.find_first_not_of(" \t"));
+            s.erase(s.find_last_not_of(" \t") + 1);
+            return s;
+        };
+        message = trim(message);
+        if (message.empty()) return;
+
+        // Route to in-game console — client must enqueue to main thread since
+        // the webview is not thread-safe; server can print directly to stdout.
+        #if defined(VSDK_Client)
+        Engine::Core::get_singleton() -> enqueue([mode, message]() {
+            Tool::print(mode, message);
+        });
+        #else
+        Tool::print(mode, message);
+        #endif
+    }
+
     Console::Console() {
         #if defined(VSDK_Client)
             Engine::Webview::Options options;
@@ -474,9 +544,68 @@ namespace Vital::Engine {
         Tool::print_sink = [](const std::string& mode, const std::string& message) {
             Engine::Console::get_singleton() -> print(mode, message);
         };
+
+        // Tail godot.log on a background thread, routing new engine errors/warnings
+        // to the in-game console.  We open the file once, seek to the end so we
+        // only see output produced after startup, then poll for new bytes every
+        // 200 ms — cheap enough that it has no measurable frame impact.
+        log_running = true;
+        log_thread = std::thread([this]() {
+            // Resolve path: <user_data_dir>/logs/godot.log
+            // OS::get_user_data_dir() returns the res:// equivalent user:// path
+            // as an absolute filesystem path.
+            auto udd = godot::OS::get_singleton() -> get_user_data_dir();
+            std::string log_path = Tool::to_std_string(udd) + "/logs/godot.log";
+
+            std::ifstream file;
+            std::streampos last_pos = 0;
+
+            // Open — retry until the file exists (may not exist on first boot)
+            while (log_running) {
+                file.open(log_path, std::ios::in | std::ios::binary);
+                if (file.is_open()) {
+                    // Seek to end so we only tail new output, not replay history
+                    file.seekg(0, std::ios::end);
+                    last_pos = file.tellg();
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
+
+            std::string line_buf;
+            while (log_running) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                if (!file.is_open()) break;
+
+                // Check if new bytes have been written
+                file.seekg(0, std::ios::end);
+                auto end_pos = file.tellg();
+                if (end_pos <= last_pos) continue;
+
+                // Read only the new bytes
+                file.seekg(last_pos);
+                std::string chunk(static_cast<std::size_t>(end_pos - last_pos), '\0');
+                file.read(chunk.data(), end_pos - last_pos);
+                last_pos = end_pos;
+                file.clear();  // clear EOF flag
+
+                // Process line by line
+                for (char c : chunk) {
+                    if (c == '\n') {
+                        if (!line_buf.empty()) {
+                            parse_log_line(line_buf);
+                            line_buf.clear();
+                        }
+                    }
+                    else if (c != '\r') line_buf += c;
+                }
+            }
+        });
+        log_thread.detach();
     }
 
     Console::~Console() {
+        log_running = false;
         Tool::print_sink = nullptr;
         #if defined(VSDK_Client)
             if (!webview) return;

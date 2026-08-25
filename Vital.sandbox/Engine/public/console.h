@@ -43,6 +43,8 @@ namespace Vital::Engine {
             struct termios stdin_termios{};
             #endif
             #endif
+            std::thread log_thread;
+            std::atomic<bool> log_running { false };
 
             struct Internal {
                 // Helpers //
@@ -70,6 +72,7 @@ namespace Vital::Engine {
             // Instantiators //
             Console();
             ~Console();
+            void parse_log_line(const std::string& line);
         public:
             static constexpr const char* Name = "Console.engine";
 
