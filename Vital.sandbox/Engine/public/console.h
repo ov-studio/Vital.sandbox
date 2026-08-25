@@ -23,6 +23,8 @@
 // Vital: Engine: Console //
 /////////////////////////////
 
+// TODO: Improve
+
 namespace Vital::Engine {
     class Console : public godot::Control, public Tool::Base<Console> {
         friend class Tool::Base<Console>;
