@@ -30,6 +30,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"),               &Network::setup_rpc);
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_model",  "net_id", "name", "authority"), &Network::_spawn_model);
                 godot::ClassDB::bind_method(godot::D_METHOD("_destroy_model","net_id"), &Network::_destroy_model);
+                godot::ClassDB::bind_method(godot::D_METHOD("_set_authority","net_id","peer_id"), &Network::_set_authority);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_models",  "data"),   &Network::_sync_models);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state",   "data"),   &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client",  "data"),   &Network::_sync_client);
@@ -50,6 +51,9 @@ namespace Vital::Engine {
             void _spawn_model(int net_id, godot::String name, int authority);
             // Called on clients by the server to remove a replicated model.
             void _destroy_model(int net_id);
+            // Received on all clients — updates sync_authority so interpolation
+            // is enabled/disabled correctly for the affected model.
+            void _set_authority(int net_id, int peer_id);
             // Unreliable sync tick — position/rotation batch from server to all clients.
             void _sync_models(godot::PackedByteArray data);
             // Reliable late-join state dump — full snapshot to a single joining client.

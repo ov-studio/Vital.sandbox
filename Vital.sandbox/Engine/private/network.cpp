@@ -36,6 +36,7 @@ namespace Vital::Engine {
         rpc_config("_spawn_model",  reliable);
         rpc_config("_destroy_model",reliable);
         rpc_config("_sync_state",   reliable);  // late-join full snapshot, must arrive
+        rpc_config("_set_authority",reliable);  // authority change, must arrive
 
         // Unreliable ordered channel 0 — per-frame position/rotation sync.
         // We stay on channel 0 and use UNRELIABLE_ORDERED so Godot's RPC layer
@@ -104,6 +105,28 @@ namespace Vital::Engine {
 
         if (Model::on_spawned_callback) Model::on_spawned_callback(object, true);
         godot::UtilityFunctions::print("_spawn_model: net_id=", net_id, " name=", name);
+        #endif
+    }
+
+    // Received on all clients — updates model authority and resets interpolation state.
+    void Network::_set_authority(int net_id, int peer_id) {
+        #if defined(VSDK_Client)
+        auto core = Core::get_singleton();
+        if (!core) return;
+        for (int i = 0; i < core->get_child_count(); i++) {
+            Model* m = godot::Object::cast_to<Model>(core->get_child(i));
+            if (!m || m->get_net_id() != (uint32_t)net_id) continue;
+            m->sync_authority = peer_id;
+            // Reset snapshot buffer — stale snapshots from old authority
+            // must not bleed into the new authority's interpolation.
+            m->snap_head  = 0;
+            m->snap_count = 0;
+            m->snap_clock = 0.0f;
+            m->interp_ready = false;
+            godot::UtilityFunctions::print("_set_authority: net_id=", net_id,
+                " -> peer_id=", peer_id);
+            return;
+        }
         #endif
     }
 

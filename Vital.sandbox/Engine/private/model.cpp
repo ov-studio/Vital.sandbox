@@ -43,6 +43,11 @@ namespace Vital::Engine {
         sync_last_rot  = get_rotation_degrees();
         sync_sleeping  = false;
         sync_accum     = 0.0f;
+        // Reset snapshot buffer.
+        snap_head  = 0;
+        snap_count = 0;
+        snap_clock = 0.0f;
+        interp_ready = false;
         // sync registration happens on first poll() — safe from any thread
     }
 
@@ -61,18 +66,14 @@ namespace Vital::Engine {
     //  Low-level Sync     //
     //---------------------//
 
-    // Packet layout (28 bytes, all little-endian):
+    // Packet layout (40 bytes, all little-endian):
     //   [0..3]   uint32  net_id
-    //   [4..7]   float   pos.x
-    //   [8..11]  float   pos.y
-    //   [12..15] float   pos.z
-    //   [16..19] float   rot.x  (degrees)
-    //   [20..23] float   rot.y
-    //   [24..27] float   rot.z
+    //   [4..15]  float×3 pos xyz
+    //   [16..27] float×3 rot xyz (degrees)
+    //   [28..39] float×3 vel xyz (units/sec — for dead-reckoning on receiver)
 
-    static constexpr int SYNC_PACKET_SIZE = 28;
-    static constexpr float SYNC_RATE      = 1.0f / 20.0f;  // 20 Hz
-    static constexpr float SYNC_THRESHOLD = 0.001f;         // metres / degrees
+    static constexpr int SYNC_PACKET_SIZE = 40;
+    static constexpr float SYNC_THRESHOLD = 0.001f;
 
     static void write_float(godot::PackedByteArray& buf, int offset, float v) {
         uint32_t raw;
@@ -107,48 +108,43 @@ namespace Vital::Engine {
              | ((uint8_t)buf[offset+3] << 24);
     }
 
-    // 28-byte server-auth broadcast packet (no sender prefix).
+    // 40-byte server-auth broadcast packet: net_id + pos + rot + vel.
     static godot::PackedByteArray build_sync_packet(uint32_t id,
                                                      godot::Vector3 pos,
-                                                     godot::Vector3 rot) {
+                                                     godot::Vector3 rot,
+                                                     godot::Vector3 vel) {
         godot::PackedByteArray buf;
         buf.resize(SYNC_PACKET_SIZE);
         write_u32(buf,  0, id);
-        write_float(buf,  4, pos.x);
-        write_float(buf,  8, pos.y);
-        write_float(buf, 12, pos.z);
-        write_float(buf, 16, rot.x);
-        write_float(buf, 20, rot.y);
-        write_float(buf, 24, rot.z);
+        write_float(buf,  4, pos.x); write_float(buf,  8, pos.y); write_float(buf, 12, pos.z);
+        write_float(buf, 16, rot.x); write_float(buf, 20, rot.y); write_float(buf, 24, rot.z);
+        write_float(buf, 28, vel.x); write_float(buf, 32, vel.y); write_float(buf, 36, vel.z);
         return buf;
     }
 
-    // 32-byte client-auth upload packet (sender_peer_id prefix + standard entry).
-    // Server reads sender_peer_id from bytes [0..3] to validate authority without
-    // needing MultiplayerAPI::get_remote_sender_id() (which is RPC-only).
+    // 44-byte client-auth upload: sender_peer_id prefix + 40-byte entry.
     static godot::PackedByteArray build_client_sync_packet(uint32_t sender_peer_id,
                                                             uint32_t id,
                                                             godot::Vector3 pos,
-                                                            godot::Vector3 rot) {
+                                                            godot::Vector3 rot,
+                                                            godot::Vector3 vel) {
         godot::PackedByteArray buf;
-        buf.resize(4 + SYNC_PACKET_SIZE); // 32 bytes
+        buf.resize(4 + SYNC_PACKET_SIZE); // 44 bytes
         write_u32(buf,  0, sender_peer_id);
         write_u32(buf,  4, id);
-        write_float(buf,  8, pos.x);
-        write_float(buf, 12, pos.y);
-        write_float(buf, 16, pos.z);
-        write_float(buf, 20, rot.x);
-        write_float(buf, 24, rot.y);
-        write_float(buf, 28, rot.z);
+        write_float(buf,  8, pos.x); write_float(buf, 12, pos.y); write_float(buf, 16, pos.z);
+        write_float(buf, 20, rot.x); write_float(buf, 24, rot.y); write_float(buf, 28, rot.z);
+        write_float(buf, 32, vel.x); write_float(buf, 36, vel.y); write_float(buf, 40, vel.z);
         return buf;
     }
 
-    // static helpers — decode from raw bytes (used by Manager::Network)
+    // static helpers — decode 40-byte entries (net_id + pos + rot + vel)
     bool Model::parse_sync_packet_at(const godot::PackedByteArray& buf,
                                       int offset,
                                       uint32_t& out_id,
                                       godot::Vector3& out_pos,
-                                      godot::Vector3& out_rot) {
+                                      godot::Vector3& out_rot,
+                                      godot::Vector3& out_vel) {
         if (buf.size() < offset + SYNC_PACKET_SIZE) return false;
         out_id    = read_u32(buf,   offset);
         out_pos.x = read_float(buf, offset +  4);
@@ -157,29 +153,129 @@ namespace Vital::Engine {
         out_rot.x = read_float(buf, offset + 16);
         out_rot.y = read_float(buf, offset + 20);
         out_rot.z = read_float(buf, offset + 24);
+        out_vel.x = read_float(buf, offset + 28);
+        out_vel.y = read_float(buf, offset + 32);
+        out_vel.z = read_float(buf, offset + 36);
         return true;
     }
 
     bool Model::parse_sync_packet(const godot::PackedByteArray& buf,
                                    uint32_t& out_id,
                                    godot::Vector3& out_pos,
-                                   godot::Vector3& out_rot) {
-        return parse_sync_packet_at(buf, 0, out_id, out_pos, out_rot);
+                                   godot::Vector3& out_rot,
+                                   godot::Vector3& out_vel) {
+        return parse_sync_packet_at(buf, 0, out_id, out_pos, out_rot, out_vel);
     }
 
     // sync_tick removed — dirty-check, rate-limiting, and batching are
     // handled centrally in Manager::Network::poll() for all models at once.
     // This eliminates per-model RPC overhead and allows O(1) batched sends.
 
-    void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot) {
-        // Called from dispatch_sync_batch which runs inside the RPC handler on
-        // the main thread — safe to apply directly, no enqueue needed.
+    void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
         if (!is_inside_tree()) return;
-        set_global_position(pos);
-        set_rotation_degrees(rot);
+
+        // Authority peer drives its own transform — never overwrite.
+        auto net = Manager::Network::get_singleton();
+        if (net && net->get_peer_id() == sync_authority) return;
+
+        // Write snapshot into the ring buffer at snap_head.
+        Snapshot& slot     = snap_buf[snap_head];
+        slot.pos           = pos;
+        slot.rot           = rot;
+        slot.vel           = vel;
+        slot.time          = snap_clock; // local clock at time of receipt
+
+        snap_head          = (snap_head + 1) % SNAPSHOT_COUNT;
+        if (snap_count < SNAPSHOT_COUNT) snap_count++;
+
+        if (!interp_ready) {
+            // First snapshot — snap immediately so model doesn't start at origin.
+            set_global_position(pos);
+            set_rotation_degrees(rot);
+            interp_ready = true;
+        }
+
         sync_last_pos = pos;
         sync_last_rot = rot;
+        sync_last_vel = vel;
         sync_sleeping = false;
+    }
+
+    void Model::_process(double delta) {
+        if (placeholder || !is_inside_tree() || !interp_ready) return;
+
+        // Authority peer drives its own transform directly.
+        auto net = Manager::Network::get_singleton();
+        if (net && net->get_peer_id() == sync_authority) return;
+
+        // Advance local clock.
+        snap_clock += static_cast<float>(delta);
+
+        if (snap_count == 0) return;
+
+        // Render point = now - BUFFER_DELAY.
+        // We always try to render 100ms in the past so we have two surrounding
+        // snapshots available and never need to extrapolate in the normal case.
+        float render_time = snap_clock - BUFFER_DELAY;
+
+        // Read the ring buffer in chronological order.
+        // snap_buf is a circular buffer; oldest entry is at:
+        //   (snap_head - snap_count + SNAPSHOT_COUNT) % SNAPSHOT_COUNT
+        // Find the two snapshots that bracket render_time.
+        const Snapshot* before = nullptr;
+        const Snapshot* after  = nullptr;
+
+        for (int i = 0; i < snap_count; i++) {
+            int idx = (snap_head - snap_count + i + SNAPSHOT_COUNT) % SNAPSHOT_COUNT;
+            const Snapshot& s = snap_buf[idx];
+            if (s.time <= render_time) before = &s;
+            else if (!after)           after  = &s;
+        }
+
+        if (!before && !after) return;
+
+        if (!before) {
+            // render_time is before all snapshots — snap to oldest.
+            set_global_position(after->pos);
+            set_rotation_degrees(after->rot);
+            return;
+        }
+
+        if (!after) {
+            // render_time is past all snapshots — extrapolate from newest.
+            // Only extrapolate if model was moving; otherwise hold position.
+            // Cap at 3 × interp_step to bound snap-back when next packet arrives.
+            if (before->vel.length() > VEL_THRESHOLD) {
+                float extra = std::min(render_time - before->time, interp_step * 3.0f);
+                set_global_position(before->pos + before->vel * extra);
+            } else {
+                set_global_position(before->pos);
+            }
+            set_rotation_degrees(before->rot);
+            return;
+        }
+
+        // Normal case — render_time sits between `before` and `after`.
+        float span = after->time - before->time;
+        if (span <= 0.0f) {
+            set_global_position(after->pos);
+            set_rotation_degrees(after->rot);
+            return;
+        }
+
+        float t = (render_time - before->time) / span;
+        t = std::clamp(t, 0.0f, 1.0f);
+
+        // Teleport detection: if the gap between snapshots is huge the model
+        // was teleported — snap rather than lerp across an impossible distance.
+        float dist = before->pos.distance_to(after->pos);
+        if (dist > SNAP_THRESHOLD) {
+            set_global_position(after->pos);
+            set_rotation_degrees(after->rot);
+        } else {
+            set_global_position(before->pos.lerp(after->pos, t));
+            set_rotation_degrees(before->rot.lerp(after->rot, t));
+        }
     }
 
 
@@ -638,21 +734,38 @@ namespace Vital::Engine {
     void Model::set_model_name(const std::string& name) { model_name = name; }
 
     void Model::set_position(godot::Vector3 position) {
+        #if defined(VSDK_Client)
         Engine::Core::get_singleton()->enqueue([this, position]() { set_global_position(position); });
+        #else
+        // Server is always on the main thread — apply directly so get_position()
+        // returns the correct value immediately in the same Lua timer tick.
+        if (is_inside_tree()) set_global_position(position);
+        else sync_last_pos = position;
+        #endif
     }
 
     void Model::set_rotation(godot::Vector3 rotation) {
+        #if defined(VSDK_Client)
         Engine::Core::get_singleton()->enqueue([this, rotation]() { set_rotation_degrees(rotation); });
+        #else
+        if (is_inside_tree()) set_rotation_degrees(rotation);
+        else sync_last_rot = rotation;
+        #endif
     }
 
     #if !defined(VSDK_Client)
     void Model::set_syncer(int peer_id) {
-        // peer_id == 0 or 1  -> server-authoritative
-        // peer_id == N (>1)  -> client N is authoritative
         sync_authority = (peer_id <= 1) ? 1 : peer_id;
-        sync_sleeping  = false; // wake so the authority change triggers a packet
+        sync_sleeping  = false;
         godot::UtilityFunctions::print("Model net_id=", net_id,
             " set_syncer -> ", sync_authority);
+
+        // Broadcast authority change reliably to all clients so each one
+        // knows whether to run interpolation or raw local physics.
+        auto net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node) {
+            net_node->rpc("_set_authority", (int)net_id, sync_authority);
+        }
     }
     #endif
 

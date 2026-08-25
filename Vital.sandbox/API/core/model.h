@@ -409,12 +409,11 @@ namespace Vital::Sandbox::API {
             #if !defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(peer_id)", true)
-                    .require(2, [](auto vm) { return Machine::is_number(vm) || Machine::is_bool(vm); });
+                    .require(2, &Machine::is_number);
 
-                // set_syncer(false) or set_syncer(0/1) → server authority (peer_id = 1)
-                int peer_id = 1;
-                if (Machine::is_number(vm)) peer_id = (int)(vm -> get_int(2));
-                // bool false → 1 (server), bool true is nonsensical but safe to treat as 1
+                // Lua passes false as a boolean — get_int on a bool returns 0,
+                // which set_syncer treats as server authority (peer_id <= 1 → 1).
+                int peer_id = (int)(vm -> get_int(2));
                 self -> model -> set_syncer(peer_id);
                 vm -> push_value(true);
                 return 1;

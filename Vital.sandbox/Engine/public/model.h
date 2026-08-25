@@ -68,6 +68,7 @@ namespace Vital::Engine {
             // packets when the model is static.
             godot::Vector3 sync_last_pos;
             godot::Vector3 sync_last_rot;
+            godot::Vector3 sync_last_vel;  // last sent/received velocity
 
             // Accumulated time since last broadcast tick (seconds).
             float sync_accum = 0.0f;
@@ -76,8 +77,33 @@ namespace Vital::Engine {
             bool sync_registered = false;
 
             // When true the model is considered static and sync is suppressed.
-            // Flipped when movement is detected, re-armed when static again.
             bool sync_sleeping = false;
+
+            // ----- Snapshot interpolation buffer (non-authority clients only) -----
+            // Stores the last N network snapshots. _process renders at
+            // (current_time - BUFFER_DELAY), always interpolating between two
+            // already-received states — no extrapolation in the normal case.
+            static constexpr int   SNAPSHOT_COUNT = 8;
+            static constexpr float BUFFER_DELAY   = 0.1f;   // 100ms render lag
+            static constexpr float SNAP_THRESHOLD = 5.0f;   // units — teleport if gap > this
+            static constexpr float VEL_THRESHOLD  = 0.05f;  // units/sec — "moving" cutoff
+
+            struct Snapshot {
+                godot::Vector3 pos;
+                godot::Vector3 rot;
+                godot::Vector3 vel;
+                float          time = -1.0f; // -1 = empty slot
+            };
+
+            Snapshot snap_buf[SNAPSHOT_COUNT];
+            int   snap_head  = 0;    // index of next write slot
+            int   snap_count = 0;    // how many slots are filled
+            float snap_clock = 0.0f; // local time counter, advanced each _process
+
+            // Expected interval between packets — set from sync_interval on register.
+            float interp_step  = 1.0f / 20.0f;
+            // True once at least one snapshot has been received.
+            bool  interp_ready = false;
 
             // Network object ID assigned by the server on creation and echoed to
             // all clients so every side refers to the same object.
@@ -144,8 +170,12 @@ namespace Vital::Engine {
             void _ready() override;
             void _notification(int what);
 
-            // Apply an inbound sync packet (called on non-authority peers).
-            void apply_sync(godot::Vector3 pos, godot::Vector3 rot);
+            // Apply an inbound sync packet — sets interpolation target on non-authority clients.
+            // Skipped entirely when this peer is the authority (raw local physics drives position).
+            void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
+
+            // Called every rendered frame — advances interpolation on non-authority clients.
+            void _process(double delta) override;
 
             // Public raw u32 reader — used by Manager::Network to read the
             // sender_peer_id prefix in client-auth packets without exposing
@@ -157,19 +187,20 @@ namespace Vital::Engine {
                      | ((uint8_t)buf[offset+3] << 24);
             }
 
-            // Parse a 28-byte sync entry from buf starting at byte offset.
-            // offset==0 for normal single-model packets; non-zero for state-dump batches.
+            // Parse a 40-byte sync entry (pos+rot+vel) from buf at byte offset.
             // Returns false if the buffer is too small.
             static bool parse_sync_packet_at(const godot::PackedByteArray& buf,
                                              int offset,
                                              uint32_t& out_id,
                                              godot::Vector3& out_pos,
-                                             godot::Vector3& out_rot);
-            // Convenience wrapper for normal 28-byte single packets (offset=0).
+                                             godot::Vector3& out_rot,
+                                             godot::Vector3& out_vel);
+            // Convenience wrapper (offset=0).
             static bool parse_sync_packet(const godot::PackedByteArray& buf,
                                           uint32_t& out_id,
                                           godot::Vector3& out_pos,
-                                          godot::Vector3& out_rot);
+                                          godot::Vector3& out_rot,
+                                          godot::Vector3& out_vel);
 
 
             // Managers //
@@ -226,9 +257,10 @@ namespace Vital::Engine {
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
 
-            // set_syncer(peer_id) — make `peer_id` the authority (client-auth mode).
-            // set_syncer(0 or 1) — revert to server-authoritative mode.
-            // Server-side only; clients receive the updated authority in the next sync packet.
+            // set_syncer(peer_id) — assign authority to a client (client-auth mode).
+            // set_syncer(0 or 1) — revert to server authority.
+            // Server-side only. Broadcasts _set_authority to all clients so they
+            // enable/disable interpolation correctly. Called automatically on disconnect.
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id);
             #endif
