@@ -93,6 +93,76 @@ namespace Vital::Engine {
         return oss.str();
     }
 
+    void Console::Internal::parse_log_line(const std::string& line) {
+        // Godot log format (from image):
+        //   [Godot ERR] <message>        — internal engine error
+        //   [Godot WRY] <message>        — internal engine warning
+        //   ERROR: <message>             — runtime error
+        //   SHADER ERROR: <message>      — shader compile error
+        //     at: <location>             — continuation lines (indented)
+        //   -- Main Shader --            — shader source dump header
+        //   N | <source line>            — shader source dump (numbered)
+        //   E N-> <source line>          — shader source dump error line
+
+        // Skip blank lines and pure source dump lines (we get the error message itself)
+        if (line.empty()) return;
+
+        // Determine mode and strip prefix
+        std::string mode;
+        std::string message;
+
+        auto starts_with = [&](const char* prefix) {
+            return line.rfind(prefix, 0) == 0;
+        };
+
+        if (starts_with("[Godot ERR]")) {
+            mode = "error";
+            message = line.substr(12);
+        } 
+        else if (starts_with("[Godot WRY]")) {
+            mode = "warn";
+            message = line.substr(12);
+        } 
+        else if (starts_with("SHADER ERROR:")) {
+            mode = "error";
+            message = line;
+        } 
+        else if (starts_with("ERROR:")) {
+            mode = "error";
+            message = line;
+        } 
+        else if (starts_with("WARNING:")) {
+            mode = "warn";
+            message = line;
+        } 
+        else if (starts_with("  at:") || starts_with("\tat:")) {
+            // Continuation line — attach to previous error context
+            // Print as same mode "error" so it groups visually
+            mode = "error";
+            message = line;
+        } 
+        else return;
+
+        // Trim leading/trailing whitespace
+        auto trim = [](std::string s) {
+            s.erase(0, s.find_first_not_of(" \t"));
+            s.erase(s.find_last_not_of(" \t") + 1);
+            return s;
+        };
+        message = trim(message);
+        if (message.empty()) return;
+
+        // Route to in-game console — client must enqueue to main thread since
+        // the webview is not thread-safe; server can print directly to stdout.
+        #if defined(VSDK_Client)
+        Engine::Core::get_singleton() -> enqueue([mode, message]() {
+            Tool::print(mode, message);
+        });
+        #else
+        Tool::print(mode, message);
+        #endif
+    }
+
     #if !defined(VSDK_Client)
     std::string Console::Internal::fetch_info() {
         auto nm = Manager::Network::get_singleton();
@@ -269,76 +339,6 @@ namespace Vital::Engine {
 
 namespace Vital::Engine {
     // Instantiators //
-    void Console::parse_log_line(const std::string& line) {
-        // Godot log format (from image):
-        //   [Godot ERR] <message>        — internal engine error
-        //   [Godot WRY] <message>        — internal engine warning
-        //   ERROR: <message>             — runtime error
-        //   SHADER ERROR: <message>      — shader compile error
-        //     at: <location>             — continuation lines (indented)
-        //   -- Main Shader --            — shader source dump header
-        //   N | <source line>            — shader source dump (numbered)
-        //   E N-> <source line>          — shader source dump error line
-
-        // Skip blank lines and pure source dump lines (we get the error message itself)
-        if (line.empty()) return;
-
-        // Determine mode and strip prefix
-        std::string mode;
-        std::string message;
-
-        auto starts_with = [&](const char* prefix) {
-            return line.rfind(prefix, 0) == 0;
-        };
-
-        if (starts_with("[Godot ERR]")) {
-            mode = "error";
-            message = line.substr(12);
-        } 
-        else if (starts_with("[Godot WRY]")) {
-            mode = "warn";
-            message = line.substr(12);
-        } 
-        else if (starts_with("SHADER ERROR:")) {
-            mode = "error";
-            message = line;
-        } 
-        else if (starts_with("ERROR:")) {
-            mode = "error";
-            message = line;
-        } 
-        else if (starts_with("WARNING:")) {
-            mode = "warn";
-            message = line;
-        } 
-        else if (starts_with("  at:") || starts_with("\tat:")) {
-            // Continuation line — attach to previous error context
-            // Print as same mode "error" so it groups visually
-            mode = "error";
-            message = line;
-        } 
-        else return;
-
-        // Trim leading/trailing whitespace
-        auto trim = [](std::string s) {
-            s.erase(0, s.find_first_not_of(" \t"));
-            s.erase(s.find_last_not_of(" \t") + 1);
-            return s;
-        };
-        message = trim(message);
-        if (message.empty()) return;
-
-        // Route to in-game console — client must enqueue to main thread since
-        // the webview is not thread-safe; server can print directly to stdout.
-        #if defined(VSDK_Client)
-        Engine::Core::get_singleton() -> enqueue([mode, message]() {
-            Tool::print(mode, message);
-        });
-        #else
-        Tool::print(mode, message);
-        #endif
-    }
-
     Console::Console() {
         #if defined(VSDK_Client)
             Engine::Webview::Options options;
@@ -594,7 +594,7 @@ namespace Vital::Engine {
                 for (char c : chunk) {
                     if (c == '\n') {
                         if (!line_buf.empty()) {
-                            parse_log_line(line_buf);
+                            Internal::parse_log_line(line_buf);
                             line_buf.clear();
                         }
                     }
