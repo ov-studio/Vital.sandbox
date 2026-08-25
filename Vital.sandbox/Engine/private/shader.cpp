@@ -27,7 +27,6 @@ namespace Vital::Engine {
     static constexpr const char* SENTINEL_NAME = "_vsdk_sentinel";
 
     static std::string inject_sentinel(const std::string& src, bool is_spatial) {
-        // Sentinel declaration — goes right after the shader_type line.
         const std::string decl =
             "uniform float " + std::string(SENTINEL_NAME) +
             " : hint_range(1.0, 1.0) = 1.0;\n";
@@ -61,12 +60,7 @@ namespace Vital::Engine {
         return result;
     }
 
-    // Validate a compiled shader by checking that our sentinel uniform survived.
-    // Returns true if the shader is healthy, false + Tool::print on error.
-    static bool validate_compiled(
-        godot::Ref<godot::Shader>& gd_shader,
-        const std::string& display_src   // original user source, for the error msg
-    ) {
+    static bool validate_compiled(godot::Ref<godot::Shader>& gd_shader) {
         auto list = gd_shader -> get_shader_uniform_list();
         bool sentinel_found = false;
         for (int i = 0; i < list.size(); i++) {
@@ -77,11 +71,7 @@ namespace Vital::Engine {
                 break;
             }
         }
-        if (!sentinel_found) {
-            Tool::print("error",
-                "[Shader] failed to compile — check Godot output for the exact error");
-            return false;
-        }
+        if (!sentinel_found) return false;
         return true;
     }
 
@@ -104,7 +94,7 @@ namespace Vital::Engine {
         auto src = build_source(code, type);
         instance -> gd_shader -> set_code(godot::String(src.c_str()));
         instance -> gd_material -> set_shader(instance -> gd_shader);
-        if (!validate_compiled(instance -> gd_shader, code)) {
+        if (!validate_compiled(instance -> gd_shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
@@ -142,7 +132,7 @@ namespace Vital::Engine {
         if (!gd_shader.is_valid()) return false;
         auto src = build_source(code, shader_type);
         gd_shader -> set_code(godot::String(src.c_str()));
-        return validate_compiled(gd_shader, code);
+        return validate_compiled(gd_shader);
     }
 
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
