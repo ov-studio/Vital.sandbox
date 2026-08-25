@@ -19,6 +19,10 @@ run/main_scene="uid://3hid3cjm00pb"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
+[debug]
+
+file_logging/enable_file_logging=true
+
 [editor]
 
 version_control/autoload_on_startup=true
