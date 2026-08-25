@@ -64,9 +64,8 @@ namespace Vital::Sandbox::API {
                     }
                     debug_mesh -> set_visible(true);
                     refresh_debug_mesh();
-                } else if (debug_mesh) {
-                    debug_mesh -> set_visible(false);
                 }
+                else if (debug_mesh) debug_mesh -> set_visible(false);
             }
 
             bool is_debug_visible() const {
@@ -100,10 +99,12 @@ namespace Vital::Sandbox::API {
                 if (plane == 0) {
                     p0 = godot::Vector3(std::cos(a0) * radius, y, std::sin(a0) * radius);
                     p1 = godot::Vector3(std::cos(a1) * radius, y, std::sin(a1) * radius);
-                } else if (plane == 1) {
+                } 
+                else if (plane == 1) {
                     p0 = godot::Vector3(std::cos(a0) * radius, std::sin(a0) * radius + y, 0);
                     p1 = godot::Vector3(std::cos(a1) * radius, std::sin(a1) * radius + y, 0);
-                } else {
+                } 
+                else {
                     p0 = godot::Vector3(0, std::sin(a0) * radius + y, std::cos(a0) * radius);
                     p1 = godot::Vector3(0, std::sin(a1) * radius + y, std::cos(a1) * radius);
                 }
@@ -123,7 +124,8 @@ namespace Vital::Sandbox::API {
                 if (plane == 1) {
                     p0 = godot::Vector3(std::cos(a0) * radius, std::sin(a0) * radius + center_y, 0);
                     p1 = godot::Vector3(std::cos(a1) * radius, std::sin(a1) * radius + center_y, 0);
-                } else {
+                } 
+                else {
                     p0 = godot::Vector3(0, std::sin(a0) * radius + center_y, std::cos(a0) * radius);
                     p1 = godot::Vector3(0, std::sin(a1) * radius + center_y, std::cos(a1) * radius);
                 }
@@ -143,10 +145,12 @@ namespace Vital::Sandbox::API {
                 };
                 int edges[12][2] = {{0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7},{7,4}, {0,4},{1,5},{2,6},{3,7}};
                 for (auto& e : edges) { points.push_back(corners[e[0]]); points.push_back(corners[e[1]]); }
-            } else if (auto sphere = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
+            } 
+            else if (auto sphere = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
                 float r = static_cast<float>(sphere -> get_radius());
                 add_ring(points, r, 0, 0); add_ring(points, r, 0, 1); add_ring(points, r, 0, 2);
-            } else if (auto capsule = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
+            } 
+            else if (auto capsule = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
                 float r = static_cast<float>(capsule -> get_radius());
                 float half_h = std::max<float>(static_cast<float>(capsule -> get_height()) * 0.5f - r, 0.0f);
                 add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
@@ -157,7 +161,8 @@ namespace Vital::Sandbox::API {
                     points.push_back(godot::Vector3(p[0], half_h, p[1]));
                     points.push_back(godot::Vector3(p[0], -half_h, p[1]));
                 }
-            } else if (auto cylinder = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
+            } 
+            else if (auto cylinder = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
                 float r = static_cast<float>(cylinder -> get_radius());
                 float half_h = static_cast<float>(cylinder -> get_height()) * 0.5f;
                 add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
