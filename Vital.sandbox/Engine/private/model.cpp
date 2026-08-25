@@ -178,22 +178,27 @@ namespace Vital::Engine {
         auto net = Manager::Network::get_singleton();
         if (net && net->get_peer_id() == sync_authority) return;
 
-        // Write snapshot into the ring buffer at snap_head.
-        Snapshot& slot     = snap_buf[snap_head];
-        slot.pos           = pos;
-        slot.rot           = rot;
-        slot.vel           = vel;
-        slot.time          = snap_clock; // local clock at time of receipt
-
-        snap_head          = (snap_head + 1) % SNAPSHOT_COUNT;
-        if (snap_count < SNAPSHOT_COUNT) snap_count++;
-
         if (!interp_ready) {
-            // First snapshot — snap immediately so model doesn't start at origin.
+            // First snapshot — snap immediately and pre-seed the clock so the
+            // render point (snap_clock - BUFFER_DELAY) is immediately valid.
+            // Without this, the buffer spends the first 100ms in underrun and
+            // the model visually slips as it transitions from snap to lerp mode.
             set_global_position(pos);
             set_rotation_degrees(rot);
+            snap_clock   = BUFFER_DELAY; // render_time = 0.0 on first frame
             interp_ready = true;
         }
+
+        // Write snapshot into the ring buffer. Timestamp after clock seed so
+        // the first slot.time == 0.0 which matches render_time on the first frame.
+        Snapshot& slot = snap_buf[snap_head];
+        slot.pos       = pos;
+        slot.rot       = rot;
+        slot.vel       = vel;
+        slot.time      = snap_clock - BUFFER_DELAY; // convert to render-space time
+
+        snap_head  = (snap_head + 1) % SNAPSHOT_COUNT;
+        if (snap_count < SNAPSHOT_COUNT) snap_count++;
 
         sync_last_pos = pos;
         sync_last_rot = rot;
@@ -213,9 +218,9 @@ namespace Vital::Engine {
 
         if (snap_count == 0) return;
 
-        // Render point = now - BUFFER_DELAY.
-        // We always try to render 100ms in the past so we have two surrounding
-        // snapshots available and never need to extrapolate in the normal case.
+        // Render point in render-space time (snap_clock - BUFFER_DELAY).
+        // Snapshot timestamps are stored as (snap_clock - BUFFER_DELAY) at write
+        // time, so render_time directly indexes into the buffer without offset.
         float render_time = snap_clock - BUFFER_DELAY;
 
         // Read the ring buffer in chronological order.
