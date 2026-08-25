@@ -23,8 +23,6 @@
 // Vital: Engine: Console //
 /////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Engine {
     class Console : public godot::Control, public Tool::Base<Console> {
         friend class Tool::Base<Console>;
@@ -55,6 +53,7 @@ namespace Vital::Engine {
                 static Tool::Stack fetch_mode_color(const std::string& mode);
                 static std::string fetch_version();
                 static std::string fetch_help();
+                static void parse_log_line(const std::string& line);
                 #if !defined(VSDK_Client)
                 static constexpr const char* ANSI_RESET = "\033[0m";
                 static constexpr const char* ANSI_BOLD = "\033[1m";
@@ -74,7 +73,6 @@ namespace Vital::Engine {
             // Instantiators //
             Console();
             ~Console();
-            void parse_log_line(const std::string& line);
         public:
             static constexpr const char* Name = "Console.engine";
 
