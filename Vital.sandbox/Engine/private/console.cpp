@@ -65,7 +65,7 @@ namespace Vital::Engine {
             Tool::Version::get("godot")
         );
     }
-    
+
     std::string Console::Internal::fetch_help() {
         std::ostringstream oss;
         auto append_section = [&](const std::string& section, const std::string& label) {
@@ -95,33 +95,10 @@ namespace Vital::Engine {
     void Console::Internal::parse_log_line(const std::string& line) {
         if (line.empty()) return;
 
-        struct Entry {
-            const char* prefix;
-            const char* mode;
-            bool strip; 
-            const char* label;
-        };
-
-        static const Entry table[] = {
-            { "[Godot ERR]",          "error", true,  "Godot.engine: "       },
-            { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry: "          },
-            { "[Vital.wry]",          "warn",  true,  "Vital.wry.protocol: " },
-            { "SHADER ERROR:",        "error", false, "Godot.engine: "       },
-            { "ERROR:",               "error", false, "Godot.engine: "       },
-            { "WARNING:",             "warn",  false, "Godot.engine: "       },
-            { "  at:",                "error", false, ""                     },
-            { "\tat:",                "error", false, ""                     }
-        };
-
         std::string mode;
         std::string message;
-        auto trim = [](std::string s) {
-            s.erase(0, s.find_first_not_of(" \t"));
-            s.erase(s.find_last_not_of(" \t") + 1);
-            return s;
-        };
-    
-        for (const auto& e : table) {
+
+        for (const auto& e : native_logs) {
             const std::size_t len = std::strlen(e.prefix);
             if (line.rfind(e.prefix, 0) != 0) continue;
             mode    = e.mode;
@@ -130,8 +107,15 @@ namespace Vital::Engine {
         }
 
         if (mode.empty()) return;
+
+        auto trim = [](std::string s) {
+            s.erase(0, s.find_first_not_of(" \t"));
+            s.erase(s.find_last_not_of(" \t") + 1);
+            return s;
+        };
         message = trim(message);
         if (message.empty()) return;
+
         #if defined(VSDK_Client)
         Engine::Core::get_singleton() -> enqueue([mode, message]() {
             Tool::print(mode, message);

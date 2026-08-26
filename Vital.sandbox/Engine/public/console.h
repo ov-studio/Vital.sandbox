@@ -47,6 +47,25 @@ namespace Vital::Engine {
             std::atomic<bool> log_running { false };
 
             struct Internal {
+                struct NativeLogEntry {
+                    const char* prefix;
+                    const char* mode;
+                    bool        strip;
+                    const char* label;
+                };
+
+                static inline constexpr NativeLogEntry native_logs[] = {
+                    { "[Godot ERR]",          "error", true,  "Godot.engine: "      },
+                    { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry: "         },
+                    { "[Vital.wry]",          "warn",  true,  "Vital.wry.protcol: " },
+                    { "SHADER ERROR:",        "error", false, "Godot.engine: "      },
+                    { "ERROR:",               "error", false, "Godot.engine: "      },
+                    { "WARNING:",             "warn",  false, "Godot.engine: "      },
+                    { "  at:",                "error", false, ""                    },
+                    { "\tat:",                "error", false, ""                    }
+                };
+
+                
                 // Helpers //
                 static std::string fetch_mode_label(const std::string& mode);
                 static std::string fetch_mode_badge(const std::string& mode);
