@@ -171,7 +171,7 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(2);
                 godot::Variant value;
-                if      (vm -> is_number(3))  value = vm -> get_float(3);
+                if (vm -> is_number(3))  value = vm -> get_float(3);
                 else if (vm -> is_bool(3))    value = vm -> get_bool(3);
                 else if (vm -> is_vector2(3)) value = vm -> get_vector2(3);
                 else if (vm -> is_vector3(3)) value = vm -> get_vector3(3);
@@ -202,13 +202,11 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_param_texture", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, texture)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, [](Machine* m, int i) {
-                        return vm_module::is_userdata<API::Texture::Instance>(m, i);
-                    });
+                    .require(3, [](Machine* m, int i) { return vm_module::is_userdata<API::Image::Instance>(m, i); });
 
                 auto name = vm -> get_string(2);
-                auto tex_inst = vm_module::get_userdata_object<API::Texture::Instance>(vm, 3);
-                auto ref = tex_inst -> texture -> get_canvas_texture();
+                auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
+                auto ref = instance -> texture -> get_canvas_texture();
                 vm -> push_value(self -> shader -> set_param_texture(name, ref));
                 return 1;
             });
@@ -220,13 +218,11 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_param_rt", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, rendertarget)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, [](Machine* m, int i) {
-                        return vm_module::is_userdata<API::Rendertarget::Instance>(m, i);
-                    });
+                    .require(3, [](Machine* m, int i) { return vm_module::is_userdata<API::Rendertarget::Instance>(m, i); });
 
                 auto name = vm -> get_string(2);
-                auto rt_inst = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                auto vp_tex = rt_inst -> rendertarget -> get_texture();
+                auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                auto vp_tex = instance -> rendertarget -> get_texture();
                 vm -> push_value(self -> shader -> set_param_viewport_texture(name, vp_tex));
                 return 1;
             });
@@ -239,12 +235,9 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* m, int i) { return m -> is_userdata(i); });
 
                 using ModelInstance = Vital::Sandbox::API::Model::Instance;
-                auto model_inst = vm_module::get_userdata_object<ModelInstance>(vm, 2);
-                if (!model_inst || !model_inst -> model) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-                vm -> push_value(self -> shader -> apply_to_node(model_inst -> model));
+                auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
+                if (!instance || !instance -> model) vm -> push_value(false);
+                else vm -> push_value(self -> shader -> apply_to_node(instance -> model));
                 return 1;
             });
         }
