@@ -19,9 +19,9 @@
 #include <Vital.sandbox/API/utility/file.h>
 
 
-////////////////////////
+///////////////////////
 // Vital: API: Glow //
-////////////////////////
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct Glow : vm_module {
