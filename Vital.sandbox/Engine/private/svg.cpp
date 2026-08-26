@@ -27,11 +27,11 @@ namespace Vital::Engine {
 
 
     // Misc //
-    SVG* SVG::create_svg(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_svg_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
+    SVG* SVG::create(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
+        return create_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }
 
-    SVG* SVG::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
+    SVG* SVG::create_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
@@ -39,7 +39,7 @@ namespace Vital::Engine {
         return memnew(SVG(godot::ImageTexture::create_from_image(image), reference));
     }
 
-    SVG* SVG::create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
+    SVG* SVG::create_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
@@ -47,7 +47,7 @@ namespace Vital::Engine {
         return memnew(SVG(godot::ImageTexture::create_from_image(image), reference));
     }
 
-    void SVG::update_svg_from_raw(const std::string& raw) {
+    void SVG::update_from_raw(const std::string& raw) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
@@ -55,7 +55,7 @@ namespace Vital::Engine {
         heartbeat();
     }
 
-    void SVG::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
+    void SVG::update_from_buffer(const godot::PackedByteArray& buffer) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
