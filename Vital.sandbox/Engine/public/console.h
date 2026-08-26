@@ -50,7 +50,7 @@ namespace Vital::Engine {
                 struct NativeLogEntry {
                     const char* prefix;
                     const char* mode;
-                    bool        strip;
+                    bool strip;
                     const char* label;
                 };
 
