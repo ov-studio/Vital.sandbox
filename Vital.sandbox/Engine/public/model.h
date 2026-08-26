@@ -105,10 +105,39 @@ namespace Vital::Engine {
             // True once at least one snapshot has been received.
             bool  interp_ready = false;
 
+            // ----- Jitter-adaptive buffer delay -----
+            // We measure inter-packet arrival intervals and maintain a running
+            // estimate of jitter (variance). BUFFER_DELAY is then set to:
+            //   base_interval + jitter_margin * jitter_stddev
+            // clamped to [BUFFER_DELAY_MIN, BUFFER_DELAY_MAX].
+            // This means LAN clients get ~60ms delay, lossy connections get more.
+            static constexpr float BUFFER_DELAY_MIN    = 0.05f;  // 50ms floor
+            static constexpr float BUFFER_DELAY_MAX    = 0.25f;  // 250ms ceiling
+            static constexpr float JITTER_MARGIN       = 2.0f;   // stddev multiplier
+            static constexpr int   JITTER_WINDOW       = 8;      // samples
+
+            float jitter_last_arrival  = -1.0f;  // snap_clock when last packet arrived
+            float jitter_intervals[JITTER_WINDOW] = {};
+            int   jitter_idx           = 0;
+            int   jitter_count         = 0;
+            float adaptive_delay       = BUFFER_DELAY; // current effective delay
+
             // Network object ID assigned by the server on creation and echoed to
             // all clients so every side refers to the same object.
             uint32_t net_id = 0;
             inline static uint32_t next_net_id = 1;
+
+            // ----- Delta compression -----
+            // Component bitmask — which of the 9 float fields changed enough to send.
+            // Bit 0=px 1=py 2=pz 3=rx 4=ry 5=rz 6=vx 7=vy 8=vz
+            static constexpr float DELTA_POS_THRESHOLD = 0.001f;  // metres
+            static constexpr float DELTA_ROT_THRESHOLD = 0.05f;   // degrees
+            static constexpr float DELTA_VEL_THRESHOLD = 0.01f;   // units/sec
+
+            // Last values sent/received — used to detect which components changed.
+            godot::Vector3 delta_last_pos;
+            godot::Vector3 delta_last_rot;
+            godot::Vector3 delta_last_vel;
 
             inline static Models cache_loaded;
 
@@ -177,9 +206,7 @@ namespace Vital::Engine {
             // Called every rendered frame — advances interpolation on non-authority clients.
             void _process(double delta) override;
 
-            // Public raw u32 reader — used by Manager::Network to read the
-            // sender_peer_id prefix in client-auth packets without exposing
-            // the private read_u32 helper.
+            // Public raw u32 reader.
             static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {
                 return (uint8_t)buf[offset]
                      | ((uint8_t)buf[offset+1] << 8)
@@ -187,20 +214,34 @@ namespace Vital::Engine {
                      | ((uint8_t)buf[offset+3] << 24);
             }
 
-            // Parse a 40-byte sync entry (pos+rot+vel) from buf at byte offset.
-            // Returns false if the buffer is too small.
-            static bool parse_sync_packet_at(const godot::PackedByteArray& buf,
-                                             int offset,
-                                             uint32_t& out_id,
-                                             godot::Vector3& out_pos,
-                                             godot::Vector3& out_rot,
-                                             godot::Vector3& out_vel);
+            // Public wrappers for the private delta encode/decode helpers.
+            // Called by Manager::Network which cannot access private methods
+            // but is a friend class — these are just named aliases for clarity.
+            static int encode_delta_public(godot::PackedByteArray& buf, int offset,
+                                           uint32_t id,
+                                           godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
+                                           godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+
+            static int decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size,
+                                           uint32_t& out_id,
+                                           godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
+                                           godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+
+            // Decode a delta-compressed entry from buf at offset.
+            // Uses this model's delta_last_* state to reconstruct unchanged components.
+            // Returns bytes consumed, or -1 on error.
+            int parse_sync_packet_at(const godot::PackedByteArray& buf,
+                                     int offset,
+                                     uint32_t& out_id,
+                                     godot::Vector3& out_pos,
+                                     godot::Vector3& out_rot,
+                                     godot::Vector3& out_vel);
             // Convenience wrapper (offset=0).
-            static bool parse_sync_packet(const godot::PackedByteArray& buf,
-                                          uint32_t& out_id,
-                                          godot::Vector3& out_pos,
-                                          godot::Vector3& out_rot,
-                                          godot::Vector3& out_vel);
+            int parse_sync_packet(const godot::PackedByteArray& buf,
+                                  uint32_t& out_id,
+                                  godot::Vector3& out_pos,
+                                  godot::Vector3& out_rot,
+                                  godot::Vector3& out_vel);
 
 
             // Managers //

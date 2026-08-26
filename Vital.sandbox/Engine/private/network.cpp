@@ -119,10 +119,16 @@ namespace Vital::Engine {
             m->sync_authority = peer_id;
             // Reset snapshot buffer — stale snapshots from old authority
             // must not bleed into the new authority's interpolation.
-            m->snap_head  = 0;
-            m->snap_count = 0;
-            m->snap_clock = 0.0f;
-            m->interp_ready = false;
+            m->snap_head        = 0;
+            m->snap_count       = 0;
+            m->snap_clock       = 0.0f;
+            m->interp_ready     = false;
+            m->jitter_last_arrival = -1.0f;
+            m->jitter_idx       = 0;
+            m->jitter_count     = 0;
+            m->adaptive_delay   = Engine::Model::BUFFER_DELAY;
+            for (int i = 0; i < Engine::Model::JITTER_WINDOW; i++)
+                m->jitter_intervals[i] = 0.0f;
             godot::UtilityFunctions::print("_set_authority: net_id=", net_id,
                 " -> peer_id=", peer_id);
             return;

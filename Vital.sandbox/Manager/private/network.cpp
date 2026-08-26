@@ -190,7 +190,7 @@ namespace Vital::Manager {
     //
     // We bypass Godot's RPC layer for sync packets and talk directly
     // Sync is routed through Godot's RPC layer (_sync_models / _sync_client / _sync_state)
-    // to avoid scene_cache_interface intercepting raw put_packet calls on channel 1.
+    // routed through Godot's RPC layer (avoids scene_cache_interface conflicts).
 
     bool Network::broadcast_sync(const godot::PackedByteArray& data) {
         #if defined(VSDK_Client)
@@ -217,21 +217,38 @@ namespace Vital::Manager {
     void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool /*is_state_dump*/) {
         if (data.size() < 8) return;
         if (Engine::Model::read_u32_public(data, 0) != STATE_DUMP_MAGIC) return;
-        uint32_t count = Engine::Model::read_u32_public(data, 4);
-        if ((int)data.size() < 8 + (int)count * 40) return;
+        uint32_t payload_bytes = Engine::Model::read_u32_public(data, 4);
+        if ((int)data.size() < 8 + (int)payload_bytes) return;
 
         int my_id = get_peer_id();
         std::lock_guard<std::mutex> lock(sync_models_mutex);
 
-        for (uint32_t i = 0; i < count; i++) {
-            int offset = 8 + (int)i * 40;
+        int offset = 8;
+        int end    = 8 + (int)payload_bytes;
+        while (offset < end) {
             uint32_t net_id = 0;
             godot::Vector3 pos, rot, vel;
-            if (!Engine::Model::parse_sync_packet_at(data, offset, net_id, pos, rot, vel)) continue;
 
-            auto it = sync_id_map.find(net_id);
-            if (it == sync_id_map.end()) continue;
-            Engine::Model* model = it->second;
+            auto it_model = sync_id_map.end();
+            // Peek net_id to find model before decoding (need delta_last_* from model).
+            if (offset + 4 > end) break;
+            net_id = Engine::Model::read_u32_public(data, offset);
+            it_model = sync_id_map.find(net_id);
+
+            Engine::Model* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
+            int consumed;
+            if (model) {
+                consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+            } else {
+                // Unknown model — skip this entry using throwaway state.
+                godot::Vector3 dp, dr, dv;
+                consumed = Engine::Model::decode_delta_public(data, offset, (int)data.size(),
+                    net_id, pos, rot, vel, dp, dr, dv);
+            }
+            if (consumed < 0) break;
+            offset += consumed;
+
+            if (!model) continue;
             if (model->get_sync_authority() == my_id) continue;
             model->apply_sync(pos, rot, vel);
         }
@@ -246,14 +263,12 @@ namespace Vital::Manager {
         if ((int)Engine::Model::read_u32_public(data, 0) != sender_id) return; // anti-spoof
         if (Engine::Model::read_u32_public(data, 4) != STATE_DUMP_MAGIC) return;
 
-        uint32_t count = Engine::Model::read_u32_public(data, 8);
-        if ((int)data.size() < 12 + (int)count * 40) return;
+        uint32_t payload_bytes = Engine::Model::read_u32_public(data, 8);
+        if ((int)data.size() < 12 + (int)payload_bytes) return;
 
-        // Relay the same batch to all other clients — strip the sender prefix,
-        // replace with our VSST header so clients can use dispatch_sync_batch.
-        // We build the relay buffer once and broadcast it.
+        // Relay buffer: strip sender prefix, keep VSST header + variable entries.
         godot::PackedByteArray relay;
-        relay.resize(8 + (int)count * 40);
+        relay.resize(8 + (int)payload_bytes); // max size, may shrink
         auto wu32_r = [&](int off, uint32_t v) {
             relay[off]   =  v        & 0xFF;
             relay[off+1] = (v >>  8) & 0xFF;
@@ -261,35 +276,44 @@ namespace Vital::Manager {
             relay[off+3] = (v >> 24) & 0xFF;
         };
         wu32_r(0, STATE_DUMP_MAGIC);
-        wu32_r(4, count);
 
-        uint32_t valid = 0;
+        int relay_cursor = 8;
         {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (uint32_t i = 0; i < count; i++) {
-                int src = 12 + (int)i * 40;
-                uint32_t net_id = 0;
+            int offset = 12;
+            int end    = 12 + (int)payload_bytes;
+            while (offset < end) {
+                if (offset + 4 > end) break;
+                uint32_t net_id = Engine::Model::read_u32_public(data, offset);
                 godot::Vector3 pos, rot, vel;
-                if (!Engine::Model::parse_sync_packet_at(data, src, net_id, pos, rot, vel)) continue;
 
                 auto it = sync_id_map.find(net_id);
-                if (it == sync_id_map.end()) continue;
-                Engine::Model* model = it->second;
-                if (model->get_sync_authority() != sender_id) continue;
+                Engine::Model* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
-                // Apply on server (server tracks ground truth).
-                model->apply_sync(pos, rot, vel);
+                int consumed;
+                if (model) {
+                    consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+                } else {
+                    godot::Vector3 dp, dr, dv;
+                    consumed = Engine::Model::decode_delta_public(data, offset, (int)data.size(),
+                        net_id, pos, rot, vel, dp, dr, dv);
+                }
+                if (consumed < 0) break;
 
-                // Copy 40-byte entry into relay buffer.
-                int dst = 8 + (int)valid * 40;
-                for (int b = 0; b < 40; b++) relay[dst + b] = data[src + b];
-                valid++;
+                if (model && model->get_sync_authority() == sender_id) {
+                    model->apply_sync(pos, rot, vel);
+                    // Copy variable-length entry verbatim into relay.
+                    for (int b = 0; b < consumed; b++)
+                        relay[relay_cursor + b] = data[offset + b];
+                    relay_cursor += consumed;
+                }
+                offset += consumed;
             }
         }
 
-        if (valid > 0 && node) {
-            relay.resize(8 + (int)valid * 40);
-            wu32_r(4, valid);
+        if (relay_cursor > 8 && node) {
+            relay.resize(relay_cursor);
+            wu32_r(4, (uint32_t)(relay_cursor - 8));
             for (int pid : connected_peers) {
                 if (pid == sender_id) continue;
                 node->rpc_id(pid, "_sync_models", relay);
@@ -315,7 +339,7 @@ namespace Vital::Manager {
 
         // ENet with default channel count (RPC via MultiplayerAPI)
         godot::Error err = peer->create_client(godot::String(ip.c_str()), port,
-                                                0, 0, 0, 0 /* channel_count: default */);
+                                                0, 0, 0);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
@@ -424,7 +448,7 @@ namespace Vital::Manager {
 
         // ENet with default channel count (RPC via MultiplayerAPI)
         godot::Error err = peer->create_server(net_port, config.get_max_clients(),
-                                                0, 0, 0 /* channel_count: default */);
+                                                0, 0, 0);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
             peer.unref();
@@ -470,15 +494,15 @@ namespace Vital::Manager {
     // Full state dump for late-joiners.
     //
     // Packet layout for each model — identical to the normal sync packet (28 bytes)
-    // but sent on CHANNEL_RPC (reliable) so it's guaranteed to arrive after the
-    // MultiplayerSpawner spawn signals that Godot emits for the same peer.
+    // but sent reliably so it's guaranteed to arrive after the
+    // spawn RPCs that Godot emits for the same peer.
     //
     // We batch all models into a single reliable send via a small framing header:
     //   [0..3]   uint32  magic  0x56535354 ("VSST" — Vital Sync State Table)
     //   [4..7]   uint32  count  number of model entries that follow
-    //   [8..]    N * 40 bytes   one sync entry per model (net_id+pos+rot+vel)
+    //   [8..]    variable-length delta entries (6 + N*4 bytes each)
     //
-    // The client's drain_sync_packets() recognises the magic and unpacks all entries
+    // The client's dispatch_sync_batch() recognises the magic and unpacks all entries
     // in one pass, so there is no per-model packet overhead on the receiving side.
     //
     void Network::send_full_state_to_peer(int peer_id) {
@@ -496,7 +520,7 @@ namespace Vital::Manager {
         // Build the batch buffer.
         const uint32_t count = static_cast<uint32_t>(snapshot.size());
         godot::PackedByteArray buf;
-        buf.resize(8 + count * 40);
+        buf.resize(8 + count * Engine::Model::SYNC_PACKET_MAX);
 
         auto wu32 = [&](int off, uint32_t v) {
             buf[off]   =  v        & 0xFF;
@@ -504,24 +528,27 @@ namespace Vital::Manager {
             buf[off+2] = (v >> 16) & 0xFF;
             buf[off+3] = (v >> 24) & 0xFF;
         };
-        auto wf32 = [&](int off, float v) {
-            uint32_t raw; memcpy(&raw, &v, 4); wu32(off, raw);
-        };
 
         wu32(0, STATE_DUMP_MAGIC);
-        wu32(4, count);
+        // [4..7] will be filled with payload_bytes after encoding.
 
-        int offset = 8;
+        // Late-joiners have no delta state — force all components by using
+        // zeroed last_* so encode_delta always sets all 9 bits in the mask.
+        int cursor = 8;
         for (auto* model : snapshot) {
             godot::Vector3 pos = model->get_global_position();
             godot::Vector3 rot = model->get_rotation_degrees();
             godot::Vector3 vel = model->sync_last_vel;
-            wu32(offset,      model->get_net_id());
-            wf32(offset +  4, pos.x); wf32(offset +  8, pos.y); wf32(offset + 12, pos.z);
-            wf32(offset + 16, rot.x); wf32(offset + 20, rot.y); wf32(offset + 24, rot.z);
-            wf32(offset + 28, vel.x); wf32(offset + 32, vel.y); wf32(offset + 36, vel.z);
-            offset += 40;
+            // Temp zeroed state — guarantees full packet (all bits set).
+            godot::Vector3 zero_p, zero_r, zero_v;
+            int written = Engine::Model::encode_delta_public(
+                buf, cursor,
+                model->get_net_id(), pos, rot, vel,
+                zero_p, zero_r, zero_v);
+            cursor += written;
         }
+        buf.resize(cursor);
+        wu32(4, (uint32_t)(cursor - 8)); // payload_bytes
 
         // Send reliable unicast to the joining peer via RPC.
         if (node) node->rpc_id(peer_id, "_sync_state", buf);
@@ -683,17 +710,15 @@ namespace Vital::Manager {
             }
             if (snapshot.empty() || !node || !is_connected()) return;
 
-            uint32_t dirty_count = 0;
-            sync_batch_buf.resize(8 + (int)snapshot.size() * 40);
+            // Delta batch: [VSST magic u32][payload_bytes u32][variable entries]
+            sync_batch_buf.resize(8 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+            int cursor = 8;
 
             auto wu32 = [&](int off, uint32_t v) {
                 sync_batch_buf[off]   =  v        & 0xFF;
                 sync_batch_buf[off+1] = (v >>  8) & 0xFF;
                 sync_batch_buf[off+2] = (v >> 16) & 0xFF;
                 sync_batch_buf[off+3] = (v >> 24) & 0xFF;
-            };
-            auto wf32 = [&](int off, float v) {
-                uint32_t raw; memcpy(&raw, &v, 4); wu32(off, raw);
             };
 
             for (auto* model : snapshot) {
@@ -715,26 +740,24 @@ namespace Vital::Manager {
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
-                // Estimate velocity from position delta over the last interval.
-                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
 
-                model->sync_accum = 0.0f;
+                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
+                model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int base = 8 + (int)dirty_count * 40;
-                wu32(base,      model->get_net_id());
-                wf32(base +  4, cur_pos.x); wf32(base +  8, cur_pos.y); wf32(base + 12, cur_pos.z);
-                wf32(base + 16, cur_rot.x); wf32(base + 20, cur_rot.y); wf32(base + 24, cur_rot.z);
-                wf32(base + 28, cur_vel.x); wf32(base + 32, cur_vel.y); wf32(base + 36, cur_vel.z);
-                dirty_count++;
+                int written = Engine::Model::encode_delta_public(
+                    sync_batch_buf, cursor,
+                    model->get_net_id(), cur_pos, cur_rot, cur_vel,
+                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
+                cursor += written;
             }
 
-            if (dirty_count > 0) {
-                sync_batch_buf.resize(8 + (int)dirty_count * 40);
+            if (cursor > 8) {
+                sync_batch_buf.resize(cursor);
                 wu32(0, STATE_DUMP_MAGIC);
-                wu32(4, dirty_count);
+                wu32(4, (uint32_t)(cursor - 8));
                 node->rpc("_sync_models", sync_batch_buf);
             }
         }
@@ -749,16 +772,17 @@ namespace Vital::Manager {
 
             int my_id = get_peer_id();
             uint32_t dirty_count = 0;
-            sync_batch_buf.resize(12 + (int)snapshot.size() * 40);
+            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+
+            // Client delta batch: [sender u32][VSST magic u32][payload_bytes u32][entries]
+            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+            int cursor = 12;
 
             auto wu32 = [&](int off, uint32_t v) {
                 sync_batch_buf[off]   =  v        & 0xFF;
                 sync_batch_buf[off+1] = (v >>  8) & 0xFF;
                 sync_batch_buf[off+2] = (v >> 16) & 0xFF;
                 sync_batch_buf[off+3] = (v >> 24) & 0xFF;
-            };
-            auto wf32 = [&](int off, float v) {
-                uint32_t raw; memcpy(&raw, &v, 4); wu32(off, raw);
             };
 
             for (auto* model : snapshot) {
@@ -780,26 +804,25 @@ namespace Vital::Manager {
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
-                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
 
-                model->sync_accum = 0.0f;
+                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
+                model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int base = 12 + (int)dirty_count * 40;
-                wu32(base,      model->get_net_id());
-                wf32(base +  4, cur_pos.x); wf32(base +  8, cur_pos.y); wf32(base + 12, cur_pos.z);
-                wf32(base + 16, cur_rot.x); wf32(base + 20, cur_rot.y); wf32(base + 24, cur_rot.z);
-                wf32(base + 28, cur_vel.x); wf32(base + 32, cur_vel.y); wf32(base + 36, cur_vel.z);
-                dirty_count++;
+                int written = Engine::Model::encode_delta_public(
+                    sync_batch_buf, cursor,
+                    model->get_net_id(), cur_pos, cur_rot, cur_vel,
+                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
+                cursor += written;
             }
 
-            if (dirty_count > 0) {
-                sync_batch_buf.resize(12 + (int)dirty_count * 40);
+            if (cursor > 12) {
+                sync_batch_buf.resize(cursor);
                 wu32(0, (uint32_t)my_id);
                 wu32(4, STATE_DUMP_MAGIC);
-                wu32(8, dirty_count);
+                wu32(8, (uint32_t)(cursor - 12));
                 node->rpc_id(1, "_sync_client", sync_batch_buf);
             }
         }

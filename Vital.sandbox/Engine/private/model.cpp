@@ -27,8 +27,6 @@
 namespace Vital::Engine {
 
 
-
-
     //------------------//
     //  Hooks / Notify  //
     //------------------//
@@ -43,11 +41,16 @@ namespace Vital::Engine {
         sync_last_rot  = get_rotation_degrees();
         sync_sleeping  = false;
         sync_accum     = 0.0f;
-        // Reset snapshot buffer.
+        // Reset snapshot buffer and jitter state.
         snap_head  = 0;
         snap_count = 0;
         snap_clock = 0.0f;
-        interp_ready = false;
+        interp_ready      = false;
+        jitter_last_arrival = -1.0f;
+        jitter_idx        = 0;
+        jitter_count      = 0;
+        adaptive_delay    = BUFFER_DELAY;
+        for (int i = 0; i < JITTER_WINDOW; i++) jitter_intervals[i] = 0.0f;
         // sync registration happens on first poll() — safe from any thread
     }
 
@@ -66,14 +69,30 @@ namespace Vital::Engine {
     //  Low-level Sync     //
     //---------------------//
 
-    // Packet layout (40 bytes, all little-endian):
-    //   [0..3]   uint32  net_id
-    //   [4..15]  float×3 pos xyz
-    //   [16..27] float×3 rot xyz (degrees)
-    //   [28..39] float×3 vel xyz (units/sec — for dead-reckoning on receiver)
+    // Delta-compressed variable-length packet layout:
+    //   [0..3]   uint32   net_id
+    //   [4..5]   uint16   component_mask  (bits 0-8 = px,py,pz,rx,ry,rz,vx,vy,vz)
+    //   [6..]    float×N  only components where mask bit is set (4 bytes each)
+    //
+    // Minimum: 6 bytes (net_id + mask, nothing changed)
+    // Maximum: 6 + 9*4 = 42 bytes (all components changed)
+    // Typical moving object: ~18-26 bytes vs old fixed 40 bytes
+    //
+    // Receivers reconstruct the full state by applying received components
+    // on top of their last-known values for this model.
 
-    static constexpr int SYNC_PACKET_SIZE = 40;
-    static constexpr float SYNC_THRESHOLD = 0.001f;
+    static constexpr int SYNC_PACKET_MAX = 42;
+
+    // Component mask bit positions
+    static constexpr uint16_t MASK_PX = 1 << 0;
+    static constexpr uint16_t MASK_PY = 1 << 1;
+    static constexpr uint16_t MASK_PZ = 1 << 2;
+    static constexpr uint16_t MASK_RX = 1 << 3;
+    static constexpr uint16_t MASK_RY = 1 << 4;
+    static constexpr uint16_t MASK_RZ = 1 << 5;
+    static constexpr uint16_t MASK_VX = 1 << 6;
+    static constexpr uint16_t MASK_VY = 1 << 7;
+    static constexpr uint16_t MASK_VZ = 1 << 8;
 
     static void write_float(godot::PackedByteArray& buf, int offset, float v) {
         uint32_t raw;
@@ -108,63 +127,133 @@ namespace Vital::Engine {
              | ((uint8_t)buf[offset+3] << 24);
     }
 
-    // 40-byte server-auth broadcast packet: net_id + pos + rot + vel.
-    static godot::PackedByteArray build_sync_packet(uint32_t id,
-                                                     godot::Vector3 pos,
-                                                     godot::Vector3 rot,
-                                                     godot::Vector3 vel) {
-        godot::PackedByteArray buf;
-        buf.resize(SYNC_PACKET_SIZE);
-        write_u32(buf,  0, id);
-        write_float(buf,  4, pos.x); write_float(buf,  8, pos.y); write_float(buf, 12, pos.z);
-        write_float(buf, 16, rot.x); write_float(buf, 20, rot.y); write_float(buf, 24, rot.z);
-        write_float(buf, 28, vel.x); write_float(buf, 32, vel.y); write_float(buf, 36, vel.z);
-        return buf;
+    // Write u16 little-endian into buf at offset.
+    static void write_u16(godot::PackedByteArray& buf, int offset, uint16_t v) {
+        buf[offset]   =  v       & 0xFF;
+        buf[offset+1] = (v >> 8) & 0xFF;
+    }
+    static uint16_t read_u16(const godot::PackedByteArray& buf, int offset) {
+        return (uint8_t)buf[offset] | ((uint8_t)buf[offset+1] << 8);
     }
 
-    // 44-byte client-auth upload: sender_peer_id prefix + 40-byte entry.
-    static godot::PackedByteArray build_client_sync_packet(uint32_t sender_peer_id,
-                                                            uint32_t id,
-                                                            godot::Vector3 pos,
-                                                            godot::Vector3 rot,
-                                                            godot::Vector3 vel) {
-        godot::PackedByteArray buf;
-        buf.resize(4 + SYNC_PACKET_SIZE); // 44 bytes
-        write_u32(buf,  0, sender_peer_id);
-        write_u32(buf,  4, id);
-        write_float(buf,  8, pos.x); write_float(buf, 12, pos.y); write_float(buf, 16, pos.z);
-        write_float(buf, 20, rot.x); write_float(buf, 24, rot.y); write_float(buf, 28, rot.z);
-        write_float(buf, 32, vel.x); write_float(buf, 36, vel.y); write_float(buf, 40, vel.z);
-        return buf;
+    // Encode a delta-compressed sync entry into buf starting at offset.
+    // Only writes components that differ from last_* by more than threshold.
+    // Updates last_* for components that are written.
+    // Returns the number of bytes written.
+    static int encode_delta(godot::PackedByteArray& buf, int offset,
+                             uint32_t id,
+                             godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
+                             godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        uint16_t mask = 0;
+        if (std::abs(pos.x - last_pos.x) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PX;
+        if (std::abs(pos.y - last_pos.y) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PY;
+        if (std::abs(pos.z - last_pos.z) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PZ;
+        if (std::abs(rot.x - last_rot.x) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RX;
+        if (std::abs(rot.y - last_rot.y) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RY;
+        if (std::abs(rot.z - last_rot.z) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RZ;
+        if (std::abs(vel.x - last_vel.x) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VX;
+        if (std::abs(vel.y - last_vel.y) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VY;
+        if (std::abs(vel.z - last_vel.z) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VZ;
+
+        write_u32(buf, offset, id);
+        write_u16(buf, offset + 4, mask);
+        int cursor = offset + 6;
+
+        auto maybe_write = [&](bool bit, float val, float& last) {
+            if (!bit) return;
+            write_float(buf, cursor, val);
+            last   = val;
+            cursor += 4;
+        };
+
+        maybe_write(mask & MASK_PX, pos.x, last_pos.x);
+        maybe_write(mask & MASK_PY, pos.y, last_pos.y);
+        maybe_write(mask & MASK_PZ, pos.z, last_pos.z);
+        maybe_write(mask & MASK_RX, rot.x, last_rot.x);
+        maybe_write(mask & MASK_RY, rot.y, last_rot.y);
+        maybe_write(mask & MASK_RZ, rot.z, last_rot.z);
+        maybe_write(mask & MASK_VX, vel.x, last_vel.x);
+        maybe_write(mask & MASK_VY, vel.y, last_vel.y);
+        maybe_write(mask & MASK_VZ, vel.z, last_vel.z);
+
+        return cursor - offset; // bytes written
     }
 
-    // static helpers — decode 40-byte entries (net_id + pos + rot + vel)
-    bool Model::parse_sync_packet_at(const godot::PackedByteArray& buf,
-                                      int offset,
-                                      uint32_t& out_id,
-                                      godot::Vector3& out_pos,
-                                      godot::Vector3& out_rot,
-                                      godot::Vector3& out_vel) {
-        if (buf.size() < offset + SYNC_PACKET_SIZE) return false;
-        out_id    = read_u32(buf,   offset);
-        out_pos.x = read_float(buf, offset +  4);
-        out_pos.y = read_float(buf, offset +  8);
-        out_pos.z = read_float(buf, offset + 12);
-        out_rot.x = read_float(buf, offset + 16);
-        out_rot.y = read_float(buf, offset + 20);
-        out_rot.z = read_float(buf, offset + 24);
-        out_vel.x = read_float(buf, offset + 28);
-        out_vel.y = read_float(buf, offset + 32);
-        out_vel.z = read_float(buf, offset + 36);
-        return true;
+    // Decode a delta-compressed entry from buf at offset into out_*.
+    // Caller must provide last_* (the receiver's last known values).
+    // Returns bytes consumed, or -1 if buffer too small.
+    static int decode_delta(const godot::PackedByteArray& buf, int offset, int buf_size,
+                             uint32_t& out_id,
+                             godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
+                             godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        if (offset + 6 > buf_size) return -1;
+        out_id         = read_u32(buf, offset);
+        uint16_t mask  = read_u16(buf, offset + 4);
+        int cursor     = offset + 6;
+
+        // Start from last known values, overwrite only changed components.
+        out_pos = last_pos;
+        out_rot = last_rot;
+        out_vel = last_vel;
+
+        auto maybe_read = [&](bool bit, float& out, float& last) -> bool {
+            if (!bit) return true;
+            if (cursor + 4 > buf_size) return false;
+            out   = read_float(buf, cursor);
+            last  = out;
+            cursor += 4;
+            return true;
+        };
+
+        if (!maybe_read(mask & MASK_PX, out_pos.x, last_pos.x)) return -1;
+        if (!maybe_read(mask & MASK_PY, out_pos.y, last_pos.y)) return -1;
+        if (!maybe_read(mask & MASK_PZ, out_pos.z, last_pos.z)) return -1;
+        if (!maybe_read(mask & MASK_RX, out_rot.x, last_rot.x)) return -1;
+        if (!maybe_read(mask & MASK_RY, out_rot.y, last_rot.y)) return -1;
+        if (!maybe_read(mask & MASK_RZ, out_rot.z, last_rot.z)) return -1;
+        if (!maybe_read(mask & MASK_VX, out_vel.x, last_vel.x)) return -1;
+        if (!maybe_read(mask & MASK_VY, out_vel.y, last_vel.y)) return -1;
+        if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
+
+        return cursor - offset; // bytes consumed
     }
 
-    bool Model::parse_sync_packet(const godot::PackedByteArray& buf,
-                                   uint32_t& out_id,
-                                   godot::Vector3& out_pos,
-                                   godot::Vector3& out_rot,
-                                   godot::Vector3& out_vel) {
+    // Decode a delta-compressed entry from buf at offset.
+    // last_pos/rot/vel must be the receiver's last known values for this model
+    // (kept in delta_last_* fields) so unchanged components are reconstructed.
+    // Returns bytes consumed, or -1 on error.
+    int Model::parse_sync_packet_at(const godot::PackedByteArray& buf,
+                                     int offset,
+                                     uint32_t& out_id,
+                                     godot::Vector3& out_pos,
+                                     godot::Vector3& out_rot,
+                                     godot::Vector3& out_vel) {
+        return decode_delta(buf, offset, (int)buf.size(),
+                            out_id, out_pos, out_rot, out_vel,
+                            delta_last_pos, delta_last_rot, delta_last_vel);
+    }
+
+    int Model::parse_sync_packet(const godot::PackedByteArray& buf,
+                                  uint32_t& out_id,
+                                  godot::Vector3& out_pos,
+                                  godot::Vector3& out_rot,
+                                  godot::Vector3& out_vel) {
         return parse_sync_packet_at(buf, 0, out_id, out_pos, out_rot, out_vel);
+    }
+
+    // Public static wrappers — called by Manager::Network (friend class).
+    int Model::encode_delta_public(godot::PackedByteArray& buf, int offset,
+                                    uint32_t id,
+                                    godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
+                                    godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        return encode_delta(buf, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
+    }
+
+    int Model::decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size,
+                                    uint32_t& out_id,
+                                    godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
+                                    godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        return decode_delta(buf, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
     }
 
     // sync_tick removed — dirty-check, rate-limiting, and batching are
@@ -179,23 +268,52 @@ namespace Vital::Engine {
         if (net && net->get_peer_id() == sync_authority) return;
 
         if (!interp_ready) {
-            // First snapshot — snap immediately and pre-seed the clock so the
-            // render point (snap_clock - BUFFER_DELAY) is immediately valid.
-            // Without this, the buffer spends the first 100ms in underrun and
-            // the model visually slips as it transitions from snap to lerp mode.
             set_global_position(pos);
             set_rotation_degrees(rot);
-            snap_clock   = BUFFER_DELAY; // render_time = 0.0 on first frame
-            interp_ready = true;
+            snap_clock        = BUFFER_DELAY;
+            jitter_last_arrival = snap_clock;
+            interp_ready      = true;
+        } else {
+            // Measure inter-packet arrival interval for jitter estimation.
+            float interval = snap_clock - jitter_last_arrival;
+            if (interval > 0.0f) {
+                jitter_intervals[jitter_idx] = interval;
+                jitter_idx   = (jitter_idx + 1) % JITTER_WINDOW;
+                if (jitter_count < JITTER_WINDOW) jitter_count++;
+
+                // Compute mean and standard deviation over the sample window.
+                float mean = 0.0f;
+                for (int i = 0; i < jitter_count; i++) mean += jitter_intervals[i];
+                mean /= (float)jitter_count;
+
+                float variance = 0.0f;
+                for (int i = 0; i < jitter_count; i++) {
+                    float d = jitter_intervals[i] - mean;
+                    variance += d * d;
+                }
+                float stddev = (jitter_count > 1)
+                    ? std::sqrt(variance / (float)(jitter_count - 1))
+                    : 0.0f;
+
+                // Target delay = one packet interval + jitter_margin × stddev.
+                // Smooth the transition so delay changes don't cause visible pops.
+                float target = std::clamp(
+                    interp_step + JITTER_MARGIN * stddev,
+                    BUFFER_DELAY_MIN,
+                    BUFFER_DELAY_MAX);
+                // Exponential moving average — adapt slowly to avoid oscillation.
+                adaptive_delay = adaptive_delay * 0.95f + target * 0.05f;
+            }
+            jitter_last_arrival = snap_clock;
         }
 
-        // Write snapshot into the ring buffer. Timestamp after clock seed so
-        // the first slot.time == 0.0 which matches render_time on the first frame.
+        // Write snapshot into ring buffer.
+        // Timestamp in render-space: snap_clock - adaptive_delay.
         Snapshot& slot = snap_buf[snap_head];
         slot.pos       = pos;
         slot.rot       = rot;
         slot.vel       = vel;
-        slot.time      = snap_clock - BUFFER_DELAY; // convert to render-space time
+        slot.time      = snap_clock - adaptive_delay;
 
         snap_head  = (snap_head + 1) % SNAPSHOT_COUNT;
         if (snap_count < SNAPSHOT_COUNT) snap_count++;
@@ -221,7 +339,7 @@ namespace Vital::Engine {
         // Render point in render-space time (snap_clock - BUFFER_DELAY).
         // Snapshot timestamps are stored as (snap_clock - BUFFER_DELAY) at write
         // time, so render_time directly indexes into the buffer without offset.
-        float render_time = snap_clock - BUFFER_DELAY;
+        float render_time = snap_clock - adaptive_delay;
 
         // Read the ring buffer in chronological order.
         // snap_buf is a circular buffer; oldest entry is at:

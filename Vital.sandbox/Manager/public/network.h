@@ -36,11 +36,10 @@ namespace Vital::Manager {
             // ENet channel assignments:
             //   0 — reliable RPC (events, handshakes)     TRANSFER_MODE_RELIABLE
             //   1 — unreliable sync (position/rotation)   TRANSFER_MODE_UNRELIABLE_ORDERED
-            static constexpr int CHANNEL_RPC  = 0;
-
             // Magic for batched late-join state dump packets ("VSST").
             // Defined here so both server (sender) and client (receiver) see it.
             static constexpr uint32_t STATE_DUMP_MAGIC = 0x56535354u;
+
         private:
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
@@ -142,7 +141,7 @@ namespace Vital::Manager {
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
 
-            // Sync transport — routed through Godot's RPC layer (avoids scene_cache conflict).
+            // Sync transport — routed through Godot's RPC layer.
             bool broadcast_sync(const godot::PackedByteArray& data);      // server -> all clients (unreliable)
             bool send_sync_to_server(const godot::PackedByteArray& data);  // client -> server (unreliable)
 
