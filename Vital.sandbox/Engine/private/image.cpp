@@ -35,11 +35,11 @@ namespace Vital::Engine {
 
 
     // Misc //
-    Image* Image::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
+    Image* Image::create(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
+        return create_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }
 
-    Image* Image::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
+    Image* Image::create_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;

@@ -60,8 +60,8 @@ namespace Vital::Engine {
 
 
             // Misc //
-            static Image* create_texture_2d(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
-            static Image* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
+            static Image* create(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
+            static Image* create_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
             void convert(godot::Image::Format format);
             void compress(godot::Image::CompressMode mode);
     };
