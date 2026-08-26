@@ -119,9 +119,13 @@ namespace Vital::Engine {
             mode = "error";
             message = line.substr(12);
         } 
-        else if (starts_with("[Godot WRY]")) {
+        else if (starts_with("[Vital.wry]")) {
             mode = "warn";
             message = line.substr(12);
+        } 
+        else if (starts_with("[Vital.wry.protocol]")) {
+            mode = "warn";
+            message = line.substr(21);
         } 
         else if (starts_with("SHADER ERROR:")) {
             mode = "error";
