@@ -94,7 +94,6 @@ namespace Vital::Manager::Kit {
 
         auto validate_files = [&](const rapidjson::Document& checksum_doc) -> bool {
             if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("warn", "checksum ~ invalid | reason ~ missing files"); return false; }
-
             const auto& files = checksum_doc["files"];
             const int total = static_cast<int>(files.MemberCount());
             int checked = 0;
@@ -120,7 +119,6 @@ namespace Vital::Manager::Kit {
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
             if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("error", "checksum ~ fetch failed"); return true; }
-
             std::string local_version;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);

@@ -34,7 +34,6 @@ namespace Vital::Manager {
     // Internal //
     void Masterlist::send_heartbeat() const {
         if (!server_config) return;
-
         auto nm = Network::get_singleton();
         rapidjson::Document document;
         document.SetObject();
@@ -61,7 +60,6 @@ namespace Vital::Manager {
 
     void Masterlist::send_offline() const {
         if (!server_config) return;
-
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
@@ -98,7 +96,6 @@ namespace Vital::Manager {
         server_config = &config;
         active = true;
         send_heartbeat();
-
         const int interval_s = get_interval_seconds();
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::execute([this]() { send_heartbeat(); });
@@ -123,7 +120,6 @@ namespace Vital::Manager {
 
     void Masterlist::stop() {
         if (!active) return;
-        
         if (timer) {
             timer -> stop();
             timer = nullptr;
