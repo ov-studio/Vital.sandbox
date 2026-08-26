@@ -55,16 +55,17 @@ namespace Vital::Engine {
                 };
 
                 static inline constexpr NativeLogEntry native_logs[] = {
-                    { "[Godot ERR]",          "error", true,  "Godot.engine: "      },
-                    { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry: "         },
-                    { "[Vital.wry]",          "warn",  true,  "Vital.wry.protcol: " },
-                    { "SHADER ERROR:",        "error", true,  "Godot.engine: "      },
-                    { "ERROR:",               "error", true,  "Godot.engine: "      },
-                    { "WARNING:",             "warn",  true,  "Godot.engine: "      }
+                    { "[Godot ERR]",          "error", true,  "Godot.engine"       },
+                    { "[Vital.wry]",          "warn",  true,  "Vital.wry"          },
+                    { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry.protocol" },
+                    { "SHADER ERROR:",        "error", true,  "Godot.engine"       },
+                    { "ERROR:",               "error", true,  "Godot.engine"       },
+                    { "WARNING:",             "warn",  true,  "Godot.engine"       }
                 };
 
                 
                 // Helpers //
+                static std::string derive_label(const NativeLogEntry& e);
                 static std::string fetch_mode_label(const std::string& mode);
                 static std::string fetch_mode_badge(const std::string& mode);
                 static Tool::Stack fetch_mode_color(const std::string& mode);

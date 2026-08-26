@@ -101,7 +101,7 @@ namespace Vital::Engine {
             const std::size_t len = std::strlen(e.prefix);
             if (line.rfind(e.prefix, 0) != 0) continue;
             mode    = e.mode;
-            message = e.label + (e.strip ? line.substr(len) : line);
+            message = std::string(e.label) + ": " + (e.strip ? line.substr(len) : line);
             break;
         }
         if (mode.empty()) return;
@@ -506,26 +506,15 @@ namespace Vital::Engine {
             Engine::Console::get_singleton() -> print(mode, message);
         };
 
-        // Tail godot.log on a background thread, routing new engine errors/warnings
-        // to the in-game console.  We open the file once, seek to the end so we
-        // only see output produced after startup, then poll for new bytes every
-        // 200 ms — cheap enough that it has no measurable frame impact.
         log_running = true;
         log_thread = std::thread([this]() {
-            // Resolve path: <user_data_dir>/logs/godot.log
-            // OS::get_user_data_dir() returns the res:// equivalent user:// path
-            // as an absolute filesystem path.
             auto udd = godot::OS::get_singleton() -> get_user_data_dir();
             std::string log_path = Tool::to_std_string(udd) + "/logs/godot.log";
-
             std::ifstream file;
             std::streampos last_pos = 0;
-
-            // Open — retry until the file exists (may not exist on first boot)
             while (log_running) {
                 file.open(log_path, std::ios::in | std::ios::binary);
                 if (file.is_open()) {
-                    // Seek to end so we only tail new output, not replay history
                     file.seekg(0, std::ios::end);
                     last_pos = file.tellg();
                     break;
@@ -537,20 +526,14 @@ namespace Vital::Engine {
             while (log_running) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 if (!file.is_open()) break;
-
-                // Check if new bytes have been written
                 file.seekg(0, std::ios::end);
                 auto end_pos = file.tellg();
                 if (end_pos <= last_pos) continue;
-
-                // Read only the new bytes
                 file.seekg(last_pos);
                 std::string chunk(static_cast<std::size_t>(end_pos - last_pos), '\0');
                 file.read(chunk.data(), end_pos - last_pos);
                 last_pos = end_pos;
-                file.clear();  // clear EOF flag
-
-                // Process line by line
+                file.clear();
                 for (char c : chunk) {
                     if (c == '\n') {
                         if (!line_buf.empty()) {
