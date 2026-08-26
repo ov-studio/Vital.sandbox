@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
+#include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/utility/file.h>
 
 
