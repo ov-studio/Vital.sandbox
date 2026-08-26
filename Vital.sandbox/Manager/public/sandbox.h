@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Engine/public/canvas.h>
 
 
-/////////////////////////////
+//////////////////////////////
 // Vital: Manager: Sandbox //
-/////////////////////////////
+//////////////////////////////
 
 namespace Vital::Manager {
     class Sandbox : public godot::Node, public Tool::Base<Sandbox> {

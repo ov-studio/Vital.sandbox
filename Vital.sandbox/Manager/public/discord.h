@@ -18,9 +18,9 @@
 #include <discord-sdk/include/discordpp.h>
 
 
-/////////////////////////////
+//////////////////////////////
 // Vital: Manager: Discord //
-/////////////////////////////
+//////////////////////////////
 
 namespace Vital::Manager {
     class Discord : public godot::Node, public Tool::Base<Discord> {
