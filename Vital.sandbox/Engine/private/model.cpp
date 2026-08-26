@@ -81,7 +81,6 @@ namespace Vital::Engine {
     // Receivers reconstruct the full state by applying received components
     // on top of their last-known values for this model.
 
-    static constexpr int SYNC_PACKET_MAX = 42;
 
     // Component mask bit positions
     static constexpr uint16_t MASK_PX = 1 << 0;

@@ -128,12 +128,6 @@ namespace Vital::Engine {
             inline static uint32_t next_net_id = 1;
 
             // ----- Delta compression -----
-            // Component bitmask — which of the 9 float fields changed enough to send.
-            // Bit 0=px 1=py 2=pz 3=rx 4=ry 5=rz 6=vx 7=vy 8=vz
-            static constexpr float DELTA_POS_THRESHOLD = 0.001f;  // metres
-            static constexpr float DELTA_ROT_THRESHOLD = 0.05f;   // degrees
-            static constexpr float DELTA_VEL_THRESHOLD = 0.01f;   // units/sec
-
             // Last values sent/received — used to detect which components changed.
             godot::Vector3 delta_last_pos;
             godot::Vector3 delta_last_rot;
@@ -205,6 +199,12 @@ namespace Vital::Engine {
 
             // Called every rendered frame — advances interpolation on non-authority clients.
             void _process(double delta) override;
+
+            // ----- Delta compression constants (public so Manager::Network can size buffers) -----
+            static constexpr int   SYNC_PACKET_MAX        = 42;    // max bytes per delta entry
+            static constexpr float DELTA_POS_THRESHOLD    = 0.001f; // metres
+            static constexpr float DELTA_ROT_THRESHOLD    = 0.05f;  // degrees
+            static constexpr float DELTA_VEL_THRESHOLD    = 0.01f;  // units/sec
 
             // Public raw u32 reader.
             static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {

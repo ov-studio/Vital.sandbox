@@ -98,7 +98,7 @@ namespace Vital::Manager {
         send_heartbeat();
         const int interval_s = get_interval_seconds();
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
-            Engine::Core::execute([this]() { send_heartbeat(); });
+            Engine::Core::get_singleton() -> execute([this]() { send_heartbeat(); });
         }, interval_s * 1000, 0);
         log("sbox", fmt::format("reporting to masterlist every {}s", interval_s));
     }
@@ -110,7 +110,7 @@ namespace Vital::Manager {
 
         const int debounce_ms = get_debounce_seconds() * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
-            Engine::Core::execute([this]() {
+            Engine::Core::get_singleton() -> execute([this]() {
                 send_heartbeat();
                 std::lock_guard<std::mutex> inner_lock(debounce_mutex);
                 debounce_timer = nullptr;
