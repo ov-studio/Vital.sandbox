@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
                 auto ref = path;
                 auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
-                if (!texture) texture = Vital::Engine::Image::create_texture_2d(base, path, true, ref);
+                if (!texture) texture = Vital::Engine::Image::create(base, path, true, ref);
                 self -> light -> set_area_texture(texture -> get_texture());
                 vm -> push_value(path);
                 self -> set_reference(self -> value_reference("texture"), -1);
