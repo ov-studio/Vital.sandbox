@@ -113,11 +113,11 @@ namespace Vital::Sandbox::API {
                 auto path = vm -> get_string(1);
                 auto ref = path;
                 auto base = API::File::assert_file(vm, path);
-                auto lut_texture = Vital::Engine::Texture::get_from_reference(ref);
-                if (!lut_texture) lut_texture = Vital::Engine::Image::create_texture_2d(base, path, false, ref);
-                godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
-                int img_w = lut_image -> get_width();
-                int img_h = lut_image -> get_height();
+                auto texture = Vital::Engine::Texture::get_from_reference(ref);
+                if (!texture) texture = Vital::Engine::Image::create(base, path, false, ref);
+                godot::Ref<godot::Image> image = texture -> get_texture() -> get_image();
+                int img_w = image -> get_width();
+                int img_h = image -> get_height();
                 int lut_size = 0;
                 int grid_cols = 0;
                 int grid_rows = 0;
@@ -145,7 +145,7 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::Image> slice = godot::Image::create(lut_size, lut_size, false, godot::Image::FORMAT_RGBA8);
                     for (int g = 0; g < lut_size; g++) {
                         for (int r = 0; r < lut_size; r++) {
-                            godot::Color color = lut_image -> get_pixel(tile_x + r, tile_y + g);
+                            godot::Color color = image -> get_pixel(tile_x + r, tile_y + g);
                             slice -> set_pixel(r, g, color);
                         }
                     }
