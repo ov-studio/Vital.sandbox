@@ -97,7 +97,6 @@ namespace Vital::Engine {
 
         std::string mode;
         std::string message;
-
         for (const auto& e : native_logs) {
             const std::size_t len = std::strlen(e.prefix);
             if (line.rfind(e.prefix, 0) != 0) continue;
@@ -105,7 +104,6 @@ namespace Vital::Engine {
             message = e.label + (e.strip ? line.substr(len) : line);
             break;
         }
-
         if (mode.empty()) return;
 
         auto trim = [](std::string s) {
