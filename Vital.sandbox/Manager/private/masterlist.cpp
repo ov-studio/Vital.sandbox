@@ -36,7 +36,6 @@ namespace Vital::Manager {
         if (!server_config) return;
 
         auto nm = Network::get_singleton();
-
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
@@ -67,19 +66,11 @@ namespace Vital::Manager {
         document.SetObject();
         auto& alloc = document.GetAllocator();
         document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
-
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.Accept(writer);
-
-        try {
-            Tool::HTTP::del(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 10);
-        }
-        catch (const std::exception& e) {
-            // Non-fatal -- worst case the listing just expires via TTL on
-            // its own a few minutes late.
-            log("warn", fmt::format("deregister failed — {}", e.what()));
-        }
+        try { Tool::HTTP::del(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 10); }
+        catch (const std::exception& e) { log("warn", fmt::format("deregister failed — {}", e.what())); }
     }
 
 
@@ -106,22 +97,19 @@ namespace Vital::Manager {
 
         server_config = &config;
         active = true;
-
-        send_heartbeat(); // fire immediately instead of waiting a full interval
+        send_heartbeat();
 
         const int interval_s = get_interval_seconds();
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::execute([this]() { send_heartbeat(); });
-        }, interval_s * 1000, 0 /* repeat forever */);
-
+        }, interval_s * 1000, 0);
         log("sbox", fmt::format("reporting to masterlist every {}s", interval_s));
     }
 
     void Masterlist::refresh() {
         if (!active) return;
-
         std::lock_guard<std::mutex> lock(debounce_mutex);
-        if (debounce_timer) return; // already a pending refresh queued -- let it fire
+        if (debounce_timer) return;
 
         const int debounce_ms = get_debounce_seconds() * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
@@ -130,11 +118,12 @@ namespace Vital::Manager {
                 std::lock_guard<std::mutex> inner_lock(debounce_mutex);
                 debounce_timer = nullptr;
             });
-        }, debounce_ms, 1 /* one-shot */);
+        }, debounce_ms, 1);
     }
 
     void Masterlist::stop() {
         if (!active) return;
+        
         if (timer) {
             timer -> stop();
             timer = nullptr;
