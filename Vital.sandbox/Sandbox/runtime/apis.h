@@ -24,7 +24,7 @@
 #include <Vital.sandbox/API/core/camera.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
-#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/core/shader.h>
@@ -96,7 +96,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Camera>(),
             vm_module::make_api<Webview>(),
             vm_module::make_api<Font>(),
-            vm_module::make_api<Texture>(),
+            vm_module::make_api<Image>(),
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
             vm_module::make_api<Shader>(),
