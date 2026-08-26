@@ -16,6 +16,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #if !defined(VSDK_Client)
+#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Tool/http.h>
@@ -56,7 +57,7 @@ namespace Vital::Manager {
         document.Accept(writer);
         try { Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15); }
         catch (const std::exception& e) { log("warn", fmt::format("heartbeat failed — {}", e.what())); }
-        catch (...) { log("warn", "heartbeat failed)"); }
+        catch (...) { log("warn", "heartbeat failed — unknown error"); }
     }
 
     void Masterlist::send_offline() const {
@@ -110,7 +111,7 @@ namespace Vital::Manager {
 
         const int interval_s = get_interval_seconds();
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
-            send_heartbeat();
+            Engine::Core::execute([this]() { send_heartbeat(); });
         }, interval_s * 1000, 0 /* repeat forever */);
 
         log("sbox", fmt::format("reporting to masterlist every {}s", interval_s));
@@ -124,9 +125,11 @@ namespace Vital::Manager {
 
         const int debounce_ms = get_debounce_seconds() * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
-            send_heartbeat();
-            std::lock_guard<std::mutex> inner_lock(debounce_mutex);
-            debounce_timer = nullptr;
+            Engine::Core::execute([this]() {
+                send_heartbeat();
+                std::lock_guard<std::mutex> inner_lock(debounce_mutex);
+                debounce_timer = nullptr;
+            });
         }, debounce_ms, 1 /* one-shot */);
     }
 
