@@ -16,7 +16,8 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
-#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/image.h>
+#include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/core/shader.h>
 
@@ -153,9 +154,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector2)
                     .require(3, [](Machine* vm, int idx) {
                         return vm -> is_string(idx)
-                            || vm_module::is_userdata<API::Texture::Instance>(vm, idx)
-                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
-                            || vm_module::is_userdata<API::SVG::Instance>(vm, idx);
+                            || vm_module::is_userdata<API::Image::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::SVG::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx);
                     })
                     .optional(4, &Machine::is_number)
                     .optional(5, &Machine::is_vector2)
@@ -169,17 +170,18 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_string(3)) {
                     base_class::get_singleton() -> draw_image(position, size, vm -> get_string(3), rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<API::Texture::Instance>(vm, 3)) {
-                    auto instance = vm_module::get_userdata_object<API::Texture::Instance>(vm, 3);
+                else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
+                    auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
-                }
-                else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
-                    auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_image(position, size, instance -> rendertarget, rotation, pivot, color);
                 }
                 else {
                     auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
+                    base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);\
+                }
+                else {
+                    auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_image(position, size, instance -> rendertarget, rotation, pivot, color);
+                }
                 }
                 vm -> push_value(true);
                 return 1;
