@@ -23,7 +23,8 @@
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Engine/public/webview.h>
 #include <Vital.sandbox/Engine/public/font.h>
-#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/image.h>
+#include <Vital.sandbox/Engine/public/svg.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Engine/public/directional_light.h>

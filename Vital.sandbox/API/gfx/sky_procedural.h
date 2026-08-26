@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
                 auto ref = path;
                 auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
-                if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, false, ref);
+                if (!texture) texture = Vital::Engine::Image::create_texture_2d(base, path, false, ref);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(texture -> get_texture());
                 vm -> push_value(path);
                 vm -> set_reference("sandbox", sky_cover_reference, -1);

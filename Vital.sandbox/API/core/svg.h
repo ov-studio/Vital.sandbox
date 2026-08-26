@@ -15,7 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/svg.h>
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/utility/file.h>
 
@@ -27,7 +27,7 @@
 namespace Vital::Sandbox::API {
     struct SVG : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "svg"};
-        using base_class = Vital::Engine::Texture;
+        using base_class = Vital::Engine::SVG;
 
         struct Instance : vm_instance<Instance> {
             using Owner = SVG;
@@ -81,30 +81,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> texture -> has_mipmaps());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> texture -> get_size());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, API::Texture::texture_filter_registry);
-
-                auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
-                self -> texture -> set_filter(mode);
-                vm -> push_value(true);
-                return 1;
-            });
+            API::Texture::bind_filter_methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)", true)

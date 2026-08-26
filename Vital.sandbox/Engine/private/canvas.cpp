@@ -16,7 +16,8 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/font.h>
-#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/image.h>
+#include <Vital.sandbox/Engine/public/svg.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
@@ -333,7 +334,7 @@ namespace Vital::Engine {
     ) {
         try {
             auto texture = Engine::Texture::get_from_reference(path);
-            if (!texture) texture = Engine::Texture::create_texture_2d(path, path);
+            if (!texture) texture = Engine::Image::create_texture_2d(path, path);
             draw_image(position, size, texture, rotation, pivot, color);
         }
         catch (...) { std::rethrow_exception(std::current_exception()); }

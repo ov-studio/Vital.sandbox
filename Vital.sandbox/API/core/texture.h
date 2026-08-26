@@ -15,7 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/image.h>
 #include <Vital.sandbox/API/utility/file.h>
 
 
@@ -26,7 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Texture : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "texture"};
-        using base_class = Vital::Engine::Texture;
+        using base_class = Vital::Engine::Image;
 
         inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_format_registry = {
             { "RGBA8",    godot::Image::FORMAT_RGBA8    },
@@ -74,6 +74,39 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        // TODO: Better way? enum or something like node3d instance spatial audio types and within method handle it??
+        // Shared by any module whose Instance exposes a base_class::texture
+        // pointer inheriting from Vital::Engine::Texture (Image, SVG, ...).
+        // Binds the checker/getter/setter surface common to every texture
+        // type, so callers only need to bind what's specific to them.
+        template<typename BoundInstance>
+        static void bind_filter_methods(Machine* vm) {
+            vm_module::bind_method<BoundInstance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> texture -> has_mipmaps());
+                return 1;
+            });
+
+            vm_module::bind_method<BoundInstance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> texture -> get_size());
+                return 1;
+            });
+
+            vm_module::bind_method<BoundInstance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
+                return 1;
+            });
+
+            vm_module::bind_method<BoundInstance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, texture_filter_registry);
+
+                auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
+                self -> texture -> set_filter(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm);
 
@@ -93,33 +126,10 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> texture -> has_mipmaps());
-                return 1;
-            });
-            
+            bind_filter_methods<Instance>(vm);
+
             vm_module::bind_method<Instance>(vm, "is_compressed", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> is_compressed());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> texture -> get_size());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
-                return 1;
-            });
-            
-            vm_module::bind_method<Instance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, texture_filter_registry);
-
-                auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
-                self -> texture -> set_filter(mode);
-                vm -> push_value(true);
                 return 1;
             });
 

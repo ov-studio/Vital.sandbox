@@ -24,48 +24,8 @@
 namespace Vital::Engine {
     class Texture : public godot::Node2D {
         public:
-            enum class Type {
-                Texture2D,
-                SVG
-            };
-
-            enum class Format {
-                JPG,
-                PNG,
-                WEBP,
-                BMP,
-                DDS,
-                KTX,
-                EXR,
-                UNKNOWN
-            };
-
-            inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
-                { Format::JPG,  "jpg",  { 0xFF, 0xD8 }                                     },
-                { Format::PNG,  "png",  { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A } },
-                { Format::WEBP, "webp", { 0x52, 0x49, 0x46, 0x46 }                         },
-                { Format::BMP,  "bmp",  { 0x42, 0x4D }                                     },
-                { Format::DDS,  "dds",  { 0x44, 0x44, 0x53, 0x20 }                         },
-                { Format::KTX,  "ktx",  { 0xAB, 0x4B, 0x54, 0x58, 0x20 }                   },
-                { Format::EXR,  "exr",  { 0x76, 0x2F, 0x31, 0x01 }                         }
-            };
-
-            struct Texture2D {
-                godot::Ref<godot::Texture2D> texture;
-            };
-
-            struct SVG {
-                godot::Ref<godot::ImageTexture> texture;
-            };
-
-            struct Command {
-                Type type;
-                std::variant<Texture2D, SVG> payload;
-            };
-
             inline static const unsigned int flush_interval = 10000;
         protected:
-            Command command;
             uint64_t reference_tick = 0;
             std::string reference_key = "";
             godot::Ref<godot::CanvasTexture> canvas_texture;
@@ -73,8 +33,8 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            Texture(Command cmd, const std::string& reference = "");
-            ~Texture();
+            Texture(const std::string& reference = "");
+            virtual ~Texture();
         public:
             // Managers //
             void destroy();
@@ -84,12 +44,12 @@ namespace Vital::Engine {
 
             // Checkers //
             bool has_mipmaps() const;
-            bool is_compressed() const;
+            virtual bool is_compressed() const { return false; }
 
 
             // Getters //
             static Texture* get_from_reference(const std::string& reference);
-            godot::Ref<godot::ImageTexture> get_texture() const;
+            virtual godot::Ref<godot::ImageTexture> get_texture() const = 0;
             godot::Ref<godot::Texture2D> get_canvas_texture() const;
             godot::Vector2i get_size() const;
             godot::CanvasItem::TextureFilter get_filter() const;
@@ -97,18 +57,6 @@ namespace Vital::Engine {
 
             // Setters //
             void set_filter(godot::CanvasItem::TextureFilter mode);
-
-
-            // Misc //
-            static Texture* create_texture_2d(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
-            static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
-            static Texture* create_svg(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
-            static Texture* create_svg_from_raw(const std::string& raw, bool mipmaps = false, const std::string& reference = "");
-            static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
-            void update_svg_from_raw(const std::string& raw);
-            void update_svg_from_buffer(const godot::PackedByteArray& buffer);
-            void convert(godot::Image::Format format);
-            void compress(godot::Image::CompressMode mode);
     };
 }
 #endif

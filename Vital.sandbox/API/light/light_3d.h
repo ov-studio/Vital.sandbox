@@ -15,7 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/image.h>
 #include <Vital.sandbox/API/core/node_3d.h>
 #include <Vital.sandbox/API/utility/file.h>
 
@@ -349,7 +349,7 @@ namespace Vital::Sandbox::API {
                 auto ref = path;
                 auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
-                if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, true, ref);
+                if (!texture) texture = Vital::Engine::Image::create_texture_2d(base, path, true, ref);
                 self -> light -> set_projector(texture -> get_texture());
                 vm -> push_value(path);
                 self -> set_reference(self -> value_reference("projector"), -1);

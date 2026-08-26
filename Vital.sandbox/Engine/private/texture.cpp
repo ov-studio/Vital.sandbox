@@ -23,13 +23,12 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Texture::Texture(Command cmd, const std::string& reference) {
+    Texture::Texture(const std::string& reference) {
         if (!reference.empty()) {
             reference_key = reference;
             reference_cache.emplace(reference_key, this);
             heartbeat();
         }
-        command = cmd;
     }
 
     Texture::~Texture() {
@@ -65,27 +64,12 @@ namespace Vital::Engine {
         if (!texture.is_valid()) return false;
         return texture -> get_image() -> has_mipmaps();
     }
-    
-    bool Texture::is_compressed() const {
-        if (command.type != Type::Texture2D) return false;
-        auto texture = get_texture();
-        if (!texture.is_valid()) return false;
-        return texture -> get_image() -> is_compressed();
-    }
 
 
     // Getters //
     Texture* Texture::get_from_reference(const std::string& reference) {
         auto it = reference_cache.find(reference);
         return it != reference_cache.end() ? it -> second : nullptr;
-    }
-
-    godot::Ref<godot::ImageTexture> Texture::get_texture() const {
-        switch (command.type) {
-            case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
-            case Type::SVG:       return std::get<SVG>(command.payload).texture;
-        }
-        return godot::Ref<godot::ImageTexture>();
     }
 
     godot::Ref<godot::Texture2D> Texture::get_canvas_texture() const {
@@ -120,92 +104,6 @@ namespace Vital::Engine {
             canvas_texture -> set_diffuse_texture(texture);
             canvas_texture -> set_texture_filter(mode);
         }
-        heartbeat();
-    }
-
-
-    // Misc //
-    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
-    }
-
-    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        godot::Error status;
-        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
-            case Format::JPG:  status = image -> load_jpg_from_buffer(buffer);  break;
-            case Format::PNG:  status = image -> load_png_from_buffer(buffer);  break;
-            case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
-            case Format::BMP:  status = image -> load_bmp_from_buffer(buffer);  break;
-            case Format::DDS:  status = image -> load_dds_from_buffer(buffer);  break;
-            case Format::KTX:  status = image -> load_ktx_from_buffer(buffer);  break;
-            case Format::EXR:  status = image -> load_exr_from_buffer(buffer);  break;
-            default: break;
-        }
-        if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid texture buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
-        Texture2D payload;
-        payload.texture = godot::ImageTexture::create_from_image(image);
-        return memnew(Texture({Type::Texture2D, payload}, reference));
-    }
-
-    Texture* Texture::create_svg(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_svg_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
-    }
-
-    Texture* Texture::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
-        SVG payload;
-        payload.texture = godot::ImageTexture::create_from_image(image);
-        return memnew(Texture({Type::SVG, payload}, reference));
-    }
-
-    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
-        if (mipmaps && image -> generate_mipmaps() != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate mipmaps");
-        SVG payload;
-        payload.texture = godot::ImageTexture::create_from_image(image);
-        return memnew(Texture({Type::SVG, payload}, reference));
-    }
-
-    void Texture::update_svg_from_raw(const std::string& raw) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
-        get_texture() -> update(image);
-        heartbeat();
-    }
-
-    void Texture::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid svg buffer");
-        get_texture() -> update(image);
-        heartbeat();
-    }
-
-    void Texture::convert(godot::Image::Format format) {
-        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
-        auto image = get_texture() -> get_image();
-        image -> convert(format);
-        get_texture() -> update(image);
-        heartbeat();
-    }
-
-    void Texture::compress(godot::Image::CompressMode mode) {
-        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid command type");
-        auto image = get_texture() -> get_image();
-        if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "texture is already compressed");
-        if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "compression failed");
-        get_texture() -> update(image);
         heartbeat();
     }
 }
