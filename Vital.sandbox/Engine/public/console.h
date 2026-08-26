@@ -58,11 +58,9 @@ namespace Vital::Engine {
                     { "[Godot ERR]",          "error", true,  "Godot.engine: "      },
                     { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry: "         },
                     { "[Vital.wry]",          "warn",  true,  "Vital.wry.protcol: " },
-                    { "SHADER ERROR:",        "error", false, "Godot.engine: "      },
-                    { "ERROR:",               "error", false, "Godot.engine: "      },
-                    { "WARNING:",             "warn",  false, "Godot.engine: "      },
-                    { "  at:",                "error", false, ""                    },
-                    { "\tat:",                "error", false, ""                    }
+                    { "SHADER ERROR:",        "error", true,  "Godot.engine: "      },
+                    { "ERROR:",               "error", true,  "Godot.engine: "      },
+                    { "WARNING:",             "warn",  true,  "Godot.engine: "      }
                 };
 
                 
