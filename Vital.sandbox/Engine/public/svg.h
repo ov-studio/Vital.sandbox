@@ -35,11 +35,11 @@ namespace Vital::Engine {
 
 
             // Misc //
-            static SVG* create_svg(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
-            static SVG* create_svg_from_raw(const std::string& raw, bool mipmaps = false, const std::string& reference = "");
-            static SVG* create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
-            void update_svg_from_raw(const std::string& raw);
-            void update_svg_from_buffer(const godot::PackedByteArray& buffer);
+            static SVG* create(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
+            static SVG* create_from_raw(const std::string& raw, bool mipmaps = false, const std::string& reference = "");
+            static SVG* create_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
+            void update_from_raw(const std::string& raw);
+            void update_from_buffer(const godot::PackedByteArray& buffer);
     };
 }
 #endif
