@@ -174,7 +174,7 @@ namespace Vital::Sandbox::API {
                     auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
                 }
-                else {
+                else if {
                     auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);\
                 }
