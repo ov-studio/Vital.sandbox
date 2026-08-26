@@ -334,7 +334,7 @@ namespace Vital::Engine {
     ) {
         try {
             auto texture = Engine::Texture::get_from_reference(path);
-            if (!texture) texture = Engine::Image::create_texture_2d(path, path);
+            if (!texture) texture = Engine::Image::create(path, path);
             draw_image(position, size, texture, rotation, pivot, color);
         }
         catch (...) { std::rethrow_exception(std::current_exception()); }
