@@ -63,8 +63,4 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-#else
-namespace Vital::Sandbox::API {
-    struct Texture : vm_module {};
-}
 #endif
