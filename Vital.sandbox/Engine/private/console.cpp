@@ -25,7 +25,6 @@
 // Vital: Engine: Console //
 /////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     // Helpers //
     std::string Console::Internal::fetch_mode_label(const std::string& mode) {
