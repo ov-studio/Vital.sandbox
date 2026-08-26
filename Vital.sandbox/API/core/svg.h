@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
                 auto base = API::File::assert_file(vm, path);
                 auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg(base, path, mipmaps);
+                instance -> texture = base_class::create(base, path, mipmaps);
                 instance -> store(true);
                 return 1;
             });
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
                 auto raw = vm -> get_string(1);
                 auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg_from_raw(raw, mipmaps);
+                instance -> texture = base_class::create_from_raw(raw, mipmaps);
                 instance -> store(true);
                 return 1;
             });
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string);
 
                 auto raw = vm -> get_string(2);
-                self -> texture -> update_svg_from_raw(raw);
+                self -> texture -> update_from_raw(raw);
                 vm -> push_value(true);
                 return 1;
             });
