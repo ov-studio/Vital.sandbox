@@ -55,12 +55,14 @@ namespace Vital::Engine {
                 };
 
                 static inline constexpr NativeLogEntry native_logs[] = {
-                    { "[Godot ERR]",          "error", true, "Godot.engine"       },
-                    { "[Vital.wry]",          "warn",  true, "Vital.wry"          },
-                    { "[Vital.wry.protocol]", "warn",  true, "Vital.wry.protocol" },
-                    { "SHADER ERROR:",        "error", true, "Godot.engine"       },
-                    { "ERROR:",               "error", true, "Godot.engine"       },
-                    { "WARNING:",             "warn",  true, "Godot.engine"       }
+                    { "[Godot ERR]",          "error", true,  "Godot.engine"       },
+                    { "[Vital.wry]",          "warn",  true,  "Vital.wry"          },
+                    { "[Vital.wry.protocol]", "warn",  true,  "Vital.wry.protocol" },
+                    { "SHADER ERROR:",        "error", true,  "Godot.engine"       },
+                    { "ERROR:",               "error", true,  "Godot.engine"       },
+                    { "WARNING:",             "warn",  true,  "Godot.engine"       },
+                    { "  at:",                "error", false, "Godot.engine"       },
+                    { "\tat:",                "error", false, "Godot.engine"       }
                 };
 
                 
