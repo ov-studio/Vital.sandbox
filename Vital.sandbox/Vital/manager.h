@@ -18,4 +18,5 @@
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/discord.h>
-#include <Vital.sandbox/Manager/public/resource.h> 
+#include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/Manager/public/masterlist.h>
