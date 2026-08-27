@@ -164,9 +164,11 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_param", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, value)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, [](Machine* m, int i) {
-                        return m -> is_number(i) || m -> is_bool(i)
-                            || m -> is_vector2(i) || m -> is_vector3(i);
+                    .require(3, [](Machine* vm, int idx) {
+                        return vm -> is_bool(idx)
+                            || vm -> is_number(idx)
+                            || vm -> is_vector2(idx) 
+                            || vm -> is_vector3(idx);
                     });
 
                 auto name = vm -> get_string(2);
@@ -202,7 +204,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_param_texture", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, texture)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, [](Machine* m, int i) { return vm_module::is_userdata<API::Image::Instance>(m, i); });
+                    .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Image::Instance>(vm, idx); });
 
                 auto name = vm -> get_string(2);
                 auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
@@ -218,7 +220,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_param_rt", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, rendertarget)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, [](Machine* m, int i) { return vm_module::is_userdata<API::Rendertarget::Instance>(m, i); });
+                    .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
 
                 auto name = vm -> get_string(2);
                 auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
@@ -232,7 +234,7 @@ namespace Vital::Sandbox::API {
             // mesh surface of a spawned Model.  Returns the count of surfaces patched.
             vm_module::bind_method<Instance>(vm, "apply_to_model", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model)", true)
-                    .require(2, [](Machine* m, int i) { return m -> is_userdata(i); });
+                    .require(2, [](Machine* vm, int idx) { return vm -> is_userdata(idx); });
 
                 using ModelInstance = Vital::Sandbox::API::Model::Instance;
                 auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
