@@ -234,7 +234,7 @@ namespace Vital::Sandbox::API {
             // mesh surface of a spawned Model.  Returns the count of surfaces patched.
             vm_module::bind_method<Instance>(vm, "apply_to_model", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm -> is_userdata(idx); });
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); });
 
                 using ModelInstance = Vital::Sandbox::API::Model::Instance;
                 auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
