@@ -23,6 +23,7 @@
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Engine/public/webview.h>
 #include <Vital.sandbox/Engine/public/font.h>
+#include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/Engine/public/image.h>
 #include <Vital.sandbox/Engine/public/svg.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
@@ -31,6 +32,9 @@
 #include <Vital.sandbox/Engine/public/point_light.h>
 #include <Vital.sandbox/Engine/public/spot_light.h>
 #include <Vital.sandbox/Engine/public/area_light.h>
+#include <Vital.sandbox/Engine/public/audio_bus.h>
+#include <Vital.sandbox/Engine/public/audio_2d.h>
+#include <Vital.sandbox/Engine/public/audio_3d.h>
 #include <Vital.sandbox/Engine/public/rigid_body.h>
 #include <Vital.sandbox/Engine/public/static_body.h>
 #include <Vital.sandbox/Engine/public/character_body.h>
