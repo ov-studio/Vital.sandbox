@@ -238,8 +238,7 @@ namespace Vital::Sandbox::API {
 
                 using ModelInstance = Vital::Sandbox::API::Model::Instance;
                 auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
-                if (!instance || !instance -> model) vm -> push_value(false);
-                else vm -> push_value(self -> shader -> apply_to_node(instance -> model));
+                vm -> push_value(self -> shader -> apply_to_node(instance -> model));
                 return 1;
             });
         }
