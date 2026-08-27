@@ -81,9 +81,9 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(body)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
-                auto other = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                if (!other || !other -> is_alive()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: target body is not valid");
-                self -> get_node() -> add_collision_exception_with(other -> get_node());
+                auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                if (!instance) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "target body is not valid");
+                self -> get_node() -> add_collision_exception_with(instance -> get_node());
                 vm -> push_value(true);
                 return 1;
             });
@@ -92,9 +92,9 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(body)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
-                auto other = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                if (!other || !other -> is_alive()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: target body is not valid");
-                self -> get_node() -> remove_collision_exception_with(other -> get_node());
+                auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                if (!instance) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "target body is not valid");
+                self -> get_node() -> remove_collision_exception_with(instance -> get_node());
                 vm -> push_value(true);
                 return 1;
             });
