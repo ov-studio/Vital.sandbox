@@ -33,6 +33,7 @@ namespace Vital::Sandbox::API {
             bool async = false;
             int subscription_limit = 0;
             int subscription_count = 0;
+            int priority = 0;
         };
 
         struct EventEntry {
@@ -81,6 +82,16 @@ namespace Vital::Sandbox::API {
             vm -> table_get_value("subscription_limit", idx);
             if (vm -> is_number(-1)) handler.subscription_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
+            vm -> table_get_value("priority", idx);
+            if (vm -> is_number(-1)) handler.priority = vm -> get_int(-1);
+            vm -> pop(1);
+        }
+
+        static void insert_ordered(EventEntry& entry, int ref, Handler handler) {
+            auto& vec = entry.handlers;
+            auto pos = vec.begin();
+            while (pos != vec.end() && pos -> second.priority >= handler.priority) ++pos;
+            vec.emplace(pos, ref, std::move(handler));
         }
 
         static EmitOptions read_emit_options(Machine* vm) {
@@ -481,7 +492,7 @@ namespace Vital::Sandbox::API {
                 read_config(vm, 3, handler);
                 {
                     std::lock_guard lock(buffer_mutex);
-                    buffer[name].handlers.emplace_back(handler.exec_ref, handler);
+                    insert_ordered(buffer[name], handler.exec_ref, handler);
                 }
                 vm -> push_value(true);
                 return 1;
