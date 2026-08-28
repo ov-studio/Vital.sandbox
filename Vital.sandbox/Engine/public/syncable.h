@@ -26,6 +26,7 @@ namespace Vital::Engine {
     class ISyncable {
         friend class Manager::Network;
         friend class Network;
+        friend class Model;
         public:
             // Delta compression constants //
             static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
@@ -51,7 +52,6 @@ namespace Vital::Engine {
                 PhysicsBody = 1
             };
         private:
-            friend class Model;
             inline static uint32_t next_net_id = 1;
             static constexpr uint16_t MASK_PX = 1 << 0;
             static constexpr uint16_t MASK_PY = 1 << 1;
