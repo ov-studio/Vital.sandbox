@@ -36,6 +36,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("dispatch", "key"), &Monitor::dispatch);
             }
         public:
+            // Managers //
             godot::Variant dispatch(const godot::String& key);
     };
 }
