@@ -37,6 +37,12 @@ namespace Vital::Engine {
             struct Internal {
                 static constexpr const char* SENTINEL = "vsdk_sentinel";
 
+                struct EntryPoint {
+                    std::string signature;
+                    std::string usage;
+                };
+
+
                 // Helpers //
                 static std::string inject_sentinel(const std::string& src, bool is_spatial);
                 static bool validate_compiled(godot::Ref<godot::Shader>& shader);
