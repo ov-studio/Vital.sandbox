@@ -34,6 +34,7 @@ namespace Vital::Sandbox::API {
             { "LINEAR_MIPMAP_ANISOTROPIC",   godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC  }
         };
 
+        // TODO: RENAME LIKE AUDIO EFFECT.H
         template<typename BoundInstance>
         static void bind_filter_methods(Machine* vm) {
             vm_module::bind_method<BoundInstance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
