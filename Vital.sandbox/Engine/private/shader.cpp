@@ -21,7 +21,6 @@
 // Vital: Engine: Shader //
 ////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     std::string Shader::Internal::inject_sentinel(const std::string& src, bool is_spatial) {
         const std::string decl =
@@ -86,13 +85,11 @@ namespace Vital::Engine {
         instance -> shader_type = type;
         instance -> shader.instantiate();
         instance -> material.instantiate();
-        auto src = Internal::build_source(code, type);
-        instance -> shader -> set_code(godot::String(src.c_str()));
-        instance -> material -> set_shader(instance -> shader);
-        if (!Internal::validate_compiled(instance -> shader)) {
+        if (!instance -> set_code(code)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
+        instance -> material -> set_shader(instance -> shader);
         return instance;
     }
 

@@ -21,7 +21,6 @@
 // Vital: Engine: Shader //
 ////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     class Shader {
         public:
