@@ -23,10 +23,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    // TODO: Add these to internals and expose in header too
-    static constexpr const char* SENTINEL_NAME = "_vsdk_sentinel";
-
-    static std::string inject_sentinel(const std::string& src, bool is_spatial) {
+    std::string Shader::Internal::inject_sentinel(const std::string& src, bool is_spatial) {
         const std::string decl =
             "uniform float " + std::string(SENTINEL_NAME) +
             " : hint_range(1.0, 1.0) = 1.0;\n";
@@ -60,7 +57,7 @@ namespace Vital::Engine {
         return result;
     }
 
-    static bool validate_compiled(godot::Ref<godot::Shader>& gd_shader) {
+    bool Shader::Internal::validate_compiled(godot::Ref<godot::Shader>& gd_shader) {
         auto list = gd_shader -> get_shader_uniform_list();
         bool sentinel_found = false;
         for (int i = 0; i < list.size(); i++) {
@@ -75,7 +72,7 @@ namespace Vital::Engine {
         return true;
     }
 
-    static std::string build_source(const std::string& code, Shader::Type type) {
+    std::string Shader::Internal::build_source(const std::string& code, Shader::Type type) {
         std::string src = code;
         if (src.find("shader_type") == std::string::npos) {
             std::string type_name = (type == Shader::Type::Spatial) ? "spatial" : "canvas_item";
@@ -83,18 +80,19 @@ namespace Vital::Engine {
         }
         return inject_sentinel(src, type == Shader::Type::Spatial);
     }
+}
 
-
+namespace Vital::Engine {
     // Managers //
     Shader* Shader::create(const std::string& code, Type type) {
         auto* instance = new Shader();
         instance -> shader_type = type;
         instance -> gd_shader.instantiate();
         instance -> gd_material.instantiate();
-        auto src = build_source(code, type);
+        auto src = Internal::build_source(code, type);
         instance -> gd_shader -> set_code(godot::String(src.c_str()));
         instance -> gd_material -> set_shader(instance -> gd_shader);
-        if (!validate_compiled(instance -> gd_shader)) {
+        if (!Internal::validate_compiled(instance -> gd_shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
@@ -132,26 +130,26 @@ namespace Vital::Engine {
     // Setters //
     bool Shader::set_code(const std::string& code) {
         if (!gd_shader.is_valid()) return false;
-        auto src = build_source(code, shader_type);
+        auto src = Internal::build_source(code, shader_type);
         gd_shader -> set_code(godot::String(src.c_str()));
-        return validate_compiled(gd_shader);
+        return Internal::validate_compiled(gd_shader);
     }
 
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
         if (!gd_material.is_valid()) return false;
-        if (name == SENTINEL_NAME) return false;
+        if (name == Internal::SENTINEL_NAME) return false;
         gd_material -> set_shader_parameter(godot::StringName(name.c_str()), value);
         return true;
     }
 
     bool Shader::set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture) {
-        if (!gd_material.is_valid() || name == SENTINEL_NAME) return false;
+        if (!gd_material.is_valid() || name == Internal::SENTINEL_NAME) return false;
         gd_material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
         return true;
     }
 
     bool Shader::set_param_viewport_texture(const std::string& name, godot::Ref<godot::ViewportTexture> texture) {
-        if (!gd_material.is_valid() || name == SENTINEL_NAME) return false;
+        if (!gd_material.is_valid() || name == Internal::SENTINEL_NAME) return false;
         gd_material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
         return true;
     }

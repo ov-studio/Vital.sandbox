@@ -34,6 +34,15 @@ namespace Vital::Engine {
             godot::Ref<godot::ShaderMaterial> gd_material;
             Type shader_type = Type::CanvasItem;
 
+            struct Internal {
+                static constexpr const char* SENTINEL_NAME = "_vsdk_sentinel";
+
+                // Helpers //
+                static std::string inject_sentinel(const std::string& src, bool is_spatial);
+                static bool validate_compiled(godot::Ref<godot::Shader>& gd_shader);
+                static std::string build_source(const std::string& code, Type type);
+            };
+
 
             // Instantiators //
             Shader() = default;
