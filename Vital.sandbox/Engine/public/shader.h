@@ -65,7 +65,7 @@ namespace Vital::Engine {
 
 
             // Getters //
-            Mode get_type() const;
+            Mode get_mode() const;
             std::string get_code() const;
             godot::Ref<godot::ShaderMaterial> get_material() const;
 

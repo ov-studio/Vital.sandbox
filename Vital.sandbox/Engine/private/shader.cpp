@@ -106,7 +106,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Shader::Mode Shader::get_type() const { 
+    Shader::Mode Shader::get_mode() const { 
         return shader_type;
     }
 

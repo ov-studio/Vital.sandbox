@@ -83,8 +83,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> shader -> get_type());
+            vm_module::bind_method<Instance>(vm, "get_mode", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> shader -> get_mode());
                 return 1;
             });
 
