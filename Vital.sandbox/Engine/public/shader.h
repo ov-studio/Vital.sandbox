@@ -28,6 +28,11 @@ namespace Vital::Engine {
                 Spatial,
                 CanvasItem
             };
+
+            inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
+                { "CANVAS_ITEM", Mode::CanvasItem },
+                { "SPATIAL",     Mode::Spatial    }
+            };
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;

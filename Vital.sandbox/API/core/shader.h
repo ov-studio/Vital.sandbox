@@ -31,13 +31,6 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "shader"};
         using base_class = Vital::Engine::Shader;
 
-        // TODO: THJIS SHOULD BE PART OF SHADER 
-        inline static const std::vector<std::pair<std::string, int>> shader_mode_registry = {
-            // TODO: No need of static_cast it will work already?? just like base_class::Mode::CanvasItem??
-            { "CANVAS_ITEM", static_cast<int>(base_class::Mode::CanvasItem) },
-            { "SPATIAL",     static_cast<int>(base_class::Mode::Spatial)    }
-        };
-
         struct Instance : vm_instance<Instance> {
             using Owner = Shader;
             base_class* shader = nullptr;
@@ -64,7 +57,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, mode)")
                     .require(1, &Machine::is_string)
-                    .require_enum(2, shader_mode_registry);
+                    .require_enum(2, base_class::mode_registry);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
@@ -78,7 +71,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "create_from_raw", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(raw, mode)")
                     .require(1, &Machine::is_string)
-                    .require_enum(2, shader_mode_registry);
+                    .require_enum(2, base_class::mode_registry);
 
                 auto raw = vm -> get_string(1);
                 auto mode = static_cast<base_class::Mode>(vm -> get_int(2));
@@ -90,15 +83,13 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // TODO: DEADCHECK I THINK? BECAUSE SHADER CREATION WILL RETURN FALSE ANYWAY IF WRONG CODE SO NO POINT OF CHECKING IT LATER SINCE INSTANCE IS VALID ANYMORE TO EXECUTE METHOD ON IT
             vm_module::bind_method<Instance>(vm, "is_valid", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> shader -> is_valid());
                 return 1;
             });
 
-            // TODO: SHOULD PUSH ENUM INSNT IT?
             vm_module::bind_method<Instance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> shader -> get_type()));
+                vm -> push_value(self -> shader -> get_type());
                 return 1;
             });
 
@@ -128,20 +119,13 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_param_color", [](auto vm, auto self, auto& id) -> int {
-                // TODO: instead of r g b a separate can use is_color and get_color?? hmm
-                vm_args(vm, id, "(name, r, g, b, a = 1.0)", true)
+                vm_args(vm, id, "(name, color)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_number)
-                    .require(4, &Machine::is_number)
-                    .require(5, &Machine::is_number)
-                    .optional(6, &Machine::is_number);
+                    .require(3, &Machine::is_color);
 
                 auto name = vm -> get_string(2);
-                float r = vm -> get_float(3);
-                float g = vm -> get_float(4);
-                float b = vm -> get_float(5);
-                float a = vm -> is_number(6) ? vm -> get_float(6) : 1.0f;
-                vm -> push_value(self -> shader -> set_param(name, godot::Variant(godot::Color(r, g, b, a))));
+                auto color = vm -> get_color(3);
+                vm -> push_value(self -> shader -> set_param(name, godot::Variant(color)));
                 return 1;
             });
 
@@ -181,7 +165,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", shader_mode_registry);
+            vm -> scope_set_enum(base_scope, "mode", base_class::mode_registry);
         }
 
         static void clean(const std::string& env) {
