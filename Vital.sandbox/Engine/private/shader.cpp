@@ -86,10 +86,10 @@ namespace Vital::Engine {
 
     Shader* Shader::create_from_raw(const std::string& raw, Mode mode) {
         auto* instance = new Shader();
-        instance -> shader_type = mode;
+        instance -> mode = mode;
         instance -> shader.instantiate();
         instance -> material.instantiate();
-        instance -> shader -> set_code(Tool::to_godot_string(Internal::build_source(raw, instance -> shader_type)));
+        instance -> shader -> set_code(Tool::to_godot_string(Internal::build_source(raw, instance -> mode)));
         if (!Internal::validate_compiled(instance -> shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
@@ -107,7 +107,7 @@ namespace Vital::Engine {
 
     // Getters //
     Shader::Mode Shader::get_mode() const { 
-        return shader_type;
+        return mode;
     }
 
     std::string Shader::get_code() const {

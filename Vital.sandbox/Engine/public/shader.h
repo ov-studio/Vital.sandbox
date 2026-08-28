@@ -36,7 +36,7 @@ namespace Vital::Engine {
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
-            Mode shader_type = Mode::CanvasItem;
+            Mode mode = Mode::CanvasItem;
 
             struct Internal {
                 static constexpr const char* SENTINEL = "vsdk_sentinel";
