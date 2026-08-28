@@ -21,23 +21,23 @@
 ///////////////////////////////
 
 namespace Vital::Engine {
-    void ISyncable::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
+    void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
         buffer[offset]   =  value        & 0xFF;
         buffer[offset+1] = (value >>  8) & 0xFF;
         buffer[offset+2] = (value >> 16) & 0xFF;
         buffer[offset+3] = (value >> 24) & 0xFF;
     }
 
-    void ISyncable::write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value) {
+    void ISyncable::Internal::write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value) {
         buffer[offset]   =  value       & 0xFF;
         buffer[offset+1] = (value >> 8) & 0xFF;
     }
 
-    void ISyncable::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
+    void ISyncable::Internal::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
         uint32_t raw; std::memcpy(&raw, &value, 4); write_u32(buffer, offset, raw);
     }
 
-    float ISyncable::read_f32(const godot::PackedByteArray& buffer, int offset) {
+    float ISyncable::Internal::read_f32(const godot::PackedByteArray& buffer, int offset) {
         uint32_t raw = (uint8_t)buffer[offset]
                      | ((uint8_t)buffer[offset+1] << 8)
                      | ((uint8_t)buffer[offset+2] << 16)
@@ -45,11 +45,18 @@ namespace Vital::Engine {
         float value; std::memcpy(&value, &raw, 4); return value;
     }
 
-    uint16_t ISyncable::read_u16(const godot::PackedByteArray& buffer, int offset) {
+    uint16_t ISyncable::Internal::read_u16(const godot::PackedByteArray& buffer, int offset) {
         return (uint8_t)buffer[offset] | ((uint8_t)buffer[offset+1] << 8);
     }
 
-    int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    uint32_t ISyncable::Internal::read_u32(const godot::PackedByteArray& buffer, int offset) {
+        return (uint8_t)buffer[offset]
+             | ((uint8_t)buffer[offset+1] << 8)
+             | ((uint8_t)buffer[offset+2] << 16)
+             | ((uint8_t)buffer[offset+3] << 24);
+    }
+
+    int ISyncable::Internal::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         uint16_t mask = 0;
         if (std::abs(pos.x - last_pos.x) > DELTA_POS_THRESHOLD) mask |= MASK_PX;
         if (std::abs(pos.y - last_pos.y) > DELTA_POS_THRESHOLD) mask |= MASK_PY;
@@ -83,10 +90,10 @@ namespace Vital::Engine {
         return cursor - offset;
     }
 
-    int ISyncable::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::Internal::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         if (offset + 6 > buf_size) return -1;
 
-        out_id = read_u32_public(buffer, offset);
+        out_id = read_u32(buffer, offset);
         uint16_t mask = read_u16(buffer, offset + 4);
         int cursor = offset + 6;
         out_pos = last_pos;
@@ -113,19 +120,20 @@ namespace Vital::Engine {
         if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
         return cursor - offset;
     }
+}
 
-
+namespace Vital::Engine {
     // Misc //
-    int ISyncable::encode_delta_public(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return encode_delta(buffer, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
+    int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        return Internal::encode_delta(buffer, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
     }
 
-    int ISyncable::decode_delta_public(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return decode_delta(buffer, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
+    int ISyncable::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+        return Internal::decode_delta(buffer, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
     }
 
     int ISyncable::parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel) {
-        return decode_delta(buffer, offset, (int)buffer.size(), out_id, out_pos, out_rot, out_vel, delta_last_pos, delta_last_rot, delta_last_vel);
+        return Internal::decode_delta(buffer, offset, (int)buffer.size(), out_id, out_pos, out_rot, out_vel, delta_last_pos, delta_last_rot, delta_last_vel);
     }
 
     void ISyncable::reset_sync_state() {

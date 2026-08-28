@@ -239,8 +239,8 @@ namespace Vital::Manager {
     // All sync packets now use VSST batch format — no single-model packets.
     void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool /*is_state_dump*/) {
         if (data.size() < 8) return;
-        if (Engine::ISyncable::read_u32_public(data, 0) != STATE_DUMP_MAGIC) return;
-        uint32_t payload_bytes = Engine::ISyncable::read_u32_public(data, 4);
+        if (Engine::ISyncable::read_u32(data, 0) != STATE_DUMP_MAGIC) return;
+        uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 4);
         if ((int)data.size() < 8 + (int)payload_bytes) return;
 
         int my_id = get_peer_id();
@@ -255,7 +255,7 @@ namespace Vital::Manager {
             auto it_model = sync_id_map.end();
             // Peek net_id to find model before decoding (need delta_last_* from model).
             if (offset + 4 > end) break;
-            net_id = Engine::ISyncable::read_u32_public(data, offset);
+            net_id = Engine::ISyncable::read_u32(data, offset);
             it_model = sync_id_map.find(net_id);
 
             Engine::ISyncable* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
@@ -264,7 +264,7 @@ namespace Vital::Manager {
             else {
                 // Unknown model — skip this entry using throwaway state.
                 godot::Vector3 dp, dr, dv;
-                consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
+                consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
             }
             if (consumed < 0) break;
             offset += consumed;
@@ -281,10 +281,10 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         if (data.size() < 12) return;
         if (connected_peers.find(sender_id) == connected_peers.end()) return;
-        if ((int)Engine::ISyncable::read_u32_public(data, 0) != sender_id) return; // anti-spoof
-        if (Engine::ISyncable::read_u32_public(data, 4) != STATE_DUMP_MAGIC) return;
+        if ((int)Engine::ISyncable::read_u32(data, 0) != sender_id) return; // anti-spoof
+        if (Engine::ISyncable::read_u32(data, 4) != STATE_DUMP_MAGIC) return;
 
-        uint32_t payload_bytes = Engine::ISyncable::read_u32_public(data, 8);
+        uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 8);
         if ((int)data.size() < 12 + (int)payload_bytes) return;
 
         // Relay buffer: strip sender prefix, keep VSST header + variable entries.
@@ -305,7 +305,7 @@ namespace Vital::Manager {
             int end    = 12 + (int)payload_bytes;
             while (offset < end) {
                 if (offset + 4 > end) break;
-                uint32_t net_id = Engine::ISyncable::read_u32_public(data, offset);
+                uint32_t net_id = Engine::ISyncable::read_u32(data, offset);
                 godot::Vector3 pos, rot, vel;
 
                 auto it = sync_id_map.find(net_id);
@@ -315,7 +315,7 @@ namespace Vital::Manager {
                 if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
                 else {
                     godot::Vector3 dp, dr, dv;
-                    consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
+                    consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
                 }
                 if (consumed < 0) break;
 
@@ -562,7 +562,7 @@ namespace Vital::Manager {
             godot::Vector3 vel = model->sync_last_vel;
             // Temp zeroed state — guarantees full packet (all bits set).
             godot::Vector3 zero_p, zero_r, zero_v;
-            int written = Engine::ISyncable::encode_delta_public(
+            int written = Engine::ISyncable::encode_delta(
                 buf, cursor,
                 model->get_net_id(), pos, rot, vel,
                 zero_p, zero_r, zero_v);
@@ -769,7 +769,7 @@ namespace Vital::Manager {
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int written = Engine::ISyncable::encode_delta_public(
+                int written = Engine::ISyncable::encode_delta(
                     sync_batch_buf, cursor,
                     model->get_net_id(), cur_pos, cur_rot, cur_vel,
                     model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
@@ -829,7 +829,7 @@ namespace Vital::Manager {
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int written = Engine::ISyncable::encode_delta_public(
+                int written = Engine::ISyncable::encode_delta(
                     sync_batch_buf, cursor,
                     model->get_net_id(), cur_pos, cur_rot, cur_vel,
                     model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);

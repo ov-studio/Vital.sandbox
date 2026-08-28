@@ -53,25 +53,28 @@ namespace Vital::Engine {
             };
         private:
             inline static uint32_t next_net_id = 1;
-            static constexpr uint16_t MASK_PX = 1 << 0;
-            static constexpr uint16_t MASK_PY = 1 << 1;
-            static constexpr uint16_t MASK_PZ = 1 << 2;
-            static constexpr uint16_t MASK_RX = 1 << 3;
-            static constexpr uint16_t MASK_RY = 1 << 4;
-            static constexpr uint16_t MASK_RZ = 1 << 5;
-            static constexpr uint16_t MASK_VX = 1 << 6;
-            static constexpr uint16_t MASK_VY = 1 << 7;
-            static constexpr uint16_t MASK_VZ = 1 << 8;
 
+            struct Internal {
+                static constexpr uint16_t MASK_PX = 1 << 0;
+                static constexpr uint16_t MASK_PY = 1 << 1;
+                static constexpr uint16_t MASK_PZ = 1 << 2;
+                static constexpr uint16_t MASK_RX = 1 << 3;
+                static constexpr uint16_t MASK_RY = 1 << 4;
+                static constexpr uint16_t MASK_RZ = 1 << 5;
+                static constexpr uint16_t MASK_VX = 1 << 6;
+                static constexpr uint16_t MASK_VY = 1 << 7;
+                static constexpr uint16_t MASK_VZ = 1 << 8;
 
-            // Helpers //
-            static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
-            static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
-            static void write_f32(godot::PackedByteArray& buffer, int offset, float value);
-            static float read_f32 (const godot::PackedByteArray& buffer, int offset);
-            static uint16_t read_u16(const godot::PackedByteArray& buffer, int offset);
-            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+                // Helpers //
+                static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
+                static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
+                static void write_f32(godot::PackedByteArray& buffer, int offset, float value);
+                static float read_f32(const godot::PackedByteArray& buffer, int offset);
+                static uint16_t read_u16(const godot::PackedByteArray& buffer, int offset);
+                static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset);
+                static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+                static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+            };
         protected:
             int sync_authority = 1; // 1 = server, N = client N
             uint32_t net_id = 0;
@@ -115,15 +118,12 @@ namespace Vital::Engine {
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
         public:
             // Misc //
-            static uint32_t read_u32_public(const godot::PackedByteArray& buffer, int offset) {
-                return (uint8_t)buffer[offset]
-                     | ((uint8_t)buffer[offset+1] << 8)
-                     | ((uint8_t)buffer[offset+2] << 16)
-                     | ((uint8_t)buffer[offset+3] << 24);
+            static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset) {
+                return Internal::read_u32(buffer, offset);
             }
 
-            static int encode_delta_public(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-            static int decode_delta_public(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
             int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel);
             virtual SyncType get_sync_type() const = 0;
             virtual bool is_sync_active() const = 0;
