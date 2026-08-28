@@ -25,7 +25,7 @@
 namespace Vital::Engine {
     std::string Shader::Internal::inject_sentinel(const std::string& src, bool is_spatial) {
         const std::string decl =
-            "uniform float " + std::string(SENTINEL_NAME) +
+            "uniform float " + std::string(SENTINEL) +
             " : hint_range(1.0, 1.0) = 1.0;\n";
 
         struct EntryPoint {
@@ -35,11 +35,11 @@ namespace Vital::Engine {
 
         const std::vector<EntryPoint> entry_points = is_spatial
             ? std::vector<EntryPoint>{
-                { "void fragment()", "ALPHA *= " + std::string(SENTINEL_NAME) + ";\n" },
-                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL_NAME) + ";\n" } }
+                { "void fragment()", "ALPHA *= " + std::string(SENTINEL) + ";\n" },
+                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL) + ";\n" } }
             : std::vector<EntryPoint>{
-                { "void fragment()", "COLOR.a *= " + std::string(SENTINEL_NAME) + ";\n" },
-                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL_NAME) + ";\n" } };
+                { "void fragment()", "COLOR.a *= " + std::string(SENTINEL) + ";\n" },
+                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL) + ";\n" } };
 
         std::string result = src;
         auto st_end = result.find(';');
@@ -57,13 +57,13 @@ namespace Vital::Engine {
         return result;
     }
 
-    bool Shader::Internal::validate_compiled(godot::Ref<godot::Shader>& gd_shader) {
-        auto list = gd_shader -> get_shader_uniform_list();
+    bool Shader::Internal::validate_compiled(godot::Ref<godot::Shader>& shader) {
+        auto list = shader -> get_shader_uniform_list();
         bool sentinel_found = false;
         for (int i = 0; i < list.size(); i++) {
             auto dict = static_cast<godot::Dictionary>(list[i]);
             auto name = static_cast<godot::String>(dict.get("name", godot::String()));
-            if (std::string(name.utf8().get_data()) == SENTINEL_NAME) {
+            if (std::string(name.utf8().get_data()) == SENTINEL) {
                 sentinel_found = true;
                 break;
             }
@@ -87,12 +87,12 @@ namespace Vital::Engine {
     Shader* Shader::create(const std::string& code, Type type) {
         auto* instance = new Shader();
         instance -> shader_type = type;
-        instance -> gd_shader.instantiate();
-        instance -> gd_material.instantiate();
+        instance -> shader.instantiate();
+        instance -> material.instantiate();
         auto src = Internal::build_source(code, type);
-        instance -> gd_shader -> set_code(godot::String(src.c_str()));
-        instance -> gd_material -> set_shader(instance -> gd_shader);
-        if (!Internal::validate_compiled(instance -> gd_shader)) {
+        instance -> shader -> set_code(godot::String(src.c_str()));
+        instance -> material -> set_shader(instance -> shader);
+        if (!Internal::validate_compiled(instance -> shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
@@ -100,15 +100,15 @@ namespace Vital::Engine {
     }
 
     void Shader::destroy() {
-        gd_material.unref();
-        gd_shader.unref();
+        material.unref();
+        shader.unref();
         delete this;
     }
 
 
     // Checkers //
     bool Shader::is_valid() const {
-        return gd_shader.is_valid() && !gd_shader -> get_code().is_empty();
+        return shader.is_valid() && !shader -> get_code().is_empty();
     }
 
 
@@ -118,52 +118,52 @@ namespace Vital::Engine {
     }
 
     std::string Shader::get_code() const {
-        if (!gd_shader.is_valid()) return {};
-        return std::string(gd_shader -> get_code().utf8().get_data());
+        if (!shader.is_valid()) return {};
+        return std::string(shader -> get_code().utf8().get_data());
     }
 
     godot::Ref<godot::ShaderMaterial> Shader::get_material() const {
-        return gd_material;
+        return material;
     }
 
 
     // Setters //
     bool Shader::set_code(const std::string& code) {
-        if (!gd_shader.is_valid()) return false;
+        if (!shader.is_valid()) return false;
         auto src = Internal::build_source(code, shader_type);
-        gd_shader -> set_code(godot::String(src.c_str()));
-        return Internal::validate_compiled(gd_shader);
+        shader -> set_code(godot::String(src.c_str()));
+        return Internal::validate_compiled(shader);
     }
 
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
-        if (!gd_material.is_valid()) return false;
-        if (name == Internal::SENTINEL_NAME) return false;
-        gd_material -> set_shader_parameter(godot::StringName(name.c_str()), value);
+        if (!material.is_valid()) return false;
+        if (name == Internal::SENTINEL) return false;
+        material -> set_shader_parameter(godot::StringName(name.c_str()), value);
         return true;
     }
 
     bool Shader::set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture) {
-        if (!gd_material.is_valid() || name == Internal::SENTINEL_NAME) return false;
-        gd_material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        if (!material.is_valid() || name == Internal::SENTINEL) return false;
+        material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
         return true;
     }
 
     bool Shader::set_param_viewport_texture(const std::string& name, godot::Ref<godot::ViewportTexture> texture) {
-        if (!gd_material.is_valid() || name == Internal::SENTINEL_NAME) return false;
-        gd_material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        if (!material.is_valid() || name == Internal::SENTINEL) return false;
+        material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
         return true;
     }
 
 
     // Misc //
     int Shader::apply_to_node(godot::Node* node) {
-        if (!node || !gd_material.is_valid()) return 0;
+        if (!node || !material.is_valid()) return 0;
         int count = 0;
         if (auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(node)) {
             int surfaces = mesh -> get_surface_override_material_count();
             if (surfaces == 0 && mesh -> get_mesh().is_valid()) surfaces = mesh -> get_mesh() -> get_surface_count();
             for (int i = 0; i < surfaces; i++) {
-                mesh -> set_surface_override_material(i, gd_material);
+                mesh -> set_surface_override_material(i, material);
                 count++;
             }
         }
