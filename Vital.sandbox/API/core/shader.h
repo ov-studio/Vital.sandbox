@@ -61,24 +61,6 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Shader>(vm);
 
-            // core.shader.create(code, type = "CANVAS_ITEM") -> shader
-            //
-            // Creates a shader from a GDShader source string.
-            // A `shader_type` declaration is injected automatically if absent.
-            //
-            // For canvas / postprocess draws (engine.draw_shader):
-            //   type = "CANVAS_ITEM"
-            //   Minimal body: "void fragment() { COLOR = vec4(1, 0, 0, 1); }"
-            //
-            //   Useful built-ins:  COLOR, UV, TEXTURE, SCREEN_TEXTURE (enable via hint),
-            //                      TIME, FRAGCOORD
-            //   Read modulate:     "uniform vec4 modulate;" — engine fills this from
-            //                      the draw_shader `color` argument.
-            //   Feed an RT:        use set_param_rt("u_screen", rt) then in shader:
-            //                      "uniform sampler2D u_screen : hint_screen_texture;"
-            //
-            // For 3-D mesh surface overrides (shader:apply_to_model):
-            //   type = "SPATIAL"
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(code, type = \"CANVAS_ITEM\")")
                     .require(1, &Machine::is_string)
@@ -127,14 +109,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-
-            // :is_valid() -> bool
             vm_module::bind_method<Instance>(vm, "is_valid", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> shader -> is_valid());
                 return 1;
             });
 
-            // :get_type() -> "CANVAS_ITEM" | "SPATIAL"
             vm_module::bind_method<Instance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
                 auto type = static_cast<int>(self -> shader -> get_type());
                 for (auto& [k, v] : shader_type_registry) {
@@ -144,23 +123,19 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // :get_code() -> string
             vm_module::bind_method<Instance>(vm, "get_code", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> shader -> get_code());
                 return 1;
             });
 
-            // :set_code(code) -> bool
-            // Hot-reloads the shader source.  Existing params are preserved.
             vm_module::bind_method<Instance>(vm, "set_code", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(code)", true)
                     .require(2, &Machine::is_string);
+                    
                 vm -> push_value(self -> shader -> set_code(vm -> get_string(2)));
                 return 1;
             });
 
-            // :set_param(name, value) -> bool
-            // Set a scalar/vector uniform.  value: number, bool, Vector2, Vector3.
             vm_module::bind_method<Instance>(vm, "set_param", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, value)", true)
                     .require(2, &Machine::is_string)
@@ -181,7 +156,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // :set_param_color(name, r, g, b, a = 1.0) -> bool
             vm_module::bind_method<Instance>(vm, "set_param_color", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, r, g, b, a = 1.0)", true)
                     .require(2, &Machine::is_string)
@@ -199,8 +173,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // :set_param_texture(name, texture) -> bool
-            // Feed a Texture instance as a sampler2D uniform.
             vm_module::bind_method<Instance>(vm, "set_param_texture", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, texture)", true)
                     .require(2, &Machine::is_string)
@@ -213,10 +185,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // :set_param_rt(name, rendertarget) -> bool
-            // Feed a Rendertarget's SubViewport texture as a sampler2D uniform.
-            // Declare in shader: "uniform sampler2D u_rt : hint_screen_texture;"
-            // (or without the hint for a plain sampler).
             vm_module::bind_method<Instance>(vm, "set_param_rt", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, rendertarget)", true)
                     .require(2, &Machine::is_string)
@@ -229,9 +197,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // :apply_to_model(model) -> number
-            // Applies this shader (must be SPATIAL) as a surface override on every
-            // mesh surface of a spawned Model.  Returns the count of surfaces patched.
             vm_module::bind_method<Instance>(vm, "apply_to_model", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); });
