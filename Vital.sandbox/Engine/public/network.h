@@ -14,12 +14,14 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 
 
 /////////////////////////////
 // Vital: Engine: Network //
 /////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     // TODO: Improve
     class Network : public godot::Node {
@@ -28,12 +30,14 @@ namespace Vital::Engine {
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"),        &Network::_receive);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"),               &Network::setup_rpc);
-                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_model",  "net_id", "name", "authority"), &Network::_spawn_model);
-                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_model","net_id"), &Network::_destroy_model);
-                godot::ClassDB::bind_method(godot::D_METHOD("_set_authority","net_id","peer_id"), &Network::_set_authority);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_models",  "data"),   &Network::_sync_models);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_state",   "data"),   &Network::_sync_state);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_client",  "data"),   &Network::_sync_client);
+                // Entity spawn/destroy/authority — type_id identifies the concrete class.
+                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_entity",  "net_id", "type_id", "name", "authority"), &Network::_spawn_entity);
+                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_entity","net_id"), &Network::_destroy_entity);
+                godot::ClassDB::bind_method(godot::D_METHOD("_set_authority", "net_id", "peer_id"), &Network::_set_authority);
+                // Transform sync — shared by all ISyncable types.
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"),   &Network::_sync_entities);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_state",    "data"),   &Network::_sync_state);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_client",   "data"),   &Network::_sync_client);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"),   &Network::_on_connection_failed);
@@ -47,18 +51,16 @@ namespace Vital::Engine {
             void _receive(godot::Dictionary data);
             void setup_rpc();
 
-            // Called on clients by the server to instantiate a replicated model.
-            void _spawn_model(int net_id, godot::String name, int authority);
-            // Called on clients by the server to remove a replicated model.
-            void _destroy_model(int net_id);
-            // Received on all clients — updates sync_authority so interpolation
-            // is enabled/disabled correctly for the affected model.
+            // Spawn/destroy any ISyncable entity. type_id selects the concrete class.
+            void _spawn_entity(int net_id, int type_id, godot::String name, int authority);
+            void _destroy_entity(int net_id);
+            // Authority change — updates sync_authority and resets interpolation on receivers.
             void _set_authority(int net_id, int peer_id);
-            // Unreliable sync tick — position/rotation batch from server to all clients.
-            void _sync_models(godot::PackedByteArray data);
-            // Reliable late-join state dump — full snapshot to a single joining client.
+            // Per-frame delta-compressed transform batch — all ISyncable types share one channel.
+            void _sync_entities(godot::PackedByteArray data);
+            // Reliable late-join full state dump.
             void _sync_state(godot::PackedByteArray data);
-            // Unreliable client-auth upload — from authority client to server.
+            // Client-auth upload from authority client to server.
             void _sync_client(godot::PackedByteArray data);
 
             #if defined(VSDK_Client)

@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/API/utility/event.h>
 
@@ -114,25 +115,25 @@ namespace Vital::Manager {
     //    Model Sync Registry     //
     //----------------------------//
 
-    void Network::register_model(Engine::Model* model) {
+    void Network::register_syncable(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
-        sync_models.push_back(model);
-        sync_id_map[model->get_net_id()] = model;
+        sync_models.push_back(entity);
+        sync_id_map[entity->get_net_id()] = entity;
     }
 
-    void Network::unregister_model(Engine::Model* model) {
+    void Network::unregister_syncable(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         sync_models.erase(
-            std::remove(sync_models.begin(), sync_models.end(), model),
+            std::remove(sync_models.begin(), sync_models.end(), entity),
             sync_models.end()
         );
-        sync_id_map.erase(model->get_net_id());
+        sync_id_map.erase(entity->get_net_id());
     }
 
     // Posts to the pending queue — safe to call from any thread/enqueue context.
-    void Network::enqueue_model_registration(Engine::Model* model) {
+    void Network::enqueue_syncable_registration(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_pending_mutex);
-        sync_pending.push_back(model);
+        sync_pending.push_back(entity);
     }
 
 
@@ -197,7 +198,7 @@ namespace Vital::Manager {
         return false;
         #else
         if (!node || !is_connected()) return false;
-        node->rpc("_sync_models", data);
+        node->rpc("_sync_entities", data);
         return true;
         #endif
     }
@@ -216,8 +217,8 @@ namespace Vital::Manager {
     // All sync packets now use VSST batch format — no single-model packets.
     void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool /*is_state_dump*/) {
         if (data.size() < 8) return;
-        if (Engine::Model::read_u32_public(data, 0) != STATE_DUMP_MAGIC) return;
-        uint32_t payload_bytes = Engine::Model::read_u32_public(data, 4);
+        if (Engine::ISyncable::read_u32_public(data, 0) != STATE_DUMP_MAGIC) return;
+        uint32_t payload_bytes = Engine::ISyncable::read_u32_public(data, 4);
         if ((int)data.size() < 8 + (int)payload_bytes) return;
 
         int my_id = get_peer_id();
@@ -232,17 +233,17 @@ namespace Vital::Manager {
             auto it_model = sync_id_map.end();
             // Peek net_id to find model before decoding (need delta_last_* from model).
             if (offset + 4 > end) break;
-            net_id = Engine::Model::read_u32_public(data, offset);
+            net_id = Engine::ISyncable::read_u32_public(data, offset);
             it_model = sync_id_map.find(net_id);
 
-            Engine::Model* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
+            Engine::ISyncable* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
             int consumed;
             if (model) {
                 consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
             } else {
                 // Unknown model — skip this entry using throwaway state.
                 godot::Vector3 dp, dr, dv;
-                consumed = Engine::Model::decode_delta_public(data, offset, (int)data.size(),
+                consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
                     net_id, pos, rot, vel, dp, dr, dv);
             }
             if (consumed < 0) break;
@@ -260,10 +261,10 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         if (data.size() < 12) return;
         if (connected_peers.find(sender_id) == connected_peers.end()) return;
-        if ((int)Engine::Model::read_u32_public(data, 0) != sender_id) return; // anti-spoof
-        if (Engine::Model::read_u32_public(data, 4) != STATE_DUMP_MAGIC) return;
+        if ((int)Engine::ISyncable::read_u32_public(data, 0) != sender_id) return; // anti-spoof
+        if (Engine::ISyncable::read_u32_public(data, 4) != STATE_DUMP_MAGIC) return;
 
-        uint32_t payload_bytes = Engine::Model::read_u32_public(data, 8);
+        uint32_t payload_bytes = Engine::ISyncable::read_u32_public(data, 8);
         if ((int)data.size() < 12 + (int)payload_bytes) return;
 
         // Relay buffer: strip sender prefix, keep VSST header + variable entries.
@@ -284,18 +285,18 @@ namespace Vital::Manager {
             int end    = 12 + (int)payload_bytes;
             while (offset < end) {
                 if (offset + 4 > end) break;
-                uint32_t net_id = Engine::Model::read_u32_public(data, offset);
+                uint32_t net_id = Engine::ISyncable::read_u32_public(data, offset);
                 godot::Vector3 pos, rot, vel;
 
                 auto it = sync_id_map.find(net_id);
-                Engine::Model* model = (it != sync_id_map.end()) ? it->second : nullptr;
+                Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
                 int consumed;
                 if (model) {
                     consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
                 } else {
                     godot::Vector3 dp, dr, dv;
-                    consumed = Engine::Model::decode_delta_public(data, offset, (int)data.size(),
+                    consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
                         net_id, pos, rot, vel, dp, dr, dv);
                 }
                 if (consumed < 0) break;
@@ -316,10 +317,17 @@ namespace Vital::Manager {
             wu32_r(4, (uint32_t)(relay_cursor - 8));
             for (int pid : connected_peers) {
                 if (pid == sender_id) continue;
-                node->rpc_id(pid, "_sync_models", relay);
+                node->rpc_id(pid, "_sync_entities", relay);
             }
         }
         #endif
+    }
+
+
+    Engine::ISyncable* Network::find_syncable(uint32_t net_id) {
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+        auto it = sync_id_map.find(net_id);
+        return (it != sync_id_map.end()) ? it->second : nullptr;
     }
 
 
@@ -509,7 +517,7 @@ namespace Vital::Manager {
         if (!peer.is_valid() || !is_connected()) return;
 
         // sync_pending was already flushed by _on_peer_connected before this call.
-        std::vector<Engine::Model*> snapshot;
+        std::vector<Engine::ISyncable*> snapshot;
         {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
             snapshot = sync_models;
@@ -520,7 +528,7 @@ namespace Vital::Manager {
         // Build the batch buffer.
         const uint32_t count = static_cast<uint32_t>(snapshot.size());
         godot::PackedByteArray buf;
-        buf.resize(8 + count * Engine::Model::SYNC_PACKET_MAX);
+        buf.resize(8 + count * Engine::ISyncable::SYNC_PACKET_MAX);
 
         auto wu32 = [&](int off, uint32_t v) {
             buf[off]   =  v        & 0xFF;
@@ -536,12 +544,12 @@ namespace Vital::Manager {
         // zeroed last_* so encode_delta always sets all 9 bits in the mask.
         int cursor = 8;
         for (auto* model : snapshot) {
-            godot::Vector3 pos = model->get_global_position();
-            godot::Vector3 rot = model->get_rotation_degrees();
+            godot::Vector3 pos = model->get_sync_position();
+            godot::Vector3 rot = model->get_sync_rotation();
             godot::Vector3 vel = model->sync_last_vel;
             // Temp zeroed state — guarantees full packet (all bits set).
             godot::Vector3 zero_p, zero_r, zero_v;
-            int written = Engine::Model::encode_delta_public(
+            int written = Engine::ISyncable::encode_delta_public(
                 buf, cursor,
                 model->get_net_id(), pos, rot, vel,
                 zero_p, zero_r, zero_v);
@@ -564,7 +572,7 @@ namespace Vital::Manager {
         // 1. Flush pending so newly created models are in sync_models before we iterate.
         //    (send_full_state_to_peer does this too, but we need the list for spawns first.)
         {
-            std::vector<Engine::Model*> incoming;
+            std::vector<Engine::ISyncable*> incoming;
             {
                 std::lock_guard<std::mutex> lock(sync_pending_mutex);
                 incoming.swap(sync_pending);
@@ -574,7 +582,7 @@ namespace Vital::Manager {
                 for (auto* m : incoming) {
                     if (!m->sync_registered) {
                         sync_models.push_back(m);
-                        sync_id_map[m->get_net_id()] = m;
+                        sync_id_map[m->get_net_id()] = m; // ISyncable*
                         m->sync_registered = true;
                     }
                 }
@@ -585,11 +593,12 @@ namespace Vital::Manager {
         //    creates the nodes before the transform state dump arrives.
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* model : sync_models) {
-                node->rpc_id(id, "_spawn_model",
-                    (int)model->get_net_id(),
-                    Tool::to_godot_string(model->get_model_name()),
-                    model->get_sync_authority());
+            for (auto* e : sync_models) {
+                node->rpc_id(id, "_spawn_entity",
+                    (int)e->get_net_id(),
+                    (int)e->get_sync_type(),
+                    Tool::to_godot_string(e->get_sync_name()),
+                    e->get_sync_authority());
             }
         }
 
@@ -608,16 +617,19 @@ namespace Vital::Manager {
         // Auto-revoke: any model owned by this peer falls back to server authority.
         // set_syncer(1) also broadcasts _set_authority to all remaining clients.
         {
-            std::vector<Engine::Model*> snapshot;
+            std::vector<Engine::ISyncable*> snapshot;
             {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
                 snapshot = sync_models;
             }
-            for (auto* model : snapshot) {
-                if (model->get_sync_authority() == id) {
-                    model->set_syncer(1);
+            for (auto* entity : snapshot) {
+                if (entity->get_sync_authority() == id) {
+                    // Revert to server authority and broadcast to all remaining clients.
+                    entity->sync_authority = 1;
+                    entity->sync_sleeping  = false;
+                    if (node) node->rpc("_set_authority", (int)entity->get_net_id(), 1);
                     log("sbox", fmt::format("auto-revoke: net_id={} -> server (peer {} disconnected)",
-                        model->get_net_id(), id));
+                        entity->get_net_id(), id));
                 }
             }
         }
@@ -679,22 +691,22 @@ namespace Vital::Manager {
         #endif
 
         // Flush the pending registration queue — models posted via
-        // enqueue_model_registration() from deferred add_child callbacks.
+        // enqueue_syncable_registration() from deferred add_child callbacks.
         // O(pending) not O(all children), so it scales cleanly.
         {
-            std::vector<Engine::Model*> incoming;
+            std::vector<Engine::ISyncable*> incoming;
             {
                 std::lock_guard<std::mutex> lock(sync_pending_mutex);
                 incoming.swap(sync_pending);
             }
             if (!incoming.empty()) {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
-                for (auto* model : incoming) {
-                    if (!model->sync_registered) {
-                        sync_models.push_back(model);
-                        sync_id_map[model->get_net_id()] = model;
-                        model->sync_registered = true;
-                        model->interp_step = sync_interval;
+                for (auto* entity : incoming) {
+                    if (!entity->sync_registered) {
+                        sync_models.push_back(entity);
+                        sync_id_map[entity->get_net_id()] = entity;
+                        entity->sync_registered = true;
+                        entity->interp_step = sync_interval;
                     }
                 }
             }
@@ -703,7 +715,7 @@ namespace Vital::Manager {
         // ── Sync batch — one VSST packet per frame, broadcast to all peers ──────
         #if !defined(VSDK_Client)
         {
-            std::vector<Engine::Model*> snapshot;
+            std::vector<Engine::ISyncable*> snapshot;
             {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
                 snapshot = sync_models;
@@ -711,7 +723,7 @@ namespace Vital::Manager {
             if (snapshot.empty() || !node || !is_connected()) return;
 
             // Delta batch: [VSST magic u32][payload_bytes u32][variable entries]
-            sync_batch_buf.resize(8 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+            sync_batch_buf.resize(8 + (int)snapshot.size() * Engine::ISyncable::SYNC_PACKET_MAX);
             int cursor = 8;
 
             auto wu32 = [&](int off, uint32_t v) {
@@ -722,11 +734,11 @@ namespace Vital::Manager {
             };
 
             for (auto* model : snapshot) {
-                if (!model->is_inside_tree()) continue;
+                if (!model->is_sync_active()) continue;
                 if (model->get_sync_authority() != 1) continue;
 
-                godot::Vector3 cur_pos = model->get_global_position();
-                godot::Vector3 cur_rot = model->get_rotation_degrees();
+                godot::Vector3 cur_pos = model->get_sync_position();
+                godot::Vector3 cur_rot = model->get_sync_rotation();
 
                 bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
                           || (cur_rot - model->sync_last_rot).length() > 0.001f;
@@ -747,7 +759,7 @@ namespace Vital::Manager {
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int written = Engine::Model::encode_delta_public(
+                int written = Engine::ISyncable::encode_delta_public(
                     sync_batch_buf, cursor,
                     model->get_net_id(), cur_pos, cur_rot, cur_vel,
                     model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
@@ -763,7 +775,7 @@ namespace Vital::Manager {
         }
         #else
         {
-            std::vector<Engine::Model*> snapshot;
+            std::vector<Engine::ISyncable*> snapshot;
             {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
                 snapshot = sync_models;
@@ -772,10 +784,10 @@ namespace Vital::Manager {
 
             int my_id = get_peer_id();
             uint32_t dirty_count = 0;
-            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::ISyncable::SYNC_PACKET_MAX);
 
             // Client delta batch: [sender u32][VSST magic u32][payload_bytes u32][entries]
-            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::Model::SYNC_PACKET_MAX);
+            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::ISyncable::SYNC_PACKET_MAX);
             int cursor = 12;
 
             auto wu32 = [&](int off, uint32_t v) {
@@ -786,11 +798,11 @@ namespace Vital::Manager {
             };
 
             for (auto* model : snapshot) {
-                if (!model->is_inside_tree()) continue;
+                if (!model->is_sync_active()) continue;
                 if (model->get_sync_authority() != my_id) continue;
 
-                godot::Vector3 cur_pos = model->get_global_position();
-                godot::Vector3 cur_rot = model->get_rotation_degrees();
+                godot::Vector3 cur_pos = model->get_sync_position();
+                godot::Vector3 cur_rot = model->get_sync_rotation();
 
                 bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
                           || (cur_rot - model->sync_last_rot).length() > 0.001f;
@@ -811,7 +823,7 @@ namespace Vital::Manager {
                 model->sync_last_rot = cur_rot;
                 model->sync_last_vel = cur_vel;
 
-                int written = Engine::Model::encode_delta_public(
+                int written = Engine::ISyncable::encode_delta_public(
                     sync_batch_buf, cursor,
                     model->get_net_id(), cur_pos, cur_rot, cur_vel,
                     model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);

@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
 #endif
@@ -25,7 +26,7 @@
 
 // TOOD: Improve
 
-namespace Vital::Engine { class Model; }
+namespace Vital::Engine { class ISyncable; }
 
 namespace Vital::Manager {
     class Network : public godot::Node, public Tool::Base<Network> {
@@ -46,18 +47,18 @@ namespace Vital::Manager {
 
             // Model sync registry — every live Model registers here so
             // poll() can drive sync_tick() without touching the scene tree.
-            std::vector<Engine::Model*> sync_models;
+            std::vector<Engine::ISyncable*> sync_models;
             std::mutex sync_models_mutex;
 
             // Persistent net_id -> Model* map — updated on register/unregister,
             // used by dispatch_client_sync and dispatch_sync_batch for O(1) lookup
             // without rebuilding a temporary map every packet.
-            std::unordered_map<uint32_t, Engine::Model*> sync_id_map;
+            std::unordered_map<uint32_t, Engine::ISyncable*> sync_id_map;
 
             // Pending registration queue — models added from enqueue() callbacks
             // post to this instead of directly into sync_models, avoiding the
             // O(N) child-scan in poll().
-            std::vector<Engine::Model*> sync_pending;
+            std::vector<Engine::ISyncable*> sync_pending;
             std::mutex sync_pending_mutex;
 
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
@@ -103,11 +104,10 @@ namespace Vital::Manager {
 
 
             // Model sync registry //
-            void register_model(Engine::Model* model);
-            void unregister_model(Engine::Model* model);
-            // Called from deferred enqueue() context — posts to pending queue
-            // instead of directly modifying sync_models under poll().
-            void enqueue_model_registration(Engine::Model* model);
+            void register_syncable(Engine::ISyncable* entity);
+            void unregister_syncable(Engine::ISyncable* entity);
+            // Posts to pending queue — safe to call from any thread/enqueue context.
+            void enqueue_syncable_registration(Engine::ISyncable* entity);
 
 
             // State //
@@ -146,13 +146,17 @@ namespace Vital::Manager {
             bool send_sync_to_server(const godot::PackedByteArray& data);  // client -> server (unreliable)
 
             // Inbound dispatch — called by Engine::Network RPC handlers.
+            // Works on any ISyncable type via the net_id registry.
             void dispatch_sync_batch(const godot::PackedByteArray& data, bool is_state_dump);
             void dispatch_client_sync(const godot::PackedByteArray& data, int sender_id);
 
 
             #if !defined(VSDK_Client)
+            // Sends current transform of all registered syncables to a late-joining peer.
             void send_full_state_to_peer(int peer_id);
             #endif
+            // O(1) lookup by net_id — available on both client and server builds.
+            Engine::ISyncable* find_syncable(uint32_t net_id);
 
             // Expose the Engine::Network node so Model can call rpc() on it.
             Engine::Network* get_node() const { return node; }

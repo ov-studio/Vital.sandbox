@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 
 
 ///////////////////////////
@@ -26,7 +27,7 @@ namespace Vital::Manager { class Network; }
 namespace Vital::Engine {
     class Model;
 
-    class Model : public godot::Node3D {
+    class Model : public godot::Node3D, public ISyncable {
         GDCLASS(Model, godot::Node3D)
         friend class Network;             // Engine::Network — _spawn_model/_destroy_model
         friend class Manager::Network;  // poll() lazy registration needs sync_registered
@@ -60,78 +61,7 @@ namespace Vital::Engine {
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
 
-            // ----- Low-level sync state -----
-            // Authority peer (1 = server). Matches `set_syncer` semantics.
-            int sync_authority = 1;
-
-            // Last transmitted transform — used to detect drift and suppress
-            // packets when the model is static.
-            godot::Vector3 sync_last_pos;
-            godot::Vector3 sync_last_rot;
-            godot::Vector3 sync_last_vel;  // last sent/received velocity
-
-            // Accumulated time since last broadcast tick (seconds).
-            float sync_accum = 0.0f;
-
-            // True once the model has been registered with Manager::Network.
-            bool sync_registered = false;
-
-            // When true the model is considered static and sync is suppressed.
-            bool sync_sleeping = false;
-
-            // ----- Snapshot interpolation buffer (non-authority clients only) -----
-            // Stores the last N network snapshots. _process renders at
-            // (current_time - BUFFER_DELAY), always interpolating between two
-            // already-received states — no extrapolation in the normal case.
-            static constexpr int   SNAPSHOT_COUNT = 8;
-            static constexpr float BUFFER_DELAY   = 0.1f;   // 100ms render lag
-            static constexpr float SNAP_THRESHOLD = 5.0f;   // units — teleport if gap > this
-            static constexpr float VEL_THRESHOLD  = 0.05f;  // units/sec — "moving" cutoff
-
-            struct Snapshot {
-                godot::Vector3 pos;
-                godot::Vector3 rot;
-                godot::Vector3 vel;
-                float          time = -1.0f; // -1 = empty slot
-            };
-
-            Snapshot snap_buf[SNAPSHOT_COUNT];
-            int   snap_head  = 0;    // index of next write slot
-            int   snap_count = 0;    // how many slots are filled
-            float snap_clock = 0.0f; // local time counter, advanced each _process
-
-            // Expected interval between packets — set from sync_interval on register.
-            float interp_step  = 1.0f / 20.0f;
-            // True once at least one snapshot has been received.
-            bool  interp_ready = false;
-
-            // ----- Jitter-adaptive buffer delay -----
-            // We measure inter-packet arrival intervals and maintain a running
-            // estimate of jitter (variance). BUFFER_DELAY is then set to:
-            //   base_interval + jitter_margin * jitter_stddev
-            // clamped to [BUFFER_DELAY_MIN, BUFFER_DELAY_MAX].
-            // This means LAN clients get ~60ms delay, lossy connections get more.
-            static constexpr float BUFFER_DELAY_MIN    = 0.05f;  // 50ms floor
-            static constexpr float BUFFER_DELAY_MAX    = 0.25f;  // 250ms ceiling
-            static constexpr float JITTER_MARGIN       = 2.0f;   // stddev multiplier
-            static constexpr int   JITTER_WINDOW       = 8;      // samples
-
-            float jitter_last_arrival  = -1.0f;  // snap_clock when last packet arrived
-            float jitter_intervals[JITTER_WINDOW] = {};
-            int   jitter_idx           = 0;
-            int   jitter_count         = 0;
-            float adaptive_delay       = BUFFER_DELAY; // current effective delay
-
-            // Network object ID assigned by the server on creation and echoed to
-            // all clients so every side refers to the same object.
-            uint32_t net_id = 0;
-            inline static uint32_t next_net_id = 1;
-
-            // ----- Delta compression -----
-            // Last values sent/received — used to detect which components changed.
-            godot::Vector3 delta_last_pos;
-            godot::Vector3 delta_last_rot;
-            godot::Vector3 delta_last_vel;
+            // Sync state lives in ISyncable base class.
 
             inline static Models cache_loaded;
 
@@ -195,53 +125,11 @@ namespace Vital::Engine {
 
             // Apply an inbound sync packet — sets interpolation target on non-authority clients.
             // Skipped entirely when this peer is the authority (raw local physics drives position).
-            void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
 
             // Called every rendered frame — advances interpolation on non-authority clients.
             void _process(double delta) override;
 
-            // ----- Delta compression constants (public so Manager::Network can size buffers) -----
-            static constexpr int   SYNC_PACKET_MAX        = 42;    // max bytes per delta entry
-            static constexpr float DELTA_POS_THRESHOLD    = 0.001f; // metres
-            static constexpr float DELTA_ROT_THRESHOLD    = 0.05f;  // degrees
-            static constexpr float DELTA_VEL_THRESHOLD    = 0.01f;  // units/sec
 
-            // Public raw u32 reader.
-            static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {
-                return (uint8_t)buf[offset]
-                     | ((uint8_t)buf[offset+1] << 8)
-                     | ((uint8_t)buf[offset+2] << 16)
-                     | ((uint8_t)buf[offset+3] << 24);
-            }
-
-            // Public wrappers for the private delta encode/decode helpers.
-            // Called by Manager::Network which cannot access private methods
-            // but is a friend class — these are just named aliases for clarity.
-            static int encode_delta_public(godot::PackedByteArray& buf, int offset,
-                                           uint32_t id,
-                                           godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
-                                           godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-
-            static int decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size,
-                                           uint32_t& out_id,
-                                           godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
-                                           godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-
-            // Decode a delta-compressed entry from buf at offset.
-            // Uses this model's delta_last_* state to reconstruct unchanged components.
-            // Returns bytes consumed, or -1 on error.
-            int parse_sync_packet_at(const godot::PackedByteArray& buf,
-                                     int offset,
-                                     uint32_t& out_id,
-                                     godot::Vector3& out_pos,
-                                     godot::Vector3& out_rot,
-                                     godot::Vector3& out_vel);
-            // Convenience wrapper (offset=0).
-            int parse_sync_packet(const godot::PackedByteArray& buf,
-                                  uint32_t& out_id,
-                                  godot::Vector3& out_pos,
-                                  godot::Vector3& out_rot,
-                                  godot::Vector3& out_vel);
 
 
             // Managers //
@@ -274,6 +162,16 @@ namespace Vital::Engine {
             bool is_material_flag(const std::string& component, const std::string& material, int flag);
             bool is_animation_playing();
 
+
+            // ISyncable interface //
+            SyncType       get_sync_type()     const override { return SyncType::Model; }
+            std::string    get_sync_name()     const override { return model_name; }
+            bool           is_sync_active()    const override;
+            godot::Vector3 get_sync_position() const override;
+            godot::Vector3 get_sync_rotation() const override;
+            void           apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override;
+            void           on_sync_process(double delta) override;
+            void           destroy_sync()       override { this->queue_free(); }
 
             // Getters //
             static Models get_loaded_models();

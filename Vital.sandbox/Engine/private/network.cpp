@@ -33,10 +33,10 @@ namespace Vital::Engine {
         reliable["call_local"]    = false;
         reliable["channel"]       = 0;
         rpc_config("_receive",      reliable);
-        rpc_config("_spawn_model",  reliable);
-        rpc_config("_destroy_model",reliable);
-        rpc_config("_sync_state",   reliable);  // late-join full snapshot, must arrive
-        rpc_config("_set_authority",reliable);  // authority change, must arrive
+        rpc_config("_spawn_entity",  reliable); // type_id selects concrete class
+        rpc_config("_destroy_entity",reliable);
+        rpc_config("_sync_state",    reliable); // late-join full snapshot, must arrive
+        rpc_config("_set_authority", reliable); // authority change, must arrive
 
         // Unreliable ordered channel 0 — per-frame position/rotation sync.
         // We stay on channel 0 and use UNRELIABLE_ORDERED so Godot's RPC layer
@@ -50,8 +50,8 @@ namespace Vital::Engine {
         rpc_config("_sync_client",  unreliable);  // authority client -> server
     }
 
-    // Received on clients — batch of model transforms from server.
-    void Network::_sync_models(godot::PackedByteArray data) {
+    // Received on clients — per-frame delta-compressed batch for all syncable entities.
+    void Network::_sync_entities(godot::PackedByteArray data) {
         Manager::Network::get_singleton()->dispatch_sync_batch(data, false);
     }
 
@@ -74,37 +74,43 @@ namespace Vital::Engine {
         Manager::Network::get_singleton()->_on_packet_received(data);
     }
 
-    // Invoked on every client by the server when a model is created.
-    // net_id is pre-assigned so _ready() sees it immediately.
-    void Network::_spawn_model(int net_id, godot::String name, int authority) {
+    // Invoked on clients by the server to create a synced entity.
+    // type_id maps to ISyncable::SyncType — determines which class to instantiate.
+    // net_id is pre-assigned before add_child so _ready() sees it immediately.
+    void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority) {
         #if defined(VSDK_Client)
-        std::string model_name = Tool::to_std_string(name);
-        auto it = Model::cache_loaded.find(model_name);
+        using ST = Engine::ISyncable::SyncType;
+        switch (static_cast<ST>(type_id)) {
+            case ST::Model: {
+                std::string model_name = Tool::to_std_string(name);
+                auto it = Model::cache_loaded.find(model_name);
 
-        Model* object = memnew(Model);
-        object->net_id            = (uint32_t)net_id;
-        object->pending_authority = authority;
-        object->remote            = true;
+                Model* object = memnew(Model);
+                object->net_id            = (uint32_t)net_id;
+                object->pending_authority = authority;
+                object->remote            = true;
 
-        if (it != Model::cache_loaded.end()) {
-            godot::Node* instance = it->second->instantiate();
-            if (instance) object->add_child(instance);
-            object->set_model_name(model_name);
-        } else {
-            // Asset not downloaded yet — create placeholder, hydrate later.
-            object->set_model_name(model_name);
-            object->placeholder = true;
-            object->set_visible(false);
-            Manager::Asset::get_singleton()->queue_spawn(model_name, object);
+                if (it != Model::cache_loaded.end()) {
+                    godot::Node* instance = it->second->instantiate();
+                    if (instance) object->add_child(instance);
+                    object->set_model_name(model_name);
+                } else {
+                    object->set_model_name(model_name);
+                    object->placeholder = true;
+                    object->set_visible(false);
+                    Manager::Asset::get_singleton()->queue_spawn(model_name, object);
+                }
+                Core::get_singleton()->add_child(object);
+                Manager::Network::get_singleton()->enqueue_syncable_registration(object);
+                if (Model::on_spawned_callback) Model::on_spawned_callback(object, true);
+                godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
+                break;
+            }
+            // Future types: case ST::PhysicsBody: { ... break; }
+            default:
+                godot::UtilityFunctions::push_warning("_spawn_entity: unknown type_id=", type_id);
+                break;
         }
-
-        Core::get_singleton()->add_child(object);
-
-        // Register with the network sync registry.
-        Manager::Network::get_singleton()->enqueue_model_registration(object);
-
-        if (Model::on_spawned_callback) Model::on_spawned_callback(object, true);
-        godot::UtilityFunctions::print("_spawn_model: net_id=", net_id, " name=", name);
         #endif
     }
 
@@ -113,42 +119,24 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         auto core = Core::get_singleton();
         if (!core) return;
-        for (int i = 0; i < core->get_child_count(); i++) {
-            Model* m = godot::Object::cast_to<Model>(core->get_child(i));
-            if (!m || m->get_net_id() != (uint32_t)net_id) continue;
-            m->sync_authority = peer_id;
-            // Reset snapshot buffer — stale snapshots from old authority
-            // must not bleed into the new authority's interpolation.
-            m->snap_head        = 0;
-            m->snap_count       = 0;
-            m->snap_clock       = 0.0f;
-            m->interp_ready     = false;
-            m->jitter_last_arrival = -1.0f;
-            m->jitter_idx       = 0;
-            m->jitter_count     = 0;
-            m->adaptive_delay   = Engine::Model::BUFFER_DELAY;
-            for (int i = 0; i < Engine::Model::JITTER_WINDOW; i++)
-                m->jitter_intervals[i] = 0.0f;
-            godot::UtilityFunctions::print("_set_authority: net_id=", net_id,
-                " -> peer_id=", peer_id);
-            return;
-        }
+        // O(1) lookup via the sync registry (available on both client and server).
+        Engine::ISyncable* entity = Manager::Network::get_singleton()->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+        entity->set_sync_authority(peer_id); // public setter — resets interp state
+        godot::UtilityFunctions::print("_set_authority: net_id=", net_id, " -> peer_id=", peer_id);
         #endif
     }
 
-    // Invoked on every client by the server when a model is destroyed.
-    void Network::_destroy_model(int net_id) {
+    // Invoked on clients — removes a synced entity by net_id regardless of type.
+    void Network::_destroy_entity(int net_id) {
         #if defined(VSDK_Client)
-        auto core = Core::get_singleton();
-        if (!core) return;
-        for (int i = 0; i < core->get_child_count(); i++) {
-            Model* m = godot::Object::cast_to<Model>(core->get_child(i));
-            if (m && m->get_net_id() == (uint32_t)net_id) {
-                m->queue_free();
-                godot::UtilityFunctions::print("_destroy_model: net_id=", net_id);
-                return;
-            }
-        }
+        // Use the Manager::Network registry for O(1) lookup instead of scene scan.
+        Engine::ISyncable* entity = Manager::Network::get_singleton()->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+        // destroy_sync() is a virtual on ISyncable that calls queue_free() on the
+        // concrete Node subclass — avoids casting ISyncable* to godot::Object*.
+        entity->destroy_sync();
+        godot::UtilityFunctions::print("_destroy_entity: net_id=", net_id);
         #endif
     }
 

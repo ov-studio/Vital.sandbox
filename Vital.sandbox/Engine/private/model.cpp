@@ -41,16 +41,7 @@ namespace Vital::Engine {
         sync_last_rot  = get_rotation_degrees();
         sync_sleeping  = false;
         sync_accum     = 0.0f;
-        // Reset snapshot buffer and jitter state.
-        snap_head  = 0;
-        snap_count = 0;
-        snap_clock = 0.0f;
-        interp_ready      = false;
-        jitter_last_arrival = -1.0f;
-        jitter_idx        = 0;
-        jitter_count      = 0;
-        adaptive_delay    = BUFFER_DELAY;
-        for (int i = 0; i < JITTER_WINDOW; i++) jitter_intervals[i] = 0.0f;
+        reset_sync_state(); // ISyncable
         // sync registration happens on first poll() — safe from any thread
     }
 
@@ -58,7 +49,7 @@ namespace Vital::Engine {
         if (what == NOTIFICATION_PREDELETE) {
             // Always attempt unregister — poll() may have registered us
             // even if _ready() didn't (deferred registration pattern).
-            Manager::Network::get_singleton()->unregister_model(this);
+            Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
             if (on_destroyed_callback) on_destroyed_callback(this);
         }
@@ -83,15 +74,6 @@ namespace Vital::Engine {
 
 
     // Component mask bit positions
-    static constexpr uint16_t MASK_PX = 1 << 0;
-    static constexpr uint16_t MASK_PY = 1 << 1;
-    static constexpr uint16_t MASK_PZ = 1 << 2;
-    static constexpr uint16_t MASK_RX = 1 << 3;
-    static constexpr uint16_t MASK_RY = 1 << 4;
-    static constexpr uint16_t MASK_RZ = 1 << 5;
-    static constexpr uint16_t MASK_VX = 1 << 6;
-    static constexpr uint16_t MASK_VY = 1 << 7;
-    static constexpr uint16_t MASK_VZ = 1 << 8;
 
     static void write_float(godot::PackedByteArray& buf, int offset, float v) {
         uint32_t raw;
@@ -126,134 +108,26 @@ namespace Vital::Engine {
              | ((uint8_t)buf[offset+3] << 24);
     }
 
-    // Write u16 little-endian into buf at offset.
-    static void write_u16(godot::PackedByteArray& buf, int offset, uint16_t v) {
-        buf[offset]   =  v       & 0xFF;
-        buf[offset+1] = (v >> 8) & 0xFF;
-    }
+
     static uint16_t read_u16(const godot::PackedByteArray& buf, int offset) {
         return (uint8_t)buf[offset] | ((uint8_t)buf[offset+1] << 8);
     }
 
-    // Encode a delta-compressed sync entry into buf starting at offset.
-    // Only writes components that differ from last_* by more than threshold.
-    // Updates last_* for components that are written.
-    // Returns the number of bytes written.
-    static int encode_delta(godot::PackedByteArray& buf, int offset,
-                             uint32_t id,
-                             godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
-                             godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        uint16_t mask = 0;
-        if (std::abs(pos.x - last_pos.x) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PX;
-        if (std::abs(pos.y - last_pos.y) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PY;
-        if (std::abs(pos.z - last_pos.z) > Model::DELTA_POS_THRESHOLD) mask |= MASK_PZ;
-        if (std::abs(rot.x - last_rot.x) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RX;
-        if (std::abs(rot.y - last_rot.y) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RY;
-        if (std::abs(rot.z - last_rot.z) > Model::DELTA_ROT_THRESHOLD) mask |= MASK_RZ;
-        if (std::abs(vel.x - last_vel.x) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VX;
-        if (std::abs(vel.y - last_vel.y) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VY;
-        if (std::abs(vel.z - last_vel.z) > Model::DELTA_VEL_THRESHOLD) mask |= MASK_VZ;
 
-        write_u32(buf, offset, id);
-        write_u16(buf, offset + 4, mask);
-        int cursor = offset + 6;
 
-        auto maybe_write = [&](bool bit, float val, float& last) {
-            if (!bit) return;
-            write_float(buf, cursor, val);
-            last   = val;
-            cursor += 4;
-        };
 
-        maybe_write(mask & MASK_PX, pos.x, last_pos.x);
-        maybe_write(mask & MASK_PY, pos.y, last_pos.y);
-        maybe_write(mask & MASK_PZ, pos.z, last_pos.z);
-        maybe_write(mask & MASK_RX, rot.x, last_rot.x);
-        maybe_write(mask & MASK_RY, rot.y, last_rot.y);
-        maybe_write(mask & MASK_RZ, rot.z, last_rot.z);
-        maybe_write(mask & MASK_VX, vel.x, last_vel.x);
-        maybe_write(mask & MASK_VY, vel.y, last_vel.y);
-        maybe_write(mask & MASK_VZ, vel.z, last_vel.z);
-
-        return cursor - offset; // bytes written
-    }
-
-    // Decode a delta-compressed entry from buf at offset into out_*.
-    // Caller must provide last_* (the receiver's last known values).
-    // Returns bytes consumed, or -1 if buffer too small.
-    static int decode_delta(const godot::PackedByteArray& buf, int offset, int buf_size,
-                             uint32_t& out_id,
-                             godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
-                             godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        if (offset + 6 > buf_size) return -1;
-        out_id         = read_u32(buf, offset);
-        uint16_t mask  = read_u16(buf, offset + 4);
-        int cursor     = offset + 6;
-
-        // Start from last known values, overwrite only changed components.
-        out_pos = last_pos;
-        out_rot = last_rot;
-        out_vel = last_vel;
-
-        auto maybe_read = [&](bool bit, float& out, float& last) -> bool {
-            if (!bit) return true;
-            if (cursor + 4 > buf_size) return false;
-            out   = read_float(buf, cursor);
-            last  = out;
-            cursor += 4;
-            return true;
-        };
-
-        if (!maybe_read(mask & MASK_PX, out_pos.x, last_pos.x)) return -1;
-        if (!maybe_read(mask & MASK_PY, out_pos.y, last_pos.y)) return -1;
-        if (!maybe_read(mask & MASK_PZ, out_pos.z, last_pos.z)) return -1;
-        if (!maybe_read(mask & MASK_RX, out_rot.x, last_rot.x)) return -1;
-        if (!maybe_read(mask & MASK_RY, out_rot.y, last_rot.y)) return -1;
-        if (!maybe_read(mask & MASK_RZ, out_rot.z, last_rot.z)) return -1;
-        if (!maybe_read(mask & MASK_VX, out_vel.x, last_vel.x)) return -1;
-        if (!maybe_read(mask & MASK_VY, out_vel.y, last_vel.y)) return -1;
-        if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
-
-        return cursor - offset; // bytes consumed
-    }
 
     // Decode a delta-compressed entry from buf at offset.
     // last_pos/rot/vel must be the receiver's last known values for this model
     // (kept in delta_last_* fields) so unchanged components are reconstructed.
     // Returns bytes consumed, or -1 on error.
-    int Model::parse_sync_packet_at(const godot::PackedByteArray& buf,
-                                     int offset,
-                                     uint32_t& out_id,
-                                     godot::Vector3& out_pos,
-                                     godot::Vector3& out_rot,
-                                     godot::Vector3& out_vel) {
-        return decode_delta(buf, offset, (int)buf.size(),
-                            out_id, out_pos, out_rot, out_vel,
-                            delta_last_pos, delta_last_rot, delta_last_vel);
-    }
 
-    int Model::parse_sync_packet(const godot::PackedByteArray& buf,
-                                  uint32_t& out_id,
-                                  godot::Vector3& out_pos,
-                                  godot::Vector3& out_rot,
-                                  godot::Vector3& out_vel) {
-        return parse_sync_packet_at(buf, 0, out_id, out_pos, out_rot, out_vel);
-    }
 
-    // Public static wrappers — called by Manager::Network (friend class).
-    int Model::encode_delta_public(godot::PackedByteArray& buf, int offset,
-                                    uint32_t id,
-                                    godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
-                                    godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return encode_delta(buf, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
-    }
 
-    int Model::decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size,
-                                    uint32_t& out_id,
-                                    godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
-                                    godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return decode_delta(buf, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
-    }
+
+
+
+
 
     // sync_tick removed — dirty-check, rate-limiting, and batching are
     // handled centrally in Manager::Network::poll() for all models at once.
@@ -325,80 +199,16 @@ namespace Vital::Engine {
 
     void Model::_process(double delta) {
         if (placeholder || !is_inside_tree() || !interp_ready) return;
-
-        // Authority peer drives its own transform directly.
         auto net = Manager::Network::get_singleton();
         if (net && net->get_peer_id() == sync_authority) return;
-
-        // Advance local clock.
-        snap_clock += static_cast<float>(delta);
-
-        if (snap_count == 0) return;
-
-        // Render point in render-space time (snap_clock - BUFFER_DELAY).
-        // Snapshot timestamps are stored as (snap_clock - BUFFER_DELAY) at write
-        // time, so render_time directly indexes into the buffer without offset.
-        float render_time = snap_clock - adaptive_delay;
-
-        // Read the ring buffer in chronological order.
-        // snap_buf is a circular buffer; oldest entry is at:
-        //   (snap_head - snap_count + SNAPSHOT_COUNT) % SNAPSHOT_COUNT
-        // Find the two snapshots that bracket render_time.
-        const Snapshot* before = nullptr;
-        const Snapshot* after  = nullptr;
-
-        for (int i = 0; i < snap_count; i++) {
-            int idx = (snap_head - snap_count + i + SNAPSHOT_COUNT) % SNAPSHOT_COUNT;
-            const Snapshot& s = snap_buf[idx];
-            if (s.time <= render_time) before = &s;
-            else if (!after)           after  = &s;
-        }
-
-        if (!before && !after) return;
-
-        if (!before) {
-            // render_time is before all snapshots — snap to oldest.
-            set_global_position(after->pos);
-            set_rotation_degrees(after->rot);
-            return;
-        }
-
-        if (!after) {
-            // render_time is past all snapshots — extrapolate from newest.
-            // Only extrapolate if model was moving; otherwise hold position.
-            // Cap at 3 × interp_step to bound snap-back when next packet arrives.
-            if (before->vel.length() > VEL_THRESHOLD) {
-                float extra = std::min(render_time - before->time, interp_step * 3.0f);
-                set_global_position(before->pos + before->vel * extra);
-            } else {
-                set_global_position(before->pos);
-            }
-            set_rotation_degrees(before->rot);
-            return;
-        }
-
-        // Normal case — render_time sits between `before` and `after`.
-        float span = after->time - before->time;
-        if (span <= 0.0f) {
-            set_global_position(after->pos);
-            set_rotation_degrees(after->rot);
-            return;
-        }
-
-        float t = (render_time - before->time) / span;
-        t = std::clamp(t, 0.0f, 1.0f);
-
-        // Teleport detection: if the gap between snapshots is huge the model
-        // was teleported — snap rather than lerp across an impossible distance.
-        float dist = before->pos.distance_to(after->pos);
-        if (dist > SNAP_THRESHOLD) {
-            set_global_position(after->pos);
-            set_rotation_degrees(after->rot);
-        } else {
-            set_global_position(before->pos.lerp(after->pos, t));
-            set_rotation_degrees(before->rot.lerp(after->rot, t));
-        }
+        // Delegate snapshot interpolation to ISyncable shared implementation.
+        godot::Vector3 out_pos, out_rot;
+        interp_process(delta, out_pos, out_rot);
+        set_global_position(out_pos);
+        set_rotation_degrees(out_rot);
     }
+
+    void Model::on_sync_process(double delta) { _process(delta); }
 
 
     //---------------------------//
@@ -614,7 +424,7 @@ namespace Vital::Engine {
 
                 // Use enqueue_model_registration so poll() picks it up via the
                 // pending queue rather than the O(N) child scan.
-                Manager::Network::get_singleton()->enqueue_model_registration(object);
+                Manager::Network::get_singleton()->enqueue_syncable_registration(object);
 
                 auto net_node = Manager::Network::get_singleton()->get_node();
                 if (net_node) {
@@ -668,8 +478,8 @@ namespace Vital::Engine {
         sync_last_rot  = get_rotation_degrees();
         if (!sync_registered) {
             // hydrate() runs on the main thread (asset download callback),
-            // use enqueue_model_registration for consistency with the pending queue.
-            Manager::Network::get_singleton()->enqueue_model_registration(this);
+            // Use enqueue_syncable_registration — thread-safe pending queue.
+            Manager::Network::get_singleton()->enqueue_syncable_registration(this);
         }
         set_visible(true);
         if (on_spawned_callback) on_spawned_callback(this, true);
@@ -779,6 +589,12 @@ namespace Vital::Engine {
     Model::Models Model::get_loaded_models() { return cache_loaded; }
     std::string   Model::get_model_name()     { return model_name; }
     godot::Vector3 Model::get_position()      { return is_inside_tree() ? get_global_position() : godot::Vector3(); }
+
+    // ISyncable overrides
+    bool Model::is_sync_active() const { return const_cast<Model*>(this)->is_inside_tree() && !placeholder; }
+
+    godot::Vector3 Model::get_sync_position() const { return const_cast<Model*>(this)->is_inside_tree() ? const_cast<Model*>(this)->get_global_position() : godot::Vector3(); }
+    godot::Vector3 Model::get_sync_rotation() const { return const_cast<Model*>(this)->is_inside_tree() ? const_cast<Model*>(this)->get_rotation_degrees() : godot::Vector3(); }
     godot::Vector3 Model::get_rotation()      { return get_rotation_degrees(); }
     int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
@@ -884,10 +700,9 @@ namespace Vital::Engine {
 
         // Broadcast authority change reliably to all clients so each one
         // knows whether to run interpolation or raw local physics.
+        // Broadcast authority change to all clients via generic _set_authority RPC.
         auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) {
-            net_node->rpc("_set_authority", (int)net_id, sync_authority);
-        }
+        if (net_node) net_node->rpc("_set_authority", (int)net_id, sync_authority);
     }
     #endif
 
