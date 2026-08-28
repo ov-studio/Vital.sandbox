@@ -23,7 +23,7 @@
 // Vital: Engine: Model //
 ///////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 namespace Vital::Engine {
 
 
@@ -57,81 +57,13 @@ namespace Vital::Engine {
 
 
     //---------------------//
-    //  Low-level Sync     //
+    //  ISyncable overrides //
     //---------------------//
-
-    // Delta-compressed variable-length packet layout:
-    //   [0..3]   uint32   net_id
-    //   [4..5]   uint16   component_mask  (bits 0-8 = px,py,pz,rx,ry,rz,vx,vy,vz)
-    //   [6..]    float×N  only components where mask bit is set (4 bytes each)
     //
-    // Minimum: 6 bytes (net_id + mask, nothing changed)
-    // Maximum: 6 + 9*4 = 42 bytes (all components changed)
-    // Typical moving object: ~18-26 bytes vs old fixed 40 bytes
-    //
-    // Receivers reconstruct the full state by applying received components
-    // on top of their last-known values for this model.
-
-
-    // Component mask bit positions
-
-    static void write_float(godot::PackedByteArray& buf, int offset, float v) {
-        uint32_t raw;
-        memcpy(&raw, &v, 4);
-        buf[offset]   = raw & 0xFF;
-        buf[offset+1] = (raw >> 8)  & 0xFF;
-        buf[offset+2] = (raw >> 16) & 0xFF;
-        buf[offset+3] = (raw >> 24) & 0xFF;
-    }
-
-    static float read_float(const godot::PackedByteArray& buf, int offset) {
-        uint32_t raw = (uint8_t)buf[offset]
-                     | ((uint8_t)buf[offset+1] << 8)
-                     | ((uint8_t)buf[offset+2] << 16)
-                     | ((uint8_t)buf[offset+3] << 24);
-        float v;
-        memcpy(&v, &raw, 4);
-        return v;
-    }
-
-    static void write_u32(godot::PackedByteArray& buf, int offset, uint32_t v) {
-        buf[offset]   = v & 0xFF;
-        buf[offset+1] = (v >> 8)  & 0xFF;
-        buf[offset+2] = (v >> 16) & 0xFF;
-        buf[offset+3] = (v >> 24) & 0xFF;
-    }
-
-    static uint32_t read_u32(const godot::PackedByteArray& buf, int offset) {
-        return (uint8_t)buf[offset]
-             | ((uint8_t)buf[offset+1] << 8)
-             | ((uint8_t)buf[offset+2] << 16)
-             | ((uint8_t)buf[offset+3] << 24);
-    }
-
-
-    static uint16_t read_u16(const godot::PackedByteArray& buf, int offset) {
-        return (uint8_t)buf[offset] | ((uint8_t)buf[offset+1] << 8);
-    }
-
-
-
-
-
-    // Decode a delta-compressed entry from buf at offset.
-    // last_pos/rot/vel must be the receiver's last known values for this model
-    // (kept in delta_last_* fields) so unchanged components are reconstructed.
-    // Returns bytes consumed, or -1 on error.
-
-
-
-
-
-
-
-
-    // sync_tick removed — dirty-check, rate-limiting, and batching are
-    // handled centrally in Manager::Network::poll() for all models at once.
-    // This eliminates per-model RPC overhead and allows O(1) batched sends.
+    // Delta encode/decode, snapshot buffer, jitter adaptation, and
+    // interpolation all live in ISyncable (syncable.cpp). Model only
+    // supplies the entity-specific hooks so PhysicsBody (and any future
+    // syncable) can reuse the same path with zero copy-paste.
 
     void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
         if (!is_inside_tree()) return;
@@ -140,56 +72,7 @@ namespace Vital::Engine {
         auto net = Manager::Network::get_singleton();
         if (net && net->get_peer_id() == sync_authority) return;
 
-        if (!interp_ready) {
-            set_global_position(pos);
-            set_rotation_degrees(rot);
-            snap_clock        = BUFFER_DELAY;
-            jitter_last_arrival = snap_clock;
-            interp_ready      = true;
-        } else {
-            // Measure inter-packet arrival interval for jitter estimation.
-            float interval = snap_clock - jitter_last_arrival;
-            if (interval > 0.0f) {
-                jitter_intervals[jitter_idx] = interval;
-                jitter_idx   = (jitter_idx + 1) % JITTER_WINDOW;
-                if (jitter_count < JITTER_WINDOW) jitter_count++;
-
-                // Compute mean and standard deviation over the sample window.
-                float mean = 0.0f;
-                for (int i = 0; i < jitter_count; i++) mean += jitter_intervals[i];
-                mean /= (float)jitter_count;
-
-                float variance = 0.0f;
-                for (int i = 0; i < jitter_count; i++) {
-                    float d = jitter_intervals[i] - mean;
-                    variance += d * d;
-                }
-                float stddev = (jitter_count > 1)
-                    ? std::sqrt(variance / (float)(jitter_count - 1))
-                    : 0.0f;
-
-                // Target delay = one packet interval + jitter_margin × stddev.
-                // Smooth the transition so delay changes don't cause visible pops.
-                float target = std::clamp(
-                    interp_step + JITTER_MARGIN * stddev,
-                    BUFFER_DELAY_MIN,
-                    BUFFER_DELAY_MAX);
-                // Exponential moving average — adapt slowly to avoid oscillation.
-                adaptive_delay = adaptive_delay * 0.95f + target * 0.05f;
-            }
-            jitter_last_arrival = snap_clock;
-        }
-
-        // Write snapshot into ring buffer.
-        // Timestamp in render-space: snap_clock - adaptive_delay.
-        Snapshot& slot = snap_buf[snap_head];
-        slot.pos       = pos;
-        slot.rot       = rot;
-        slot.vel       = vel;
-        slot.time      = snap_clock - adaptive_delay;
-
-        snap_head  = (snap_head + 1) % SNAPSHOT_COUNT;
-        if (snap_count < SNAPSHOT_COUNT) snap_count++;
+        sync_push_snapshot(pos, rot, vel);
 
         sync_last_pos = pos;
         sync_last_rot = rot;
@@ -308,7 +191,7 @@ namespace Vital::Engine {
     //  Spawner Setup (private)  //
     //---------------------------//
 
-    // Spawner is no longer used — replication is handled via _spawn_model RPC.
+    // Spawner is no longer used — replication is handled via _spawn_entity RPC.
     // These stubs are kept so existing call-sites (resource manager etc.) compile.
     void Model::setup_spawner()   {}
     void Model::teardown_spawner() {}
