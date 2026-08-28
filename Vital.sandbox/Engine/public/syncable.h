@@ -22,9 +22,7 @@
 
 namespace Vital::Manager { class Network; }
 namespace Vital::Engine  { class Network; }
-
 namespace Vital::Engine {
-
     class ISyncable {
         friend class Manager::Network;
         friend class Network;
