@@ -21,29 +21,25 @@
 // Vital: Engine: Network //
 /////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
-    // TODO: Improve
     class Network : public godot::Node {
         GDCLASS(Network, godot::Node)
         private:
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"),        &Network::_receive);
-                godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"),               &Network::setup_rpc);
-                // Entity spawn/destroy/authority — type_id identifies the concrete class.
-                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_entity",  "net_id", "type_id", "name", "authority"), &Network::_spawn_entity);
-                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_entity","net_id"), &Network::_destroy_entity);
+                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
+                godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
+                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_entity", "net_id", "type_id", "name", "authority"), &Network::_spawn_entity);
+                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_entity", "net_id"), &Network::_destroy_entity);
                 godot::ClassDB::bind_method(godot::D_METHOD("_set_authority", "net_id", "peer_id"), &Network::_set_authority);
-                // Transform sync — shared by all ISyncable types.
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"),   &Network::_sync_entities);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_state",    "data"),   &Network::_sync_state);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_client",   "data"),   &Network::_sync_client);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"), &Network::_sync_entities);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
-                godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"),   &Network::_on_connection_failed);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
                 #else
-                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected",    "id"), &Network::_on_peer_connected);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &Network::_on_peer_connected);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &Network::_on_peer_disconnected);
                 #endif
             }
@@ -51,18 +47,12 @@ namespace Vital::Engine {
             void _receive(godot::Dictionary data);
             void setup_rpc();
 
-            // Spawn/destroy any ISyncable entity. type_id selects the concrete class.
             void _spawn_entity(int net_id, int type_id, godot::String name, int authority);
             void _destroy_entity(int net_id);
-            // Authority change — updates sync_authority and resets interpolation on receivers.
             void _set_authority(int net_id, int peer_id);
-            // Per-frame delta-compressed transform batch — all ISyncable types share one channel.
             void _sync_entities(godot::PackedByteArray data);
-            // Reliable late-join full state dump.
             void _sync_state(godot::PackedByteArray data);
-            // Client-auth upload from authority client to server.
             void _sync_client(godot::PackedByteArray data);
-
             #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
