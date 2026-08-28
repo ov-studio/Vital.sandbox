@@ -114,6 +114,8 @@ namespace Vital::Engine {
         return cursor - offset;
     }
 
+
+    // Misc //
     int ISyncable::encode_delta_public(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         return encode_delta(buffer, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
     }

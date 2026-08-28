@@ -142,13 +142,11 @@ namespace Vital::Manager {
     //----------------//
 
     bool Network::is_connected() const {
-        return peer.is_valid() &&
-               peer->get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTED;
+        return peer.is_valid() && peer->get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTED;
     }
 
     bool Network::is_connecting() const {
-        return peer.is_valid() &&
-               peer->get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTING;
+        return peer.is_valid() && peer->get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTING;
     }
 
     int Network::get_peer_id() const {
@@ -219,21 +217,21 @@ namespace Vital::Manager {
 
     bool Network::broadcast_sync(const godot::PackedByteArray& data) {
         #if defined(VSDK_Client)
-        return false;
+            return false;
         #else
-        if (!node || !is_connected()) return false;
-        node->rpc("_sync_entities", data);
-        return true;
+            if (!node || !is_connected()) return false;
+            node->rpc("_sync_entities", data);
+            return true;
         #endif
     }
 
     bool Network::send_sync_to_server(const godot::PackedByteArray& data) {
         #if !defined(VSDK_Client)
-        return false;
+            return false;
         #else
-        if (!node || !is_connected()) return false;
-        node->rpc_id(1, "_sync_client", data);
-        return true;
+            if (!node || !is_connected()) return false;
+            node->rpc_id(1, "_sync_client", data);
+            return true;
         #endif
     }
 
@@ -266,8 +264,7 @@ namespace Vital::Manager {
             else {
                 // Unknown model — skip this entry using throwaway state.
                 godot::Vector3 dp, dr, dv;
-                consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
-                    net_id, pos, rot, vel, dp, dr, dv);
+                consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
             }
             if (consumed < 0) break;
             offset += consumed;
@@ -318,16 +315,14 @@ namespace Vital::Manager {
                 if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
                 else {
                     godot::Vector3 dp, dr, dv;
-                    consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
-                        net_id, pos, rot, vel, dp, dr, dv);
+                    consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
                 }
                 if (consumed < 0) break;
 
                 if (model && model->get_sync_authority() == sender_id) {
                     model->apply_sync(pos, rot, vel);
                     // Copy variable-length entry verbatim into relay.
-                    for (int b = 0; b < consumed; b++)
-                        relay[relay_cursor + b] = data[offset + b];
+                    for (int b = 0; b < consumed; b++) relay[relay_cursor + b] = data[offset + b];
                     relay_cursor += consumed;
                 }
                 offset += consumed;
@@ -368,8 +363,7 @@ namespace Vital::Manager {
         peer.instantiate();
 
         // ENet with default channel count (RPC via MultiplayerAPI)
-        godot::Error err = peer->create_client(godot::String(ip.c_str()), port,
-                                                0, 0, 0);
+        godot::Error err = peer->create_client(godot::String(ip.c_str()), port, 0, 0, 0);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
@@ -430,7 +424,7 @@ namespace Vital::Manager {
     }
 
     void Network::set_reconnect_config(int max_attempts, float delay_seconds) {
-        reconnect_max   = max_attempts;
+        reconnect_max = max_attempts;
         reconnect_delay = delay_seconds;
     }
 
@@ -477,8 +471,7 @@ namespace Vital::Manager {
         peer.instantiate();
 
         // ENet with default channel count (RPC via MultiplayerAPI)
-        godot::Error err = peer->create_server(net_port, config.get_max_clients(),
-                                                0, 0, 0);
+        godot::Error err = peer->create_server(net_port, config.get_max_clients(), 0, 0, 0);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
             peer.unref();
@@ -491,8 +484,7 @@ namespace Vital::Manager {
         wire_signals();
         try {
             server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
-            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back()))
-                server_ip.pop_back();
+            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
         catch (...) {}
         sync_interval = 1.0f / static_cast<float>(config.get_sync_rate());
@@ -544,7 +536,6 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
             snapshot = sync_models;
         }
-
         if (snapshot.empty()) return;
 
         // Build the batch buffer.
@@ -651,7 +642,7 @@ namespace Vital::Manager {
                     entity->sync_sleeping  = false;
                     if (node) node->rpc("_set_authority", (int)entity->get_net_id(), 1);
                     log("sbox", fmt::format("auto-revoke: net_id={} -> server (peer {} disconnected)",
-                        entity->get_net_id(), id));
+                    entity->get_net_id(), id));
                 }
             }
         }
@@ -678,7 +669,7 @@ namespace Vital::Manager {
         if (!is_connected()) return false;
         #endif
         if (peerID == 0) node->rpc("_receive", stack.to_dict());
-        else             node->rpc_id(peerID, "_receive", stack.to_dict());
+        else node->rpc_id(peerID, "_receive", stack.to_dict());
         return true;
     }
 
@@ -761,9 +752,7 @@ namespace Vital::Manager {
 
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
-
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
-                          || (cur_rot - model->sync_last_rot).length() > 0.001f;
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f || (cur_rot - model->sync_last_rot).length() > 0.001f;
 
                 if (!moved) {
                     if (model->sync_sleeping) continue;
@@ -824,10 +813,7 @@ namespace Vital::Manager {
 
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
-
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
-                          || (cur_rot - model->sync_last_rot).length() > 0.001f;
-
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f || (cur_rot - model->sync_last_rot).length() > 0.001f;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;

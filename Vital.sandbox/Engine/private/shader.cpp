@@ -17,16 +17,15 @@
 #include <Vital.sandbox/Engine/public/shader.h>
 
 
-/////////////////////////////
-// Vital: Engine: Shader  //
-/////////////////////////////
+////////////////////////////
+// Vital: Engine: Shader //
+////////////////////////////
 
 // TODO: Improve
-
 namespace Vital::Engine {
+    // TODO: Add these to internals and expose in header too
     static constexpr const char* SENTINEL_NAME = "_vsdk_sentinel";
 
-    // TODO: Add these to internals and expose in header too
     static std::string inject_sentinel(const std::string& src, bool is_spatial) {
         const std::string decl =
             "uniform float " + std::string(SENTINEL_NAME) +

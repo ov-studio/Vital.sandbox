@@ -114,6 +114,7 @@ namespace Vital::Engine {
             void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
         public:
+            // Misc //
             static uint32_t read_u32_public(const godot::PackedByteArray& buffer, int offset) {
                 return (uint8_t)buffer[offset]
                      | ((uint8_t)buffer[offset+1] << 8)
