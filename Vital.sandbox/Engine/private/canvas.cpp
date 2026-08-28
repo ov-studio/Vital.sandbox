@@ -366,7 +366,7 @@ namespace Vital::Engine {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        if (!shader || !shader -> is_valid()) return;
+        if (!shader) return;
         draw_shader(position, size, shader -> get_material(), rotation, pivot, color);
     }
 
