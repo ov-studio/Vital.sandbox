@@ -94,7 +94,8 @@ namespace Vital::Engine {
                     godot::Node* instance = it->second->instantiate();
                     if (instance) object->add_child(instance);
                     object->set_model_name(model_name);
-                } else {
+                } 
+                else {
                     object->set_model_name(model_name);
                     object->placeholder = true;
                     object->set_visible(false);

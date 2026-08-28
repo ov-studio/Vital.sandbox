@@ -262,9 +262,8 @@ namespace Vital::Manager {
 
             Engine::ISyncable* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
             int consumed;
-            if (model) {
-                consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
-            } else {
+            if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+            else {
                 // Unknown model — skip this entry using throwaway state.
                 godot::Vector3 dp, dr, dv;
                 consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
@@ -316,9 +315,8 @@ namespace Vital::Manager {
                 Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
                 int consumed;
-                if (model) {
-                    consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
-                } else {
+                if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+                else {
                     godot::Vector3 dp, dr, dv;
                     consumed = Engine::ISyncable::decode_delta_public(data, offset, (int)data.size(),
                         net_id, pos, rot, vel, dp, dr, dv);
@@ -770,9 +768,8 @@ namespace Vital::Manager {
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;
-                } else {
-                    model->sync_sleeping = false;
                 }
+                else model->sync_sleeping = false;
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
@@ -834,9 +831,8 @@ namespace Vital::Manager {
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;
-                } else {
-                    model->sync_sleeping = false;
                 }
+                else model->sync_sleeping = false;
 
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;

@@ -115,7 +115,8 @@ namespace Vital::Engine {
             if (remainder.empty()) {
                 auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
                 if (mesh) return mesh;
-            } else {
+            } 
+            else {
                 auto result = find_mesh_node(child, remainder);
                 if (result) return result;
             }
@@ -614,7 +615,8 @@ namespace Vital::Engine {
                 invisible->set_depth_draw_mode(godot::BaseMaterial3D::DEPTH_DRAW_DISABLED);
                 invisible->set_albedo(godot::Color(0, 0, 0, 0));
                 mesh->set_surface_override_material(idx, invisible);
-            } else {
+            } 
+            else {
                 mesh->set_surface_override_material(idx, godot::Ref<godot::Material>());
             }
             return true;
