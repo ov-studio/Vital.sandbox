@@ -3,21 +3,23 @@
      Script: Engine: syncable.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: ISyncable — abstract base for any network-synced entity.
-           Model, PhysicsBody, and future synced types all inherit this.
-           Manager::Network operates on ISyncable* only — never on
-           concrete types — so adding a new syncable type requires
-           zero changes to the network layer.
+     DOC: 14/09/2022
+     Desc: ISyncable Utilities
 ----------------------------------------------------------------*/
 
-#pragma once
-#include <string>
-#include <cmath>
-#include <algorithm>
-#include <godot_cpp/variant/vector3.hpp>
-#include <godot_cpp/variant/packed_byte_array.hpp>
 
-// TODO: Improve
+//////////////
+// Imports //
+//////////////
+
+#pragma once
+#include <Vital.sandbox/Engine/public/core.h>
+
+
+///////////////////////////////
+// Vital: Engine: ISyncable //
+///////////////////////////////
+
 namespace Vital::Manager { class Network; }
 namespace Vital::Engine  { class Network; }
 
