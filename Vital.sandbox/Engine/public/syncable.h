@@ -18,17 +18,15 @@
 #include <godot_cpp/variant/packed_byte_array.hpp>
 
 // TODO: Improve
-
 namespace Vital::Manager { class Network; }
-namespace Vital::Engine   { class Network; }
+namespace Vital::Engine  { class Network; }
 
 namespace Vital::Engine {
 
     class ISyncable {
         friend class Manager::Network;
-        friend class Network; // Engine::Network — _set_authority/_destroy_entity
+        friend class Network;
         public:
-
             // ── Delta compression constants ─────────────────────────────────
             // Public so Manager::Network can size batch buffers externally.
             static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
