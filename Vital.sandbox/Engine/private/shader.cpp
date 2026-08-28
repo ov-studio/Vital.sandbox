@@ -89,8 +89,7 @@ namespace Vital::Engine {
         instance -> shader_type = mode;
         instance -> shader.instantiate();
         instance -> material.instantiate();
-        auto src = Internal::build_source(raw, instance -> shader_type);
-        instance -> shader -> set_code(Tool::to_godot_string(src));
+        instance -> shader -> set_code(Tool::to_godot_string(Internal::build_source(raw, instance -> shader_type)));
         if (!Internal::validate_compiled(instance -> shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
