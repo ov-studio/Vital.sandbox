@@ -84,7 +84,7 @@ namespace Vital::Engine {
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
 
             ISyncable() = default;
-            virtual ~ISyncable() = default
+            virtual ~ISyncable() = default;
         public:
             // Delta compression constants //
             static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
