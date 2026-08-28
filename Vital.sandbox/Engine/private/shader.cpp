@@ -28,11 +28,6 @@ namespace Vital::Engine {
             "uniform float " + std::string(SENTINEL) +
             " : hint_range(1.0, 1.0) = 1.0;\n";
 
-        struct EntryPoint {
-            std::string signature;
-            std::string usage;
-        };
-
         const std::vector<EntryPoint> entry_points = is_spatial
             ? std::vector<EntryPoint>{
                 { "void fragment()", "ALPHA *= " + std::string(SENTINEL) + ";\n" },
