@@ -64,10 +64,6 @@ namespace Vital::Engine {
             void destroy();
 
 
-            // Checkers //
-            bool is_valid() const;
-
-
             // Getters //
             Mode get_type() const;
             std::string get_code() const;

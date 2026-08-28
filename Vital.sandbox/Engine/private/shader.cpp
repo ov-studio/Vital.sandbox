@@ -106,19 +106,12 @@ namespace Vital::Engine {
     }
 
 
-    // Checkers //
-    bool Shader::is_valid() const {
-        return shader.is_valid() && !shader -> get_code().is_empty();
-    }
-
-
     // Getters //
     Shader::Mode Shader::get_type() const { 
         return shader_type;
     }
 
     std::string Shader::get_code() const {
-        if (!shader.is_valid()) return {};
         return std::string(shader -> get_code().utf8().get_data());
     }
 
