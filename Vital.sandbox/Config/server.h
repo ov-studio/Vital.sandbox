@@ -121,7 +121,6 @@ namespace Vital::Config {
 
 
             // Masterlist //
-            // TODO: Improve maybe just token instead of id + secret?
             bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
             std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
             std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://vital.site/api/masterlist"); }
