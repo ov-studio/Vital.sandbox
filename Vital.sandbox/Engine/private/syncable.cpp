@@ -85,8 +85,8 @@ namespace Vital::Engine {
         auto maybe_read = [&](bool bit, float& out, float& last) -> bool {
             if (!bit) return true;
             if (cursor + 4 > buf_size) return false;
-            out    = read_f32(buf, cursor);
-            last   = out;
+            out = read_f32(buf, cursor);
+            last = out;
             cursor += 4;
             return true;
         };
@@ -159,7 +159,7 @@ namespace Vital::Engine {
         slot.rot = rot;
         slot.vel = vel;
         slot.time = snap_clock - adaptive_delay;
-        snap_head  = (snap_head + 1) % SNAPSHOT_COUNT;
+        snap_head = (snap_head + 1) % SNAPSHOT_COUNT;
         if (snap_count < SNAPSHOT_COUNT) snap_count++;
     }
 
@@ -174,35 +174,35 @@ namespace Vital::Engine {
             int idx = (snap_head - snap_count + i + SNAPSHOT_COUNT) % SNAPSHOT_COUNT;
             const Snapshot& s = snap_buf[idx];
             if (s.time <= render_time) before = &s;
-            else if (!after)           after  = &s;
+            else if (!after) after = &s;
         }
 
         if (!before && !after) return;
         if (!before) {
-            out_pos = after->pos;
-            out_rot = after->rot;
+            out_pos = after -> pos;
+            out_rot = after -> rot;
             return;
         }
         if (!after) {
-            if (before->vel.length() > VEL_THRESHOLD) {
-                float extra = std::min(render_time - before->time, interp_step * 3.0f);
-                out_pos = before->pos + before->vel * extra;
+            if (before -> vel.length() > VEL_THRESHOLD) {
+                float extra = std::min(render_time - before -> time, interp_step * 3.0f);
+                out_pos = before -> pos + before -> vel * extra;
             }
-            else out_pos = before->pos;
-            out_rot = before->rot;
+            else out_pos = before -> pos;
+            out_rot = before -> rot;
             return;
         }
 
-        float span = after->time - before->time;
-        if (span <= 0.0f) { out_pos = after->pos; out_rot = after->rot; return; }
-        float t = std::clamp((render_time - before->time) / span, 0.0f, 1.0f);
-        if (before->pos.distance_to(after->pos) > SNAP_THRESHOLD) {
-            out_pos = after->pos;
-            out_rot = after->rot;
+        float span = after -> time - before -> time;
+        if (span <= 0.0f) { out_pos = after -> pos; out_rot = after -> rot; return; }
+        float t = std::clamp((render_time - before -> time) / span, 0.0f, 1.0f);
+        if (before -> pos.distance_to(after -> pos) > SNAP_THRESHOLD) {
+            out_pos = after -> pos;
+            out_rot = after -> rot;
         } 
         else {
-            out_pos = before->pos.lerp(after->pos, t);
-            out_rot = before->rot.lerp(after->rot, t);
+            out_pos = before -> pos.lerp(after -> pos, t);
+            out_rot = before -> rot.lerp(after -> rot, t);
         }
     }
 }
