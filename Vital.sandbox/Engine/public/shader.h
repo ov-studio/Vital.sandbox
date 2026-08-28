@@ -54,7 +54,8 @@ namespace Vital::Engine {
             ~Shader() = default;
         public:
             // Managers //
-            static Shader* create(const std::string& code, Type type = Type::CanvasItem);
+            static Shader* create(const std::string& base, const std::string& path, Type type = Type::CanvasItem);
+            static Shader* create_from_raw(const std::string& code, Type type = Type::CanvasItem);
             void destroy();
 
 
