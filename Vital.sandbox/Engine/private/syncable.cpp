@@ -8,18 +8,8 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/syncable.h>
-#include <cstring>
-#include <cmath>
-#include <algorithm>
-
-// TODO: Improve
 
 namespace Vital::Engine {
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Low-level byte helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     void ISyncable::write_u32(godot::PackedByteArray& buf, int off, uint32_t v) {
         buf[off]   =  v        & 0xFF;
         buf[off+1] = (v >>  8) & 0xFF;
@@ -48,20 +38,7 @@ namespace Vital::Engine {
         return (uint8_t)buf[off] | ((uint8_t)buf[off+1] << 8);
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Delta encode / decode
-    //
-    //  Packet entry layout (variable, 6–42 bytes):
-    //    [0..3]  uint32   net_id
-    //    [4..5]  uint16   mask  (bits 0-8 = px,py,pz,rx,ry,rz,vx,vy,vz)
-    //    [6..]   float×N  only components where mask bit is set
-    // ─────────────────────────────────────────────────────────────────────────
-
-    int ISyncable::encode_delta(godot::PackedByteArray& buf, int offset,
-                                uint32_t id,
-                                godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
-                                godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::encode_delta(godot::PackedByteArray& buf, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         uint16_t mask = 0;
         if (std::abs(pos.x - last_pos.x) > DELTA_POS_THRESHOLD) mask |= MASK_PX;
         if (std::abs(pos.y - last_pos.y) > DELTA_POS_THRESHOLD) mask |= MASK_PY;
@@ -76,7 +53,6 @@ namespace Vital::Engine {
         write_u32(buf, offset, id);
         write_u16(buf, offset + 4, mask);
         int cursor = offset + 6;
-
         auto maybe_write = [&](bool bit, float val, float& last) {
             if (!bit) return;
             write_f32(buf, cursor, val);
@@ -93,19 +69,15 @@ namespace Vital::Engine {
         maybe_write(mask & MASK_VX, vel.x, last_vel.x);
         maybe_write(mask & MASK_VY, vel.y, last_vel.y);
         maybe_write(mask & MASK_VZ, vel.z, last_vel.z);
-
         return cursor - offset;
     }
 
-    int ISyncable::decode_delta(const godot::PackedByteArray& buf, int offset, int buf_size,
-                                uint32_t& out_id,
-                                godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
-                                godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::decode_delta(const godot::PackedByteArray& buf, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         if (offset + 6 > buf_size) return -1;
-        out_id        = read_u32_public(buf, offset);
-        uint16_t mask = read_u16(buf, offset + 4);
-        int cursor    = offset + 6;
 
+        out_id = read_u32_public(buf, offset);
+        uint16_t mask = read_u16(buf, offset + 4);
+        int curso r= offset + 6;
         out_pos = last_pos;
         out_rot = last_rot;
         out_vel = last_vel;
@@ -128,120 +100,76 @@ namespace Vital::Engine {
         if (!maybe_read(mask & MASK_VX, out_vel.x, last_vel.x)) return -1;
         if (!maybe_read(mask & MASK_VY, out_vel.y, last_vel.y)) return -1;
         if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
-
         return cursor - offset;
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Public wrappers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    int ISyncable::encode_delta_public(godot::PackedByteArray& buf, int offset,
-                                       uint32_t id,
-                                       godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel,
-                                       godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::encode_delta_public(godot::PackedByteArray& buf, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         return encode_delta(buf, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
     }
 
-    int ISyncable::decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size,
-                                       uint32_t& out_id,
-                                       godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel,
-                                       godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
         return decode_delta(buf, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
     }
 
-    int ISyncable::parse_sync_packet_at(const godot::PackedByteArray& buf, int offset,
-                                         uint32_t& out_id,
-                                         godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel) {
-        return decode_delta(buf, offset, (int)buf.size(),
-                            out_id, out_pos, out_rot, out_vel,
-                            delta_last_pos, delta_last_rot, delta_last_vel);
+    int ISyncable::parse_sync_packet_at(const godot::PackedByteArray& buf, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel) {
+        return decode_delta(buf, offset, (int)buf.size(), out_id, out_pos, out_rot, out_vel, delta_last_pos, delta_last_rot, delta_last_vel);
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  reset_sync_state — called on authority change
-    // ─────────────────────────────────────────────────────────────────────────
-
     void ISyncable::reset_sync_state() {
-        snap_head           = 0;
-        snap_count          = 0;
-        snap_clock          = 0.0f;
-        interp_ready        = false;
+        snap_head = 0;
+        snap_count = 0;
+        snap_clock = 0.0f;
+        interp_ready = false;
         jitter_last_arrival = -1.0f;
-        jitter_idx          = 0;
-        jitter_count        = 0;
-        adaptive_delay      = BUFFER_DELAY;
+        jitter_idx = 0;
+        jitter_count = 0;
+        adaptive_delay = BUFFER_DELAY;
         for (int i = 0; i < JITTER_WINDOW; i++) jitter_intervals[i] = 0.0f;
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  sync_push_snapshot — called from apply_sync on non-authority receivers.
-    //  Writes incoming state into the ring buffer and updates jitter estimate.
-    // ─────────────────────────────────────────────────────────────────────────
-
     void ISyncable::sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
         if (!interp_ready) {
-            // First snapshot — pre-seed clock so render_time is valid immediately.
-            snap_clock          = BUFFER_DELAY;
+            snap_clock = BUFFER_DELAY;
             jitter_last_arrival = snap_clock;
-            interp_ready        = true;
-        } else {
+            interp_ready = true;
+        }
+        else {
             float interval = snap_clock - jitter_last_arrival;
             if (interval > 0.0f) {
                 jitter_intervals[jitter_idx] = interval;
-                jitter_idx   = (jitter_idx + 1) % JITTER_WINDOW;
+                jitter_idx = (jitter_idx + 1) % JITTER_WINDOW;
                 if (jitter_count < JITTER_WINDOW) jitter_count++;
-
                 float mean = 0.0f;
                 for (int i = 0; i < jitter_count; i++) mean += jitter_intervals[i];
                 mean /= (float)jitter_count;
-
                 float variance = 0.0f;
                 for (int i = 0; i < jitter_count; i++) {
                     float d = jitter_intervals[i] - mean;
                     variance += d * d;
                 }
-                float stddev = (jitter_count > 1)
-                    ? std::sqrt(variance / (float)(jitter_count - 1))
-                    : 0.0f;
-
-                float target   = std::clamp(interp_step + JITTER_MARGIN * stddev,
-                                            BUFFER_DELAY_MIN, BUFFER_DELAY_MAX);
+                float stddev = (jitter_count > 1) ? std::sqrt(variance / (float)(jitter_count - 1)) : 0.0f;
+                float target = std::clamp(interp_step + JITTER_MARGIN * stddev, BUFFER_DELAY_MIN, BUFFER_DELAY_MAX);
                 adaptive_delay = adaptive_delay * 0.95f + target * 0.05f;
             }
             jitter_last_arrival = snap_clock;
         }
 
         Snapshot& slot = snap_buf[snap_head];
-        slot.pos       = pos;
-        slot.rot       = rot;
-        slot.vel       = vel;
-        slot.time      = snap_clock - adaptive_delay;
-
+        slot.pos = pos;
+        slot.rot = rot;
+        slot.vel = vel;
+        slot.time = snap_clock - adaptive_delay;
         snap_head  = (snap_head + 1) % SNAPSHOT_COUNT;
         if (snap_count < SNAPSHOT_COUNT) snap_count++;
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  interp_process — call from on_sync_process(_process) each frame.
-    //  Advances snap_clock and writes interpolated transform into out_pos/out_rot.
-    // ─────────────────────────────────────────────────────────────────────────
-
-    void ISyncable::interp_process(double delta,
-                                   godot::Vector3& out_pos,
-                                   godot::Vector3& out_rot) {
+    void ISyncable::interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot) {
         if (!interp_ready || snap_count == 0) return;
 
         snap_clock += static_cast<float>(delta);
         float render_time = snap_clock - adaptive_delay;
-
         const Snapshot* before = nullptr;
         const Snapshot* after  = nullptr;
-
         for (int i = 0; i < snap_count; i++) {
             int idx = (snap_head - snap_count + i + SNAPSHOT_COUNT) % SNAPSHOT_COUNT;
             const Snapshot& s = snap_buf[idx];
@@ -250,37 +178,29 @@ namespace Vital::Engine {
         }
 
         if (!before && !after) return;
-
         if (!before) {
-            // Before oldest snapshot — snap.
             out_pos = after->pos;
             out_rot = after->rot;
             return;
         }
-
         if (!after) {
-            // Past all snapshots — extrapolate if moving, hold if static.
             if (before->vel.length() > VEL_THRESHOLD) {
                 float extra = std::min(render_time - before->time, interp_step * 3.0f);
                 out_pos = before->pos + before->vel * extra;
-            } else {
-                out_pos = before->pos;
             }
+            else out_pos = before->pos;
             out_rot = before->rot;
             return;
         }
 
-        // Normal case — lerp between two known snapshots.
         float span = after->time - before->time;
         if (span <= 0.0f) { out_pos = after->pos; out_rot = after->rot; return; }
-
         float t = std::clamp((render_time - before->time) / span, 0.0f, 1.0f);
-
-        // Teleport detection — snap across large gaps instead of lerping.
         if (before->pos.distance_to(after->pos) > SNAP_THRESHOLD) {
             out_pos = after->pos;
             out_rot = after->rot;
-        } else {
+        } 
+        else {
             out_pos = before->pos.lerp(after->pos, t);
             out_rot = before->rot.lerp(after->rot, t);
         }
