@@ -35,8 +35,8 @@ namespace Vital::Manager {
     // Instantiators //
     Asset::Asset() {
         #if !defined(VSDK_Client)
-        http_server.set_port(7778); // default; overridable via set_http_port
-        http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
+        http_server.set_port(7778);
+        http_server.set_bind_address("0.0.0.0");
         http_server.set_label("Asset.manager");
         #endif
     }
