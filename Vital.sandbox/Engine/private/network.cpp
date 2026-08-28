@@ -24,6 +24,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+    // Managers //
     void Network::setup_rpc() {
         godot::Dictionary reliable;
         reliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
@@ -45,6 +46,12 @@ namespace Vital::Engine {
         rpc_config("_sync_client", unreliable);
     }
 
+
+    // Signals //
+    void Network::_receive(godot::Dictionary data) {
+        Manager::Network::get_singleton() -> _on_packet_received(data);
+    }
+    
     void Network::_sync_entities(godot::PackedByteArray data) {
         Manager::Network::get_singleton() -> dispatch_sync_batch(data, false);
     }
@@ -59,10 +66,6 @@ namespace Vital::Engine {
         int sender = tree ? tree -> get_multiplayer() -> get_remote_sender_id() : 0;
         Manager::Network::get_singleton() -> dispatch_client_sync(data, sender);
         #endif
-    }
-
-    void Network::_receive(godot::Dictionary data) {
-        Manager::Network::get_singleton() -> _on_packet_received(data);
     }
 
     void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority) {

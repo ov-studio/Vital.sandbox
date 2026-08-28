@@ -26,8 +26,8 @@ namespace Vital::Engine {
         GDCLASS(Network, godot::Node)
         private:
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
+                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_entity", "net_id", "type_id", "name", "authority"), &Network::_spawn_entity);
                 godot::ClassDB::bind_method(godot::D_METHOD("_destroy_entity", "net_id"), &Network::_destroy_entity);
                 godot::ClassDB::bind_method(godot::D_METHOD("_set_authority", "net_id", "peer_id"), &Network::_set_authority);
@@ -44,9 +44,12 @@ namespace Vital::Engine {
                 #endif
             }
         public:
-            void _receive(godot::Dictionary data);
+            // Managers //
             void setup_rpc();
 
+
+            // Signals //
+            void _receive(godot::Dictionary data);
             void _spawn_entity(int net_id, int type_id, godot::String name, int authority);
             void _destroy_entity(int net_id);
             void _set_authority(int net_id, int peer_id);
