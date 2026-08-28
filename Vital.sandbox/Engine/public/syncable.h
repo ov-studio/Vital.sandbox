@@ -110,7 +110,6 @@ namespace Vital::Engine {
             ISyncable() = default;
             virtual ~ISyncable() = default;
         public:
-            // ── Public packet helpers ───────────────────────────────────────
             static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {
                 return (uint8_t)buf[offset]
                      | ((uint8_t)buf[offset+1] << 8)
@@ -121,7 +120,6 @@ namespace Vital::Engine {
             static int encode_delta_public(godot::PackedByteArray& buf, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
             static int decode_delta_public(const godot::PackedByteArray& buf, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
             int parse_sync_packet_at(const godot::PackedByteArray& buf, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel);
-
             virtual SyncType get_sync_type() const = 0;
             virtual bool is_sync_active() const = 0;
             void set_sync_authority(int peer_id) {
