@@ -26,6 +26,7 @@
 namespace Vital::Engine {
     static constexpr const char* SENTINEL_NAME = "_vsdk_sentinel";
 
+    // TODO: Add these to internals and expose in header too
     static std::string inject_sentinel(const std::string& src, bool is_spatial) {
         const std::string decl =
             "uniform float " + std::string(SENTINEL_NAME) +
@@ -115,7 +116,9 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Shader::Type Shader::get_type() const { return shader_type; }
+    Shader::Type Shader::get_type() const { 
+        return shader_type;
+    }
 
     std::string Shader::get_code() const {
         if (!gd_shader.is_valid()) return {};
@@ -170,6 +173,5 @@ namespace Vital::Engine {
         for (int i = 0; i < node -> get_child_count(); i++) count += apply_to_node(node -> get_child(i));
         return count;
     }
-
 }
 #endif
