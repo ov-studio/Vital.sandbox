@@ -63,6 +63,8 @@ namespace Vital::Engine {
             static constexpr uint16_t MASK_VY = 1 << 7;
             static constexpr uint16_t MASK_VZ = 1 << 8;
 
+            
+            // Helpers //
             static void write_u32(godot::PackedByteArray& buf, int off, uint32_t v);
             static void write_u16(godot::PackedByteArray& buf, int off, uint16_t v);
             static void write_f32(godot::PackedByteArray& buf, int off, float v);
@@ -88,9 +90,9 @@ namespace Vital::Engine {
             };
 
             Snapshot snap_buf[SNAPSHOT_COUNT];
-            int snap_head   = 0;
-            int snap_count  = 0;
-            float snap_clock  = 0.0f;
+            int snap_head = 0;
+            int snap_count = 0;
+            float snap_clock = 0.0f;
             float interp_step = 1.0f / 20.0f;
             bool interp_ready = false;
             float jitter_last_arrival = -1.0f;
@@ -102,13 +104,15 @@ namespace Vital::Engine {
             godot::Vector3 delta_last_rot;
             godot::Vector3 delta_last_vel;
 
-            // Call from apply_sync — handles snapshot write + jitter measurement.
-            void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
-            // Call from on_sync_process — drives snapshot buffer interpolation.
-            void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
 
+            // Instantiators //
             ISyncable() = default;
             virtual ~ISyncable() = default;
+
+
+            // Helpers //
+            void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
+            void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
         public:
             static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {
                 return (uint8_t)buf[offset]
