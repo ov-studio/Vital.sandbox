@@ -1,13 +1,24 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: syncable.cpp
+     Script: Engine: syncable.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: ISyncable — shared sync state implementation.
+     DOC: 14/09/2022
+     Desc: ISyncable Utilities
 ----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
 
 #pragma once
 #include <Vital.sandbox/Engine/public/syncable.h>
+
+
+///////////////////////////////
+// Vital: Engine: ISyncable //
+///////////////////////////////
 
 namespace Vital::Engine {
     void ISyncable::write_u32(godot::PackedByteArray& buf, int off, uint32_t v) {
