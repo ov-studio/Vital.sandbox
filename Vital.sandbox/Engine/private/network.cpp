@@ -24,30 +24,25 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-
     void Network::setup_rpc() {
-        // Reliable channel 0 — events, spawn, destroy.
         godot::Dictionary reliable;
-        reliable["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
+        reliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         reliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-        reliable["call_local"]    = false;
-        reliable["channel"]       = 0;
-        rpc_config("_receive",      reliable);
-        rpc_config("_spawn_entity",  reliable); // type_id selects concrete class
-        rpc_config("_destroy_entity",reliable);
-        rpc_config("_sync_state",    reliable); // late-join full snapshot, must arrive
-        rpc_config("_set_authority", reliable); // authority change, must arrive
+        reliable["call_local"] = false;
+        reliable["channel"] = 0;
+        rpc_config("_receive", reliable);
+        rpc_config("_spawn_entity", reliable);
+        rpc_config("_destroy_entity", reliable);
+        rpc_config("_sync_state", reliable);
+        rpc_config("_set_authority", reliable);
 
-        // Unreliable ordered channel 0 — per-frame position/rotation sync.
-        // We stay on channel 0 and use UNRELIABLE_ORDERED so Godot's RPC layer
-        // routes it correctly without conflicting with scene_cache_interface.
         godot::Dictionary unreliable;
-        unreliable["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
+        unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         unreliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
-        unreliable["call_local"]    = false;
-        unreliable["channel"]       = 0;
-        rpc_config("_sync_entities",  unreliable);  // server -> all clients
-        rpc_config("_sync_client",  unreliable);  // authority client -> server
+        unreliable["call_local"] = false;
+        unreliable["channel"] = 0;
+        rpc_config("_sync_entities", unreliable);
+        rpc_config("_sync_client", unreliable);
     }
 
     // Received on clients — per-frame delta-compressed batch for all syncable entities.
