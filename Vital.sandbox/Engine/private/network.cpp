@@ -94,10 +94,10 @@ namespace Vital::Engine {
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
-            // Future types: case ST::PhysicsBody: { ... break; }
-            default:
+            default: {
                 godot::UtilityFunctions::push_warning("_spawn_entity: unknown type_id=", type_id);
                 break;
+            }
         }
         #endif
     }
