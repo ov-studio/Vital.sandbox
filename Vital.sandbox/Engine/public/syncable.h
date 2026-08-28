@@ -46,7 +46,7 @@ namespace Vital::Engine {
             static uint16_t read_u16(const godot::PackedByteArray& buf, int off);
             static int encode_delta(godot::PackedByteArray& buf, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
             static int decode_delta(const godot::PackedByteArray& buf, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-            protected:
+        protected:
             int sync_authority = 1; // 1 = server, N = client N
             uint32_t net_id = 0;
             bool sync_registered = false;
