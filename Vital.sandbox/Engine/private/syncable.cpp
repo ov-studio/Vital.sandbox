@@ -77,7 +77,7 @@ namespace Vital::Engine {
 
         out_id = read_u32_public(buf, offset);
         uint16_t mask = read_u16(buf, offset + 4);
-        int curso r= offset + 6;
+        int cursor = offset + 6;
         out_pos = last_pos;
         out_rot = last_rot;
         out_vel = last_vel;
