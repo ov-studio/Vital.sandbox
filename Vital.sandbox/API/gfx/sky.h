@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
             PHYSICAL
         };
 
-        inline static const std::vector<std::pair<std::string, int>> mode_registry = {
+        inline static const std::vector<std::pair<std::string, int>> sky_mode_registry = {
             { "PANORAMA",   static_cast<int>(Mode::PANORAMA)   },
             { "PROCEDURAL", static_cast<int>(Mode::PROCEDURAL) },
             { "PHYSICAL",   static_cast<int>(Mode::PHYSICAL)   }
@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, mode_registry);
+                    .require_enum(1, sky_mode_registry);
 
                 auto type = static_cast<Mode>(vm -> get_int(1));
                 auto sky = base_class::get_sky();
@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", mode_registry);
+            vm -> scope_set_enum(base_scope, "sky_mode", sky_mode_registry);
             vm -> scope_set_enum(base_scope, "radiance_size", radiance_size_registry);
             vm -> scope_set_enum(base_scope, "process_mode", process_mode_registry);
         }

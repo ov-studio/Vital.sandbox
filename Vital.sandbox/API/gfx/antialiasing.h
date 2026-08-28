@@ -32,13 +32,13 @@ namespace Vital::Sandbox::API {
             MODE_TAA 
         };
 
-        inline static const std::vector<std::pair<std::string, int>> mode_registry = {
+        inline static const std::vector<std::pair<std::string, int>> aa_mode_registry = {
             { "DISABLED", MODE_DISABLED },
             { "FXAA",     MODE_FXAA     },
             { "TAA",      MODE_TAA      }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> msaa_registry = {
+        inline static const std::vector<std::pair<std::string, int>> msaa_mode_registry = {
             { "DISABLED", godot::Viewport::MSAA_DISABLED },
             { "X2",       godot::Viewport::MSAA_2X       },
             { "X4",       godot::Viewport::MSAA_4X       },
@@ -78,7 +78,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, mode_registry);
+                    .require_enum(1, aa_mode_registry);
 
                 set_mode(vm -> get_int(1));
                 vm -> push_value(true);
@@ -92,7 +92,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_msaa_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, msaa_registry);
+                    .require_enum(1, msaa_mode_registry);
 
                 auto mode = static_cast<godot::Viewport::MSAA>(vm -> get_int(1));
                 base_class::get_scene_root() -> set_msaa_3d(mode);
@@ -102,8 +102,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", mode_registry);
-            vm -> scope_set_enum(base_scope, "msaa_mode", msaa_registry);
+            vm -> scope_set_enum(base_scope, "aa_mode", aa_mode_registry);
+            vm -> scope_set_enum(base_scope, "msaa_mode", msaa_mode_registry);
         }
     };
 }
