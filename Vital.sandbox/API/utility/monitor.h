@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
     struct Monitor : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "monitor"};
 
-        inline static const std::vector<std::pair<std::string, int>> native_registry = {
+        inline static const std::vector<std::pair<std::string, int>> stat_native_registry = {
             { "TIME_FPS",                             godot::Performance::TIME_FPS                             },
             { "TIME_PROCESS",                         godot::Performance::TIME_PROCESS                         },
             { "TIME_PHYSICS_PROCESS",                 godot::Performance::TIME_PHYSICS_PROCESS                 },
@@ -88,14 +88,14 @@ namespace Vital::Sandbox::API {
             { "NAVIGATION_3D_OBSTACLE_COUNT",         godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT         }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> format_registry = {
+        inline static const std::vector<std::pair<std::string, int>> stat_format_registry = {
             { "QUANTITY",   godot::Performance::MONITOR_TYPE_QUANTITY   },
             { "MEMORY",     godot::Performance::MONITOR_TYPE_MEMORY     },
             { "TIME",       godot::Performance::MONITOR_TYPE_TIME       },
             { "PERCENTAGE", godot::Performance::MONITOR_TYPE_PERCENTAGE }
         };
 
-        inline static const std::unordered_map<int, int> native_format = {
+        inline static const std::unordered_map<int, int> stat_native_format = {
             { godot::Performance::TIME_FPS,                             godot::Performance::MONITOR_TYPE_QUANTITY },
             { godot::Performance::TIME_PROCESS,                         godot::Performance::MONITOR_TYPE_TIME     },
             { godot::Performance::TIME_PHYSICS_PROCESS,                 godot::Performance::MONITOR_TYPE_TIME     },
@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_function)
-                    .require_enum(4, format_registry);
+                    .require_enum(4, stat_format_registry);
 
                 auto key = vm -> get_string(1);
                 if (buffer.find(key) != buffer.end()) vm -> push_value(false);
@@ -224,9 +224,9 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_string(1)) vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
                 else {
                     auto value = vm -> get_int(1);
-                    vm -> push_value(std::find_if(native_registry.begin(), native_registry.end(), [&](const auto& entry) {
+                    vm -> push_value(std::find_if(stat_native_registry.begin(), stat_native_registry.end(), [&](const auto& entry) {
                         return entry.second == value;
-                    }) != native_registry.end());
+                    }) != stat_native_registry.end());
                 }
                 return 1;
             });
@@ -244,7 +244,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 else {
-                    args.validate_enum(1, native_registry);
+                    args.validate_enum(1, stat_native_registry);
                     auto value = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
                     vm -> push_value(godot::Performance::get_singleton() -> get_monitor(value));
                 }
@@ -255,14 +255,14 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 {
                     vm -> create_table();
-                    for (int i = 0; i < static_cast<int>(native_registry.size()); ++i) {
-                        auto format_it = native_format.find(native_registry[i].second);
+                    for (int i = 0; i < static_cast<int>(stat_native_registry.size()); ++i) {
+                        auto format_it = stat_native_format.find(stat_native_registry[i].second);
                         vm -> create_table();
-                        vm -> push_value(static_cast<int>(native_registry[i].second));
+                        vm -> push_value(static_cast<int>(stat_native_registry[i].second));
                         vm -> set_table_field("id", -2);
-                        vm -> push_value(native_registry[i].first);
+                        vm -> push_value(stat_native_registry[i].first);
                         vm -> set_table_field("name", -2);
-                        vm -> push_value(static_cast<int>(format_it != native_format.end() ? format_it -> second : -1));
+                        vm -> push_value(static_cast<int>(format_it != stat_native_format.end() ? format_it -> second : -1));
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(i + 1, -2);
                     }
@@ -288,8 +288,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "stat_native", native_registry);
-            vm -> scope_set_enum(base_scope, "stat_format", format_registry);
+            vm -> scope_set_enum(base_scope, "stat_native", stat_native_registry);
+            vm -> scope_set_enum(base_scope, "stat_format", stat_format_registry);
         }
 
         static void clean(const std::string& env) {
