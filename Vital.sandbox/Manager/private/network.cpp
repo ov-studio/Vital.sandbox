@@ -158,6 +158,30 @@ namespace Vital::Manager {
         return mp.is_valid() ? mp->get_unique_id() : 0;
     }
 
+    static godot::Ref<godot::ENetPacketPeer> _enet_peer_for(const godot::Ref<godot::ENetMultiplayerPeer>& peer, int peer_id) {
+        if (!peer.is_valid()) return {};
+        if (peer->get_connection_status() != godot::MultiplayerPeer::CONNECTION_CONNECTED) return {};
+        return peer->get_peer(peer_id);
+    }
+
+    double Network::get_peer_rtt(int peer_id) const {
+        auto ep = _enet_peer_for(peer, peer_id);
+        if (!ep.is_valid()) return -1.0;
+        return ep->get_statistic(godot::ENetPacketPeer::PEER_ROUND_TRIP_TIME);
+    }
+
+    double Network::get_peer_last_rtt(int peer_id) const {
+        auto ep = _enet_peer_for(peer, peer_id);
+        if (!ep.is_valid()) return -1.0;
+        return ep->get_statistic(godot::ENetPacketPeer::PEER_LAST_ROUND_TRIP_TIME);
+    }
+
+    double Network::get_peer_packet_loss(int peer_id) const {
+        auto ep = _enet_peer_for(peer, peer_id);
+        if (!ep.is_valid()) return -1.0;
+        return ep->get_statistic(godot::ENetPacketPeer::PEER_PACKET_LOSS);
+    }
+
 
     //--------------------//
     //  Packet Received   //

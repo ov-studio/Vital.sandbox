@@ -115,6 +115,12 @@ namespace Vital::Manager {
             bool is_connecting() const;
             int  get_peer_id() const;
 
+            // ENet peer stats (ms / ratio). Returns -1 if peer is unknown or not connected.
+            // Backed by ENetPacketPeer::get_statistic — zero extra traffic.
+            double get_peer_rtt(int peer_id) const;            // mean RTT (PEER_ROUND_TRIP_TIME)
+            double get_peer_last_rtt(int peer_id) const;       // last sample (PEER_LAST_ROUND_TRIP_TIME)
+            double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS)
+
             #if defined(VSDK_Client)
             bool connect_to_server(const std::string& ip, int port, bool enable_reconnect = false);
             bool disconnect_from_server();
