@@ -69,7 +69,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
-            API::Node_3D::bind<Instance>(vm);
+            API::Node_3D::bind<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {

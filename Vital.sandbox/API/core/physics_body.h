@@ -42,9 +42,9 @@ namespace Vital::Sandbox::API {
             { "ANGULAR_Z", godot::PhysicsServer3D::BODY_AXIS_ANGULAR_Z }
         };
 
-        template<typename Instance>
+        template<typename Instance, Type body_type = Type::Static>
         static void bind(Machine* vm) {
-            API::Collision_Object::bind<Instance>(vm);
+            API::Collision_Object::bind<Instance, Collision_Object::Type::Body>(vm);
         }
 
         template<typename Instance, Type body_type = Type::Static>

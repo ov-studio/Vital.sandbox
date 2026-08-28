@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Camera>(vm);
-            API::Node_3D::bind<Instance>(vm);
+            API::Node_3D::bind<Instance, Node_3D::Type::Camera>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);

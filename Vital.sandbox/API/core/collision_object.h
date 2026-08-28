@@ -29,9 +29,9 @@ namespace Vital::Sandbox::API {
             Area
         };
 
-        template<typename Instance>
+        template<typename Instance, Type object_type = Type::Body>
         static void bind(Machine* vm) {
-            API::Node_3D::bind<Instance>(vm);
+            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
         }
 
         template<typename Instance, Type object_type = Type::Body>

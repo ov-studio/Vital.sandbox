@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
             Spatial
         };
 
-        template<typename Instance>
+        template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
         template<typename Instance, Type node_type = Type::Spatial>
