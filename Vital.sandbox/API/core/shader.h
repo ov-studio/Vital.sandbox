@@ -31,7 +31,9 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "shader"};
         using base_class = Vital::Engine::Shader;
 
-        inline static const std::vector<std::pair<std::string, int>> shader_type_registry = {
+        // TODO: THJIS SHOULD BE PART OF SHADER 
+        inline static const std::vector<std::pair<std::string, int>> shader_mode_registry = {
+            // TODO: No need of static_cast it will work already?? just like base_class::Type::CanvasItem??
             { "CANVAS_ITEM", static_cast<int>(base_class::Type::CanvasItem) },
             { "SPATIAL",     static_cast<int>(base_class::Type::Spatial)    }
         };
@@ -60,49 +62,28 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Shader>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(code, type = \"CANVAS_ITEM\")")
+                vm_args(vm, id, "(path, mode)")
                     .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_string);
+                    .require_enum(2, shader_mode_registry);
 
-                auto code = vm -> get_string(1);
-                auto type = base_class::Type::CanvasItem;
-                if (vm -> is_string(2)) {
-                    auto type_str = vm -> get_string(2);
-                    for (auto& [k, v] : shader_type_registry) {
-                        if (k == type_str) { type = static_cast<base_class::Type>(v); break; }
-                    }
-                }
+                auto path = vm -> get_string(1);
+                auto base = API::File::assert_file(vm, path);
+                auto mode = static_cast<base_class::Type>(vm -> get_int(2));
                 auto instance = Instance::init(vm);
-                instance -> shader = base_class::create(code, type);
+                instance -> shader = base_class::create(base, path, mode);
                 instance -> store(true);
                 return 1;
             });
 
-            // TODO: MAKE CREATE
-            API::bind(vm, base_scope, "create_from_file", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path, type = \"CANVAS_ITEM\")")
+            API::bind(vm, base_scope, "create_from_raw", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(raw, mode)")
                     .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_string);
+                    .require_enum(2, shader_mode_registry);
 
-
-                    // TODO: Use file api h instead since it chroots resource correctly???
-                auto path = vm -> get_string(1);
-                API::File::assert_file(vm, path);
-                godot::Ref<godot::FileAccess> fa = godot::FileAccess::open(
-                    godot::String(path.c_str()), godot::FileAccess::READ);
-                if (!fa.is_valid())
-                    luaL_error(vm -> get_state(), "shader: cannot open file: %s", path.c_str());
-                std::string code = std::string(fa -> get_as_text().utf8().get_data());
-
-                auto type = base_class::Type::CanvasItem;
-                if (vm -> is_string(2)) {
-                    auto type_str = vm -> get_string(2);
-                    for (auto& [k, v] : shader_type_registry) {
-                        if (k == type_str) { type = static_cast<base_class::Type>(v); break; }
-                    }
-                }
+                auto raw = vm -> get_string(1);
+                auto mode = static_cast<base_class::Type>(vm -> get_int(2));
                 auto instance = Instance::init(vm);
-                instance -> shader = base_class::create(code, type);
+                instance -> shader = base_class::create_from_raw(raw, mode);
                 instance -> store(true);
                 return 1;
             });
@@ -114,12 +95,9 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // TODO: SHOULD PUSH ENUM INSNT IT?
             vm_module::bind_method<Instance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
-                auto type = static_cast<int>(self -> shader -> get_type());
-                for (auto& [k, v] : shader_type_registry) {
-                    if (v == type) { vm -> push_value(k); return 1; }
-                }
-                vm -> push_value(std::string("CANVAS_ITEM"));
+                vm -> push_value(static_cast<int>(self -> shader -> get_type()));
                 return 1;
             });
 
@@ -157,6 +135,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_param_color", [](auto vm, auto self, auto& id) -> int {
+                // TODO: instead of r g b a separate can use is_color and get_color?? hmm
                 vm_args(vm, id, "(name, r, g, b, a = 1.0)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_number)
@@ -209,7 +188,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "shader_type", shader_type_registry);
+            vm -> scope_set_enum(base_scope, "shader_mode", shader_mode_registry);
         }
 
         static void clean(const std::string& env) {
