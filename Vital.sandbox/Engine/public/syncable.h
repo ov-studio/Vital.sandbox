@@ -26,9 +26,33 @@ namespace Vital::Engine {
     class ISyncable {
         friend class Manager::Network;
         friend class Network;
+        public:
+            // Delta compression constants //
+            static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
+            static constexpr float DELTA_POS_THRESHOLD = 0.001f; // metres
+            static constexpr float DELTA_ROT_THRESHOLD = 0.05f;  // degrees
+            static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
+
+            // Snapshot buffer constants //
+            static constexpr int   SNAPSHOT_COUNT   = 8;
+            static constexpr float BUFFER_DELAY     = 0.1f;   // 100ms render lag
+            static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
+            static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
+            static constexpr float BUFFER_DELAY_MIN = 0.05f;  // 50ms floor
+            static constexpr float BUFFER_DELAY_MAX = 0.25f;  // 250ms ceiling
+            static constexpr float JITTER_MARGIN    = 2.0f;   // stddev multiplier
+            static constexpr int   JITTER_WINDOW    = 8;      // samples
+
+            // Type //
+            // Identifies the concrete type for spawn/destroy RPCs so the
+            // network layer can instantiate the right class on receivers.
+            enum class SyncType : uint8_t {
+                Model       = 0,
+                PhysicsBody = 1
+            };
         private:
-            inline static uint32_t next_net_id = 1;
             friend class Model;
+            inline static uint32_t next_net_id = 1;
             static constexpr uint16_t MASK_PX = 1 << 0;
             static constexpr uint16_t MASK_PY = 1 << 1;
             static constexpr uint16_t MASK_PZ = 1 << 2;
@@ -86,30 +110,6 @@ namespace Vital::Engine {
             ISyncable() = default;
             virtual ~ISyncable() = default;
         public:
-            // Delta compression constants //
-            static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
-            static constexpr float DELTA_POS_THRESHOLD = 0.001f; // metres
-            static constexpr float DELTA_ROT_THRESHOLD = 0.05f;  // degrees
-            static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
-
-            // Snapshot buffer constants //
-            static constexpr int   SNAPSHOT_COUNT   = 8;
-            static constexpr float BUFFER_DELAY     = 0.1f;   // 100ms render lag
-            static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
-            static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float BUFFER_DELAY_MIN = 0.05f;  // 50ms floor
-            static constexpr float BUFFER_DELAY_MAX = 0.25f;  // 250ms ceiling
-            static constexpr float JITTER_MARGIN    = 2.0f;   // stddev multiplier
-            static constexpr int   JITTER_WINDOW    = 8;      // samples
-
-            // Type //
-            // Identifies the concrete type for spawn/destroy RPCs so the
-            // network layer can instantiate the right class on receivers.
-            enum class SyncType : uint8_t {
-                Model       = 0,
-                PhysicsBody = 1
-            };
-
             // ── Public packet helpers ───────────────────────────────────────
             static uint32_t read_u32_public(const godot::PackedByteArray& buf, int offset) {
                 return (uint8_t)buf[offset]
