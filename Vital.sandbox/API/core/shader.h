@@ -22,11 +22,9 @@
 #include <Vital.sandbox/API/utility/file.h>
 
 
-//////////////////////////
-// Vital: API: Shader  //
-//////////////////////////
-
-// TODO: Improve
+/////////////////////////
+// Vital: API: Shader //
+/////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Shader : vm_module {
@@ -80,12 +78,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // core.shader.create_from_file(path, type = "CANVAS_ITEM") -> shader
+            // TODO: MAKE CREATE
             API::bind(vm, base_scope, "create_from_file", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, type = \"CANVAS_ITEM\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
 
+
+                    // TODO: Use file api h instead since it chroots resource correctly???
                 auto path = vm -> get_string(1);
                 API::File::assert_file(vm, path);
                 godot::Ref<godot::FileAccess> fa = godot::FileAccess::open(

@@ -80,6 +80,7 @@ namespace Vital::Engine {
 
 namespace Vital::Engine {
     // Managers //
+    // TODO: M,AKE CREATE ACCEPT FILE PATH AND CREATE FROM RAW LIKE TEXTURES SVG ETC AND REUSE
     Shader* Shader::create(const std::string& code, Type type) {
         auto* instance = new Shader();
         instance -> shader_type = type;
