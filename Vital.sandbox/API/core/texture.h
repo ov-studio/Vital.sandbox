@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<BoundInstance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
+                vm_args(vm, id, "(filter)", true)
                     .require_enum(2, texture_filter_registry);
 
                 auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
