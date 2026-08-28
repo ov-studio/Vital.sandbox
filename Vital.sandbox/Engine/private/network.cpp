@@ -46,23 +46,23 @@ namespace Vital::Engine {
     }
 
     void Network::_sync_entities(godot::PackedByteArray data) {
-        Manager::Network::get_singleton()->dispatch_sync_batch(data, false);
+        Manager::Network::get_singleton() -> dispatch_sync_batch(data, false);
     }
 
     void Network::_sync_state(godot::PackedByteArray data) {
-        Manager::Network::get_singleton()->dispatch_sync_batch(data, true);
+        Manager::Network::get_singleton() -> dispatch_sync_batch(data, true);
     }
 
     void Network::_sync_client(godot::PackedByteArray data) {
         #if !defined(VSDK_Client)
-        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
-        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
-        Manager::Network::get_singleton()->dispatch_client_sync(data, sender);
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        int sender = tree ? tree -> get_multiplayer() -> get_remote_sender_id() : 0;
+        Manager::Network::get_singleton() -> dispatch_client_sync(data, sender);
         #endif
     }
 
     void Network::_receive(godot::Dictionary data) {
-        Manager::Network::get_singleton()->_on_packet_received(data);
+        Manager::Network::get_singleton() -> _on_packet_received(data);
     }
 
     void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority) {
@@ -73,23 +73,23 @@ namespace Vital::Engine {
                 std::string model_name = Tool::to_std_string(name);
                 auto it = Engine::Model::cache_loaded.find(model_name);
                 Engine::Model* object = memnew(Engine::Model);
-                object->net_id = (uint32_t)net_id;
-                object->pending_authority = authority;
-                object->remote = true;
+                object -> net_id = (uint32_t)net_id;
+                object -> pending_authority = authority;
+                object -> remote = true;
 
                 if (it != Engine::Model::cache_loaded.end()) {
-                    godot::Node* instance = it->second->instantiate();
-                    if (instance) object->add_child(instance);
-                    object->set_model_name(model_name);
+                    godot::Node* instance = it -> second -> instantiate();
+                    if (instance) object -> add_child(instance);
+                    object -> set_model_name(model_name);
                 } 
                 else {
-                    object->set_model_name(model_name);
-                    object->placeholder = true;
-                    object->set_visible(false);
-                    Manager::Asset::get_singleton()->queue_spawn(model_name, object);
+                    object -> set_model_name(model_name);
+                    object -> placeholder = true;
+                    object -> set_visible(false);
+                    Manager::Asset::get_singleton() -> queue_spawn(model_name, object);
                 }
-                Engine::Core::get_singleton()->add_child(object);
-                Manager::Network::get_singleton()->enqueue_syncable_registration(object);
+                Engine::Core::get_singleton() -> add_child(object);
+                Manager::Network::get_singleton() -> enqueue_syncable_registration(object);
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
@@ -106,18 +106,18 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         auto core = Engine::Core::get_singleton();
         if (!core) return;
-        Engine::ISyncable* entity = Manager::Network::get_singleton()->find_syncable((uint32_t)net_id);
+        Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
         if (!entity) return;
-        entity->set_sync_authority(peer_id);
+        entity -> set_sync_authority(peer_id);
         godot::UtilityFunctions::print("_set_authority: net_id=", net_id, " -> peer_id=", peer_id);
         #endif
     }
 
     void Network::_destroy_entity(int net_id) {
         #if defined(VSDK_Client)
-        Engine::ISyncable* entity = Manager::Network::get_singleton()->find_syncable((uint32_t)net_id);
+        Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
         if (!entity) return;
-        entity->destroy_sync();
+        entity -> destroy_sync();
         godot::UtilityFunctions::print("_destroy_entity: net_id=", net_id);
         #endif
     }
