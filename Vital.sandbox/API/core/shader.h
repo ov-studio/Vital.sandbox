@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", base_class::mode_registry);
+            vm -> scope_set_enum(base_scope, "shader_mode", base_class::mode_registry);
         }
 
         static void clean(const std::string& env) {
