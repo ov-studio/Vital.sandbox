@@ -90,6 +90,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            // TODO: DEADCHECK I THINK? BECAUSE SHADER CREATION WILL RETURN FALSE ANYWAY IF WRONG CODE SO NO POINT OF CHECKING IT LATER SINCE INSTANCE IS VALID ANYMORE TO EXECUTE METHOD ON IT
             vm_module::bind_method<Instance>(vm, "is_valid", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> shader -> is_valid());
                 return 1;
@@ -180,7 +181,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "shader_mode", shader_mode_registry);
+            vm -> scope_set_enum(base_scope, "mode", shader_mode_registry);
         }
 
         static void clean(const std::string& env) {
