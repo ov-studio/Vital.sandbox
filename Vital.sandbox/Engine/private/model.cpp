@@ -428,8 +428,9 @@ namespace Vital::Engine {
 
                 auto net_node = Manager::Network::get_singleton()->get_node();
                 if (net_node) {
-                    net_node->rpc("_spawn_model",
+                    net_node->rpc("_spawn_entity",
                         (int)captured_net_id,
+                        (int)Engine::ISyncable::SyncType::Model,
                         captured_name,
                         captured_authority);
                 }
@@ -446,7 +447,7 @@ namespace Vital::Engine {
         // Notify all clients to remove their copy before we free server-side.
         if (net_id != 0) {
             auto net_node = Manager::Network::get_singleton()->get_node();
-            if (net_node) net_node->rpc("_destroy_model", (int)net_id);
+            if (net_node) net_node->rpc("_destroy_entity", (int)net_id);
         }
         #endif
         this->queue_free();

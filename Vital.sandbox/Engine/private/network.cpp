@@ -46,7 +46,7 @@ namespace Vital::Engine {
         unreliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
         unreliable["call_local"]    = false;
         unreliable["channel"]       = 0;
-        rpc_config("_sync_models",  unreliable);  // server -> all clients
+        rpc_config("_sync_entities",  unreliable);  // server -> all clients
         rpc_config("_sync_client",  unreliable);  // authority client -> server
     }
 

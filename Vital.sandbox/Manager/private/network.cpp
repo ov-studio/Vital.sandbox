@@ -770,7 +770,7 @@ namespace Vital::Manager {
                 sync_batch_buf.resize(cursor);
                 wu32(0, STATE_DUMP_MAGIC);
                 wu32(4, (uint32_t)(cursor - 8));
-                node->rpc("_sync_models", sync_batch_buf);
+                node->rpc("_sync_entities", sync_batch_buf);
             }
         }
         #else
