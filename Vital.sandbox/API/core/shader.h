@@ -33,9 +33,9 @@ namespace Vital::Sandbox::API {
 
         // TODO: THJIS SHOULD BE PART OF SHADER 
         inline static const std::vector<std::pair<std::string, int>> shader_mode_registry = {
-            // TODO: No need of static_cast it will work already?? just like base_class::Type::CanvasItem??
-            { "CANVAS_ITEM", static_cast<int>(base_class::Type::CanvasItem) },
-            { "SPATIAL",     static_cast<int>(base_class::Type::Spatial)    }
+            // TODO: No need of static_cast it will work already?? just like base_class::Mode::CanvasItem??
+            { "CANVAS_ITEM", static_cast<int>(base_class::Mode::CanvasItem) },
+            { "SPATIAL",     static_cast<int>(base_class::Mode::Spatial)    }
         };
 
         struct Instance : vm_instance<Instance> {
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
-                auto mode = static_cast<base_class::Type>(vm -> get_int(2));
+                auto mode = static_cast<base_class::Mode>(vm -> get_int(2));
                 auto instance = Instance::init(vm);
                 instance -> shader = base_class::create(base, path, mode);
                 instance -> store(true);
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
                     .require_enum(2, shader_mode_registry);
 
                 auto raw = vm -> get_string(1);
-                auto mode = static_cast<base_class::Type>(vm -> get_int(2));
+                auto mode = static_cast<base_class::Mode>(vm -> get_int(2));
                 auto instance = Instance::init(vm);
                 instance -> shader = base_class::create_from_raw(raw, mode);
                 instance -> store(true);
@@ -103,14 +103,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_code", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> shader -> get_code());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_code", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(code)", true)
-                    .require(2, &Machine::is_string);
-                    
-                vm -> push_value(self -> shader -> set_code(vm -> get_string(2)));
                 return 1;
             });
 

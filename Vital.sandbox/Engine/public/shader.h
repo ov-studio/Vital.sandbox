@@ -24,14 +24,14 @@
 namespace Vital::Engine {
     class Shader {
         public:
-            enum class Type {
+            enum class Mode {
                 Spatial,
                 CanvasItem
             };
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
-            Type shader_type = Type::CanvasItem;
+            Mode shader_type = Mode::CanvasItem;
 
             struct Internal {
                 static constexpr const char* SENTINEL = "vsdk_sentinel";
@@ -45,7 +45,7 @@ namespace Vital::Engine {
                 // Helpers //
                 static std::string inject_sentinel(const std::string& src, bool is_spatial);
                 static bool validate_compiled(godot::Ref<godot::Shader>& shader);
-                static std::string build_source(const std::string& code, Type type);
+                static std::string build_source(const std::string& raw, Mode mode);
             };
 
 
@@ -54,8 +54,8 @@ namespace Vital::Engine {
             ~Shader() = default;
         public:
             // Managers //
-            static Shader* create(const std::string& base, const std::string& path, Type type = Type::CanvasItem);
-            static Shader* create_from_raw(const std::string& code, Type type = Type::CanvasItem);
+            static Shader* create(const std::string& base, const std::string& path, Mode mode = Mode::CanvasItem);
+            static Shader* create_from_raw(const std::string& raw, Mode mode = Mode::CanvasItem);
             void destroy();
 
 
@@ -64,13 +64,12 @@ namespace Vital::Engine {
 
 
             // Getters //
-            Type get_type() const;
+            Mode get_type() const;
             std::string get_code() const;
             godot::Ref<godot::ShaderMaterial> get_material() const;
 
 
             // Setters //
-            bool set_code(const std::string& code);
             bool set_param(const std::string& name, const godot::Variant& value);
             bool set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture);
             bool set_param_viewport_texture(const std::string& name, godot::Ref<godot::ViewportTexture> texture);

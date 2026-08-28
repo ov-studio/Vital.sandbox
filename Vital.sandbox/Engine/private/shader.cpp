@@ -68,28 +68,30 @@ namespace Vital::Engine {
         return true;
     }
 
-    std::string Shader::Internal::build_source(const std::string& code, Shader::Type type) {
-        std::string src = code;
+    std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
+        std::string src = raw;
         if (src.find("shader_type") == std::string::npos) {
-            std::string type_name = (type == Shader::Type::Spatial) ? "spatial" : "canvas_item";
+            std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
             src = "shader_type " + type_name + ";\n" + src;
         }
-        return inject_sentinel(src, type == Shader::Type::Spatial);
+        return inject_sentinel(src, mode == Shader::Mode::Spatial);
     }
 }
 
 namespace Vital::Engine {
     // Managers //
-    Shader* Shader::create(const std::string& base, const std::string& path, Type type) {
-        return create_from_raw(Tool::File::read_text(base, path), type);
+    Shader* Shader::create(const std::string& base, const std::string& path, Mode mode) {
+        return create_from_raw(Tool::File::read_text(base, path), mode);
     }
 
-    Shader* Shader::create_from_raw(const std::string& code, Type type) {
+    Shader* Shader::create_from_raw(const std::string& raw, Mode mode) {
         auto* instance = new Shader();
-        instance -> shader_type = type;
+        instance -> shader_type = mode;
         instance -> shader.instantiate();
         instance -> material.instantiate();
-        if (!instance -> set_code(code)) {
+        auto src = Internal::build_source(raw, instance -> shader_type);
+        instance -> shader -> set_code(godot::String(src.c_str())); // USE TOOL to_godot_string etc
+        if (!Internal::validate_compiled(shader)) {
             delete instance;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
@@ -111,7 +113,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Shader::Type Shader::get_type() const { 
+    Shader::Mode Shader::get_type() const { 
         return shader_type;
     }
 
@@ -126,13 +128,6 @@ namespace Vital::Engine {
 
 
     // Setters //
-    bool Shader::set_code(const std::string& code) {
-        if (!shader.is_valid()) return false;
-        auto src = Internal::build_source(code, shader_type);
-        shader -> set_code(godot::String(src.c_str()));
-        return Internal::validate_compiled(shader);
-    }
-
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
         if (!material.is_valid()) return false;
         if (name == Internal::SENTINEL) return false;
