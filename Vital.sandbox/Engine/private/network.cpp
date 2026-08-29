@@ -105,27 +105,34 @@ namespace Vital::Engine {
             case ST::PhysicsBody: {
                 std::string sub = Tool::to_std_string(name);
                 Engine::ISyncable* entity = nullptr;
+                Engine::PhysicsSubType sub_type = Engine::PhysicsSubType::Rigid;  // TODO: empty no init maybe?
+
                 if (sub == "rigid") {
+                    sub_type = Engine::PhysicsSubType::Rigid;
                     auto body = memnew(Engine::Rigid_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "static") {
+                    sub_type = Engine::PhysicsSubType::Static;
                     auto body = memnew(Engine::Static_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "character") {
+                    sub_type = Engine::PhysicsSubType::Character;
                     auto body = memnew(Engine::Character_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "animatable") {
+                    sub_type = Engine::PhysicsSubType::Animatable;
                     auto body = memnew(Engine::Animatable_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "vehicle") {
+                    sub_type = Engine::PhysicsSubType::Vehicle;
                     auto body = memnew(Engine::Vehicle_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
@@ -141,6 +148,12 @@ namespace Vital::Engine {
                     entity -> reset_sync_state();
                     Manager::Network::get_singleton() -> enqueue_syncable_registration(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
+
+                    // TODO: SHARE IN BETTER WAY?
+                    // Notify Lua so it can hydrate collision shapes / wheels on
+                    // this remote body — mirrors Model::on_spawned_callback.
+                    if (Engine::on_physics_body_spawned_callback)
+                        Engine::on_physics_body_spawned_callback(entity, sub_type, true);
                 }
                 break;
             }
