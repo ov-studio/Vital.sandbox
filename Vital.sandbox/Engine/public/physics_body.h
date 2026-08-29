@@ -90,6 +90,31 @@ namespace Vital::Engine {
 
         void destroy_sync() override { GodotBase::queue_free(); }
 
+        // Authority-driven freeze —
+        // Runs whenever authority is (re)established: initial spawn (_ready_sync)
+        // and any later reassignment (set_sync_authority, called from the
+        // server's _set_authority RPC). Only meaningful for GodotBase types
+        // that self-simulate via the physics engine (RigidBody3D and its
+        // subclass VehicleBody3D) — CharacterBody3D/AnimatableBody3D/StaticBody3D
+        // never self-simulate forces, so this is a no-op for them at compile time.
+        //
+        // The authority peer keeps running its own real physics/collision
+        // (unfrozen). Every other peer freezes local simulation entirely —
+        // KINEMATIC (not STATIC) so the body still acts as a solid obstacle
+        // for other locally-simulated bodies, it just no longer computes its
+        // own forces/gravity or emits its own (soon to be stale/overwritten)
+        // contact signals. Position/rotation are then driven purely by
+        // apply_sync/on_sync_process interpolation, same as before.
+        void reset_sync_state() override {
+            ISyncable::reset_sync_state();
+            if constexpr (std::is_base_of_v<godot::RigidBody3D, GodotBase>) {
+                auto net = Manager::Network::get_singleton();
+                bool is_authority = net && net->get_peer_id() == sync_authority;
+                GodotBase::set_freeze_mode(godot::RigidBody3D::FREEZE_MODE_KINEMATIC);
+                GodotBase::set_freeze_enabled(net_id == 0 ? false : !is_authority);
+            }
+        }
+
         uint32_t get_net_id() const override { return net_id; }
         int get_sync_authority() const override { return sync_authority; }
 
