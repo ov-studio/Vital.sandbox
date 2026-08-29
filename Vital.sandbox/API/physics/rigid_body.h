@@ -92,6 +92,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Physics_Body::methods<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::server_methods<Instance>(vm); // TODO: Improve
 
             vm_module::bind_method<Instance>(vm, "get_mass", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> get_mass());

@@ -77,6 +77,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Physics_Body::methods<Instance, Physics_Body::Type::Animatable>(vm);
+            API::Physics_Body::server_methods<Instance>(vm); // TODO: Improve
         }
 
         static void inject(Machine* vm) {
