@@ -20,17 +20,34 @@
 // Vital: Engine: Animatable_Body //
 /////////////////////////////////////
 
+// TODO: Improve
+
+namespace Vital::Manager { class Network; }
+
 namespace Vital::Engine {
-    class Animatable_Body : public godot::AnimatableBody3D {
+    class Animatable_Body : public PhysicsBodyBase<godot::AnimatableBody3D> {
         GDCLASS(Animatable_Body, godot::AnimatableBody3D)
+        friend class Manager::Network;
         private:
-            // Instantiators //
+            int pending_authority = 1;
+            static void _bind_methods() {}
             Animatable_Body() = default;
             ~Animatable_Body() override = default;
-            static void _bind_methods() {}
         public:
+            PhysicsSubType get_physics_sub_type() const override { return PhysicsSubType::Animatable; }
+
+            void _ready() override { _ready_sync(pending_authority); }
+            void _notification(int what) {
+                if (what == NOTIFICATION_PREDELETE) _notify_predelete_sync();
+            }
+            void _process(double delta) override { on_sync_process(delta); }
+
             // Managers //
-            static Animatable_Body* create();
+            static Animatable_Body* create(int authority_peer = 0);
             void destroy();
+
+            #if !defined(VSDK_Client)
+            using PhysicsBodyBase<godot::AnimatableBody3D>::set_syncer;
+            #endif
     };
 }
