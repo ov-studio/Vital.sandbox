@@ -31,12 +31,14 @@
 #include <Vital.sandbox/API/physics/character_body.h>
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/vehicle_body.h>
+#include <Vital.sandbox/API/physics/collision_shape.h>
 
 
 /////////////////////////////////////////
 // Vital: API: Physics Body Spawn Hook //
 /////////////////////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Physics_Body_Spawn : vm_module {
         // No Lua-visible scope — this is purely an internal wiring module.
@@ -238,6 +240,28 @@ namespace Vital::Sandbox::API {
                         }
                         break;
                     }
+                }
+            };
+
+            // Wire the Collision_Shape destroy callback.
+            // Fired on PREDELETE of any Engine::Collision_Shape node — covers both
+            // explicit shape:destroy() and the implicit child-free when the parent
+            // body is queue_free()'d by Godot. Nulls instance->body so no Lua call
+            // can touch the freed node, then releases the Instance.
+            Vital::Engine::Collision_Shape::on_destroyed_callback = [](
+                Vital::Engine::Collision_Shape* node)
+            {
+                std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
+                for (auto it = Collision_Shape::registry.buffer.begin();
+                          it != Collision_Shape::registry.buffer.end();) {
+                    auto& instance = it->second;
+                    if (instance->body != node) { ++it; continue; }
+                    ++it;
+                    Collision_Shape::Instance::erase_unlocked(instance);
+                    Vital::Engine::Core::get_singleton()->execute([instance]() {
+                        instance->body = nullptr;
+                        Collision_Shape::Instance::release(instance);
+                    });
                 }
             };
         }
