@@ -15,6 +15,11 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/network.h>
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/Engine/public/rigid_body.h>
+#include <Vital.sandbox/Engine/public/static_body.h>
+#include <Vital.sandbox/Engine/public/character_body.h>
+#include <Vital.sandbox/Engine/public/animatable_body.h>
+#include <Vital.sandbox/Engine/public/vehicle_body.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 
@@ -95,6 +100,47 @@ namespace Vital::Engine {
                 Manager::Network::get_singleton() -> enqueue_syncable_registration(object);
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
+                break;
+            }
+            case ST::PhysicsBody: {
+                std::string sub = Tool::to_std_string(name);
+                Engine::ISyncable* entity = nullptr;
+                if (sub == "rigid") {
+                    auto body = memnew(Engine::Rigid_Body);
+                    Engine::Core::get_singleton() -> add_child(body);
+                    entity = body;
+                } 
+                else if (sub == "static") {
+                    auto body = memnew(Engine::Static_Body);
+                    Engine::Core::get_singleton() -> add_child(body);
+                    entity = body;
+                } 
+                else if (sub == "character") {
+                    auto body = memnew(Engine::Character_Body);
+                    Engine::Core::get_singleton() -> add_child(body);
+                    entity = body;
+                } 
+                else if (sub == "animatable") {
+                    auto body = memnew(Engine::Animatable_Body);
+                    Engine::Core::get_singleton() -> add_child(body);
+                    entity = body;
+                } 
+                else if (sub == "vehicle") {
+                    auto body = memnew(Engine::Vehicle_Body);
+                    Engine::Core::get_singleton() -> add_child(body);
+                    entity = body;
+                } 
+                else {
+                    godot::UtilityFunctions::push_warning("_spawn_entity [PhysicsBody]: unknown sub-type=", name);
+                    break;
+                }
+
+                if (entity) {
+                    entity -> net_id = (uint32_t)net_id;
+                    entity -> sync_authority = authority;
+                    Manager::Network::get_singleton() -> enqueue_syncable_registration(entity);
+                    godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
+                }
                 break;
             }
             default: {
