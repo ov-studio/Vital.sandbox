@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/core/collision_object.h>
 #include <godot_cpp/classes/physics_server3d.hpp>
@@ -205,4 +204,3 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-#endif
