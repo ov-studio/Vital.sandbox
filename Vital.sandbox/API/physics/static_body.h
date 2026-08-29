@@ -64,8 +64,9 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Static_Body>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
+                #if !defined(VSDK_Client)
                 auto instance = Instance::init(vm);
-                instance -> body = base_class::create();
+                instance -> body = base_class::create(authority_peer);
                 instance -> store(true);
                 return 1;
             });
