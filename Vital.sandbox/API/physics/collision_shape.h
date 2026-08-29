@@ -33,6 +33,7 @@
 // Vital: API: Collision_Shape //
 //////////////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Collision_Shape : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "collision_shape"};
@@ -223,13 +224,16 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(1);
                 default_debug_enabled = state;
-
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto& [key, instance] : registry.buffer) {
                     if (Instance::find_unlocked(instance)) instance -> set_debug_visible(state);
                 }
-
                 vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
+                vm -> push_value(default_debug_enabled);
                 return 1;
             });
         }
