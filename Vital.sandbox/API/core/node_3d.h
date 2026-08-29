@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
@@ -279,4 +278,3 @@ namespace Vital::Sandbox::API {
         static void inject(Machine* vm) {}
     };
 }
-#endif
