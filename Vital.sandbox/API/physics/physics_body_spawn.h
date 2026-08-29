@@ -48,14 +48,14 @@ namespace Vital::Sandbox::API {
             // On the client, _spawn_entity fires this for every remotely spawned
             // body so Lua can attach collision shapes / wheels in its own handler.
 
-            Engine::on_physics_body_spawned_callback = [vm](
-                Engine::ISyncable* entity,
-                Engine::PhysicsSubType sub_type,
+            Vital::Engine::on_physics_body_spawned_callback = [vm](
+                Vital::Engine::ISyncable* entity,
+                Vital::Engine::PhysicsSubType sub_type,
                 bool remote)
             {
                 switch (sub_type) {
-                    case Engine::PhysicsSubType::Rigid: {
-                        auto* typed = static_cast<Engine::Rigid_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Rigid: {
+                        auto* typed = static_cast<Vital::Engine::Rigid_Body*>(entity);
                         {
                             std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
                             for (auto& [id, inst] : Rigid_Body::registry.buffer)
@@ -66,8 +66,8 @@ namespace Vital::Sandbox::API {
                         instance->store(true);
                         break;
                     }
-                    case Engine::PhysicsSubType::Static: {
-                        auto* typed = static_cast<Engine::Static_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Static: {
+                        auto* typed = static_cast<Vital::Engine::Static_Body*>(entity);
                         {
                             std::lock_guard<std::mutex> lock(Static_Body::registry.mutex);
                             for (auto& [id, inst] : Static_Body::registry.buffer)
@@ -78,8 +78,8 @@ namespace Vital::Sandbox::API {
                         instance->store(true);
                         break;
                     }
-                    case Engine::PhysicsSubType::Character: {
-                        auto* typed = static_cast<Engine::Character_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Character: {
+                        auto* typed = static_cast<Vital::Engine::Character_Body*>(entity);
                         {
                             std::lock_guard<std::mutex> lock(Character_Body::registry.mutex);
                             for (auto& [id, inst] : Character_Body::registry.buffer)
@@ -90,8 +90,8 @@ namespace Vital::Sandbox::API {
                         instance->store(true);
                         break;
                     }
-                    case Engine::PhysicsSubType::Animatable: {
-                        auto* typed = static_cast<Engine::Animatable_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Animatable: {
+                        auto* typed = static_cast<Vital::Engine::Animatable_Body*>(entity);
                         {
                             std::lock_guard<std::mutex> lock(Animatable_Body::registry.mutex);
                             for (auto& [id, inst] : Animatable_Body::registry.buffer)
@@ -102,8 +102,8 @@ namespace Vital::Sandbox::API {
                         instance->store(true);
                         break;
                     }
-                    case Engine::PhysicsSubType::Vehicle: {
-                        auto* typed = static_cast<Engine::Vehicle_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Vehicle: {
+                        auto* typed = static_cast<Vital::Engine::Vehicle_Body*>(entity);
                         {
                             std::lock_guard<std::mutex> lock(Vehicle_Body::registry.mutex);
                             for (auto& [id, inst] : Vehicle_Body::registry.buffer)
@@ -128,13 +128,13 @@ namespace Vital::Sandbox::API {
             // we're already inside the object's own destruction (PREDELETE), so that
             // would either be a no-op re-entrant call or a double-free depending on the
             // Godot build. Only registry bookkeeping happens here.
-            Engine::on_physics_body_destroyed_callback = [](
-                Engine::ISyncable* entity,
-                Engine::PhysicsSubType sub_type)
+            Vital::Engine::on_physics_body_destroyed_callback = [](
+                Vital::Engine::ISyncable* entity,
+                Vital::Engine::PhysicsSubType sub_type)
             {
                 switch (sub_type) {
-                    case Engine::PhysicsSubType::Rigid: {
-                        auto* typed = static_cast<Engine::Rigid_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Rigid: {
+                        auto* typed = static_cast<Vital::Engine::Rigid_Body*>(entity);
                         std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
                         for (auto it = Rigid_Body::registry.buffer.begin(); it != Rigid_Body::registry.buffer.end();) {
                             auto& instance = it->second;
@@ -146,8 +146,8 @@ namespace Vital::Sandbox::API {
                         }
                         break;
                     }
-                    case Engine::PhysicsSubType::Static: {
-                        auto* typed = static_cast<Engine::Static_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Static: {
+                        auto* typed = static_cast<Vital::Engine::Static_Body*>(entity);
                         std::lock_guard<std::mutex> lock(Static_Body::registry.mutex);
                         for (auto it = Static_Body::registry.buffer.begin(); it != Static_Body::registry.buffer.end();) {
                             auto& instance = it->second;
@@ -159,8 +159,8 @@ namespace Vital::Sandbox::API {
                         }
                         break;
                     }
-                    case Engine::PhysicsSubType::Character: {
-                        auto* typed = static_cast<Engine::Character_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Character: {
+                        auto* typed = static_cast<Vital::Engine::Character_Body*>(entity);
                         std::lock_guard<std::mutex> lock(Character_Body::registry.mutex);
                         for (auto it = Character_Body::registry.buffer.begin(); it != Character_Body::registry.buffer.end();) {
                             auto& instance = it->second;
@@ -172,8 +172,8 @@ namespace Vital::Sandbox::API {
                         }
                         break;
                     }
-                    case Engine::PhysicsSubType::Animatable: {
-                        auto* typed = static_cast<Engine::Animatable_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Animatable: {
+                        auto* typed = static_cast<Vital::Engine::Animatable_Body*>(entity);
                         std::lock_guard<std::mutex> lock(Animatable_Body::registry.mutex);
                         for (auto it = Animatable_Body::registry.buffer.begin(); it != Animatable_Body::registry.buffer.end();) {
                             auto& instance = it->second;
@@ -185,8 +185,8 @@ namespace Vital::Sandbox::API {
                         }
                         break;
                     }
-                    case Engine::PhysicsSubType::Vehicle: {
-                        auto* typed = static_cast<Engine::Vehicle_Body*>(entity);
+                    case Vital::Engine::PhysicsSubType::Vehicle: {
+                        auto* typed = static_cast<Vital::Engine::Vehicle_Body*>(entity);
                         std::lock_guard<std::mutex> lock(Vehicle_Body::registry.mutex);
                         for (auto it = Vehicle_Body::registry.buffer.begin(); it != Vehicle_Body::registry.buffer.end();) {
                             auto& instance = it->second;
