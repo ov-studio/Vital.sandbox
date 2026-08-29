@@ -20,6 +20,7 @@
 #include <Vital.sandbox/Engine/public/character_body.h>
 #include <Vital.sandbox/Engine/public/animatable_body.h>
 #include <Vital.sandbox/Engine/public/vehicle_body.h>
+#include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 
@@ -41,6 +42,7 @@ namespace Vital::Engine {
         rpc_config("_destroy_entity", reliable);
         rpc_config("_sync_state", reliable);
         rpc_config("_set_authority", reliable);
+        rpc_config("_sync_shape", reliable);
 
         godot::Dictionary unreliable;
         unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
@@ -185,6 +187,12 @@ namespace Vital::Engine {
         #endif
     }
 
+
+    // TODO: Improve?
+    // _sync_shape: called on clients when server assigns/changes a collision shape on a synced body.
+    // Finds or creates our Engine::Collision_Shape child on the matching body node and applies the shape.
+    // Vehicle wheels are children of their vehicle body and driven by Godot's physics — no sync needed.
+    void Network::_sync_shape(int net_id, godot::String shape_type, godot::Array params) {
         #if defined(VSDK_Client)
         Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
         if (!entity) return;
