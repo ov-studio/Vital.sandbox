@@ -85,8 +85,17 @@ namespace Vital::Sandbox::API {
                     if (instance -> model != dying) { ++it; continue; }
                     ++it;
                     Instance::erase_unlocked(instance);
-                    instance -> model = nullptr;
-                    Instance::release(instance);
+                    // Same reasoning as the physics body destroy callback: release()
+                    // nulls instance->userdata, which push_self() checks. Running it
+                    // synchronously here can beat a deferred entity:destroyed dispatch
+                    // to Lua (NOTIFICATION_PREDELETE — and therefore this callback —
+                    // isn't guaranteed to fire on the main thread, e.g. remote
+                    // _destroy_entity handling). Defer it through the same queue so it
+                    // always runs strictly after that dispatch.
+                    Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                        instance -> model = nullptr;
+                        Instance::release(instance);
+                    });
                 }
             };
 

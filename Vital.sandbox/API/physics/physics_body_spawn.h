@@ -141,8 +141,16 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Rigid_Body::Instance::erase_unlocked(instance);
-                            instance->body = nullptr;
-                            Rigid_Body::Instance::release(instance);
+                            // Defer the teardown (same reasoning as erase_unlocked's own
+                            // deferred buffer-erase): release_userdata_ptr() nulls
+                            // instance->userdata, which push_self() also checks. Running
+                            // it synchronously here would beat a deferred entity:destroyed
+                            // dispatch to the punch, just like the registry erase did.
+                            // Queuing it keeps it strictly after that dispatch.
+                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                                instance->body = nullptr;
+                                Rigid_Body::Instance::release(instance);
+                            });
                         }
                         break;
                     }
@@ -154,8 +162,16 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Static_Body::Instance::erase_unlocked(instance);
-                            instance->body = nullptr;
-                            Static_Body::Instance::release(instance);
+                            // Defer the teardown (same reasoning as erase_unlocked's own
+                            // deferred buffer-erase): release_userdata_ptr() nulls
+                            // instance->userdata, which push_self() also checks. Running
+                            // it synchronously here would beat a deferred entity:destroyed
+                            // dispatch to the punch, just like the registry erase did.
+                            // Queuing it keeps it strictly after that dispatch.
+                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                                instance->body = nullptr;
+                                Static_Body::Instance::release(instance);
+                            });
                         }
                         break;
                     }
@@ -167,8 +183,16 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Character_Body::Instance::erase_unlocked(instance);
-                            instance->body = nullptr;
-                            Character_Body::Instance::release(instance);
+                            // Defer the teardown (same reasoning as erase_unlocked's own
+                            // deferred buffer-erase): release_userdata_ptr() nulls
+                            // instance->userdata, which push_self() also checks. Running
+                            // it synchronously here would beat a deferred entity:destroyed
+                            // dispatch to the punch, just like the registry erase did.
+                            // Queuing it keeps it strictly after that dispatch.
+                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                                instance->body = nullptr;
+                                Character_Body::Instance::release(instance);
+                            });
                         }
                         break;
                     }
@@ -180,8 +204,16 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Animatable_Body::Instance::erase_unlocked(instance);
-                            instance->body = nullptr;
-                            Animatable_Body::Instance::release(instance);
+                            // Defer the teardown (same reasoning as erase_unlocked's own
+                            // deferred buffer-erase): release_userdata_ptr() nulls
+                            // instance->userdata, which push_self() also checks. Running
+                            // it synchronously here would beat a deferred entity:destroyed
+                            // dispatch to the punch, just like the registry erase did.
+                            // Queuing it keeps it strictly after that dispatch.
+                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                                instance->body = nullptr;
+                                Animatable_Body::Instance::release(instance);
+                            });
                         }
                         break;
                     }
@@ -193,8 +225,16 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Vehicle_Body::Instance::erase_unlocked(instance);
-                            instance->body = nullptr;
-                            Vehicle_Body::Instance::release(instance);
+                            // Defer the teardown (same reasoning as erase_unlocked's own
+                            // deferred buffer-erase): release_userdata_ptr() nulls
+                            // instance->userdata, which push_self() also checks. Running
+                            // it synchronously here would beat a deferred entity:destroyed
+                            // dispatch to the punch, just like the registry erase did.
+                            // Queuing it keeps it strictly after that dispatch.
+                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
+                                instance->body = nullptr;
+                                Vehicle_Body::Instance::release(instance);
+                            });
                         }
                         break;
                     }
