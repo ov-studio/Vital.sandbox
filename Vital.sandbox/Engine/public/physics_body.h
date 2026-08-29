@@ -45,6 +45,14 @@ namespace Vital::Engine {
     // Use net_id from entity to correlate with the server-side body.
     inline std::function<void(ISyncable*, PhysicsSubType, bool)> on_physics_body_spawned_callback;
 
+    // Single global destroy callback — fired from NOTIFICATION_PREDELETE for
+    // every physics body subtype (see _notify_predelete_sync() below), same
+    // pattern as Model::on_destroyed_callback. Mirrors on_physics_body_spawned_callback
+    // so Lua can drop its wrapper Instance and fire entity:destroyed for both
+    // locally-freed and remotely-destroyed (_destroy_entity RPC) bodies.
+    // Parameters: (ISyncable* entity, PhysicsSubType sub_type)
+    inline std::function<void(ISyncable*, PhysicsSubType)> on_physics_body_destroyed_callback;
+
     // Base mixin — owns sync state and fulfils ISyncable for any physics body.
     // Concrete classes inherit this *and* the appropriate Godot body class.
     // Server-created bodies are network-replicated (ISyncable). Client-created
@@ -149,6 +157,12 @@ namespace Vital::Engine {
         }
 
         void _notify_predelete_sync() {
+            // Fire before unregistering: on_physics_body_destroyed_callback still
+            // needs a valid, findable object to match against the Lua-side registry.
+            // Covers every teardown path (local ->destroy(), remote _destroy_entity
+            // RPC via destroy_sync(), scene-tree cleanup, etc.) since PREDELETE is a
+            // Godot-level hook, not something callers have to remember to invoke.
+            if (on_physics_body_destroyed_callback) on_physics_body_destroyed_callback(this, get_physics_sub_type());
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
         }

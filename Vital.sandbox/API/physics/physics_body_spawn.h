@@ -10,6 +10,13 @@
            Registers one global callback that creates the correct
            Lua-facing Instance for any remote body spawned by
            _spawn_entity, mirroring Model::on_spawned_callback.
+
+           Also registers the destroy-side counterpart: fired from
+           PhysicsBodyBase::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
+           for ANY physics body teardown — local ->destroy(), remote
+           _destroy_entity RPC via destroy_sync(), or otherwise — so the
+           Lua-facing Instance is always dropped and entity:destroyed
+           always fires, mirroring Model::on_destroyed_callback.
 ----------------------------------------------------------------*/
 
 
@@ -40,8 +47,7 @@ namespace Vital::Sandbox::API {
             // Called once at sandbox init (after all body APIs are registered).
             // On the client, _spawn_entity fires this for every remotely spawned
             // body so Lua can attach collision shapes / wheels in its own handler.
-            
-            // TODO: on_spawned_callback and on_destroyed_callback need and make it work appropriately... this just triggers lua event? and this file into better somewhere in physics body orr soemthing??
+
             Engine::on_physics_body_spawned_callback = [vm](
                 Engine::ISyncable* entity,
                 Engine::PhysicsSubType sub_type,
@@ -106,6 +112,90 @@ namespace Vital::Sandbox::API {
                         auto instance = Vehicle_Body::Instance::init(vm, remote);
                         instance->body = typed;
                         instance->store(true);
+                        break;
+                    }
+                }
+            };
+
+            // Wire the single global physics body destroy callback.
+            // Fired from PhysicsBodyBase::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
+            // for every teardown path of every subtype — not just Lua-initiated
+            // ->destroy() calls. Drops the Lua-facing Instance (fires entity:destroyed
+            // via erase_unlocked) and nulls its body pointer so nothing can touch the
+            // about-to-be-freed object afterward. Mirrors Model::on_destroyed_callback.
+            //
+            // NOTE: unlike Instance::clean(), this must NOT call body->destroy() again —
+            // we're already inside the object's own destruction (PREDELETE), so that
+            // would either be a no-op re-entrant call or a double-free depending on the
+            // Godot build. Only registry bookkeeping happens here.
+            Engine::on_physics_body_destroyed_callback = [](
+                Engine::ISyncable* entity,
+                Engine::PhysicsSubType sub_type)
+            {
+                switch (sub_type) {
+                    case Engine::PhysicsSubType::Rigid: {
+                        auto* typed = static_cast<Engine::Rigid_Body*>(entity);
+                        std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
+                        for (auto it = Rigid_Body::registry.buffer.begin(); it != Rigid_Body::registry.buffer.end();) {
+                            auto& instance = it->second;
+                            if (instance->body != typed) { ++it; continue; }
+                            ++it;
+                            Rigid_Body::Instance::erase_unlocked(instance);
+                            instance->body = nullptr;
+                            Rigid_Body::Instance::release(instance);
+                        }
+                        break;
+                    }
+                    case Engine::PhysicsSubType::Static: {
+                        auto* typed = static_cast<Engine::Static_Body*>(entity);
+                        std::lock_guard<std::mutex> lock(Static_Body::registry.mutex);
+                        for (auto it = Static_Body::registry.buffer.begin(); it != Static_Body::registry.buffer.end();) {
+                            auto& instance = it->second;
+                            if (instance->body != typed) { ++it; continue; }
+                            ++it;
+                            Static_Body::Instance::erase_unlocked(instance);
+                            instance->body = nullptr;
+                            Static_Body::Instance::release(instance);
+                        }
+                        break;
+                    }
+                    case Engine::PhysicsSubType::Character: {
+                        auto* typed = static_cast<Engine::Character_Body*>(entity);
+                        std::lock_guard<std::mutex> lock(Character_Body::registry.mutex);
+                        for (auto it = Character_Body::registry.buffer.begin(); it != Character_Body::registry.buffer.end();) {
+                            auto& instance = it->second;
+                            if (instance->body != typed) { ++it; continue; }
+                            ++it;
+                            Character_Body::Instance::erase_unlocked(instance);
+                            instance->body = nullptr;
+                            Character_Body::Instance::release(instance);
+                        }
+                        break;
+                    }
+                    case Engine::PhysicsSubType::Animatable: {
+                        auto* typed = static_cast<Engine::Animatable_Body*>(entity);
+                        std::lock_guard<std::mutex> lock(Animatable_Body::registry.mutex);
+                        for (auto it = Animatable_Body::registry.buffer.begin(); it != Animatable_Body::registry.buffer.end();) {
+                            auto& instance = it->second;
+                            if (instance->body != typed) { ++it; continue; }
+                            ++it;
+                            Animatable_Body::Instance::erase_unlocked(instance);
+                            instance->body = nullptr;
+                            Animatable_Body::Instance::release(instance);
+                        }
+                        break;
+                    }
+                    case Engine::PhysicsSubType::Vehicle: {
+                        auto* typed = static_cast<Engine::Vehicle_Body*>(entity);
+                        std::lock_guard<std::mutex> lock(Vehicle_Body::registry.mutex);
+                        for (auto it = Vehicle_Body::registry.buffer.begin(); it != Vehicle_Body::registry.buffer.end();) {
+                            auto& instance = it->second;
+                            if (instance->body != typed) { ++it; continue; }
+                            ++it;
+                            Vehicle_Body::Instance::erase_unlocked(instance);
+                            instance->body = nullptr;
+                            Vehicle_Body::Instance::release(instance);
+                        }
                         break;
                     }
                 }
