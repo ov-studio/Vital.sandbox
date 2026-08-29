@@ -38,6 +38,13 @@ namespace Vital::Engine {
         Vehicle     = 4,
     };
 
+    // Single global spawn callback — fired on the client when _spawn_entity
+    // instantiates a remote physics body (same pattern as Model::on_spawned_callback).
+    // Lua subscribes to this to attach collision shapes / wheels on the remote node.
+    // Parameters: (ISyncable* entity, PhysicsSubType sub_type, bool is_remote)
+    // Use net_id from entity to correlate with the server-side body.
+    inline std::function<void(ISyncable*, PhysicsSubType, bool)> on_physics_body_spawned_callback;
+
     // Base mixin — owns sync state and fulfils ISyncable for any physics body.
     // Concrete classes inherit this *and* the appropriate Godot body class.
     // Server-created bodies are network-replicated (ISyncable). Client-created
@@ -49,7 +56,19 @@ namespace Vital::Engine {
         // ISyncable interface — shared implementation, same pattern as Model.
         SyncType get_sync_type() const override { return SyncType::PhysicsBody; }
         virtual PhysicsSubType get_physics_sub_type() const = 0;
-        virtual std::string get_sync_name() const override { return body_sync_name; }
+
+        // Returns the sub-type string used in the spawn RPC.
+        // Derived from get_physics_sub_type() — no dead body_sync_name field.
+        virtual std::string get_sync_name() const override {
+            switch (get_physics_sub_type()) {
+                case PhysicsSubType::Rigid:       return "rigid";
+                case PhysicsSubType::Static:      return "static";
+                case PhysicsSubType::Character:   return "character";
+                case PhysicsSubType::Animatable:  return "animatable";
+                case PhysicsSubType::Vehicle:     return "vehicle";
+            }
+            return "";
+        }
 
         bool is_sync_active() const override {
             return const_cast<PhysicsBodyBase*>(this)->GodotBase::is_inside_tree() && net_id != 0;
@@ -70,7 +89,7 @@ namespace Vital::Engine {
         void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
             if (!GodotBase::is_inside_tree()) return;
             auto net = Manager::Network::get_singleton();
-            if (net && net->get_peer_id() == sync_authority) return; // authority drives raw
+            if (net && net->get_peer_id() == sync_authority) return;
             sync_push_snapshot(pos, rot, vel);
             sync_last_pos = pos;
             sync_last_rot = rot;
@@ -90,21 +109,6 @@ namespace Vital::Engine {
 
         void destroy_sync() override { GodotBase::queue_free(); }
 
-        // Authority-driven freeze —
-        // Runs whenever authority is (re)established: initial spawn (_ready_sync)
-        // and any later reassignment (set_sync_authority, called from the
-        // server's _set_authority RPC). Only meaningful for GodotBase types
-        // that self-simulate via the physics engine (RigidBody3D and its
-        // subclass VehicleBody3D) — CharacterBody3D/AnimatableBody3D/StaticBody3D
-        // never self-simulate forces, so this is a no-op for them at compile time.
-        //
-        // The authority peer keeps running its own real physics/collision
-        // (unfrozen). Every other peer freezes local simulation entirely —
-        // KINEMATIC (not STATIC) so the body still acts as a solid obstacle
-        // for other locally-simulated bodies, it just no longer computes its
-        // own forces/gravity or emits its own (soon to be stale/overwritten)
-        // contact signals. Position/rotation are then driven purely by
-        // apply_sync/on_sync_process interpolation, same as before.
         void reset_sync_state() override {
             ISyncable::reset_sync_state();
             if constexpr (std::is_base_of_v<godot::RigidBody3D, GodotBase>) {
@@ -122,7 +126,7 @@ namespace Vital::Engine {
         // net_id == 0 means client-local, never synced — set_syncer is no-op.
         #if !defined(VSDK_Client)
         void set_syncer(int peer_id) {
-            if (net_id == 0) return; // local body — not replicated
+            if (net_id == 0) return;
             sync_authority = (peer_id <= 1) ? 1 : peer_id;
             sync_sleeping  = false;
             reset_sync_state();
@@ -132,7 +136,8 @@ namespace Vital::Engine {
         #endif
 
     protected:
-        std::string body_sync_name; // set on creation for sub-type identification
+        // pending_authority is set before add_child so _ready() can call _ready_sync().
+        int pending_authority = 1;
 
         void _ready_sync(int authority_peer) {
             sync_authority = authority_peer;

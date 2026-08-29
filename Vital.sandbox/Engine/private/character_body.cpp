@@ -30,7 +30,6 @@ namespace Vital::Engine {
         if (authority_peer != 0) {
             body->net_id            = body->next_net_id++;
             body->pending_authority = authority_peer;
-            body->body_sync_name    = "";
             uint32_t captured_id    = body->net_id;
             int captured_auth       = authority_peer;
             Core::get_singleton()->add_child(body);

@@ -30,7 +30,6 @@ namespace Vital::Engine {
         friend class Manager::Network;
         friend class Network;
         private:
-            int pending_authority = 1;
             static void _bind_methods() {}
             Vehicle_Body() = default;
             ~Vehicle_Body() override = default;

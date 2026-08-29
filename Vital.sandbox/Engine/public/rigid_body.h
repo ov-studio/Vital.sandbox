@@ -30,7 +30,6 @@ namespace Vital::Engine {
         friend class Manager::Network;
         friend class Network;
         private:
-            int pending_authority = 1;
             static void _bind_methods() {}
             Rigid_Body() = default;
             ~Rigid_Body() override = default;
@@ -48,7 +47,6 @@ namespace Vital::Engine {
             void destroy();
 
             #if !defined(VSDK_Client)
-            // set_syncer exposed to Lua server API
             using PhysicsBodyBase<godot::RigidBody3D>::set_syncer;
             #endif
     };
