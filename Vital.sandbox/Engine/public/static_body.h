@@ -34,4 +34,3 @@ namespace Vital::Engine {
             void destroy();
     };
 }
-#endif
