@@ -207,8 +207,7 @@ namespace Vital::Engine {
             if (col) break;
         }
         if (!col) {
-            col = memnew(Engine::Collision_Shape);
-            node -> add_child(col);
+            col = Engine::Collision_Shape::create(node);
         }
 
         std::string type = Tool::to_std_string(shape_type);
