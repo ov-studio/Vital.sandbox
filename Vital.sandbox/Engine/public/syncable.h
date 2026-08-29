@@ -52,8 +52,6 @@ namespace Vital::Engine {
                 PhysicsBody = 1
             };
         private:
-            inline static uint32_t next_net_id = 1;
-
             struct Internal {
                 static constexpr uint16_t MASK_PX = 1 << 0;
                 static constexpr uint16_t MASK_PY = 1 << 1;
@@ -76,6 +74,7 @@ namespace Vital::Engine {
                 static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
             };
         protected:
+            inline static uint32_t next_net_id = 1;
             int sync_authority = 1; // 1 = server, N = client N
             uint32_t net_id = 0;
             bool sync_registered = false;
