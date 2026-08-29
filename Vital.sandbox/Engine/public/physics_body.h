@@ -125,6 +125,7 @@ namespace Vital::Engine {
             if (net_id == 0) return; // local body — not replicated
             sync_authority = (peer_id <= 1) ? 1 : peer_id;
             sync_sleeping  = false;
+            reset_sync_state();
             auto net_node = Manager::Network::get_singleton()->get_node();
             if (net_node) net_node->rpc("_set_authority", (int)net_id, sync_authority);
         }

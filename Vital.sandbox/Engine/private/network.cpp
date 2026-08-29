@@ -138,6 +138,7 @@ namespace Vital::Engine {
                 if (entity) {
                     entity -> net_id = (uint32_t)net_id;
                     entity -> sync_authority = authority;
+                    entity -> reset_sync_state();
                     Manager::Network::get_singleton() -> enqueue_syncable_registration(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
                 }
