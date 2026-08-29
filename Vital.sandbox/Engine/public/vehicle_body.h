@@ -28,6 +28,7 @@ namespace Vital::Engine {
     class Vehicle_Body : public PhysicsBodyBase<godot::VehicleBody3D> {
         GDCLASS(Vehicle_Body, godot::VehicleBody3D)
         friend class Manager::Network;
+        friend class Network;
         private:
             int pending_authority = 1;
             static void _bind_methods() {}
