@@ -28,6 +28,14 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Core>();
     godot::ClassDB::register_class<Vital::Engine::Network>(true);
     godot::ClassDB::register_class<Vital::Engine::Model>(true);
+    godot::ClassDB::register_class<Vital::Engine::Rigid_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Static_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Character_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Animatable_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Area>(true);
+    godot::ClassDB::register_class<Vital::Engine::Collision_Shape>(true);
+    godot::ClassDB::register_class<Vital::Engine::Vehicle_Body>(true);
+    godot::ClassDB::register_class<Vital::Engine::Vehicle_Wheel>(true);
     #if defined(VSDK_Client)
     godot::ClassDB::register_class<Vital::Engine::Canvas>(true);
     godot::ClassDB::register_class<Vital::Engine::Monitor>(true);
@@ -38,14 +46,6 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Point_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Spot_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Area_Light>(true);
-    godot::ClassDB::register_class<Vital::Engine::Rigid_Body>(true);
-    godot::ClassDB::register_class<Vital::Engine::Static_Body>(true);
-    godot::ClassDB::register_class<Vital::Engine::Character_Body>(true);
-    godot::ClassDB::register_class<Vital::Engine::Animatable_Body>(true);
-    godot::ClassDB::register_class<Vital::Engine::Area>(true);
-    godot::ClassDB::register_class<Vital::Engine::Collision_Shape>(true);
-    godot::ClassDB::register_class<Vital::Engine::Vehicle_Body>(true);
-    godot::ClassDB::register_class<Vital::Engine::Vehicle_Wheel>(true);
     #endif
     vsdk_initialize();
 }
