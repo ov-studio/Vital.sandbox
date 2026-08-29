@@ -615,6 +615,60 @@ namespace Vital::Manager {
             }
         }
 
+        // 2.5. Send _sync_shape for every synced body that already has a collision shape,
+        //      so the late-joiner's physics matches the server's simulation immediately.
+        //      VehicleWheel3D children are driven by Godot locally — no shape sync needed.
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* e : sync_models) {
+                auto* godot_obj = dynamic_cast<godot::Object*>(e);
+                if (!godot_obj) continue;
+                auto* parent_node = godot::Object::cast_to<godot::Node3D>(godot_obj);
+                if (!parent_node) continue;
+
+                for (int i = 0; i < parent_node->get_child_count(); i++) {
+                    auto* col = godot::Object::cast_to<Engine::Collision_Shape>(parent_node->get_child(i));
+                    if (!col) continue;
+                    auto shape = col->get_shape();
+                    if (!shape.is_valid()) continue;
+
+                    godot::String shape_type;
+                    godot::Array params;
+
+                    if (auto* s = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
+                        shape_type = "box";
+                        auto sz = s->get_size();
+                        params.push_back(sz.x); params.push_back(sz.y); params.push_back(sz.z);
+                    }
+                    else if (auto* s = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
+                        shape_type = "sphere";
+                        params.push_back(s->get_radius());
+                    }
+                    else if (auto* s = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
+                        shape_type = "capsule";
+                        params.push_back(s->get_radius()); params.push_back(s->get_height());
+                    }
+                    else if (auto* s = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
+                        shape_type = "cylinder";
+                        params.push_back(s->get_radius()); params.push_back(s->get_height());
+                    }
+                    else if (auto* s = godot::Object::cast_to<godot::WorldBoundaryShape3D>(shape.ptr())) {
+                        shape_type = "world_boundary";
+                        auto pl = s->get_plane();
+                        params.push_back(pl.normal.x); params.push_back(pl.normal.y);
+                        params.push_back(pl.normal.z); params.push_back(pl.d);
+                    }
+                    else if (auto* s = godot::Object::cast_to<godot::SeparationRayShape3D>(shape.ptr())) {
+                        shape_type = "separation_ray";
+                        params.push_back(s->get_length());
+                    }
+                    else continue; // unknown shape type — skip
+
+                    node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), shape_type, params);
+                }
+            }
+        }
+
         // 3. Send transform state dump (reliable) so models snap to correct positions.
         send_full_state_to_peer(id);
 
