@@ -14,12 +14,16 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/API/physics/rigid_body.h>
 #include <Vital.sandbox/API/physics/static_body.h>
 #include <Vital.sandbox/API/physics/character_body.h>
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/area.h>
+
+// TODO: REMOVE LATER ALREADY INCLUDED IN PCH?
 #include <godot_cpp/classes/box_shape3d.hpp>
 #include <godot_cpp/classes/sphere_shape3d.hpp>
 #include <godot_cpp/classes/capsule_shape3d.hpp>
@@ -57,6 +61,28 @@ namespace Vital::Sandbox::API {
 
             bool is_alive() const {
                 return body ? true : false;
+            }
+
+            // Returns net_id of the parent physics body (0 = local-only, never synced).
+            uint32_t get_parent_net_id() const {
+                if (!body) return 0;
+                auto parent = body -> get_parent();
+                if (!parent) return 0;
+                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(
+                    godot::Object::cast_to<godot::Object>(parent)
+                );
+                return syncable ? syncable -> get_net_id() : 0;
+            }
+
+            // Server-side: broadcast shape type + params to all clients via RPC.
+            // No-op for local (net_id == 0) bodies.
+            void broadcast_shape(const char* shape_type, godot::Array params) {
+                #if !defined(VSDK_Client)
+                uint32_t nid = get_parent_net_id();
+                if (nid == 0) return;
+                auto net = Manager::Network::get_singleton() -> get_node();
+                if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);
+                #endif
             }
 
             #if defined(VSDK_Client)
@@ -300,6 +326,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(size.x); p.push_back(size.y); p.push_back(size.z); self -> broadcast_shape("box", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -317,6 +345,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(radius); self -> broadcast_shape("sphere", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -337,6 +367,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("capsule", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -357,6 +389,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("cylinder", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -376,6 +410,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(normal.x); p.push_back(normal.y); p.push_back(normal.z); p.push_back(distance); self -> broadcast_shape("world_boundary", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -393,6 +429,8 @@ namespace Vital::Sandbox::API {
                 self -> current_shape = shape;
                 #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #else
+                { godot::Array p; p.push_back(length); self -> broadcast_shape("separation_ray", p); }
                 #endif
                 vm -> push_value(true);
                 return 1;

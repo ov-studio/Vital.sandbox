@@ -185,6 +185,63 @@ namespace Vital::Engine {
         #endif
     }
 
+        #if defined(VSDK_Client)
+        Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        auto node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(entity));
+        if (!node) return;
+
+        // Find existing Collision_Shape child or create one
+        Engine::Collision_Shape* col = nullptr;
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            col = godot::Object::cast_to<Engine::Collision_Shape>(node -> get_child(i));
+            if (col) break;
+        }
+        if (!col) {
+            col = memnew(Engine::Collision_Shape);
+            node -> add_child(col);
+        }
+
+        std::string type = Tool::to_std_string(shape_type);
+        if (type == "box" && params.size() >= 3) {
+            godot::Ref<godot::BoxShape3D> s; s.instantiate();
+            s -> set_size(godot::Vector3((float)params[0], (float)params[1], (float)params[2]));
+            col -> set_shape(s);
+        }
+        else if (type == "sphere" && params.size() >= 1) {
+            godot::Ref<godot::SphereShape3D> s; s.instantiate();
+            s -> set_radius((float)params[0]);
+            col -> set_shape(s);
+        }
+        else if (type == "capsule" && params.size() >= 2) {
+            godot::Ref<godot::CapsuleShape3D> s; s.instantiate();
+            s -> set_radius((float)params[0]);
+            s -> set_height((float)params[1]);
+            col -> set_shape(s);
+        }
+        else if (type == "cylinder" && params.size() >= 2) {
+            godot::Ref<godot::CylinderShape3D> s; s.instantiate();
+            s -> set_radius((float)params[0]);
+            s -> set_height((float)params[1]);
+            col -> set_shape(s);
+        }
+        else if (type == "world_boundary" && params.size() >= 4) {
+            godot::Ref<godot::WorldBoundaryShape3D> s; s.instantiate();
+            s -> set_plane(godot::Plane(godot::Vector3((float)params[0], (float)params[1], (float)params[2]), (float)params[3]));
+            col -> set_shape(s);
+        }
+        else if (type == "separation_ray" && params.size() >= 1) {
+            godot::Ref<godot::SeparationRayShape3D> s; s.instantiate();
+            s -> set_length((float)params[0]);
+            col -> set_shape(s);
+        }
+        else {
+            godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
+        }
+        #endif
+    }
+
     #if defined(VSDK_Client)
     void Network::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
     void Network::_on_connection_failed() { if (on_connection_failed) on_connection_failed(); }

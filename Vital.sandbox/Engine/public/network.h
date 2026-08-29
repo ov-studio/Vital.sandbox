@@ -34,6 +34,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"), &Network::_sync_entities);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
@@ -56,6 +57,7 @@ namespace Vital::Engine {
             void _sync_entities(godot::PackedByteArray data);
             void _sync_state(godot::PackedByteArray data);
             void _sync_client(godot::PackedByteArray data);
+            void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
