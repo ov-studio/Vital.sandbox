@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/area.h>
 
 
@@ -33,4 +32,3 @@ namespace Vital::Engine {
         queue_free();
     }
 }
-#endif

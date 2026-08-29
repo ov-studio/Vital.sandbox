@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/API/physics/rigid_body.h>
@@ -27,6 +26,11 @@
 #include <godot_cpp/classes/cylinder_shape3d.hpp>
 #include <godot_cpp/classes/world_boundary_shape3d.hpp>
 #include <godot_cpp/classes/separation_ray_shape3d.hpp>
+#if defined(VSDK_Client)
+#include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
+#endif
 
 
 //////////////////////////////////
@@ -43,7 +47,9 @@ namespace Vital::Sandbox::API {
             using Owner = Collision_Shape;
             base_class* body = nullptr;
             godot::Ref<godot::Shape3D> current_shape;
+            #if defined(VSDK_Client)
             godot::MeshInstance3D* debug_mesh = nullptr;
+            #endif
 
             auto get_node() {
                 return body;
@@ -53,6 +59,7 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
+            #if defined(VSDK_Client)
             // Builds/rebuilds the wireframe debug mesh from whatever shape is currently assigned. //
             void refresh_debug_mesh();
 
@@ -72,14 +79,20 @@ namespace Vital::Sandbox::API {
             bool is_debug_visible() const {
                 return debug_mesh && debug_mesh -> is_visible();
             }
+            #else
+            void set_debug_visible(bool) {}
+            bool is_debug_visible() const { return false; }
+            #endif
 
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
+                #if defined(VSDK_Client)
                 if (instance -> debug_mesh) {
                     instance -> debug_mesh -> queue_free();
                     instance -> debug_mesh = nullptr;
                 }
+                #endif
                 if (instance -> body) {
                     instance -> body -> destroy();
                     instance -> body = nullptr;
@@ -90,6 +103,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
         inline static bool default_debug_enabled = false;
 
+        #if defined(VSDK_Client)
         // Wireframe geometry builders — one closed ring/line-set per shape type, assembled into a PRIMITIVE_LINES mesh. //
         static void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24) {
             // plane: 0 = XZ (horizontal ring), 1 = XY (vertical ring), 2 = YZ (vertical ring) //
@@ -190,6 +204,7 @@ namespace Vital::Sandbox::API {
             }
             return mesh;
         }
+        #endif
 
         // Resolves any of the physics body/area API types to their underlying Node3D owner. //
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
@@ -224,10 +239,12 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(1);
                 default_debug_enabled = state;
+                #if defined(VSDK_Client)
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto& [key, instance] : registry.buffer) {
                     if (Instance::find_unlocked(instance)) instance -> set_debug_visible(state);
                 }
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -281,7 +298,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_size(size);
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -296,7 +315,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_radius(radius);
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -314,7 +335,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(height);
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -332,7 +355,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(height);
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -349,7 +374,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_plane(godot::Plane(normal, distance));
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -364,7 +391,9 @@ namespace Vital::Sandbox::API {
                 shape -> set_length(length);
                 self -> body -> set_shape(shape);
                 self -> current_shape = shape;
+                #if defined(VSDK_Client)
                 self -> refresh_debug_mesh();
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -379,13 +408,10 @@ namespace Vital::Sandbox::API {
         }
     };
 
+    #if defined(VSDK_Client)
     inline void Collision_Shape::Instance::refresh_debug_mesh() {
         if (!debug_mesh || !current_shape.is_valid()) return;
         debug_mesh -> set_mesh(Collision_Shape::build_wireframe_mesh(current_shape));
     }
+    #endif
 }
-#else
-namespace Vital::Sandbox::API {
-    struct Collision_Shape : vm_module {};
-}
-#endif

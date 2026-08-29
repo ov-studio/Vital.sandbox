@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 
 
@@ -34,4 +33,3 @@ namespace Vital::Engine {
         queue_free();
     }
 }
-#endif

@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/API/core/node_3d.h>
@@ -337,8 +336,3 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-#else
-namespace Vital::Sandbox::API {
-    struct Vehicle_Wheel : vm_module {};
-}
-#endif

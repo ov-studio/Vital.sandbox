@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/API/physics/rigid_body.h>
@@ -384,8 +383,3 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-#else
-namespace Vital::Sandbox::API {
-    struct Space : vm_module {};
-}
-#endif

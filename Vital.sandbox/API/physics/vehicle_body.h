@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/vehicle_body.h>
 #include <Vital.sandbox/API/core/physics_body.h>
@@ -298,8 +297,3 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-#else
-namespace Vital::Sandbox::API {
-    struct Vehicle_Body : vm_module {};
-}
-#endif

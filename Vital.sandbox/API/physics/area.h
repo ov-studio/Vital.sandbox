@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/area.h>
 #include <Vital.sandbox/API/core/collision_object.h>
@@ -292,12 +291,3 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            Instance::collect_env(env);
-        }
-    };
-}
-#else
-namespace Vital::Sandbox::API {
-    struct Area : vm_module {};
-}
-#endif

@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
 
 
@@ -35,4 +34,3 @@ namespace Vital::Engine {
             void destroy();
     };
 }
-#endif
