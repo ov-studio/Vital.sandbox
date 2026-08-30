@@ -568,10 +568,10 @@ namespace Vital::Manager {
         for (auto* model : snapshot) {
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
-            // Use zero velocity for sleeping bodies — sync_last_vel is stale once
-            // a body stops moving and the per-tick broadcast skips it. Sending the
-            // stale vel causes the client to extrapolate the body out of position.
-            godot::Vector3 vel = model->sync_sleeping ? godot::Vector3() : model->sync_last_vel;
+            // Always zero velocity in the state dump. The per-tick _sync_entities
+            // broadcast corrects position within the next few frames. Sending real
+            // velocity causes BUFFER_DELAY extrapolation error on the late joiner.
+            godot::Vector3 vel;
             // Temp zeroed state — guarantees full packet (all bits set).
             godot::Vector3 zero_p, zero_r, zero_v;
             int written = Engine::ISyncable::encode_delta(
@@ -710,6 +710,15 @@ namespace Vital::Manager {
 
         // 3. Send transform state dump (reliable) so models snap to correct positions.
         send_full_state_to_peer(id);
+
+        // 3.5. Wake all sleeping bodies for one broadcast cycle so the late joiner
+        // receives a fresh _sync_entities update immediately after their spawn RPCs.
+        // Without this, sleeping bodies are skipped by the broadcast and the late
+        // joiner never gets a follow-up packet to confirm/correct the state dump.
+        {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* m : sync_models) m->sync_sleeping = false;
+        }
 
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
