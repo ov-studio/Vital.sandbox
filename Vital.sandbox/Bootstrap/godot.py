@@ -59,7 +59,7 @@ class Godot:
             import urllib.request, json as _json
             req = urllib.request.Request(
                 "https://api.github.com/repos/godotengine/godot/releases?per_page=100",
-                headers={"User-Agent": "Vital.sandbox-bootstrap"}
+                headers=Github_Auth_Headers()
             )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = _json.load(resp)
@@ -70,10 +70,13 @@ class Godot:
 
         try:
             import json as _json
-            result = subprocess.run(
-                ["curl", "-s", "-L",
-                 "-H", "User-Agent: Vital.sandbox-bootstrap",
-                 "https://api.github.com/repos/godotengine/godot/releases?per_page=100"],
+            token = os.environ.get("GITHUB_TOKEN")
+            curl_cmd = ["curl", "-s", "-L",
+                "-H", "User-Agent: Vital.sandbox-bootstrap"]
+            if token:
+                curl_cmd += ["-H", f"Authorization: Bearer {token}"]
+            curl_cmd.append("https://api.github.com/repos/godotengine/godot/releases?per_page=100")
+            result = subprocess.run(curl_cmd,
                 capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:

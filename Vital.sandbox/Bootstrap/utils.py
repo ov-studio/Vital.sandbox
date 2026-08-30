@@ -76,6 +76,15 @@ def _RCopy(self, destination, src):
 def _RGlobCopy(self, destination, pattern):
     return [self.RCopy(destination, f) for f in glob.glob(pattern)]
 
+def Github_Auth_Headers(extra=None):
+    headers = {"User-Agent": "Vital.sandbox-bootstrap"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    if extra:
+        headers.update(extra)
+    return headers
+
 BaseEnvironment.RGlob = _RGlob
 BaseEnvironment.RCopy = _RCopy
 BaseEnvironment.RGlobCopy = _RGlobCopy

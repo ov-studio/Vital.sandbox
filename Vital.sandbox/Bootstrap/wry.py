@@ -17,7 +17,7 @@ class Wry:
         try:
             req = urllib.request.Request(
                 VITAL_WRY_API,
-                headers={"Accept": "application/vnd.github+json", "User-Agent": "vital-bootstrap"}
+                headers=Github_Auth_Headers({"Accept": "application/vnd.github+json"})
             )
             with urllib.request.urlopen(req, timeout=30) as r:
                 return json.loads(r.read().decode())
