@@ -302,6 +302,8 @@ namespace Vital::Engine {
         if (!col) {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
+            if (Engine::Collision_Shape::on_spawned_callback)
+                Engine::Collision_Shape::on_spawned_callback(col);
         }
 
         std::string type = Tool::to_std_string(shape_type);

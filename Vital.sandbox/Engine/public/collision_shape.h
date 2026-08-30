@@ -39,6 +39,14 @@ namespace Vital::Engine {
             // as PhysicsBodyBase::on_physics_body_destroyed_callback.
             inline static std::function<void(Collision_Shape*)> on_destroyed_callback;
 
+            // Single global callback fired right after a Collision_Shape node is
+            // created by Network::_sync_shape() on the client (remote-synced shape
+            // on a networked physics body). Lets the API layer hydrate a Lua-facing
+            // Instance for it, mirroring on_physics_body_spawned_callback — without
+            // this, remote shapes exist physically but are invisible to Lua (no
+            // entity:created, no debug wireframe, set_debug_all can't find them).
+            inline static std::function<void(Collision_Shape*)> on_spawned_callback;
+
             // Managers //
             static Collision_Shape* create(godot::Node3D* owner);
             void destroy();
