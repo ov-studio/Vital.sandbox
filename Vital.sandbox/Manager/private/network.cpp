@@ -711,14 +711,12 @@ namespace Vital::Manager {
         // 3. Send transform state dump (reliable) so models snap to correct positions.
         send_full_state_to_peer(id);
 
-        // 3.5. Wake all sleeping bodies for one broadcast cycle so the late joiner
-        // receives a fresh _sync_entities update immediately after their spawn RPCs.
-        // Without this, sleeping bodies are skipped by the broadcast and the late
-        // joiner never gets a follow-up packet to confirm/correct the state dump.
-        {
-            std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* m : sync_models) m->sync_sleeping = false;
-        }
+        // 3.5. Send a second state dump so the late joiner gets a fresh position
+        // update after their spawn RPCs are processed. Sleeping bodies are skipped
+        // by the regular broadcast so without this the late joiner has no follow-up
+        // packet to confirm/correct the initial state dump position.
+        // Uses rpc_id — only the joining peer receives this, no broadcast to others.
+        send_full_state_to_peer(id);
 
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
