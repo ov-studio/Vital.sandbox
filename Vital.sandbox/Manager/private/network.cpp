@@ -568,7 +568,10 @@ namespace Vital::Manager {
         for (auto* model : snapshot) {
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
-            godot::Vector3 vel = model->sync_last_vel;
+            // Use zero velocity for sleeping bodies — sync_last_vel is stale once
+            // a body stops moving and the per-tick broadcast skips it. Sending the
+            // stale vel causes the client to extrapolate the body out of position.
+            godot::Vector3 vel = model->sync_sleeping ? godot::Vector3() : model->sync_last_vel;
             // Temp zeroed state — guarantees full packet (all bits set).
             godot::Vector3 zero_p, zero_r, zero_v;
             int written = Engine::ISyncable::encode_delta(
