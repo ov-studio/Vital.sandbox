@@ -35,6 +35,10 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
+                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
+                godot::ClassDB::bind_method(godot::D_METHOD("_destroy_wheel", "net_id", "wheel_index"), &Network::_destroy_wheel);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_index", "key", "value"), &Network::_sync_wheel_config);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_transform", "net_id", "wheel_index", "position", "rotation"), &Network::_sync_wheel_transform);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
@@ -58,6 +62,10 @@ namespace Vital::Engine {
             void _sync_state(godot::PackedByteArray data);
             void _sync_client(godot::PackedByteArray data);
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
+            void _spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
+            void _destroy_wheel(int net_id, int wheel_index);
+            void _sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value);
+            void _sync_wheel_transform(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
             #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
