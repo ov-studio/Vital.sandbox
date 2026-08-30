@@ -74,6 +74,7 @@ namespace Vital::Sandbox {
             }
 
             void push_self(Machine* vm) override {
+                // TODO: ??
                 // NOTE: deliberately NOT re-resolving via find_unlocked(id) here.
                 // This is already a live, ref-counted `this` (the shared_ptr captured
                 // in the StackValue/Stack at signal-emit time keeps it alive). Re-looking
