@@ -20,6 +20,7 @@
 #include <Vital.sandbox/Engine/public/character_body.h>
 #include <Vital.sandbox/Engine/public/animatable_body.h>
 #include <Vital.sandbox/Engine/public/vehicle_body.h>
+#include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/asset.h>
@@ -43,6 +44,10 @@ namespace Vital::Engine {
         rpc_config("_sync_state", reliable);
         rpc_config("_set_authority", reliable);
         rpc_config("_sync_shape", reliable);
+        rpc_config("_spawn_wheel", reliable);
+        rpc_config("_destroy_wheel", reliable);
+        rpc_config("_sync_wheel_config", reliable);
+        rpc_config("_sync_wheel_transform", reliable);
 
         godot::Dictionary unreliable;
         unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
