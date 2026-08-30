@@ -124,6 +124,24 @@ namespace Vital::Manager {
         sync_id_map[entity->get_net_id()] = entity;
     }
 
+    // Frees all remote (non-authority) synced bodies on the client — called on
+    // disconnect. Bodies spawned by _spawn_entity live as direct Core children and
+    // are not owned by any resource, so stop_all() does not reach them.
+    void Network::cleanup_remote_bodies() {
+        #if defined(VSDK_Client)
+        std::vector<Engine::ISyncable*> snapshot;
+        {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            snapshot = sync_models;
+        }
+        int my_id = get_peer_id();
+        for (auto* entity : snapshot) {
+            if (entity->get_sync_authority() == my_id) continue; // locally owned, resource handles it
+            entity->destroy_sync();
+        }
+        #endif
+    }
+
     void Network::unregister_syncable(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         sync_models.erase(
@@ -569,9 +587,8 @@ namespace Vital::Manager {
         for (auto* model : snapshot) {
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
-            // Always zero velocity in the state dump. The per-tick _sync_entities
-            // broadcast corrects position within the next few frames. Sending real
-            // velocity causes BUFFER_DELAY extrapolation error on the late joiner.
+            // Always zero velocity in state dump — continuous _sync_entities corrects
+            // position within frames. Real velocity causes BUFFER_DELAY extrapolation error.
             godot::Vector3 vel;
             // Temp zeroed state — guarantees full packet (all bits set).
             godot::Vector3 zero_p, zero_r, zero_v;
@@ -716,7 +733,6 @@ namespace Vital::Manager {
         // update after their spawn RPCs are processed. Sleeping bodies are skipped
         // by the regular broadcast so without this the late joiner has no follow-up
         // packet to confirm/correct the initial state dump position.
-        // Uses rpc_id — only the joining peer receives this, no broadcast to others.
         send_full_state_to_peer(id);
 
         Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue(id));

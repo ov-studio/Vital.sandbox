@@ -133,7 +133,10 @@ void vsdk_initialize() {
         Vital::Tool::print("sbox", "Lost connection to server");
         Vital::Manager::Resource::get_singleton() -> stop_all();
         Vital::Manager::Asset::get_singleton() -> clear();
-        Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
+        Vital::Engine::Model::cleanup_spawned();
+        // Free remote physics bodies spawned by _spawn_entity — they live as direct
+        // Core children and are not freed by stop_all() or cleanup_spawned().
+        Vital::Manager::Network::get_singleton() -> cleanup_remote_bodies();
         #if defined(VSDK_Client)
         Vital::Engine::Core::get_singleton() -> free_environment();
         #endif

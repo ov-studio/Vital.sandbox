@@ -119,6 +119,7 @@ namespace Vital::Manager {
             void unregister_syncable(Engine::ISyncable* entity);
             // Posts to pending queue — safe to call from any thread/enqueue context.
             void enqueue_syncable_registration(Engine::ISyncable* entity);
+            void cleanup_remote_bodies();
 
             #if defined(VSDK_Client)
             // Buffers a shape sync whose net_id isn't registered yet; poll() applies
