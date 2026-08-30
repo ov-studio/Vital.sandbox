@@ -24,6 +24,7 @@
 namespace Vital::Engine {
     class Vehicle_Wheel : public godot::VehicleWheel3D {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
+        friend class Network;
         private:
             // Instantiators //
             Vehicle_Wheel() = default;

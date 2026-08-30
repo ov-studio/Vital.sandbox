@@ -24,6 +24,7 @@
 namespace Vital::Engine {
     class Collision_Shape : public godot::CollisionShape3D {
         GDCLASS(Collision_Shape, godot::CollisionShape3D)
+        friend class Network;
         private:
             // Instantiators //
             Collision_Shape() = default;
