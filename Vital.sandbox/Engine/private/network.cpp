@@ -22,6 +22,7 @@
 #include <Vital.sandbox/Engine/public/vehicle_body.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
+#include <Vital.sandbox/API/physics/collision_shape.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 
@@ -323,40 +324,61 @@ namespace Vital::Engine {
         }
 
         std::string type = Tool::to_std_string(shape_type);
+        godot::Ref<godot::Shape3D> applied_shape;
         if (type == "box" && params.size() >= 3) {
             godot::Ref<godot::BoxShape3D> s; s.instantiate();
             s -> set_size(godot::Vector3((float)params[0], (float)params[1], (float)params[2]));
             col -> set_shape(s);
+            applied_shape = s;
         }
         else if (type == "sphere" && params.size() >= 1) {
             godot::Ref<godot::SphereShape3D> s; s.instantiate();
             s -> set_radius((float)params[0]);
             col -> set_shape(s);
+            applied_shape = s;
         }
         else if (type == "capsule" && params.size() >= 2) {
             godot::Ref<godot::CapsuleShape3D> s; s.instantiate();
             s -> set_radius((float)params[0]);
             s -> set_height((float)params[1]);
             col -> set_shape(s);
+            applied_shape = s;
         }
         else if (type == "cylinder" && params.size() >= 2) {
             godot::Ref<godot::CylinderShape3D> s; s.instantiate();
             s -> set_radius((float)params[0]);
             s -> set_height((float)params[1]);
             col -> set_shape(s);
+            applied_shape = s;
         }
         else if (type == "world_boundary" && params.size() >= 4) {
             godot::Ref<godot::WorldBoundaryShape3D> s; s.instantiate();
             s -> set_plane(godot::Plane(godot::Vector3((float)params[0], (float)params[1], (float)params[2]), (float)params[3]));
             col -> set_shape(s);
+            applied_shape = s;
         }
         else if (type == "separation_ray" && params.size() >= 1) {
             godot::Ref<godot::SeparationRayShape3D> s; s.instantiate();
             s -> set_length((float)params[0]);
             col -> set_shape(s);
+            applied_shape = s;
         }
         else {
             godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
+        }
+
+        // Sync current_shape on the API Instance so refresh_debug_mesh() can build
+        // the wireframe. Without this the debug mesh stays blank because the Instance
+        // never sees the shape that was set on the engine node above.
+        if (applied_shape.is_valid()) {
+            std::lock_guard<std::mutex> lock(Sandbox::API::Collision_Shape::registry.mutex);
+            for (auto& [id, inst] : Sandbox::API::Collision_Shape::registry.buffer) {
+                if (inst->body == col) {
+                    inst->current_shape = applied_shape;
+                    inst->refresh_debug_mesh();
+                    break;
+                }
+            }
         }
         #endif
     }
