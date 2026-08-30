@@ -62,6 +62,12 @@ namespace Vital::Engine {
             void _sync_state(godot::PackedByteArray data);
             void _sync_client(godot::PackedByteArray data);
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
+            // Actually finds/creates the Collision_Shape child and applies the shape.
+            // Split out of _sync_shape so Manager::Network::poll() can replay a shape
+            // sync that arrived before its parent body finished local registration
+            // (registration is polled once per frame, not applied the instant
+            // _spawn_entity's RPC is handled — see poll()).
+            static void apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params);
             void _spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
             void _destroy_wheel(int net_id, int wheel_index);
             void _sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value);

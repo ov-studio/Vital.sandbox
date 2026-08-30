@@ -61,6 +61,17 @@ namespace Vital::Manager {
             std::vector<Engine::ISyncable*> sync_pending;
             std::mutex sync_pending_mutex;
 
+            #if defined(VSDK_Client)
+            // Shape syncs that arrived (via _sync_shape RPC) before their parent
+            // body finished local registration — the server can broadcast a shape
+            // the same tick it creates the body, while the body's own spawn RPC
+            // isn't sent until Rigid_Body::create's deferred registration runs a
+            // frame later. Buffered here, keyed by net_id, and replayed by poll()
+            // the moment that net_id shows up in sync_pending.
+            std::unordered_map<uint32_t, std::pair<godot::String, godot::Array>> pending_shape_syncs;
+            std::mutex pending_shape_mutex;
+            #endif
+
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
             godot::PackedByteArray sync_batch_buf;
 
@@ -108,6 +119,12 @@ namespace Vital::Manager {
             void unregister_syncable(Engine::ISyncable* entity);
             // Posts to pending queue — safe to call from any thread/enqueue context.
             void enqueue_syncable_registration(Engine::ISyncable* entity);
+
+            #if defined(VSDK_Client)
+            // Buffers a shape sync whose net_id isn't registered yet; poll() applies
+            // it via Engine::Network::apply_shape() once that net_id registers.
+            void defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params);
+            #endif
 
 
             // State //

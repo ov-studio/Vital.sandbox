@@ -138,6 +138,13 @@ namespace Vital::Manager {
         sync_pending.push_back(entity);
     }
 
+    #if defined(VSDK_Client)
+    void Network::defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params) {
+        std::lock_guard<std::mutex> lock(pending_shape_mutex);
+        pending_shape_syncs[net_id] = { shape_type, params };
+    }
+    #endif
+
 
     //----------------//
     //     State      //
@@ -806,6 +813,26 @@ namespace Vital::Manager {
                     }
                 }
             }
+
+            #if defined(VSDK_Client)
+            // Replay any shape syncs that arrived before these bodies registered.
+            if (!incoming.empty()) {
+                std::vector<std::pair<uint32_t, std::pair<godot::String, godot::Array>>> to_apply;
+                {
+                    std::lock_guard<std::mutex> lock(pending_shape_mutex);
+                    for (auto* entity : incoming) {
+                        uint32_t nid = entity->get_net_id();
+                        auto it = pending_shape_syncs.find(nid);
+                        if (it != pending_shape_syncs.end()) {
+                            to_apply.emplace_back(nid, it->second);
+                            pending_shape_syncs.erase(it);
+                        }
+                    }
+                }
+                for (auto& [nid, shape] : to_apply)
+                    Engine::Network::apply_shape(nid, shape.first, shape.second);
+            }
+            #endif
         }
 
         // ── Sync batch — one VSST packet per frame, broadcast to all peers ──────

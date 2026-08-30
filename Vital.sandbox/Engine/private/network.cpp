@@ -287,7 +287,23 @@ namespace Vital::Engine {
     // Vehicle wheels are children of their vehicle body and driven by Godot's physics — no sync needed.
     void Network::_sync_shape(int net_id, godot::String shape_type, godot::Array params) {
         #if defined(VSDK_Client)
+        // The server sends this the moment a shape is set — which can be the same
+        // script tick the body was created, before the body's own spawn RPC has
+        // even reached the network (Rigid_Body::create defers its registration+RPC
+        // by a frame). If the body isn't registered here yet, buffer this shape and
+        // let Manager::Network::poll() replay it once the net_id shows up.
         Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
+        if (!entity) {
+            Manager::Network::get_singleton() -> defer_shape_sync((uint32_t)net_id, shape_type, params);
+            return;
+        }
+        apply_shape((uint32_t)net_id, shape_type, params);
+        #endif
+    }
+
+    void Network::apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params) {
+        #if defined(VSDK_Client)
+        Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable(net_id);
         if (!entity) return;
 
         auto node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(entity));
