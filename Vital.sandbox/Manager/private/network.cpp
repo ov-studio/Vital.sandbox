@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
@@ -718,9 +719,7 @@ namespace Vital::Manager {
         // Uses rpc_id — only the joining peer receives this, no broadcast to others.
         send_full_state_to_peer(id);
 
-        Tool::Stack args;
-        args.array.push_back(Tool::StackValue((int32_t)id));
-        Tool::Event::emit("network:peer:join", args);
+        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue(id));
     }
 
     void Network::_on_peer_disconnected(int id) {
@@ -747,9 +746,7 @@ namespace Vital::Manager {
             }
         }
 
-        Tool::Stack args;
-        args.array.push_back(Tool::StackValue((int32_t)id));
-        Tool::Event::emit("network:peer:leave", args);
+        Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue(id));
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
