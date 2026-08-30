@@ -74,9 +74,20 @@ namespace Vital::Sandbox {
             }
 
             void push_self(Machine* vm) override {
-                auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
-                if (!instance || !instance -> userdata) vm -> push_nil();
-                else instance -> get_reference(self_reference(), true, vm);
+                // NOTE: deliberately NOT re-resolving via find_unlocked(id) here.
+                // This is already a live, ref-counted `this` (the shared_ptr captured
+                // in the StackValue/Stack at signal-emit time keeps it alive). Re-looking
+                // it up by id in the registry made this sensitive to exactly when the
+                // instance got erased/flagged destroyed — which, for entity:created and
+                // entity:destroyed specifically, can happen before a deferred Lua dispatch
+                // (Core::execute() only runs synchronously on the main thread; off-thread
+                // callers — remote spawn/destroy, physics-thread teardown — get queued and
+                // delivered later, after erase_unlocked() has already run) causing a nil
+                // entity to reach Lua. The only thing that actually invalidates this
+                // reference is release() nulling `userdata` — check that directly instead.
+                auto* self = static_cast<Derived*>(this);
+                if (!self -> userdata) vm -> push_nil();
+                else self -> get_reference(self_reference(), true, vm);
             }
 
             bool store(bool push_to_stack = false) {
