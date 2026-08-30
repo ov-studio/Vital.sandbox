@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
+#include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/API/utility/event.h>
 
 
@@ -666,6 +667,33 @@ namespace Vital::Manager {
                     else continue; // unknown shape type — skip
 
                     node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), shape_type, params);
+                }
+
+                // 2.5b. Send wheel spawn + config for any Vehicle_Wheel children.
+                // Per-tick inputs (engine_force/brake/steering) are NOT sent —
+                // they only matter on the authority peer.
+                for (int wi = 0; wi < parent_node->get_child_count(); wi++) {
+                    auto* wheel = godot::Object::cast_to<Engine::Vehicle_Wheel>(parent_node->get_child(wi));
+                    if (!wheel) continue;
+
+                    node->rpc_id(id, "_spawn_wheel", (int)e->get_net_id(), wheel->wheel_index,
+                                 wheel->get_position(), wheel->get_rotation());
+
+                    auto send_cfg = [&](const char* key, godot::Variant val) {
+                        node->rpc_id(id, "_sync_wheel_config", (int)e->get_net_id(),
+                                     wheel->wheel_index, godot::String(key), val);
+                    };
+                    send_cfg("radius",                 wheel->get_radius());
+                    send_cfg("suspension_rest_length", wheel->get_suspension_rest_length());
+                    send_cfg("suspension_travel",      wheel->get_suspension_travel());
+                    send_cfg("suspension_stiffness",   wheel->get_suspension_stiffness());
+                    send_cfg("suspension_max_force",   wheel->get_suspension_max_force());
+                    send_cfg("damping_compression",    wheel->get_damping_compression());
+                    send_cfg("damping_relaxation",     wheel->get_damping_relaxation());
+                    send_cfg("use_as_traction",        wheel->is_used_as_traction());
+                    send_cfg("use_as_steering",        wheel->is_used_as_steering());
+                    send_cfg("friction_slip",          wheel->get_friction_slip());
+                    send_cfg("roll_influence",         wheel->get_roll_influence());
                 }
             }
         }
