@@ -48,7 +48,6 @@ namespace Vital::Engine {
         rpc_config("_set_authority", reliable);
         rpc_config("_sync_shape", reliable);
         rpc_config("_spawn_wheel", reliable);
-        rpc_config("_destroy_wheel", reliable);
         rpc_config("_sync_wheel_config", reliable);
         rpc_config("_sync_wheel_transform", reliable);
 
@@ -228,16 +227,6 @@ namespace Vital::Engine {
         wheel->set_position(position);
         wheel->set_rotation(rotation);
         godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_index=", wheel_index);
-        #endif
-    }
-
-    // _destroy_wheel: client removes a specific wheel child.
-    void Network::_destroy_wheel(int net_id, int wheel_index) {
-        #if defined(VSDK_Client)
-        auto* vehicle = find_vehicle_node((uint32_t)net_id);
-        if (!vehicle) return;
-        auto* wheel = find_wheel(vehicle, wheel_index);
-        if (wheel) wheel->queue_free();
         #endif
     }
 
