@@ -218,9 +218,25 @@ namespace Vital::Engine {
         }
         if (!after) {
             if (before -> vel.length() > VEL_THRESHOLD) {
-                // Cap extrapolation to 2 interp steps to avoid wild overshooting
-                float extra = std::min(render_time - before -> time, interp_step * 2.0f);
-                out_pos = before -> pos + before -> vel * extra;
+                // Cap extrapolation to 1 interp step (was 2). We only reach this
+                // branch on a genuine buffer underrun — the "after" snapshot we
+                // normally keep buffered hasn't arrived yet — and a hard
+                // direction reversal is the worst case for it: the real velocity
+                // has already flipped but we're still projecting forward on the
+                // old one. Halving the cap halves how far/long that guess can be
+                // wrong before the next real snapshot corrects it.
+                float cap = interp_step;
+                float extra = std::min(render_time - before -> time, cap);
+                // Ease the extrapolated contribution toward zero across the
+                // window instead of holding it at full velocity throughout —
+                // bounds worst-case overshoot on a reversal without needing to
+                // predict the reversal (which is impossible from position/
+                // velocity alone). Full weight at the start (t=0, where we're
+                // most likely still correct), tapering to half weight by the
+                // time we hit the cap.
+                float t = cap > 0.0f ? std::clamp(extra / cap, 0.0f, 1.0f) : 0.0f;
+                float ease = 1.0f - t * 0.5f;
+                out_pos = before -> pos + before -> vel * extra * ease;
             }
             else out_pos = before -> pos;
             out_rot = before -> rot;
