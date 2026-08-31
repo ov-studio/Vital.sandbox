@@ -35,14 +35,14 @@ namespace Vital::Engine {
             static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
 
             // Snapshot buffer constants //
-            static constexpr int   SNAPSHOT_COUNT   = 8;
-            static constexpr float BUFFER_DELAY     = 0.1f;   // 100ms render lag
+            static constexpr int   SNAPSHOT_COUNT   = 16;    // more buffer for 60Hz
+            static constexpr float BUFFER_DELAY     = 0.05f;  // 50ms — 3 packets at 60Hz
             static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
             static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float BUFFER_DELAY_MIN = 0.05f;  // 50ms floor
-            static constexpr float BUFFER_DELAY_MAX = 0.25f;  // 250ms ceiling
-            static constexpr float JITTER_MARGIN    = 2.0f;   // stddev multiplier
-            static constexpr int   JITTER_WINDOW    = 8;      // samples
+            static constexpr float BUFFER_DELAY_MIN = 0.033f; // 33ms — 2 packets at 60Hz floor
+            static constexpr float BUFFER_DELAY_MAX = 0.15f;  // 150ms ceiling
+            static constexpr float JITTER_MARGIN    = 1.5f;   // stddev multiplier — tighter
+            static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
 
             // Type //
             // Identifies the concrete type for spawn/destroy RPCs so the

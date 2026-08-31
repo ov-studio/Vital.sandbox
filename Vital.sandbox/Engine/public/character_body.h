@@ -40,7 +40,7 @@ namespace Vital::Engine {
             void _notification(int what) {
                 if (what == NOTIFICATION_PREDELETE) _notify_predelete_sync();
             }
-            void _process(double delta) override { on_sync_process(delta); }
+            void _physics_process(double delta) override { on_sync_process(delta); }
 
             // Managers //
             static Character_Body* create(int authority_peer = 0);

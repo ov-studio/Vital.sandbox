@@ -625,8 +625,9 @@ namespace Vital::Manager {
                 for (auto* m : incoming) {
                     if (!m->sync_registered) {
                         sync_models.push_back(m);
-                        sync_id_map[m->get_net_id()] = m; // ISyncable*
+                        sync_id_map[m->get_net_id()] = m;
                         m->sync_registered = true;
+                        m->interp_step = sync_interval; // ensure correct rate from first registration
                     }
                 }
             }
@@ -735,7 +736,7 @@ namespace Vital::Manager {
         // packet to confirm/correct the initial state dump position.
         send_full_state_to_peer(id);
 
-        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue(id));
+        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)id));
     }
 
     void Network::_on_peer_disconnected(int id) {
@@ -762,7 +763,7 @@ namespace Vital::Manager {
             }
         }
 
-        Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue(id));
+        Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue((int32_t)id));
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }

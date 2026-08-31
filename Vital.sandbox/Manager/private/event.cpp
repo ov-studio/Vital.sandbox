@@ -167,6 +167,8 @@ void vsdk_initialize() {
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 
+
+
     Vital::Tool::Event::bind("entity:created", [](Vital::Tool::Stack arguments) {        
         if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
             Vital::Tool::print("sbox", "created a model");

@@ -169,8 +169,13 @@ namespace Vital::Engine {
                     variance += d * d;
                 }
                 float stddev = (jitter_count > 1) ? std::sqrt(variance / (float)(jitter_count - 1)) : 0.0f;
-                float target = std::clamp(interp_step + JITTER_MARGIN * stddev, BUFFER_DELAY_MIN, BUFFER_DELAY_MAX);
-                adaptive_delay = adaptive_delay * 0.95f + target * 0.05f;
+                // Target: one interp_step (one packet interval) + jitter headroom.
+                // Clamp to [interp_step, BUFFER_DELAY_MAX] so we never go below one
+                // packet interval (would cause starvation) or above 250ms (too laggy).
+                float target = std::clamp(interp_step + JITTER_MARGIN * stddev, interp_step, BUFFER_DELAY_MAX);
+                // Faster EMA: 0.8 old + 0.2 new — responds to network changes in ~5 packets
+                // instead of the old 0.95/0.05 which took ~20 packets to converge.
+                adaptive_delay = adaptive_delay * 0.8f + target * 0.2f;
             }
             jitter_last_arrival = snap_clock;
         }
@@ -206,7 +211,8 @@ namespace Vital::Engine {
         }
         if (!after) {
             if (before -> vel.length() > VEL_THRESHOLD) {
-                float extra = std::min(render_time - before -> time, interp_step * 3.0f);
+                // Cap extrapolation to 2 interp steps to avoid wild overshooting
+                float extra = std::min(render_time - before -> time, interp_step * 2.0f);
                 out_pos = before -> pos + before -> vel * extra;
             }
             else out_pos = before -> pos;
@@ -223,7 +229,13 @@ namespace Vital::Engine {
         } 
         else {
             out_pos = before -> pos.lerp(after -> pos, t);
-            out_rot = before -> rot.lerp(after -> rot, t);
+            // Slerp via quaternion to avoid Euler gimbal/wrap issues (e.g. 359->1 deg).
+            static constexpr float DEG2RAD = 3.14159265358979323846f / 180.0f;
+            static constexpr float RAD2DEG = 180.0f / 3.14159265358979323846f;
+            godot::Quaternion q_before = godot::Basis::from_euler(before -> rot * DEG2RAD).get_quaternion();
+            godot::Quaternion q_after  = godot::Basis::from_euler(after  -> rot * DEG2RAD).get_quaternion();
+            godot::Quaternion q_interp = q_before.slerp(q_after, t);
+            out_rot = godot::Basis(q_interp).get_euler() * RAD2DEG;
         }
     }
 }
