@@ -35,12 +35,22 @@ namespace Vital::Engine {
             static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
 
             // Snapshot buffer constants //
-            static constexpr int   SNAPSHOT_COUNT   = 16;    // more buffer for 60Hz
+            static constexpr int   SNAPSHOT_COUNT   = 32;    // ~530ms of history at 60Hz —
+                                                              // headroom above BUFFER_DELAY_MAX
+                                                              // so a big adaptive buffer still
+                                                              // has real snapshots behind it.
             static constexpr float BUFFER_DELAY     = 0.05f;  // 50ms — 3 packets at 60Hz
             static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
             static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
             static constexpr float BUFFER_DELAY_MIN = 0.033f; // 33ms — 2 packets at 60Hz floor
-            static constexpr float BUFFER_DELAY_MAX = 0.15f;  // 150ms ceiling
+            // 300ms ceiling (was 150ms). This is adaptive per-connection (see
+            // sync_push_snapshot) — a LAN/low-jitter peer's measured stddev keeps
+            // its own adaptive_delay near BUFFER_DELAY_MIN regardless of this
+            // value. Raising the ceiling only helps peers whose *actual* jitter
+            // needs more room (typically a global/high-latency server) instead of
+            // clamping them into forced underruns — i.e. the extrapolation
+            // overshoot branch — every time real jitter exceeded the old cap.
+            static constexpr float BUFFER_DELAY_MAX = 0.30f;
             static constexpr float JITTER_MARGIN    = 1.5f;   // stddev multiplier — tighter
             static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
 
