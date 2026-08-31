@@ -351,7 +351,7 @@ namespace Vital::Engine {
                 SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
                 GetConsoleMode(hStdin, &in_mode);
                 stdin_original_mode = in_mode;
-                SetConsoleMode(hStdin, ENABLE_PROCESSED_INPUT);
+                SetConsoleMode(hStdin, ENABLE_EXTENDED_FLAGS | ENABLE_PROCESSED_INPUT);
             #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
