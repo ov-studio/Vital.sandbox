@@ -170,9 +170,16 @@ namespace Vital::Engine {
                 }
                 float stddev = (jitter_count > 1) ? std::sqrt(variance / (float)(jitter_count - 1)) : 0.0f;
                 // Target: one interp_step (one packet interval) + jitter headroom.
-                // Clamp to [interp_step, BUFFER_DELAY_MAX] so we never go below one
-                // packet interval (would cause starvation) or above 250ms (too laggy).
-                float target = std::clamp(interp_step + JITTER_MARGIN * stddev, interp_step, BUFFER_DELAY_MAX);
+                // Clamp to [BUFFER_DELAY_MIN, BUFFER_DELAY_MAX] so we always keep at
+                // least ~2 packet intervals of buffer ahead of the render clock, even
+                // on a near-zero-jitter connection. A 1-packet floor (interp_step)
+                // sounds tighter/more responsive, but it means the renderer is
+                // constantly running out of a real "after" snapshot and falling into
+                // interp_process's velocity-based extrapolation branch — which looks
+                // fine for constant-velocity motion but visibly overshoots then snaps
+                // back on every direction change, since it assumes velocity stays
+                // constant. Keeping a real bracketing snapshot on hand avoids that.
+                float target = std::clamp(interp_step + JITTER_MARGIN * stddev, BUFFER_DELAY_MIN, BUFFER_DELAY_MAX);
                 // Faster EMA: 0.8 old + 0.2 new — responds to network changes in ~5 packets
                 // instead of the old 0.95/0.05 which took ~20 packets to converge.
                 adaptive_delay = adaptive_delay * 0.8f + target * 0.2f;
