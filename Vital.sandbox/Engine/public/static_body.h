@@ -40,7 +40,11 @@ namespace Vital::Engine {
             void _notification(int what) {
                 if (what == NOTIFICATION_PREDELETE) _notify_predelete_sync();
             }
-            void _physics_process(double delta) override { on_sync_process(delta); }
+            // See Character_Body::_process for why this moved off _physics_process:
+            // remote-side interpolation is a visual read-out of the snapshot buffer,
+            // not a physics simulation step, so it should run once per rendered
+            // frame via _process, matching Model, Animatable_Body and Vehicle_Body.
+            void _process(double delta) override { on_sync_process(delta); }
 
             // Managers //
             static Static_Body* create(int authority_peer = 0);

@@ -515,7 +515,28 @@ namespace Vital::Manager {
             if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
         catch (...) {}
-        sync_interval = 1.0f / static_cast<float>(config.get_sync_rate());
+        // Physics tick rate is normally fixed at compile time (project.godot),
+        // which would mean the owner is stuck with whatever rate we shipped.
+        // godot::Engine allows setting it at runtime, and this runs before any
+        // physics has stepped (host() is called on the very first sandbox:process
+        // tick, before resources/bodies exist), so it's safe to apply here —
+        // giving the owner full control over both tick rate and sync rate from
+        // config.yaml alone, with no rebuild required for any value we support.
+        int physics_rate = config.get_physics_tick_rate();
+        godot::Engine::get_singleton()->set_physics_ticks_per_second(physics_rate);
+
+        // sync_rate can't usefully exceed physics_rate — a body's position can't
+        // change more often than physics steps it, so sending faster than that
+        // just re-sends stale data. Clamp and warn if the owner set it higher.
+        int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
+        sync_interval = 1.0f / static_cast<float>(effective_sync_rate);
+        if (effective_sync_rate < config.get_sync_rate()) {
+            log("warn", fmt::format(
+                "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
+                "capping effective sync rate to {} Hz. Raise physics_tick_rate to send updates faster.",
+                config.get_sync_rate(), physics_rate, effective_sync_rate
+            ));
+        }
 
         log("sbox", fmt::format(
             "Server is live!\n"
