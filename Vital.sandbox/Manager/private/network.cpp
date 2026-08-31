@@ -625,6 +625,11 @@ namespace Vital::Manager {
         // zeroed last_* so encode_delta always sets all 9 bits in the mask.
         int cursor = 8;
         for (auto* model : snapshot) {
+            // Skip peer-authority bodies — position is spawn-point (physics hasn't
+            // stepped yet) and velocity is zeroed, so the dump parks them at sky
+            // height on the late-joiner. The first _sync_client relay arrives within
+            // one physics tick and carries real position + velocity.
+            if (model->get_sync_authority() != 1) continue;
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
             // Always zero velocity in state dump — continuous _sync_entities corrects
