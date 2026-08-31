@@ -28,6 +28,33 @@ network:
   # Default: 32
   max_peers: 32
 
+  # How many times per second the server sends position/rotation/velocity
+  # updates for synced entities (physics bodies, models) to each client.
+  # Higher = smoother, more responsive remote entities, but more bandwidth
+  # and CPU per connected peer. Lower = cheaper, but remote entities lean
+  # more on client-side interpolation/extrapolation to look smooth.
+  # Range: 1-128. If left unset, this defaults to whatever physics_tick_rate
+  # above is set to (so the two knobs stay in sync unless you deliberately
+  # split them). Set this explicitly and lower than physics_tick_rate if you
+  # want cheaper bandwidth than simulation precision — e.g. physics_tick_rate:
+  # 120 with sync_rate: 30 gives precise local physics but a lighter network
+  # footprint, leaning on client-side interpolation to smooth the gaps.
+  # NOTE: this is automatically capped to physics_tick_rate above — a synced
+  # entity's position can't change more often than physics steps it, so
+  # setting this higher just resends stale data. The server logs a warning
+  # on startup if this value is being capped; raise physics_tick_rate too
+  # if you actually want faster updates.
+  # Default: unset (tracks physics_tick_rate above)
+  #sync_rate: 30
+
+  # How many times per second the server steps its own physics simulation
+  # (gravity, collisions, rigid body forces, character movement resolution).
+  # Higher = more accurate/precise simulation (less tunneling on fast movers,
+  # smoother resting contacts), but more server CPU per active physics body.
+  # Lower = cheaper, fine for slower-paced or less physics-heavy servers.
+  # This also sets the ceiling for sync_rate below (see note there).
+  # Range: 1-120. Default: 60.
+  physics_tick_rate: 60
 
 # HTTP Server
 http:
