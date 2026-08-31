@@ -26,7 +26,7 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 namespace Vital::Manager {
 
     //--------------------//
@@ -283,7 +283,7 @@ namespace Vital::Manager {
 
     // Called by Engine::Network::_sync_models (unreliable) and _sync_state (reliable).
     // All sync packets now use VSST batch format — no single-model packets.
-    void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool /*is_state_dump*/) {
+    void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool) {
         if (data.size() < 8) return;
         if (Engine::ISyncable::read_u32(data, 0) != STATE_DUMP_MAGIC) return;
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 4);
@@ -686,7 +686,7 @@ namespace Vital::Manager {
             }
         }
 
-        // 2. Send _spawn_model for every existing model so the late-joiner
+        // 2. Send _spawn_entity for every existing model so the late-joiner
         //    creates the nodes before the transform state dump arrives.
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
@@ -980,9 +980,6 @@ namespace Vital::Manager {
             if (snapshot.empty() || !node || !is_connected()) return;
 
             int my_id = get_peer_id();
-            uint32_t dirty_count = 0;
-            sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::ISyncable::SYNC_PACKET_MAX);
-
             // Client delta batch: [sender u32][VSST magic u32][payload_bytes u32][entries]
             sync_batch_buf.resize(12 + (int)snapshot.size() * Engine::ISyncable::SYNC_PACKET_MAX);
             int cursor = 12;
