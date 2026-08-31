@@ -98,6 +98,15 @@ namespace Vital::Engine {
             if (!GodotBase::is_inside_tree()) return;
             auto net = Manager::Network::get_singleton();
             if (net && net->get_peer_id() == sync_authority) return;
+            // Snap to position on the very first sync packet so the body doesn't
+            // sit at origin (or drift under local physics) while interp_ready is
+            // false. Without this, remote CharacterBody3D nodes fall from {0,0,0}
+            // under the client's gravity until the interpolator takes over, landing
+            // at the wrong height and staying there until a snap threshold is hit.
+            if (!interp_ready) {
+                GodotBase::set_global_position(pos);
+                GodotBase::set_rotation_degrees(rot);
+            }
             sync_push_snapshot(pos, rot, vel);
             sync_last_pos = pos;
             sync_last_rot = rot;

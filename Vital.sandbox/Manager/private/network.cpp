@@ -688,6 +688,15 @@ namespace Vital::Manager {
 
         // 2. Send _spawn_entity for every existing model so the late-joiner
         //    creates the nodes before the transform state dump arrives.
+        //    Also reset delta_last_* on peer-authority bodies: those bodies are
+        //    excluded from the state dump, so the late-joiner's delta decoder for
+        //    them starts at zero. The server's own delta_last_* for each such body
+        //    has been accumulating since that peer joined, so the next relayed
+        //    packet would decode against a mismatched baseline on the new client,
+        //    producing a permanent positional offset until a snap threshold is hit.
+        //    Zeroing delta_last_* here forces the next parse_sync_packet_at call
+        //    to treat the incoming client packet as a fresh full packet — matching
+        //    what the new client's decoder expects.
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
             for (auto* e : sync_models) {
@@ -696,6 +705,11 @@ namespace Vital::Manager {
                     (int)e->get_sync_type(),
                     Tool::to_godot_string(e->get_sync_name()),
                     e->get_sync_authority());
+                if (e->get_sync_authority() != 1) {
+                    e->delta_last_pos = godot::Vector3();
+                    e->delta_last_rot = godot::Vector3();
+                    e->delta_last_vel = godot::Vector3();
+                }
             }
         }
 
