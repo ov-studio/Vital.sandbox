@@ -34,6 +34,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"), &Network::_sync_entities);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_rate", "rate"), &Network::_sync_rate);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_index", "key", "value"), &Network::_sync_wheel_config);
@@ -60,6 +61,9 @@ namespace Vital::Engine {
             void _sync_entities(godot::PackedByteArray data);
             void _sync_state(godot::PackedByteArray data);
             void _sync_client(godot::PackedByteArray data);
+            // Sent server -> client once on connect with the server's real
+            // physics_tick_rate/sync_rate (Hz). See Manager::Network::apply_sync_rate.
+            void _sync_rate(int rate);
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             // Actually finds/creates the Collision_Shape child and applies the shape.
             // Split out of _sync_shape so Manager::Network::poll() can replay a shape

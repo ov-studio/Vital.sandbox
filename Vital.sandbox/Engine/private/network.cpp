@@ -45,6 +45,7 @@ namespace Vital::Engine {
         rpc_config("_spawn_entity", reliable);
         rpc_config("_destroy_entity", reliable);
         rpc_config("_sync_state", reliable);
+        rpc_config("_sync_rate", reliable);
         rpc_config("_set_authority", reliable);
         rpc_config("_sync_shape", reliable);
         rpc_config("_spawn_wheel", reliable);
@@ -79,6 +80,12 @@ namespace Vital::Engine {
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         int sender = tree ? tree -> get_multiplayer() -> get_remote_sender_id() : 0;
         Manager::Network::get_singleton() -> dispatch_client_sync(data, sender);
+        #endif
+    }
+
+    void Network::_sync_rate(int rate) {
+        #if defined(VSDK_Client)
+        Manager::Network::get_singleton() -> apply_sync_rate(rate);
         #endif
     }
 

@@ -162,6 +162,24 @@ namespace Vital::Manager {
         std::lock_guard<std::mutex> lock(pending_shape_mutex);
         pending_shape_syncs[net_id] = { shape_type, params };
     }
+
+    // Received via the "_sync_rate" RPC, sent by the server the moment we connect.
+    // Replaces the 20 Hz compile-time default with the server's real
+    // physics_tick_rate/sync_rate, and re-stamps interp_step on every syncable
+    // already registered (covers the rare case one registered before this RPC
+    // arrived). Anything that registers afterwards picks up the corrected
+    // sync_interval automatically in poll() (entity->interp_step = sync_interval).
+    void Network::apply_sync_rate(int rate) {
+        if (rate < 1) rate = 1;
+        if (rate > 128) rate = 128;
+        sync_rate_hz  = rate;
+        sync_interval = 1.0f / static_cast<float>(rate);
+
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+        for (auto* m : sync_models) m->interp_step = sync_interval;
+
+        log("sbox", fmt::format("sync rate confirmed by server -> {} Hz", rate));
+    }
     #endif
 
 
@@ -530,6 +548,7 @@ namespace Vital::Manager {
         // just re-sends stale data. Clamp and warn if the owner set it higher.
         int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
         sync_interval = 1.0f / static_cast<float>(effective_sync_rate);
+        sync_rate_hz  = effective_sync_rate;
         if (effective_sync_rate < config.get_sync_rate()) {
             log("warn", fmt::format(
                 "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
@@ -632,6 +651,14 @@ namespace Vital::Manager {
     void Network::_on_peer_connected(int id) {
         connected_peers.insert(id);
         log("sbox", fmt::format("peer joined -> {}  total: {}", id, (int)connected_peers.size()));
+
+        // 0. Tell the joining peer our real sync rate. Reliable + channel 0, sent
+        //    before the spawn/state-dump RPCs below on the same channel, so ENet's
+        //    ordering guarantee lands it first. Fixes relayed/remote entities being
+        //    interpolated as if packets arrive at the 20 Hz client-side default
+        //    (see sync_interval / sync_rate_hz in network.h) instead of the
+        //    server's configured physics_tick_rate/sync_rate.
+        if (node) node->rpc_id(id, "_sync_rate", sync_rate_hz);
 
         // 1. Flush pending so newly created models are in sync_models before we iterate.
         //    (send_full_state_to_peer does this too, but we need the list for spawns first.)

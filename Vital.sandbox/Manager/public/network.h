@@ -78,6 +78,10 @@ namespace Vital::Manager {
             // Sync interval in seconds — set from config on host(), read each poll().
             // Default 1/20 = 20 Hz. Configurable via network.sync_rate in config.yaml.
             float sync_interval = 1.0f / 20.0f;
+            // Same value as an integer Hz — set alongside sync_interval in host().
+            // Sent verbatim to each peer on connect via the "_sync_rate" RPC so
+            // client builds (which never call host()) stop defaulting to 20 Hz.
+            int sync_rate_hz = 20;
 
 
 
@@ -125,6 +129,14 @@ namespace Vital::Manager {
             // Buffers a shape sync whose net_id isn't registered yet; poll() applies
             // it via Engine::Network::apply_shape() once that net_id registers.
             void defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params);
+
+            // Called from Engine::Network::_sync_rate when the server tells us its
+            // real physics_tick_rate/sync_rate. Without this, sync_interval (and
+            // every ISyncable's interp_step derived from it) stays stuck at the
+            // 20 Hz default above forever on a client build, regardless of what
+            // config.yaml says — see network.cpp host() for the server-side half
+            // of this that a pure client never runs.
+            void apply_sync_rate(int rate);
             #endif
 
 
