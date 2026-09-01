@@ -623,13 +623,23 @@ namespace Vital::Manager {
 
         // Late-joiners have no delta state — force all components by using
         // zeroed last_* so encode_delta always sets all 9 bits in the mask.
+        //
+        // NOTE: peer-authority bodies used to be skipped here on the assumption
+        // that the first _sync_client relay from the owning peer would arrive
+        // "within one physics tick" and correct the position. That assumption
+        // breaks the moment the body is already asleep (sync_sleeping == true)
+        // when the new peer connects: a sleeping body never sends another
+        // _sync_client update (see the "!moved && sync_sleeping -> continue"
+        // gate in poll()), so the relay that was supposed to fix the position
+        // never arrives, and the late-joiner is left with whatever _spawn_entity
+        // defaulted the node to (typically world origin) forever — this is the
+        // "entities half-sunk at 0,0,0 until they move" bug. The server always
+        // has an up-to-date get_sync_position()/get_sync_rotation() for every
+        // model (kept current via apply_sync on every relayed packet, or the
+        // real spawn transform if none has arrived yet), so it's always safe to
+        // include every model in this dump using its real current transform.
         int cursor = 8;
         for (auto* model : snapshot) {
-            // Skip peer-authority bodies — position is spawn-point (physics hasn't
-            // stepped yet) and velocity is zeroed, so the dump parks them at sky
-            // height on the late-joiner. The first _sync_client relay arrives within
-            // one physics tick and carries real position + velocity.
-            if (model->get_sync_authority() != 1) continue;
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
             // Always zero velocity in state dump — continuous _sync_entities corrects
@@ -651,6 +661,20 @@ namespace Vital::Manager {
 
         log("sbox", fmt::format("state dump -> peer {}  ({} models, {} bytes)",
             peer_id, count, buf.size()));
+    }
+
+    void Network::wake_all_syncables() {
+        int my_id =
+        #if defined(VSDK_Client)
+            get_peer_id();
+        #else
+            1;
+        #endif
+
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+        for (auto* model : sync_models) {
+            if (model->get_sync_authority() == my_id) model->sync_sleeping = false;
+        }
     }
 
     void Network::_on_peer_connected(int id) {
@@ -802,6 +826,18 @@ namespace Vital::Manager {
         // by the regular broadcast so without this the late joiner has no follow-up
         // packet to confirm/correct the initial state dump position.
         send_full_state_to_peer(id);
+
+        // 4. Wake every currently-sleeping syncable so a fresh, authoritative
+        // packet goes out over the normal broadcast/relay path within one tick —
+        // belt-and-braces on top of the state dump above, and the actual fix for
+        // peer-authority bodies that have been asleep since before this peer
+        // connected (their owner stopped sending updates, so only a fresh wake
+        // gets them a real packet again). wake_all_syncables() handles our own
+        // (server-authority) models directly; _wake_sync asks every other
+        // connected peer to do the same for the bodies they own. The new peer
+        // itself doesn't need the RPC (it has no owned models yet).
+        wake_all_syncables();
+        if (node) node->rpc("_wake_sync");
 
         Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)id));
     }

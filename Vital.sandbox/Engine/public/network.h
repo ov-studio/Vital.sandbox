@@ -35,6 +35,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_rate", "rate"), &Network::_sync_rate);
+                godot::ClassDB::bind_method(godot::D_METHOD("_wake_sync"), &Network::_wake_sync);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_index", "key", "value"), &Network::_sync_wheel_config);
@@ -64,6 +65,13 @@ namespace Vital::Engine {
             // Sent server -> client once on connect with the server's real
             // physics_tick_rate/sync_rate (Hz). See Manager::Network::apply_sync_rate.
             void _sync_rate(int rate);
+            // Server -> client(s): "you have peer-authority bodies that may have
+            // gone to sleep — clear their sleep flag so the next poll() tick
+            // resends their real current transform." Sent whenever a new peer
+            // joins so late-joiners get a correcting packet for every entity,
+            // not just the ones covered by the state dump. See
+            // Manager::Network::wake_all_syncables().
+            void _wake_sync();
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             // Actually finds/creates the Collision_Shape child and applies the shape.
             // Split out of _sync_shape so Manager::Network::poll() can replay a shape

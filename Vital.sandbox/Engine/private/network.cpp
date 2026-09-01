@@ -51,6 +51,7 @@ namespace Vital::Engine {
         rpc_config("_spawn_wheel", reliable);
         rpc_config("_sync_wheel_config", reliable);
         rpc_config("_sync_wheel_transform", reliable);
+        rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;
         unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
@@ -87,6 +88,10 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         Manager::Network::get_singleton() -> apply_sync_rate(rate);
         #endif
+    }
+
+    void Network::_wake_sync() {
+        Manager::Network::get_singleton() -> wake_all_syncables();
     }
 
     void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority) {

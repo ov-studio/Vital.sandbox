@@ -125,6 +125,19 @@ namespace Vital::Manager {
             void enqueue_syncable_registration(Engine::ISyncable* entity);
             void cleanup_remote_bodies();
 
+            // Clears sync_sleeping on every locally-authoritative syncable (server
+            // authority==1 models on a server build, or authority==my peer id on a
+            // client build), without touching sync_last_pos/rot. The next poll()
+            // tick then sees "not moved, not sleeping" and sends one real, current
+            // transform update through the normal broadcast/relay path before
+            // re-marking the body asleep — i.e. a one-off forced resend rather than
+            // a permanent change in behaviour. Called on the server for its own
+            // models, and mirrored to every connected client via the "_wake_sync"
+            // RPC, whenever a new peer joins — so a late-joiner is guaranteed a
+            // correcting packet for every entity within one tick of connecting,
+            // including peer-authority bodies that were already asleep.
+            void wake_all_syncables();
+
             #if defined(VSDK_Client)
             // Buffers a shape sync whose net_id isn't registered yet; poll() applies
             // it via Engine::Network::apply_shape() once that net_id registers.
