@@ -322,7 +322,7 @@ namespace Vital::Sandbox::API {
 
         static bool resolve_direction(const std::string& direction, bool& down) {
             if (direction == "down") { down = true; return true; }
-            if (direction == "up") { down = false; return true; }
+            else if (direction == "up") { down = false; return true; }
             return false;
         }
 
