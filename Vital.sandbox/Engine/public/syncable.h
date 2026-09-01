@@ -39,19 +39,19 @@ namespace Vital::Engine {
                                                               // headroom above BUFFER_DELAY_MAX
                                                               // so a big adaptive buffer still
                                                               // has real snapshots behind it.
-            static constexpr float BUFFER_DELAY     = 0.05f;  // 50ms — 3 packets at 60Hz
+
+            // Compile-time defaults — the adaptive system converges away from these
+            // within ~5 packets (0.2 EMA). Server operators override the three
+            // tuneable values below via config.yaml (sync section); see Config::Server.
+            static constexpr float BUFFER_DELAY     = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
             static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
             static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float BUFFER_DELAY_MIN = 0.033f; // 33ms — 2 packets at 60Hz floor
-            // 300ms ceiling (was 150ms). This is adaptive per-connection (see
-            // sync_push_snapshot) — a LAN/low-jitter peer's measured stddev keeps
-            // its own adaptive_delay near BUFFER_DELAY_MIN regardless of this
-            // value. Raising the ceiling only helps peers whose *actual* jitter
-            // needs more room (typically a global/high-latency server) instead of
-            // clamping them into forced underruns — i.e. the extrapolation
-            // overshoot branch — every time real jitter exceeded the old cap.
-            static constexpr float BUFFER_DELAY_MAX = 0.30f;
-            static constexpr float JITTER_MARGIN    = 1.5f;   // stddev multiplier — tighter
+            static constexpr float BUFFER_DELAY_MIN = 0.033f; // floor — keeps real bracketing snapshot;
+                                                               // must stay >= interp_step (1/sync_rate)
+                                                               // or the renderer falls into the
+                                                               // extrapolation branch on every tick.
+            static constexpr float BUFFER_DELAY_MAX = 0.30f;  // default ceiling (300ms) — overridable
+            static constexpr float JITTER_MARGIN    = 1.5f;   // default stddev multiplier — overridable
             static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
 
             // Type //
