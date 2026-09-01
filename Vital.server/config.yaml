@@ -64,6 +64,45 @@ http:
   port: 7778
 
 
+# Sync Tuning
+# Controls client-side interpolation behaviour for remote entities.
+# These are applied at startup — no recompile needed.
+sync:
+  # Maximum adaptive jitter buffer in seconds.
+  # The buffer starts at ~33ms and grows per-peer based on measured jitter,
+  # capped here. A peer whose real jitter stays below this cap is unaffected.
+  #
+  # LAN / relay-only server:  0.10  (100ms — tight, low latency)
+  # Mixed LAN + global:       0.20  (200ms — balanced)
+  # Global / high-latency:    0.30  (300ms — default, safe for most)
+  # Very lossy / satellite:   0.50+ (give bursty peers more headroom)
+  #
+  # Range: 0.05 – 1.0. Default: 0.30
+  buffer_delay_max: 0.30
+
+  # Jitter buffer growth rate — stddev multiplier for the adaptive target.
+  # target = interp_step + jitter_margin * measured_stddev, clamped to
+  # [BUFFER_DELAY_MIN, buffer_delay_max].
+  # Lower = snappier on stable links, more underruns on bursty ones.
+  # Higher = smoother on bad links, slightly more lag on good ones.
+  #
+  # LAN / stable:    1.0 – 1.25
+  # General:         1.5  (default)
+  # Lossy / bad:     2.0 – 3.0
+  #
+  # Range: 0.5 – 5.0. Default: 1.5
+  jitter_margin: 1.5
+
+  # Teleport threshold in world units.
+  # If the gap between two consecutive snapshots exceeds this, the client
+  # teleports instead of interpolating (avoids a visible slow glide across
+  # the map on respawn, authority transfer, etc.).
+  # Set lower for small/tight maps, higher for large open worlds.
+  #
+  # Range: 0.5 – 100.0. Default: 5.0
+  snap_threshold: 5.0
+
+
 # Bootstrapper
 bootstrap:
   # Resources listed here are automatically started after the initial resource scan.

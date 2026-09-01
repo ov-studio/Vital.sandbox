@@ -36,6 +36,11 @@ namespace Vital::Config {
                 return Tool::YAML::get_int(yaml.get_root()[section], key, fallback);
             }
 
+            float get_float(const char* section, const char* key, float fallback = 0.0f) const {
+                if (!loaded || !yaml.has(section)) return fallback;
+                return Tool::YAML::get_float(yaml.get_root()[section], key, fallback);
+            }
+            
             bool get_bool(const char* section, const char* key, bool fallback = false) const {
                 if (!loaded || !yaml.has(section)) return fallback;
                 return Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
@@ -84,6 +89,10 @@ namespace Vital::Config {
                 append_field(oss, "Max Peers", std::to_string(get_max_clients()));
                 append_field(oss, "Sync Rate", std::to_string(get_sync_rate()) + " Hz");
                 append_field(oss, "Physics Tick Rate", std::to_string(get_physics_tick_rate()) + " Hz");
+                oss << "• Sync:\n";
+                append_field(oss, "Buffer Delay Max", fmt::format("{:.0f}ms", get_sync_buffer_delay_max() * 1000.0f));
+                append_field(oss, "Jitter Margin",    fmt::format("{:.2f}x", get_sync_jitter_margin()));
+                append_field(oss, "Snap Threshold",   fmt::format("{:.1f}u", get_sync_snap_threshold()));
                 return oss.str();
             }
 
@@ -100,6 +109,9 @@ namespace Vital::Config {
             int get_http_port() const { return get_int("http", "port", 7778); }
             int get_sync_rate() const { return std::clamp(get_int("network", "sync_rate", get_physics_tick_rate()), 1, 128); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
+            float get_sync_buffer_delay_max() const { return std::clamp(get_float("sync", "buffer_delay_max", 0.30f), 0.05f, 1.0f); }
+            float get_sync_jitter_margin() const { return std::clamp(get_float("sync", "jitter_margin", 1.5f), 0.5f, 5.0f); }
+            float get_sync_snap_threshold() const { return std::clamp(get_float("sync", "snap_threshold", 5.0f), 0.5f, 100.0f); }
 
 
             // Bootstrap //
