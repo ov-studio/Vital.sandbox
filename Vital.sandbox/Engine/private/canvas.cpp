@@ -327,6 +327,18 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
+        Shader* shader,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
+        if (!shader) return;
+        draw_material(position, size, shader -> get_material(), rotation, pivot, color);
+    }
+
+    void Canvas::draw_material(
+        godot::Vector2 position,
+        godot::Vector2 size,
         const std::string& path,
         float rotation,
         godot::Vector2 pivot,
@@ -356,18 +368,6 @@ namespace Vital::Engine {
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
         texture -> draw_rect(item, godot::Rect2(-piv, size), false, color);
         Canvas::notify_drawn();
-    }
-
-    void Canvas::draw_material(
-        godot::Vector2 position,
-        godot::Vector2 size,
-        Shader* shader,
-        float rotation,
-        godot::Vector2 pivot,
-        const godot::Color& color
-    ) {
-        if (!shader) return;
-        draw_material(position, size, shader -> get_material(), rotation, pivot, color);
     }
 
     void Canvas::draw_material(
