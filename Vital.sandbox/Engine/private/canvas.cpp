@@ -301,7 +301,7 @@ namespace Vital::Engine {
         Canvas::notify_drawn();
     }
 
-    void Canvas::draw_image(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         Texture* texture,
@@ -310,10 +310,10 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         texture -> heartbeat();
-        draw_image(position, size, texture -> get_canvas_texture(), rotation, pivot, color);
+        draw_material(position, size, texture -> get_canvas_texture(), rotation, pivot, color);
     }
 
-    void Canvas::draw_image(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         Rendertarget* rt,
@@ -321,10 +321,10 @@ namespace Vital::Engine {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_image(position, size, rt -> get_texture(), rotation, pivot, color);
+        draw_material(position, size, rt -> get_texture(), rotation, pivot, color);
     }
 
-    void Canvas::draw_image(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         const std::string& path,
@@ -335,12 +335,12 @@ namespace Vital::Engine {
         try {
             auto texture = Engine::Texture::get_from_reference(path);
             if (!texture) texture = Engine::Image::create(path, path);
-            draw_image(position, size, texture, rotation, pivot, color);
+            draw_material(position, size, texture, rotation, pivot, color);
         }
         catch (...) { std::rethrow_exception(std::current_exception()); }
     }
 
-    void Canvas::draw_image(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         const godot::Ref<godot::Texture2D>& texture,
@@ -358,7 +358,7 @@ namespace Vital::Engine {
         Canvas::notify_drawn();
     }
 
-    void Canvas::draw_shader(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         Shader* shader,
@@ -367,10 +367,10 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (!shader) return;
-        draw_shader(position, size, shader -> get_material(), rotation, pivot, color);
+        draw_material(position, size, shader -> get_material(), rotation, pivot, color);
     }
 
-    void Canvas::draw_shader(
+    void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
         const godot::Ref<godot::ShaderMaterial>& material,

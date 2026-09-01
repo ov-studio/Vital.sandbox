@@ -109,7 +109,7 @@ namespace Vital::Engine {
                 godot::Vector2 pivot = {0.0f, 0.0f}
             );
 
-            void draw_image(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 Texture* texture,
@@ -118,7 +118,7 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            void draw_image(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 Rendertarget* rt,
@@ -127,7 +127,7 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            void draw_image(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 const std::string& path,
@@ -136,7 +136,7 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            void draw_image(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 const godot::Ref<godot::Texture2D>& texture,
@@ -145,7 +145,7 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            void draw_shader(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 Shader* shader,
@@ -154,7 +154,7 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
-            void draw_shader(
+            void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
                 const godot::Ref<godot::ShaderMaterial>& material,
