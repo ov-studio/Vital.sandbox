@@ -1001,6 +1001,22 @@ namespace Vital::Manager {
                     if (entity->get_sync_authority() == my_id) continue;
                     auto& [pos, rot, vel] = state;
                     entity->apply_sync(pos, rot, vel);
+                    // apply_sync only moves the node — it never touches
+                    // delta_last_*, which is this client's own decode baseline
+                    // for *future* incoming packets. Without seeding it here,
+                    // it stays at its zero default, and the first live delta
+                    // this body sends after registering will omit any axis
+                    // that hasn't changed since the sender's own baseline —
+                    // decode_delta then falls back to that stale zero for the
+                    // omitted axes instead of the real resting value, visibly
+                    // yanking that axis toward zero until enough subsequent
+                    // touches happen to cover every axis at least once. Seeding
+                    // delta_last_* with the same real values we just applied
+                    // means the very next partial delta decodes correctly for
+                    // every axis, touched or not.
+                    entity->delta_last_pos = pos;
+                    entity->delta_last_rot = rot;
+                    entity->delta_last_vel = vel;
                 }
             }
 
