@@ -148,7 +148,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Unified draw call: accepts a path, Image, SVG, Rendertarget or Shader as 'material'
             API::bind(vm, base_scope, "draw_material", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, size, material, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2)
