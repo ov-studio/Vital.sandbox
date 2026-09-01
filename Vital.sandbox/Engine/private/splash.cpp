@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Manager/public/kit.h>
+#include <Vital.sandbox/API/utility/input.h>
 
 
 ////////////////////////////
@@ -83,12 +84,14 @@ namespace Vital::Engine {
         webview -> set_position({0, 0});
         webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
         webview -> set_visible(true);
+        Sandbox::API::Input::push_sandbox_ui_visible();
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
             if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
     }
 
     void Splash::hide() {
+        Sandbox::API::Input::pop_sandbox_ui_visible();
         free_singleton();
     }
 

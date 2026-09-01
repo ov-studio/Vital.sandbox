@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/API/utility/input.h>
 
 
 /////////////////////////////
@@ -783,7 +784,11 @@ namespace Vital::Engine {
         const bool state = !is_visible();
         if (Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible() && state) return;
         webview -> set_visible(state);
-        if (state) webview -> set_focussed(true);
+        if (state) {
+            webview -> set_focussed(true);
+            Sandbox::API::Input::push_sandbox_ui_visible();
+        }
+        else Sandbox::API::Input::pop_sandbox_ui_visible();
     }
     #endif
 

@@ -276,6 +276,41 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> key_binds;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> mouse_binds;
         inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_list;
+        inline static std::unordered_map<std::string, godot::Input::MouseMode> cursor_votes;
+        inline static int sandbox_ui_visible_count = 0;
+
+        static godot::Input::MouseMode translate_lua_mode(godot::Input::MouseMode mode) {
+            if (mode == godot::Input::MOUSE_MODE_VISIBLE) return godot::Input::MOUSE_MODE_CONFINED;
+            return mode;
+        }
+
+        static void apply_cursor_mode() {
+            if (sandbox_ui_visible_count > 0) {
+                godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_VISIBLE);
+                return;
+            }
+
+            godot::Input::MouseMode resolved = godot::Input::MOUSE_MODE_CONFINED;
+            for (auto& [env, mode] : cursor_votes) {
+                godot::Input::MouseMode actual = translate_lua_mode(mode);
+                if (actual == godot::Input::MOUSE_MODE_CAPTURED) {
+                    resolved = godot::Input::MOUSE_MODE_CAPTURED;
+                    break;
+                }
+                if (actual == godot::Input::MOUSE_MODE_HIDDEN) resolved = godot::Input::MOUSE_MODE_HIDDEN;
+            }
+            godot::Input::get_singleton() -> set_mouse_mode(resolved);
+        }
+
+        static void push_sandbox_ui_visible() {
+            ++sandbox_ui_visible_count;
+            apply_cursor_mode();
+        }
+
+        static void pop_sandbox_ui_visible() {
+            if (sandbox_ui_visible_count > 0) --sandbox_ui_visible_count;
+            apply_cursor_mode();
+        }
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.second == code; });
@@ -394,7 +429,8 @@ namespace Vital::Sandbox::API {
         static void init(Machine* vm) {
             static bool initialized = false;
             if (initialized) return;
-            initialized = true;
+            initialized = true
+            godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
 
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
@@ -441,7 +477,9 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_cursor_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(godot::Input::get_singleton() -> get_mouse_mode()));
+                auto actual = godot::Input::get_singleton() -> get_mouse_mode();
+                if (actual == godot::Input::MOUSE_MODE_CONFINED) actual = godot::Input::MOUSE_MODE_VISIBLE;
+                vm -> push_value(static_cast<int>(actual));
                 return 1;
             });
 
@@ -461,7 +499,9 @@ namespace Vital::Sandbox::API {
                     .require_enum(1, cursor_mode_registry);
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
-                godot::Input::get_singleton() -> set_mouse_mode(mode);
+                auto env = vm -> get_environment_id();
+                cursor_votes[env] = mode;
+                apply_cursor_mode();
                 vm -> push_value(true);
                 return 1;
             });
@@ -577,6 +617,8 @@ namespace Vital::Sandbox::API {
             release_env(key_binds, vm, env);
             release_env(mouse_binds, vm, env);
             release_env(command_list, vm, env);
+            cursor_votes.erase(env);
+            apply_cursor_mode();
         }
     };
 }
