@@ -539,7 +539,7 @@ namespace Vital::Sandbox::API {
                 if (opts.remote) {
                     #if !defined(VSDK_Client)
                     // TODO: Improve logs?? Reason: event.emit, use base_name call etc to automate?
-                    verify_peer("event.emit", opts.peer_id, false);
+                    verify_peer("event.emit", opts.peer_id, true);
                     #endif
                     send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, false);
                 }
