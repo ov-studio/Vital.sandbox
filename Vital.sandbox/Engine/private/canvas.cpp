@@ -321,7 +321,7 @@ namespace Vital::Engine {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_material(position, size, rt -> get_texture(), rotation, pivot, color);
+        draw_material(position, size, godot::Ref<godot::Texture2D>(rt -> get_texture()), rotation, pivot, color);
     }
 
     void Canvas::draw_material(
