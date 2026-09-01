@@ -70,6 +70,20 @@ namespace Vital::Manager {
             // the moment that net_id shows up in sync_pending.
             std::unordered_map<uint32_t, std::pair<godot::String, godot::Array>> pending_shape_syncs;
             std::mutex pending_shape_mutex;
+
+            // Same problem, for transform (position/rotation/velocity) packets.
+            // dispatch_sync_batch's two reliable state-dump sends fire back-to-back
+            // right after the spawn RPCs, both on the same channel — easily before
+            // that frame's poll() has drained sync_pending, so every entry in the
+            // dump can arrive for a net_id the client hasn't registered yet. Without
+            // buffering, those entries were silently discarded (regardless of which
+            // peer owns the body), leaving it at whatever transform _spawn_entity
+            // defaulted it to (world origin) until a later live delta happened to
+            // correct it — which only ever arrives if the body moves. Stores only
+            // the latest decoded state per net_id; poll() applies and clears it the
+            // moment that net_id registers.
+            std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
+            std::mutex pending_transform_mutex;
             #endif
 
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
@@ -142,6 +156,11 @@ namespace Vital::Manager {
             // Buffers a shape sync whose net_id isn't registered yet; poll() applies
             // it via Engine::Network::apply_shape() once that net_id registers.
             void defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params);
+
+            // Buffers a transform sync (position/rotation/velocity) whose net_id
+            // isn't registered yet; poll() applies it via ISyncable::apply_sync()
+            // once that net_id registers. See pending_transform_syncs above.
+            void defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel);
 
             // Called from Engine::Network::_sync_rate when the server tells us its
             // real physics_tick_rate/sync_rate. Without this, sync_interval (and

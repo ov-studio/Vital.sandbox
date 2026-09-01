@@ -163,6 +163,11 @@ namespace Vital::Manager {
         pending_shape_syncs[net_id] = { shape_type, params };
     }
 
+    void Network::defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel) {
+        std::lock_guard<std::mutex> lock(pending_transform_mutex);
+        pending_transform_syncs[net_id] = { pos, rot, vel };
+    }
+
     // Received via the "_sync_rate" RPC, sent by the server the moment we connect.
     // Replaces the 20 Hz compile-time default with the server's real
     // physics_tick_rate/sync_rate, and re-stamps interp_step on every syncable
@@ -308,9 +313,23 @@ namespace Vital::Manager {
             int consumed;
             if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
             else {
-                // Unknown model — skip this entry using throwaway state.
+                // Unknown model — most likely still mid-registration: its
+                // _spawn_entity RPC landed this same batch of incoming RPCs, but
+                // poll() hasn't drained sync_pending yet (registration happens once
+                // per frame, not the instant the RPC is handled). Decoding against
+                // a zero baseline reconstructs the true values for a state dump
+                // (always a full packet — see send_full_state_to_peer) and is
+                // best-effort for a live delta. Buffer it instead of discarding it
+                // so poll() can apply it the moment this net_id registers — mirrors
+                // defer_shape_sync/pending_shape_syncs above. Without this, every
+                // entry in a state dump can silently vanish if it beats
+                // registration, leaving the body at whatever transform
+                // _spawn_entity defaulted it to until it happens to move.
                 godot::Vector3 dp, dr, dv;
                 consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
+                #if defined(VSDK_Client)
+                if (consumed >= 0) defer_transform_sync(net_id, pos, rot, vel);
+                #endif
             }
             if (consumed < 0) break;
             offset += consumed;
@@ -942,6 +961,31 @@ namespace Vital::Manager {
             }
 
             #if defined(VSDK_Client)
+            // Replay any transform syncs that arrived before these bodies registered.
+            if (!incoming.empty()) {
+                int my_id = get_peer_id();
+                std::vector<std::pair<Engine::ISyncable*, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>>> to_apply;
+                {
+                    std::lock_guard<std::mutex> lock(pending_transform_mutex);
+                    for (auto* entity : incoming) {
+                        uint32_t nid = entity->get_net_id();
+                        auto it = pending_transform_syncs.find(nid);
+                        if (it != pending_transform_syncs.end()) {
+                            to_apply.emplace_back(entity, it->second);
+                            pending_transform_syncs.erase(it);
+                        }
+                    }
+                }
+                for (auto& [entity, state] : to_apply) {
+                    // Mirror dispatch_sync_batch's own-authority guard — never
+                    // let a buffered server-relayed transform stomp a body we
+                    // ourselves are authoritative over.
+                    if (entity->get_sync_authority() == my_id) continue;
+                    auto& [pos, rot, vel] = state;
+                    entity->apply_sync(pos, rot, vel);
+                }
+            }
+
             // Replay any shape syncs that arrived before these bodies registered.
             if (!incoming.empty()) {
                 std::vector<std::pair<uint32_t, std::pair<godot::String, godot::Array>>> to_apply;
