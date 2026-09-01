@@ -164,6 +164,18 @@ namespace Vital::Manager {
     // inside the #if defined(VSDK_Client)/#else server-only split further down,
     // or the symbol goes missing from whichever build's object file falls on
     // the other side of that split — see _wake_sync's link error otherwise.
+    //
+    // Clearing sync_sleeping alone isn't enough: the per-tick loop still
+    // encodes the next packet as a delta against delta_last_pos/rot/vel, which
+    // for a body that hasn't actually moved already equals its real current
+    // value — so the "forced" resend comes out with an empty or near-empty
+    // mask and corrects nothing. Zeroing delta_last_* too forces the next
+    // encode_delta call to treat every field as changed, producing a full,
+    // baseline-independent packet — the only kind that's guaranteed correct
+    // for a peer whose own decode baseline (zero, for anything it hasn't
+    // been continuously connected to receive deltas for) doesn't match the
+    // sender's. This is what actually fixes a late-joiner's stale axes
+    // without requiring the body to move first.
     void Network::wake_all_syncables() {
         int my_id =
         #if defined(VSDK_Client)
@@ -174,7 +186,11 @@ namespace Vital::Manager {
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* model : sync_models) {
-            if (model->get_sync_authority() == my_id) model->sync_sleeping = false;
+            if (model->get_sync_authority() != my_id) continue;
+            model->sync_sleeping   = false;
+            model->delta_last_pos  = godot::Vector3();
+            model->delta_last_rot  = godot::Vector3();
+            model->delta_last_vel  = godot::Vector3();
         }
     }
 
@@ -738,15 +754,15 @@ namespace Vital::Manager {
 
         // 2. Send _spawn_entity for every existing model so the late-joiner
         //    creates the nodes before the transform state dump arrives.
-        //    Also reset delta_last_* on peer-authority bodies: those bodies are
-        //    excluded from the state dump, so the late-joiner's delta decoder for
-        //    them starts at zero. The server's own delta_last_* for each such body
-        //    has been accumulating since that peer joined, so the next relayed
-        //    packet would decode against a mismatched baseline on the new client,
-        //    producing a permanent positional offset until a snap threshold is hit.
-        //    Zeroing delta_last_* here forces the next parse_sync_packet_at call
-        //    to treat the incoming client packet as a fresh full packet — matching
-        //    what the new client's decoder expects.
+        //    (Peer-authority bodies used to get their delta_last_* zeroed here,
+        //    back when they were excluded from the state dump below — see the
+        //    dump's own comment. That only reset the server's *decode* baseline,
+        //    never the real source of truth (the owning peer's *encode*
+        //    baseline), so it couldn't actually fix a stale late-joiner and
+        //    risked corrupting the server's own tracked position if a partial
+        //    delta from the owner arrived before anything forced a full packet.
+        //    wake_all_syncables()/_wake_sync below fix this at the source
+        //    instead, so this no longer needs to touch delta_last_* at all.)
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
             for (auto* e : sync_models) {
@@ -755,11 +771,6 @@ namespace Vital::Manager {
                     (int)e->get_sync_type(),
                     Tool::to_godot_string(e->get_sync_name()),
                     e->get_sync_authority());
-                if (e->get_sync_authority() != 1) {
-                    e->delta_last_pos = godot::Vector3();
-                    e->delta_last_rot = godot::Vector3();
-                    e->delta_last_vel = godot::Vector3();
-                }
             }
         }
 
