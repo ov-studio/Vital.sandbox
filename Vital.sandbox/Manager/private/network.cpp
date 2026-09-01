@@ -157,6 +157,27 @@ namespace Vital::Manager {
         sync_pending.push_back(entity);
     }
 
+    // Shared between client and server builds (unlike most of this file's
+    // networking code) — a client build needs this to service the "_wake_sync"
+    // RPC on its own locally-owned bodies, and the server needs it to wake its
+    // own authority==1 bodies directly in _on_peer_connected. Must NOT live
+    // inside the #if defined(VSDK_Client)/#else server-only split further down,
+    // or the symbol goes missing from whichever build's object file falls on
+    // the other side of that split — see _wake_sync's link error otherwise.
+    void Network::wake_all_syncables() {
+        int my_id =
+        #if defined(VSDK_Client)
+            get_peer_id();
+        #else
+            1;
+        #endif
+
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+        for (auto* model : sync_models) {
+            if (model->get_sync_authority() == my_id) model->sync_sleeping = false;
+        }
+    }
+
     #if defined(VSDK_Client)
     void Network::defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params) {
         std::lock_guard<std::mutex> lock(pending_shape_mutex);
@@ -680,20 +701,6 @@ namespace Vital::Manager {
 
         log("sbox", fmt::format("state dump -> peer {}  ({} models, {} bytes)",
             peer_id, count, buf.size()));
-    }
-
-    void Network::wake_all_syncables() {
-        int my_id =
-        #if defined(VSDK_Client)
-            get_peer_id();
-        #else
-            1;
-        #endif
-
-        std::lock_guard<std::mutex> lock(sync_models_mutex);
-        for (auto* model : sync_models) {
-            if (model->get_sync_authority() == my_id) model->sync_sleeping = false;
-        }
     }
 
     void Network::_on_peer_connected(int id) {
