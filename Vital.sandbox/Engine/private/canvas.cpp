@@ -386,7 +386,7 @@ namespace Vital::Engine {
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_material(item, material -> get_rid());
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
-        rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), godot::Color(1, 1, 1, 1), true);
+        rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), color, true);
         Canvas::notify_drawn();
     }
 
