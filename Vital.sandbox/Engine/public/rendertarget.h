@@ -38,10 +38,7 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         public:
             // Hooks //
-            void _process(double delta) override { 
-                pool.end_frame(delta); 
-                instant = false; 
-            }
+            void _process(double delta) override;
 
 
             // Managers //

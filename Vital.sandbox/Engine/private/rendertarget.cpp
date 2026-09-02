@@ -32,6 +32,13 @@ namespace Vital::Engine {
     }
 
 
+    // Hooks //
+    void Rendertarget::_process(double delta) { 
+        pool.end_frame(delta); 
+        instant = false; 
+    }
+
+    
     // Managers //
     Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
         auto rt = memnew(Rendertarget);
