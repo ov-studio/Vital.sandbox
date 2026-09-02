@@ -40,48 +40,32 @@ namespace Vital::Manager {
             // Magic for batched late-join state dump packets ("VSST").
             // Defined here so both server (sender) and client (receiver) see it.
             static constexpr uint32_t STATE_DUMP_MAGIC = 0x56535354u;
-
         private:
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
 
-            // Model sync registry — every live Model registers here so
-            // poll() can drive sync_tick() without touching the scene tree.
+            // Live Model registry — poll() drives sync_tick() through this instead of scanning the scene tree.
             std::vector<Engine::ISyncable*> sync_models;
             std::mutex sync_models_mutex;
 
-            // Persistent net_id -> Model* map — updated on register/unregister,
-            // used by dispatch_client_sync and dispatch_sync_batch for O(1) lookup
-            // without rebuilding a temporary map every packet.
+            // net_id -> ISyncable* map, kept for O(1) dispatch lookups.
             std::unordered_map<uint32_t, Engine::ISyncable*> sync_id_map;
 
-            // Pending registration queue — models added from enqueue() callbacks
-            // post to this instead of directly into sync_models, avoiding the
-            // O(N) child-scan in poll().
+            // Pending registrations — posted here by enqueue_syncable_registration(),
+            // drained into sync_models by poll() instead of an O(N) child-scan.
             std::vector<Engine::ISyncable*> sync_pending;
             std::mutex sync_pending_mutex;
 
             #if defined(VSDK_Client)
-            // Shape syncs that arrived (via _sync_shape RPC) before their parent
-            // body finished local registration — the server can broadcast a shape
-            // the same tick it creates the body, while the body's own spawn RPC
-            // isn't sent until Rigid_Body::create's deferred registration runs a
-            // frame later. Buffered here, keyed by net_id, and replayed by poll()
-            // the moment that net_id shows up in sync_pending.
+            // Shape syncs (_sync_shape RPC) that arrive before their body finishes
+            // local registration. Buffered by net_id, replayed by poll() once that
+            // net_id shows up in sync_pending.
             std::unordered_map<uint32_t, std::pair<godot::String, godot::Array>> pending_shape_syncs;
             std::mutex pending_shape_mutex;
 
-            // Same problem, for transform (position/rotation/velocity) packets.
-            // dispatch_sync_batch's two reliable state-dump sends fire back-to-back
-            // right after the spawn RPCs, both on the same channel — easily before
-            // that frame's poll() has drained sync_pending, so every entry in the
-            // dump can arrive for a net_id the client hasn't registered yet. Without
-            // buffering, those entries were silently discarded (regardless of which
-            // peer owns the body), leaving it at whatever transform _spawn_entity
-            // defaulted it to (world origin) until a later live delta happened to
-            // correct it — which only ever arrives if the body moves. Stores only
-            // the latest decoded state per net_id; poll() applies and clears it the
-            // moment that net_id registers.
+            // Same problem for transform (position/rotation/velocity) packets — the
+            // state-dump sends can arrive before poll() drains sync_pending. Keeps
+            // only the latest state per net_id; applied and cleared on registration.
             std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
             std::mutex pending_transform_mutex;
             #endif
@@ -89,15 +73,9 @@ namespace Vital::Manager {
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
             godot::PackedByteArray sync_batch_buf;
 
-            // Sync interval in seconds — set from config on host(), read each poll().
-            // Default 1/20 = 20 Hz. Configurable via network.sync_rate in config.yaml.
+            // Sync interval in seconds, set from config on host()/apply_sync_config(),
+            // read each poll(). Configurable via network.sync_rate in config.yaml.
             float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::SyncConfig{}.rate);
-            // Same value as an integer Hz — set alongside sync_interval in host().
-            // Sent verbatim to each peer on connect via the "_sync_config" RPC so
-            // client builds (which never call host()) stop defaulting to 20 Hz.
-            // No local copy here anymore — host()/apply_sync_config() write straight
-            // into Engine::ISyncable::s_sync_config, and get_sync_config() below
-            // just reads it back.
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -139,35 +117,25 @@ namespace Vital::Manager {
             void enqueue_syncable_registration(Engine::ISyncable* entity);
             void cleanup_remote_bodies();
 
-            // Clears sync_sleeping on every locally-authoritative syncable (server
-            // authority==1 models on a server build, or authority==my peer id on a
-            // client build), without touching sync_last_pos/rot. The next poll()
-            // tick then sees "not moved, not sleeping" and sends one real, current
-            // transform update through the normal broadcast/relay path before
-            // re-marking the body asleep — i.e. a one-off forced resend rather than
-            // a permanent change in behaviour. Called on the server for its own
-            // models, and mirrored to every connected client via the "_wake_sync"
-            // RPC, whenever a new peer joins — so a late-joiner is guaranteed a
-            // correcting packet for every entity within one tick of connecting,
-            // including peer-authority bodies that were already asleep.
+            // Clears sync_sleeping on every locally-authoritative syncable (without
+            // touching sync_last_pos/rot), forcing one real resend before it re-sleeps.
+            // Called for the server's own models and mirrored to clients via
+            // "_wake_sync" whenever a new peer joins, so late-joiners get a
+            // correcting packet for every entity within one tick.
             void wake_all_syncables();
 
             #if defined(VSDK_Client)
-            // Buffers a shape sync whose net_id isn't registered yet; poll() applies
-            // it via Engine::Network::apply_shape() once that net_id registers.
+            // Buffers a shape sync for a net_id not yet registered; poll() applies
+            // it via Engine::Network::apply_shape() once it registers.
             void defer_shape_sync(uint32_t net_id, const godot::String& shape_type, const godot::Array& params);
 
-            // Buffers a transform sync (position/rotation/velocity) whose net_id
-            // isn't registered yet; poll() applies it via ISyncable::apply_sync()
-            // once that net_id registers. See pending_transform_syncs above.
+            // Buffers a transform sync for a net_id not yet registered; poll() applies
+            // it via ISyncable::apply_sync() once it registers. See pending_transform_syncs.
             void defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel);
 
-            // Called from Engine::Network::_sync_rate when the server tells us its
-            // real physics_tick_rate/sync_rate. Without this, sync_interval (and
-            // every ISyncable's interp_step derived from it) stays stuck at the
-            // 20 Hz default above forever on a client build, regardless of what
-            // config.yaml says — see network.cpp host() for the server-side half
-            // of this that a pure client never runs.
+            // Called from Engine::Network::_sync_rate with the server's real
+            // physics_tick_rate/sync_rate — keeps client-side sync_interval and
+            // every ISyncable's interp_step from staying at compile-time defaults.
             void apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
             #endif
 
