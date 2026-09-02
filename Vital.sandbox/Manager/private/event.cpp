@@ -155,12 +155,7 @@ void vsdk_initialize() {
                 nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
-                if (!nm -> host(g_server_config)) {
-                    Vital::Tool::print("error", "Server failed to start — see reason above. Halting.");
-                    auto tree = Vital::Manager::Network::get_scene_tree();
-                    if (tree) tree -> quit(1);
-                    return;
-                }
+                if (!nm -> host(g_server_config)) return;
                 Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
