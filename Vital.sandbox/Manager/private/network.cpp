@@ -211,11 +211,14 @@ namespace Vital::Manager {
     void Network::apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         if (rate < 1) rate = 1;
         if (rate > 128) rate = 128;
-        sync_config.rate          = rate;
-        sync_interval             = 1.0f / static_cast<float>(rate);
+        sync_config.rate             = rate;
+        sync_interval                = 1.0f / static_cast<float>(rate);
         sync_config.buffer_delay_max = buffer_delay_max;
         sync_config.jitter_margin    = jitter_margin;
         sync_config.snap_threshold   = snap_threshold;
+        Engine::ISyncable::s_get_sync_config = []() {
+            return get_singleton()->sync_config;
+        };
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* m : sync_models) m->interp_step = sync_interval;
@@ -609,6 +612,9 @@ namespace Vital::Manager {
         sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
         sync_config.jitter_margin    = config.get_sync_jitter_margin();
         sync_config.snap_threshold   = config.get_sync_snap_threshold();
+        Engine::ISyncable::s_get_sync_config = []() {
+            return get_singleton()->sync_config;
+        };
         if (effective_sync_rate < config.get_sync_rate()) {
             log("warn", fmt::format(
                 "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "

@@ -95,12 +95,7 @@ namespace Vital::Manager {
             // Same value as an integer Hz — set alongside sync_interval in host().
             // Sent verbatim to each peer on connect via the "_sync_config" RPC so
             // client builds (which never call host()) stop defaulting to 20 Hz.
-            struct SyncConfig {
-                int   rate            = Engine::ISyncable::SYNC_RATE;
-                float buffer_delay_max = Engine::ISyncable::BUFFER_DELAY_MAX;
-                float jitter_margin    = Engine::ISyncable::JITTER_MARGIN;
-                float snap_threshold   = Engine::ISyncable::SNAP_THRESHOLD;
-            } sync_config;
+            Engine::ISyncable::SyncConfig sync_config;
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -203,7 +198,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             const Config::Server& get_server_config() const;
-            const SyncConfig& get_sync_config() const { return sync_config; }
+            const Engine::ISyncable::SyncConfig& get_sync_config() const { return sync_config; }
             std::string get_server_ip() const;
             #endif
 

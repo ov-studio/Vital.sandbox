@@ -179,7 +179,7 @@ namespace Vital::Engine {
                 // fine for constant-velocity motion but visibly overshoots then snaps
                 // back on every direction change, since it assumes velocity stays
                 // constant. Keeping a real bracketing snapshot on hand avoids that.
-                auto cfg = Manager::Network::get_singleton()->get_sync_config();
+                auto cfg = s_get_sync_config();
                 float target = std::clamp(interp_step + cfg.jitter_margin * stddev, BUFFER_DELAY_MIN, cfg.buffer_delay_max);
                 // Faster EMA: 0.8 old + 0.2 new — responds to network changes in ~5 packets
                 // instead of the old 0.95/0.05 which took ~20 packets to converge.
@@ -247,7 +247,7 @@ namespace Vital::Engine {
         float span = after -> time - before -> time;
         if (span <= 0.0f) { out_pos = after -> pos; out_rot = after -> rot; return; }
         float t = std::clamp((render_time - before -> time) / span, 0.0f, 1.0f);
-        auto cfg = Manager::Network::get_singleton()->get_sync_config();
+        auto cfg = s_get_sync_config();
         if (before -> pos.distance_to(after -> pos) > cfg.snap_threshold) {
             out_pos = after -> pos;
             out_rot = after -> rot;

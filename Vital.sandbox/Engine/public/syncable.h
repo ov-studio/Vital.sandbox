@@ -55,6 +55,15 @@ namespace Vital::Engine {
             static constexpr float JITTER_MARGIN    = 1.5f;   // default stddev multiplier — overridable
             static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
 
+            struct SyncConfig {
+                int   rate             = SYNC_RATE;
+                float buffer_delay_max = BUFFER_DELAY_MAX;
+                float jitter_margin    = JITTER_MARGIN;
+                float snap_threshold   = SNAP_THRESHOLD;
+            };
+            // Set once by Manager::Network on host()/connect — avoids a circular
+            // include between Engine/syncable.cpp and Manager/network.h.
+            static inline SyncConfig (*s_get_sync_config)() = nullptr;
 
 
             // Type //
