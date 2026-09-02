@@ -124,27 +124,22 @@ namespace Vital::Engine {
             GodotBase::set_rotation_degrees(out_rot);
         }
 
-        // Node lifecycle — identical across every physics body subtype, so it
-        // lives here once instead of being copy-pasted into each concrete class.
-        // (godot-cpp's GDCLASS registration resolves these by pointer identity
-        // against the leaf class's declared GodotBase parent, so an override
-        // living in this intermediate mixin is picked up correctly — it does not
-        // need to be re-declared in Rigid_Body/Static_Body/etc.)
-        void _ready() override { _ready_sync(pending_authority); }
-
+        // NOTE: _ready/_process are NOT hoisted here even though every subtype's
+        // override is identical (`{ _ready_sync(pending_authority); }` /
+        // `{ on_sync_process(delta); }`). godot-cpp's GDCLASS registration takes
+        // &T::_process and feeds it through call_with_ptr_args<T,R>(...) for
+        // template deduction; if the override only lives in this base template,
+        // &Vehicle_Body::_process has static type
+        // void (PhysicsBodyBase<VehicleBody3D>::*)(double) instead of
+        // void (Vehicle_Body::*)(double) (pointer-to-member type is tied to the
+        // declaring class, not the class it's inherited through), which makes T
+        // ambiguous and fails to compile (MSVC C2672). Each leaf class must
+        // redeclare a one-line _ready()/_process() itself — see e.g. vehicle_body.h.
+        // _notification is fine hoisted here: GDCLASS binds it via a plain
+        // reinterpret-style pointer cast, not template deduction.
         void _notification(int what) {
             if (what == GodotBase::NOTIFICATION_PREDELETE) _notify_predelete_sync();
         }
-
-        // Remote-side interpolation is a purely visual read-out of the snapshot
-        // buffer (the actual physics for a body happens on its authority peer
-        // only — see apply_sync/on_sync_process above), so it belongs in
-        // _process (once per rendered frame), not _physics_process (once per
-        // fixed physics tick). Running it in _physics_process would tie a
-        // remote body's visible position to the physics tick rate instead of
-        // the display's frame rate — any frame between two physics ticks would
-        // re-render the same stale transform. Matches Model::_process.
-        void _process(double delta) override { on_sync_process(delta); }
 
         void destroy_sync() override { GodotBase::queue_free(); }
 
