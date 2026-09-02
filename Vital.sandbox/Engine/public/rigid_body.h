@@ -20,9 +20,9 @@
 // Vital: Engine: Rigid_Body //
 ////////////////////////////////
 
-// TODO: Improve
-
-namespace Vital::Manager { class Network; }
+namespace Vital::Manager { 
+    class Network; 
+}
 
 namespace Vital::Engine {
     class Rigid_Body : public PhysicsBodyBase<godot::RigidBody3D> {
