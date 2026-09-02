@@ -29,27 +29,26 @@ namespace Vital::Engine {
 
     class Model : public godot::Node3D, public ISyncable {
         GDCLASS(Model, godot::Node3D)
-        friend class Network;             // Engine::Network — _spawn_model/_destroy_model
-        friend class Manager::Network;  // poll() lazy registration needs sync_registered
+        friend class Network;
+        friend class Manager::Network;
         public:
             enum class Format {
                 GLB,
                 UNKNOWN
             };
 
+            enum class AuthorityMode { 
+                Server, 
+                Client 
+            };
+
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
 
-            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
-
             inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
-
-            // Authority modes:
-            //   authority_peer == 1  -> server-authoritative (server simulates, broadcasts)
-            //   authority_peer == N  -> client-authoritative (peer N simulates, server relays)
-            enum class AuthorityMode { Server, Client };
+            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         private:
             static void _bind_methods() {}
 
