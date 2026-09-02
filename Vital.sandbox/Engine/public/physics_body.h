@@ -30,7 +30,7 @@ namespace Vital::Engine {
     enum class PhysicsType {
         Rigid,
         Static,
-        character,
+        Character,
         Animatable,
         Vehicle,
     };

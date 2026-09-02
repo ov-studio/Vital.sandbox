@@ -69,7 +69,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Engine::PhysicsType get_physics_type() const {
+    Engine::PhysicsType Rigid_Body::get_physics_type() const {
         return PhysicsType::Rigid;
     }
 }
