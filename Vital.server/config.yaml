@@ -29,22 +29,8 @@ network:
   max_peers: 32
 
   # How many times per second the server sends position/rotation/velocity
-  # updates for synced entities (physics bodies, models) to each client.
-  # Higher = smoother, more responsive remote entities, but more bandwidth
-  # and CPU per connected peer. Lower = cheaper, but remote entities lean
-  # more on client-side interpolation/extrapolation to look smooth.
-  # Range: 1-128. If left unset, this defaults to whatever physics_tick_rate
-  # above is set to (so the two knobs stay in sync unless you deliberately
-  # split them). Set this explicitly and lower than physics_tick_rate if you
-  # want cheaper bandwidth than simulation precision — e.g. physics_tick_rate:
-  # 120 with sync_rate: 30 gives precise local physics but a lighter network
-  # footprint, leaning on client-side interpolation to smooth the gaps.
-  # NOTE: this is automatically capped to physics_tick_rate above — a synced
-  # entity's position can't change more often than physics steps it, so
-  # setting this higher just resends stale data. The server logs a warning
-  # on startup if this value is being capped; raise physics_tick_rate too
-  # if you actually want faster updates.
-  # Default: unset (tracks physics_tick_rate above)
+  # updates for synced entities to each client.
+  # Default: unset (tracks physics_tick_rate)
   #sync_rate: 30
 
   # How many times per second the server steps its own physics simulation
@@ -68,6 +54,11 @@ http:
 # Controls client-side interpolation behaviour for remote entities.
 # These are applied at startup — no recompile needed.
 sync:
+  # How many times per second the server sends position/rotation/velocity
+  # updates to clients. Capped to physics_tick_rate.
+  # Range: 1-128. Default: tracks physics_tick_rate.
+  #rate: 30
+
   # Maximum adaptive jitter buffer in seconds.
   # The buffer starts at ~33ms and grows per-peer based on measured jitter,
   # capped here. A peer whose real jitter stays below this cap is unaffected.
