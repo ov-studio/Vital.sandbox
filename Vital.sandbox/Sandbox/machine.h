@@ -27,6 +27,7 @@ namespace Vital::Sandbox {
             static vm_apis apis;
             inline static std::mutex mutex;
             inline static vm_machines machines;
+            inline static vm_env_cleaners env_pre_cleaners;
             inline static vm_env_cleaners env_cleaners;
             inline static std::vector<std::function<void()>> work_queue;
             inline static thread_local bool error_handled = false;
@@ -430,6 +431,10 @@ namespace Vital::Sandbox {
                 set_reference("env", id, -1);
             }
 
+            static void register_environment_pre_cleaner(vm_env_cleaner exec) {
+                env_pre_cleaners.push_back(std::move(exec));
+            }
+
             static void register_environment_cleaner(vm_env_cleaner exec) {
                 env_cleaners.push_back(std::move(exec));
             }
@@ -469,6 +474,7 @@ namespace Vital::Sandbox {
                 push_nil();
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference("env", id);
+                for (auto& clean : env_pre_cleaners) clean(id);
                 for (auto& clean : env_cleaners) clean(id);
                 lua_gc(state, LUA_GCCOLLECT, 0);
             }
