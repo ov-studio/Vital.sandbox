@@ -51,6 +51,18 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Collision_Object::methods<Instance, Collision_Object::Type::Body>(vm);
 
+            #if !defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "get_net_id", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value((int)self -> get_node() -> get_net_id()); // TODO: Cast not needed?
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> get_node() -> get_sync_authority());
+                return 1;
+            });
+            #endif
+
             vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> get_node() -> get_gravity());
                 return 1;
@@ -64,6 +76,18 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> get_node() -> get_axis_lock(axis));
                 return 1;
             });
+
+            #if !defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)", true)
+                    .require(2, &Machine::is_number);
+
+                auto peer_id = vm -> get_int(2);
+                self -> get_node() -> set_syncer(peer_id);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(axis, lock)", true)
@@ -202,32 +226,6 @@ namespace Vital::Sandbox::API {
         template<typename Instance>
         static void inject(Machine* vm) {
             API::Collision_Object::inject<Instance>(vm);
-        }
-
-        // set_syncer — server-side only: assign authority peer for a replicated body.
-        // Client-local bodies (net_id == 0) silently ignore this.
-        template<typename Instance>
-        static void server_methods(Machine* vm) {
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)", true)
-                    .require(2, &Machine::is_number);
-                auto peer_id = vm->get_int(2);
-                self->get_node()->set_syncer(peer_id);
-                vm->push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_net_id", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value((int)self->get_node()->get_net_id());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->get_node()->get_sync_authority());
-                return 1;
-            });
-            #endif
         }
     };
 }
