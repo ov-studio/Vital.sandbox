@@ -95,9 +95,8 @@ namespace Vital::Manager {
             // Same value as an integer Hz — set alongside sync_interval in host().
             // Sent verbatim to each peer on connect via the "_sync_config" RPC so
             // client builds (which never call host()) stop defaulting to 20 Hz.
-            int   sync_rate_hz = 20;
-
             struct SyncConfig {
+                int   rate            = 20;
                 float buffer_delay_max = Engine::ISyncable::BUFFER_DELAY_MAX;
                 float jitter_margin    = Engine::ISyncable::JITTER_MARGIN;
                 float snap_threshold   = Engine::ISyncable::SNAP_THRESHOLD;

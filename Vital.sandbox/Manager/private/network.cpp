@@ -211,8 +211,8 @@ namespace Vital::Manager {
     void Network::apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         if (rate < 1) rate = 1;
         if (rate > 128) rate = 128;
-        sync_rate_hz  = rate;
-        sync_interval = 1.0f / static_cast<float>(rate);
+        sync_config.rate          = rate;
+        sync_interval             = 1.0f / static_cast<float>(rate);
         sync_config.buffer_delay_max = buffer_delay_max;
         sync_config.jitter_margin    = jitter_margin;
         sync_config.snap_threshold   = snap_threshold;
@@ -604,8 +604,8 @@ namespace Vital::Manager {
         // change more often than physics steps it, so sending faster than that
         // just re-sends stale data. Clamp and warn if the owner set it higher.
         int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
-        sync_interval              = 1.0f / static_cast<float>(effective_sync_rate);
-        sync_rate_hz               = effective_sync_rate;
+        sync_interval                = 1.0f / static_cast<float>(effective_sync_rate);
+        sync_config.rate             = effective_sync_rate;
         sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
         sync_config.jitter_margin    = config.get_sync_jitter_margin();
         sync_config.snap_threshold   = config.get_sync_snap_threshold();
@@ -731,9 +731,9 @@ namespace Vital::Manager {
         //    before the spawn/state-dump RPCs below on the same channel, so ENet's
         //    ordering guarantee lands it first. Fixes relayed/remote entities being
         //    interpolated as if packets arrive at the 20 Hz client-side default
-        //    (see sync_interval / sync_rate_hz in network.h) instead of the
+        //    (see sync_interval / sync_config.rate in network.h) instead of the
         //    server's configured physics_tick_rate/sync_rate.
-        if (node) node->rpc_id(id, "_sync_config", sync_rate_hz,
+        if (node) node->rpc_id(id, "_sync_config", sync_config.rate,
             get_server_config().get_sync_buffer_delay_max(),
             get_server_config().get_sync_jitter_margin(),
             get_server_config().get_sync_snap_threshold());

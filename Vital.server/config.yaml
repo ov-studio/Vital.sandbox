@@ -7,119 +7,69 @@
 
 # Server Identity
 server:
-  # The display name of your server as shown in master-list 
   name: "Vital.sandbox Server"
-
-  # Server version identifier (for compatibility checks)
   version: "1.0.0"
-
-  # Server description (optional, for client display)
   description: "A Vital.sandbox server"
 
 
-# Network Server
+# Network
 network:
-  # TCP port for ENet multiplayer server
-  # Clients connect to this port
-  # Default: 7777
+  # TCP port for ENet multiplayer. Default: 7777
   port: 7777
 
-  # Maximum number of concurrent clients allowed
-  # Default: 32
+  # Maximum concurrent clients. Default: 32
   max_peers: 32
 
-  # How many times per second the server sends position/rotation/velocity
-  # updates for synced entities to each client.
-  # Default: unset (tracks physics_tick_rate)
-  #sync_rate: 30
-
-  # How many times per second the server steps its own physics simulation
-  # (gravity, collisions, rigid body forces, character movement resolution).
-  # Higher = more accurate/precise simulation (less tunneling on fast movers,
-  # smoother resting contacts), but more server CPU per active physics body.
-  # Lower = cheaper, fine for slower-paced or less physics-heavy servers.
-  # This also sets the ceiling for sync_rate below (see note there).
+  # Physics simulation rate in Hz.
+  # Sets the ceiling for sync.rate — synced entities can't update faster than physics steps them.
   # Range: 1-120. Default: 60.
   physics_tick_rate: 60
 
-# HTTP Server
+
+# HTTP asset delivery server
 http:
-  # Port for HTTP asset delivery server
-  # Clients download assets (models, textures, etc.) from this port
   # Default: 7778
   port: 7778
 
 
-# Sync Tuning
-# Controls client-side interpolation behaviour for remote entities.
-# These are applied at startup — no recompile needed.
+# Sync
+# All values are sent to clients on connect — no recompile needed.
 sync:
-  # How many times per second the server sends position/rotation/velocity
-  # updates to clients. Capped to physics_tick_rate.
-  # Range: 1-128. Default: tracks physics_tick_rate.
+  # How many times per second entity transforms are broadcast to clients.
+  # Capped to physics_tick_rate. Default: tracks physics_tick_rate.
   #rate: 30
 
-  # Maximum adaptive jitter buffer in seconds.
-  # The buffer starts at ~33ms and grows per-peer based on measured jitter,
-  # capped here. A peer whose real jitter stays below this cap is unaffected.
-  #
-  # LAN / relay-only server:  0.10  (100ms — tight, low latency)
-  # Mixed LAN + global:       0.20  (200ms — balanced)
-  # Global / high-latency:    0.30  (300ms — default, safe for most)
-  # Very lossy / satellite:   0.50+ (give bursty peers more headroom)
-  #
-  # Range: 0.05 – 1.0. Default: 0.30
+  # Adaptive jitter buffer ceiling in seconds.
+  # LAN: 0.10  Mixed: 0.20  Global: 0.30  Lossy: 0.50+
+  # Range: 0.05-1.0. Default: 0.30
   buffer_delay_max: 0.30
 
-  # Jitter buffer growth rate — stddev multiplier for the adaptive target.
-  # target = interp_step + jitter_margin * measured_stddev, clamped to
-  # [BUFFER_DELAY_MIN, buffer_delay_max].
-  # Lower = snappier on stable links, more underruns on bursty ones.
-  # Higher = smoother on bad links, slightly more lag on good ones.
-  #
-  # LAN / stable:    1.0 – 1.25
-  # General:         1.5  (default)
-  # Lossy / bad:     2.0 – 3.0
-  #
-  # Range: 0.5 – 5.0. Default: 1.5
+  # Stddev multiplier for adaptive buffer target.
+  # Lower = snappier on stable links. Higher = smoother on bad ones.
+  # LAN: 1.0-1.25  General: 1.5  Lossy: 2.0-3.0
+  # Range: 0.5-5.0. Default: 1.5
   jitter_margin: 1.5
 
   # Teleport threshold in world units.
-  # If the gap between two consecutive snapshots exceeds this, the client
-  # teleports instead of interpolating (avoids a visible slow glide across
-  # the map on respawn, authority transfer, etc.).
-  # Set lower for small/tight maps, higher for large open worlds.
-  #
-  # Range: 0.5 – 100.0. Default: 5.0
+  # Gap beyond this snaps instead of interpolating.
+  # Range: 0.5-100.0. Default: 5.0
   snap_threshold: 5.0
 
 
 # Bootstrapper
 bootstrap:
-  # Resources listed here are automatically started after the initial resource scan.
-  # They are started in the order listed, respecting dependency resolution.
-  # Each entry must match a valid resource folder name under resources/.
+  # Resources auto-started after scan, in order.
   #- "runcode"
 
 
 # Socials
 social:
-  # Discord server invite link
-  # Shown in master-list and used for join requests
   discord: ""
-
-  # Website URL
   website: ""
 
 
 # Masterlist
 masterlist:
-  # Set to true to report this server to the public masterlist.
   enabled: false
-
-  # Token from POST /api/masterlist/register on vital.site.
-  # Treat this like an API key -- do not commit a real value to a public repo.
   token: ""
-
-  # Masterlist API base URL.
   url: "https://vital-sandbox.com/api/masterlist"
