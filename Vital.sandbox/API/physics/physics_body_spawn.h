@@ -50,11 +50,7 @@ namespace Vital::Sandbox::API {
             // On the client, _spawn_entity fires this for every remotely spawned
             // body so Lua can attach collision shapes / wheels in its own handler.
 
-            Vital::Engine::on_spawned_callback = [vm](
-                Vital::Engine::ISyncable* entity,
-                Vital::Engine::PhysicsType sub_type,
-                bool remote)
-            {
+            Vital::Engine::on_spawned_callback = [vm](Vital::Engine::ISyncable* entity, Vital::Engine::PhysicsType sub_type, bool remote) {
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid: {
                         auto* typed = static_cast<Vital::Engine::Rigid_Body*>(entity);
