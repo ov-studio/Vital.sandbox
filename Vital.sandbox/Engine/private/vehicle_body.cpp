@@ -67,7 +67,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Engine::PhysicsType get_physics_type() const override { 
+    Engine::PhysicsType get_physics_type() const { 
         return PhysicsType::Vehicle; 
     }
 }
