@@ -167,11 +167,7 @@ namespace Vital::Engine {
                         Core::get_singleton() -> enqueue([this, captured_id, captured_auth, captured_name]() {
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(this);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
-                            if (net_node) net_node -> rpc("_spawn_entity",
-                                (int)captured_id,
-                                (int)ISyncable::SyncType::PhysicsBody,
-                                captured_name,
-                                captured_auth);
+                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth); // TODO: Wont work without casting?
                         });
                     }
                     else Core::get_singleton() -> add_child(this);
