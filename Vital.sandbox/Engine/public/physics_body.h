@@ -35,14 +35,9 @@ namespace Vital::Engine {
         Vehicle,
     };
 
-    
     inline std::function<void(ISyncable*, PhysicsType, bool)> on_physics_body_spawned_callback;
     inline std::function<void(ISyncable*, PhysicsType)> on_physics_body_destroyed_callback;
 
-    // Base mixin — owns sync state and fulfils ISyncable for any physics body.
-    // Concrete classes inherit this *and* the appropriate Godot body class.
-    // Server-created bodies are network-replicated (ISyncable). Client-created
-    // bodies (net_id == 0) are local-only — never synced.
     template<typename GodotBase>
     class PhysicsBodyBase : public GodotBase, public ISyncable {
         friend class Manager::Network;
