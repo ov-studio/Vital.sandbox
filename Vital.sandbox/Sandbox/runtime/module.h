@@ -229,7 +229,6 @@ namespace Vital::Sandbox {
                     for (auto& [id, instance] : registry.buffer) {
                         if (instance -> env.empty()) continue;
                         if (instance -> env != env) continue;
-                        instance -> destroyed = true;
                         to_clean.push_back(instance);
                     }
                 }
