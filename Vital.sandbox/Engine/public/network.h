@@ -34,7 +34,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_entities", "data"), &Network::_sync_entities);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_rate", "rate"), &Network::_sync_rate);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_config", "rate", "buffer_delay_max", "jitter_margin", "snap_threshold"), &Network::_sync_config);
                 godot::ClassDB::bind_method(godot::D_METHOD("_wake_sync"), &Network::_wake_sync);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
@@ -64,7 +64,7 @@ namespace Vital::Engine {
             void _sync_client(godot::PackedByteArray data);
             // Sent server -> client once on connect with the server's real
             // physics_tick_rate/sync_rate (Hz). See Manager::Network::apply_sync_rate.
-            void _sync_rate(int rate);
+            void _sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
             // Server -> client(s): "you have peer-authority bodies that may have
             // gone to sleep — clear their sleep flag so the next poll() tick
             // resends their real current transform." Sent whenever a new peer

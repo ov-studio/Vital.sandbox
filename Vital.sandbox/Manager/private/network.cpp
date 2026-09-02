@@ -205,22 +205,23 @@ namespace Vital::Manager {
         pending_transform_syncs[net_id] = { pos, rot, vel };
     }
 
-    // Received via the "_sync_rate" RPC, sent by the server the moment we connect.
-    // Replaces the 20 Hz compile-time default with the server's real
-    // physics_tick_rate/sync_rate, and re-stamps interp_step on every syncable
-    // already registered (covers the rare case one registered before this RPC
-    // arrived). Anything that registers afterwards picks up the corrected
-    // sync_interval automatically in poll() (entity->interp_step = sync_interval).
-    void Network::apply_sync_rate(int rate) {
+    // Received via the "_sync_config" RPC, sent by the server the moment we connect.
+    // Replaces the compile-time defaults with the server's actual config values so
+    // client-side interp uses the same tuning the server was built with.
+    void Network::apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         if (rate < 1) rate = 1;
         if (rate > 128) rate = 128;
         sync_rate_hz  = rate;
         sync_interval = 1.0f / static_cast<float>(rate);
+        sync_buffer_delay_max = buffer_delay_max;
+        sync_jitter_margin    = jitter_margin;
+        sync_snap_threshold   = snap_threshold;
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* m : sync_models) m->interp_step = sync_interval;
 
-        log("sbox", fmt::format("sync rate confirmed by server -> {} Hz", rate));
+        log("sbox", fmt::format("sync config confirmed by server -> {} Hz, delay_max={:.0f}ms, jitter={:.2f}x, snap={:.1f}u",
+            rate, buffer_delay_max * 1000.0f, jitter_margin, snap_threshold));
     }
     #endif
 
@@ -603,8 +604,8 @@ namespace Vital::Manager {
         // change more often than physics steps it, so sending faster than that
         // just re-sends stale data. Clamp and warn if the owner set it higher.
         int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
-        sync_interval = 1.0f / static_cast<float>(effective_sync_rate);
-        sync_rate_hz  = effective_sync_rate;
+        sync_interval         = 1.0f / static_cast<float>(effective_sync_rate);
+        sync_rate_hz          = effective_sync_rate;
         if (effective_sync_rate < config.get_sync_rate()) {
             log("warn", fmt::format(
                 "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
@@ -729,7 +730,10 @@ namespace Vital::Manager {
         //    interpolated as if packets arrive at the 20 Hz client-side default
         //    (see sync_interval / sync_rate_hz in network.h) instead of the
         //    server's configured physics_tick_rate/sync_rate.
-        if (node) node->rpc_id(id, "_sync_rate", sync_rate_hz);
+        if (node) node->rpc_id(id, "_sync_config", sync_rate_hz,
+            get_server_config().get_sync_buffer_delay_max(),
+            get_server_config().get_sync_jitter_margin(),
+            get_server_config().get_sync_snap_threshold());
 
         // 1. Flush pending so newly created models are in sync_models before we iterate.
         //    (send_full_state_to_peer does this too, but we need the list for spawns first.)

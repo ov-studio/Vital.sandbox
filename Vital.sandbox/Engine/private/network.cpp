@@ -45,7 +45,7 @@ namespace Vital::Engine {
         rpc_config("_spawn_entity", reliable);
         rpc_config("_destroy_entity", reliable);
         rpc_config("_sync_state", reliable);
-        rpc_config("_sync_rate", reliable);
+        rpc_config("_sync_config", reliable);
         rpc_config("_set_authority", reliable);
         rpc_config("_sync_shape", reliable);
         rpc_config("_spawn_wheel", reliable);
@@ -84,9 +84,9 @@ namespace Vital::Engine {
         #endif
     }
 
-    void Network::_sync_rate(int rate) {
+    void Network::_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         #if defined(VSDK_Client)
-        Manager::Network::get_singleton() -> apply_sync_rate(rate);
+        Manager::Network::get_singleton() -> apply_sync_config(rate, buffer_delay_max, jitter_margin, snap_threshold);
         #endif
     }
 

@@ -54,6 +54,8 @@ namespace Vital::Engine {
             static constexpr float JITTER_MARGIN    = 1.5f;   // default stddev multiplier — overridable
             static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
 
+
+
             // Type //
             // Identifies the concrete type for spawn/destroy RPCs so the
             // network layer can instantiate the right class on receivers.

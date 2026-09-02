@@ -95,7 +95,12 @@ namespace Vital::Manager {
             // Same value as an integer Hz — set alongside sync_interval in host().
             // Sent verbatim to each peer on connect via the "_sync_rate" RPC so
             // client builds (which never call host()) stop defaulting to 20 Hz.
-            int sync_rate_hz = 20;
+            int   sync_rate_hz = 20;
+            // Received from server via _sync_config RPC on connect.
+            // Used by client-side interp in syncable.cpp.
+            float sync_buffer_delay_max = Engine::ISyncable::BUFFER_DELAY_MAX;
+            float sync_jitter_margin    = Engine::ISyncable::JITTER_MARGIN;
+            float sync_snap_threshold   = Engine::ISyncable::SNAP_THRESHOLD;
 
 
 
@@ -168,7 +173,7 @@ namespace Vital::Manager {
             // 20 Hz default above forever on a client build, regardless of what
             // config.yaml says — see network.cpp host() for the server-side half
             // of this that a pure client never runs.
-            void apply_sync_rate(int rate);
+            void apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
             #endif
 
 
@@ -200,6 +205,9 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             const Config::Server& get_server_config() const;
+            float get_sync_buffer_delay_max() const { return sync_buffer_delay_max; }
+            float get_sync_jitter_margin()    const { return sync_jitter_margin; }
+            float get_sync_snap_threshold()   const { return sync_snap_threshold; }
             std::string get_server_ip() const;
             #endif
 
