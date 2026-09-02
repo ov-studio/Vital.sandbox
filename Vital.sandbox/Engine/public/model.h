@@ -121,9 +121,7 @@ namespace Vital::Engine {
             void _notification(int what);
             void _process(double delta) override;
 
-
-
-
+            
             // Managers //
             static bool load(const std::string& name, const std::string& path);
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
