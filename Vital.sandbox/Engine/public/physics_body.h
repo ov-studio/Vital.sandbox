@@ -47,14 +47,14 @@ namespace Vital::Engine {
             virtual PhysicsType get_physics_type() const = 0;
 
             // Returns the sub-type string used in the spawn RPC.
-            // Derived from get_physics_type() — no dead body_sync_name field.
+            // Receiver (Engine::Network::_spawn_entity) dispatches on these exact strings.
             virtual std::string get_sync_name() const override {
                 switch (get_physics_type()) {
-                    case PhysicsType::Rigid:       return "rigid";
-                    case PhysicsType::Static:      return "static";
-                    case PhysicsType::Character:   return "character";
-                    case PhysicsType::Animatable:  return "animatable";
-                    case PhysicsType::Vehicle:     return "vehicle";
+                    case PhysicsType::Rigid:       return "rigid_body";
+                    case PhysicsType::Static:      return "static_body";
+                    case PhysicsType::Character:   return "character_body";
+                    case PhysicsType::Animatable:  return "animatable_body";
+                    case PhysicsType::Vehicle:     return "vehicle_body";
                 }
                 return "";
             }
@@ -147,21 +147,22 @@ namespace Vital::Engine {
             }
 
             // Shared create/destroy logic — called by each derived body's static create()
-            // and destroy() so those methods stay as thin wrappers around memnew/queue_free.
+            // and destroy() so those stay as thin wrappers around memnew/queue_free.
             //
-            // setup_create(): called immediately after memnew(Derived) with authority_peer.
-            //   Assigns net_id + pending_authority on the server path, enqueues the spawn
-            //   RPC, and calls Core::add_child.  On the client path it just calls add_child.
-            //   network.h is included by each derived .cpp so the Manager::Network calls
-            //   resolve there rather than pulling a heavy header into this shared header.
+            // setup_create(): assigns net_id + pending_authority, enqueues the _spawn_entity
+            //   RPC, and calls Core::add_child. Spawn name comes from get_sync_name() which
+            //   already returns the exact strings _spawn_entity dispatches on ("rigid",
+            //   "character", etc.) — no per-type parameter needed, no manual cast needed.
+            //   network.h is included only by each derived .cpp, not here, so the include
+            //   graph is unchanged.
             void setup_create(int authority_peer) {
                 #if !defined(VSDK_Client)
                     if (authority_peer != 0) {
-                        net_id            = next_net_id++;
+                        net_id = next_net_id++;
                         pending_authority = authority_peer;
-                        uint32_t captured_id   = net_id;
-                        int      captured_auth = authority_peer;
-                        std::string captured_name = get_sync_name();
+                        uint32_t captured_id = net_id;
+                        int captured_auth = authority_peer;
+                        godot::String captured_name = godot::String(get_sync_name().c_str());
                         Core::get_singleton() -> add_child(this);
                         Core::get_singleton() -> enqueue([this, captured_id, captured_auth, captured_name]() {
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(this);
@@ -169,7 +170,7 @@ namespace Vital::Engine {
                             if (net_node) net_node -> rpc("_spawn_entity",
                                 (int)captured_id,
                                 (int)ISyncable::SyncType::PhysicsBody,
-                                godot::String(captured_name.c_str()),
+                                captured_name,
                                 captured_auth);
                         });
                     }
@@ -179,7 +180,7 @@ namespace Vital::Engine {
                 #endif
             }
 
-            // setup_destroy(): emits the destroy RPC on the server path, then queue_frees.
+            // setup_destroy(): emits the _destroy_entity RPC then queue_frees this node.
             void setup_destroy() {
                 #if !defined(VSDK_Client)
                 if (net_id != 0) {

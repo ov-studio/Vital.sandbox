@@ -128,31 +128,31 @@ namespace Vital::Engine {
                 Engine::ISyncable* entity = nullptr;
                 Engine::PhysicsType sub_type = Engine::PhysicsType::Rigid;  // TODO: empty no init maybe?
 
-                if (sub == "rigid") {
+                if (sub == "rigid_body") {
                     sub_type = Engine::PhysicsType::Rigid;
                     auto body = memnew(Engine::Rigid_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
-                else if (sub == "static") {
+                else if (sub == "static_body") {
                     sub_type = Engine::PhysicsType::Static;
                     auto body = memnew(Engine::Static_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
-                else if (sub == "character") {
+                else if (sub == "character_body") {
                     sub_type = Engine::PhysicsType::Character;
                     auto body = memnew(Engine::Character_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
-                else if (sub == "animatable") {
+                else if (sub == "animatable_body") {
                     sub_type = Engine::PhysicsType::Animatable;
                     auto body = memnew(Engine::Animatable_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
-                else if (sub == "vehicle") {
+                else if (sub == "vehicle_body") {
                     sub_type = Engine::PhysicsType::Vehicle;
                     auto body = memnew(Engine::Vehicle_Body);
                     Engine::Core::get_singleton() -> add_child(body);
