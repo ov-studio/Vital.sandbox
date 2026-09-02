@@ -69,7 +69,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    PhysicsType get_physics_type() const { 
+    Engine::PhysicsType Animatable_Body::get_physics_type() const { 
         return PhysicsType::Animatable; 
     }
 }
