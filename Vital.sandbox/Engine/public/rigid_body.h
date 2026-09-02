@@ -48,6 +48,7 @@ namespace Vital::Engine {
             // Animatable_Body and Vehicle_Body.
             void _process(double delta) override { on_sync_process(delta); }
 
+            
             // Managers //
             static Rigid_Body* create(int authority_peer = 0);
             void destroy();

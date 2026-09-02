@@ -41,6 +41,7 @@ namespace Vital::Engine {
             // Index within the parent vehicle — used by RPCs to identify which wheel.
             int wheel_index = -1;
 
+            
             // Managers //
             static Vehicle_Wheel* create(godot::Node3D* owner);
             void destroy();

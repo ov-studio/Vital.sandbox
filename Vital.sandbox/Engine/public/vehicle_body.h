@@ -43,6 +43,7 @@ namespace Vital::Engine {
             }
             void _process(double delta) override { on_sync_process(delta); }
 
+            
             // Managers //
             static Vehicle_Body* create(int authority_peer = 0);
             void destroy();
