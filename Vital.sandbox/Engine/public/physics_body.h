@@ -38,8 +38,8 @@ namespace Vital::Engine {
     inline std::function<void(ISyncable*, PhysicsType, bool)> on_physics_body_spawned_callback;
     inline std::function<void(ISyncable*, PhysicsType)> on_physics_body_destroyed_callback;
 
-    template<typename GodotBase>
-    class PhysicsBodyBase : public GodotBase, public ISyncable {
+    template<typename Base>
+    class PhysicsBodyBase : public Base, public ISyncable {
         friend class Manager::Network;
         public:
             SyncType get_sync_type() const override { 
@@ -60,24 +60,24 @@ namespace Vital::Engine {
             }
 
             bool is_sync_active() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() && net_id != 0;
+                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() && net_id != 0;
             }
 
             godot::Vector3 get_sync_position() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> GodotBase::get_global_position() : godot::Vector3();
+                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> Base::get_global_position() : godot::Vector3();
             }
 
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> GodotBase::get_rotation_degrees() : godot::Vector3();
+                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
-                if (!GodotBase::is_inside_tree()) return;
+                if (!Base::is_inside_tree()) return;
                 auto net = Manager::Network::get_singleton();
                 if (net && net -> get_peer_id() == sync_authority) return;
                 if (!interp_ready) {
-                    GodotBase::set_global_position(pos);
-                    GodotBase::set_rotation_degrees(rot);
+                    Base::set_global_position(pos);
+                    Base::set_rotation_degrees(rot);
                 }
                 sync_push_snapshot(pos, rot, vel);
                 sync_last_pos = pos;
@@ -87,28 +87,28 @@ namespace Vital::Engine {
             }
 
             void on_sync_process(double delta) override {
-                if (!GodotBase::is_inside_tree() || !interp_ready || net_id == 0) return;
+                if (!Base::is_inside_tree() || !interp_ready || net_id == 0) return;
                 auto net = Manager::Network::get_singleton();
                 if (net && net -> get_peer_id() == sync_authority) return;
                 godot::Vector3 out_pos, out_rot;
                 interp_process(delta, out_pos, out_rot);
-                GodotBase::set_global_position(out_pos);
-                GodotBase::set_rotation_degrees(out_rot);
+                Base::set_global_position(out_pos);
+                Base::set_rotation_degrees(out_rot);
             }
 
             void _notification(int what) {
-                if (what == GodotBase::NOTIFICATION_PREDELETE) _notify_predelete_sync();
+                if (what == Base::NOTIFICATION_PREDELETE) _notify_predelete_sync();
             }
 
-            void destroy_sync() override { GodotBase::queue_free(); }
+            void destroy_sync() override { Base::queue_free(); }
 
             void reset_sync_state() override {
                 ISyncable::reset_sync_state();
-                if constexpr (std::is_base_of_v<godot::RigidBody3D, GodotBase>) {
+                if constexpr (std::is_base_of_v<godot::RigidBody3D, Base>) {
                     auto net = Manager::Network::get_singleton();
                     bool is_authority = net && net -> get_peer_id() == sync_authority;
-                    GodotBase::set_freeze_mode(godot::RigidBody3D::FREEZE_MODE_KINEMATIC);
-                    GodotBase::set_freeze_enabled(net_id == 0 ? false : !is_authority);
+                    Base::set_freeze_mode(godot::RigidBody3D::FREEZE_MODE_KINEMATIC);
+                    Base::set_freeze_enabled(net_id == 0 ? false : !is_authority);
                 }
             }
 
@@ -139,8 +139,8 @@ namespace Vital::Engine {
             // Hooks //
             void _ready_sync(int authority_peer) {
                 sync_authority = authority_peer;
-                sync_last_pos = GodotBase::get_global_position();
-                sync_last_rot = GodotBase::get_rotation_degrees();
+                sync_last_pos = Base::get_global_position();
+                sync_last_rot = Base::get_rotation_degrees();
                 sync_sleeping = false;
                 sync_accum = 0.0f;
                 reset_sync_state();
@@ -182,7 +182,7 @@ namespace Vital::Engine {
                     if (net_node) net_node -> rpc("_destroy_entity", (int)net_id);
                 }
                 #endif
-                GodotBase::queue_free();
+                Base::queue_free();
             }
     };
 }
