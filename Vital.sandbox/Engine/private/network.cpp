@@ -126,34 +126,34 @@ namespace Vital::Engine {
             case ST::PhysicsBody: {
                 std::string sub = Tool::to_std_string(name);
                 Engine::ISyncable* entity = nullptr;
-                Engine::PhysicsSubType sub_type = Engine::PhysicsSubType::Rigid;  // TODO: empty no init maybe?
+                Engine::PhysicsType sub_type = Engine::PhysicsType::Rigid;  // TODO: empty no init maybe?
 
                 if (sub == "rigid") {
-                    sub_type = Engine::PhysicsSubType::Rigid;
+                    sub_type = Engine::PhysicsType::Rigid;
                     auto body = memnew(Engine::Rigid_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "static") {
-                    sub_type = Engine::PhysicsSubType::Static;
+                    sub_type = Engine::PhysicsType::Static;
                     auto body = memnew(Engine::Static_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "character") {
-                    sub_type = Engine::PhysicsSubType::Character;
+                    sub_type = Engine::PhysicsType::Character;
                     auto body = memnew(Engine::Character_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "animatable") {
-                    sub_type = Engine::PhysicsSubType::Animatable;
+                    sub_type = Engine::PhysicsType::Animatable;
                     auto body = memnew(Engine::Animatable_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
                 else if (sub == "vehicle") {
-                    sub_type = Engine::PhysicsSubType::Vehicle;
+                    sub_type = Engine::PhysicsType::Vehicle;
                     auto body = memnew(Engine::Vehicle_Body);
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;

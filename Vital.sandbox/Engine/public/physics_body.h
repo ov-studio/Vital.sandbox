@@ -24,13 +24,13 @@
 // TODO: Improve and all physics body abstract more if possible
 // Sub-type tag packed into the _spawn_entity RPC so clients know which
 // Godot class to instantiate.  Fits in one byte (uint8_t).
-// NOTE: SyncType::PhysicsBody (=1) is the ISyncable type; PhysicsSubType
+// NOTE: SyncType::PhysicsBody (=1) is the ISyncable type; PhysicsType
 // below disambiguates among the four physics body classes.
 namespace Vital::Manager { class Network; }
 
 namespace Vital::Engine {
     // Sub-type used in spawn RPC alongside SyncType::PhysicsBody.
-    enum class PhysicsSubType : uint8_t {
+    enum class PhysicsType : uint8_t {
         Rigid       = 0,
         Static      = 1,
         Character   = 2,
@@ -41,17 +41,17 @@ namespace Vital::Engine {
     // Single global spawn callback — fired on the client when _spawn_entity
     // instantiates a remote physics body (same pattern as Model::on_spawned_callback).
     // Lua subscribes to this to attach collision shapes / wheels on the remote node.
-    // Parameters: (ISyncable* entity, PhysicsSubType sub_type, bool is_remote)
+    // Parameters: (ISyncable* entity, PhysicsType sub_type, bool is_remote)
     // Use net_id from entity to correlate with the server-side body.
-    inline std::function<void(ISyncable*, PhysicsSubType, bool)> on_physics_body_spawned_callback;
+    inline std::function<void(ISyncable*, PhysicsType, bool)> on_physics_body_spawned_callback;
 
     // Single global destroy callback — fired from NOTIFICATION_PREDELETE for
     // every physics body subtype (see _notify_predelete_sync() below), same
     // pattern as Model::on_destroyed_callback. Mirrors on_physics_body_spawned_callback
     // so Lua can drop its wrapper Instance and fire entity:destroyed for both
     // locally-freed and remotely-destroyed (_destroy_entity RPC) bodies.
-    // Parameters: (ISyncable* entity, PhysicsSubType sub_type)
-    inline std::function<void(ISyncable*, PhysicsSubType)> on_physics_body_destroyed_callback;
+    // Parameters: (ISyncable* entity, PhysicsType sub_type)
+    inline std::function<void(ISyncable*, PhysicsType)> on_physics_body_destroyed_callback;
 
     // Base mixin — owns sync state and fulfils ISyncable for any physics body.
     // Concrete classes inherit this *and* the appropriate Godot body class.
@@ -63,17 +63,17 @@ namespace Vital::Engine {
     public:
         // ISyncable interface — shared implementation, same pattern as Model.
         SyncType get_sync_type() const override { return SyncType::PhysicsBody; }
-        virtual PhysicsSubType get_physics_sub_type() const = 0;
+        virtual PhysicsType get_physics_type() const = 0;
 
         // Returns the sub-type string used in the spawn RPC.
-        // Derived from get_physics_sub_type() — no dead body_sync_name field.
+        // Derived from get_physics_type() — no dead body_sync_name field.
         virtual std::string get_sync_name() const override {
-            switch (get_physics_sub_type()) {
-                case PhysicsSubType::Rigid:       return "rigid";
-                case PhysicsSubType::Static:      return "static";
-                case PhysicsSubType::Character:   return "character";
-                case PhysicsSubType::Animatable:  return "animatable";
-                case PhysicsSubType::Vehicle:     return "vehicle";
+            switch (get_physics_type()) {
+                case PhysicsType::Rigid:       return "rigid";
+                case PhysicsType::Static:      return "static";
+                case PhysicsType::Character:   return "character";
+                case PhysicsType::Animatable:  return "animatable";
+                case PhysicsType::Vehicle:     return "vehicle";
             }
             return "";
         }
@@ -171,7 +171,7 @@ namespace Vital::Engine {
             // Covers every teardown path (local ->destroy(), remote _destroy_entity
             // RPC via destroy_sync(), scene-tree cleanup, etc.) since PREDELETE is a
             // Godot-level hook, not something callers have to remember to invoke.
-            if (on_physics_body_destroyed_callback) on_physics_body_destroyed_callback(this, get_physics_sub_type());
+            if (on_physics_body_destroyed_callback) on_physics_body_destroyed_callback(this, get_physics_type());
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
         }

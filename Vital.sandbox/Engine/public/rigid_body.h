@@ -35,7 +35,7 @@ namespace Vital::Engine {
             ~Rigid_Body() override = default;
             static void _bind_methods() {}
         public:
-            PhysicsSubType get_physics_sub_type() const override { return PhysicsSubType::Rigid; }
+            PhysicsType get_physics_type() const override { return PhysicsType::Rigid; }
 
             void _ready() override { _ready_sync(pending_authority); }
             void _notification(int what) {
