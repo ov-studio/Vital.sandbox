@@ -27,7 +27,7 @@ namespace Vital::Engine {
         _ready_sync(pending_authority); 
     }
 
-    void Character_Body::_process(double delta) { 
+    void Character_Body::_process(double delta) {
         on_sync_process(delta); 
     }
 
@@ -35,39 +35,17 @@ namespace Vital::Engine {
     // Managers //
     Character_Body* Character_Body::create(int authority_peer) {
         auto body = memnew(Character_Body);
-        #if !defined(VSDK_Client)
-            if (authority_peer != 0) {
-                body -> net_id = body -> next_net_id++;
-                body -> pending_authority = authority_peer;
-                uint32_t captured_id = body -> net_id;
-                int captured_auth = authority_peer;
-                Core::get_singleton() -> add_child(body);
-                Core::get_singleton() -> enqueue([body, captured_id, captured_auth]() {
-                    Manager::Network::get_singleton() -> enqueue_syncable_registration(body);
-                    auto net_node = Manager::Network::get_singleton() -> get_node();
-                    if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, godot::String("character"), captured_auth);
-                });
-            }
-            else Core::get_singleton() -> add_child(body);
-        #else
-            Core::get_singleton() -> add_child(body);
-        #endif
+        body -> setup_create(authority_peer);
         return body;
     }
 
-    void Character_Body::destroy() {
-        #if !defined(VSDK_Client)
-        if (net_id != 0) {
-            auto net_node = Manager::Network::get_singleton() -> get_node();
-            if (net_node) net_node -> rpc("_destroy_entity", (int)net_id);
-        }
-        #endif
-        queue_free();
+    void Character_Body::destroy() { 
+        setup_destroy(); 
     }
 
 
     // Getters //
     Engine::PhysicsType Character_Body::get_physics_type() const { 
-        return PhysicsType::Character; 
+        return PhysicsType::Character;
     }
 }

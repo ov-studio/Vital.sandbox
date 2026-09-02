@@ -146,6 +146,50 @@ namespace Vital::Engine {
                 sync_registered = false;
             }
 
+            // Shared create/destroy logic — called by each derived body's static create()
+            // and destroy() so those methods stay as thin wrappers around memnew/queue_free.
+            //
+            // setup_create(): called immediately after memnew(Derived) with authority_peer.
+            //   Assigns net_id + pending_authority on the server path, enqueues the spawn
+            //   RPC, and calls Core::add_child.  On the client path it just calls add_child.
+            //   network.h is included by each derived .cpp so the Manager::Network calls
+            //   resolve there rather than pulling a heavy header into this shared header.
+            void setup_create(int authority_peer) {
+                #if !defined(VSDK_Client)
+                    if (authority_peer != 0) {
+                        net_id            = next_net_id++;
+                        pending_authority = authority_peer;
+                        uint32_t captured_id   = net_id;
+                        int      captured_auth = authority_peer;
+                        std::string captured_name = get_sync_name();
+                        Core::get_singleton() -> add_child(this);
+                        Core::get_singleton() -> enqueue([this, captured_id, captured_auth, captured_name]() {
+                            Manager::Network::get_singleton() -> enqueue_syncable_registration(this);
+                            auto net_node = Manager::Network::get_singleton() -> get_node();
+                            if (net_node) net_node -> rpc("_spawn_entity",
+                                (int)captured_id,
+                                (int)ISyncable::SyncType::PhysicsBody,
+                                godot::String(captured_name.c_str()),
+                                captured_auth);
+                        });
+                    }
+                    else Core::get_singleton() -> add_child(this);
+                #else
+                    Core::get_singleton() -> add_child(this);
+                #endif
+            }
+
+            // setup_destroy(): emits the destroy RPC on the server path, then queue_frees.
+            void setup_destroy() {
+                #if !defined(VSDK_Client)
+                if (net_id != 0) {
+                    auto net_node = Manager::Network::get_singleton() -> get_node();
+                    if (net_node) net_node -> rpc("_destroy_entity", (int)net_id);
+                }
+                #endif
+                GodotBase::queue_free();
+            }
+
             PhysicsBodyBase() = default;
             ~PhysicsBodyBase() override = default;
     };
