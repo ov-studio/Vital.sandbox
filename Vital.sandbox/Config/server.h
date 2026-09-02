@@ -40,7 +40,7 @@ namespace Vital::Config {
                 if (!loaded || !yaml.has(section)) return fallback;
                 return Tool::YAML::get_float(yaml.get_root()[section], key, fallback);
             }
-            
+
             bool get_bool(const char* section, const char* key, bool fallback = false) const {
                 if (!loaded || !yaml.has(section)) return fallback;
                 return Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
@@ -107,11 +107,11 @@ namespace Vital::Config {
             int get_network_port() const { return get_int("network", "port", 7777); }
             int get_max_clients() const { return get_int("network", "max_peers", 32); }
             int get_http_port() const { return get_int("http", "port", 7778); }
-            int get_sync_rate() const { return std::clamp(get_int("network", "sync_rate", get_physics_tick_rate()), 1, 128); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
 
-            
+
             // Sync //
+            int get_sync_rate() const { return std::clamp(get_int("sync", "rate", get_physics_tick_rate()), 1, 128); }
             float get_sync_buffer_delay_max() const { return std::clamp(get_float("sync", "buffer_delay_max", 0.30f), 0.05f, 1.0f); }
             float get_sync_jitter_margin() const { return std::clamp(get_float("sync", "jitter_margin", 1.5f), 0.5f, 5.0f); }
             float get_sync_snap_threshold() const { return std::clamp(get_float("sync", "snap_threshold", 5.0f), 0.5f, 100.0f); }
