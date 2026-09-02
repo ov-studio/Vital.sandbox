@@ -563,7 +563,14 @@ namespace Vital::Manager {
             godot::Ref<godot::UDPServer> probe;
             probe.instantiate();
             if (probe->listen(net_port) != godot::OK) {
-                log("error", fmt::format("failed to host on port {} — already in use", net_port));
+                log("error", fmt::format("Port {} is already in use", net_port));
+                log("error", "Shutting down in 2.5 seconds...");
+                Tool::Timer::create([](Tool::Timer*, int) {
+                    Engine::Core::get_singleton()->enqueue([]() {
+                        auto tree = Engine::Core::get_scene_tree();
+                        if (tree) tree->quit(1);
+                    });
+                }, 2500, 1);
                 return false;
             }
             probe->stop();
