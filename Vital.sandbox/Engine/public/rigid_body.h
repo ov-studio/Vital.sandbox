@@ -37,18 +37,12 @@ namespace Vital::Engine {
         public:
             PhysicsType get_physics_type() const override { return PhysicsType::Rigid; }
 
-            // _notification is shared via PhysicsBodyBase (see physics_body.h).
-            // _ready/_process must be redeclared per leaf class — godot-cpp's
-            // GDCLASS registration needs them on this exact class (see the NOTE
-            // in physics_body.h) — but just delegate to the shared helpers so
-            // there's no duplicated logic.
             void _ready() override { _ready_sync(pending_authority); }
             void _process(double delta) override { on_sync_process(delta); }
 
+            
             // Managers //
             static Rigid_Body* create(int authority_peer = 0);
             void destroy();
-            // set_syncer() is already public on PhysicsBodyBase — no need to
-            // re-expose it here.
     };
 }

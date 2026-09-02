@@ -45,10 +45,9 @@ namespace Vital::Engine {
             void _ready() override { _ready_sync(pending_authority); }
             void _process(double delta) override { on_sync_process(delta); }
 
+            
             // Managers //
             static Animatable_Body* create(int authority_peer = 0);
             void destroy();
-            // set_syncer() is already public on PhysicsBodyBase — no need to
-            // re-expose it here.
     };
 }
