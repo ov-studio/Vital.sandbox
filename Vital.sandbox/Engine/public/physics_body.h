@@ -42,19 +42,19 @@ namespace Vital::Engine {
     class PhysicsBodyBase : public GodotBase, public ISyncable {
         friend class Manager::Network;
         public:
-            // ISyncable interface — shared implementation, same pattern as Model.
-            SyncType get_sync_type() const override { return SyncType::PhysicsBody; }
+            SyncType get_sync_type() const override { 
+                return SyncType::PhysicsBody; 
+            }
+
             virtual PhysicsType get_physics_type() const = 0;
 
-            // Returns the sub-type string used in the spawn RPC.
-            // Receiver (Engine::Network::_spawn_entity) dispatches on these exact strings.
             virtual std::string get_sync_name() const override {
                 switch (get_physics_type()) {
-                    case PhysicsType::Rigid:       return "rigid_body";
-                    case PhysicsType::Static:      return "static_body";
-                    case PhysicsType::Character:   return "character_body";
-                    case PhysicsType::Animatable:  return "animatable_body";
-                    case PhysicsType::Vehicle:     return "vehicle_body";
+                    case PhysicsType::Rigid:      return "rigid_body";
+                    case PhysicsType::Static:     return "static_body";
+                    case PhysicsType::Character:  return "character_body";
+                    case PhysicsType::Animatable: return "animatable_body";
+                    case PhysicsType::Vehicle:    return "vehicle_body";
                 }
                 return "";
             }
@@ -128,9 +128,15 @@ namespace Vital::Engine {
             }
             #endif
         protected:
-            // pending_authority is set before add_child so _ready() can call _ready_sync().
             int pending_authority = 1;
 
+
+            // Instantiators //
+            PhysicsBodyBase() = default;
+            ~PhysicsBodyBase() override = default;
+
+            
+            // Hooks //
             void _ready_sync(int authority_peer) {
                 sync_authority = authority_peer;
                 sync_last_pos = GodotBase::get_global_position();
@@ -146,15 +152,8 @@ namespace Vital::Engine {
                 sync_registered = false;
             }
 
-            // Shared create/destroy logic — called by each derived body's static create()
-            // and destroy() so those stay as thin wrappers around memnew/queue_free.
-            //
-            // setup_create(): assigns net_id + pending_authority, enqueues the _spawn_entity
-            //   RPC, and calls Core::add_child. Spawn name comes from get_sync_name() which
-            //   already returns the exact strings _spawn_entity dispatches on ("rigid",
-            //   "character", etc.) — no per-type parameter needed, no manual cast needed.
-            //   network.h is included only by each derived .cpp, not here, so the include
-            //   graph is unchanged.
+
+            // Managers //
             void setup_create(int authority_peer) {
                 #if !defined(VSDK_Client)
                     if (authority_peer != 0) {
@@ -176,7 +175,6 @@ namespace Vital::Engine {
                 #endif
             }
 
-            // setup_destroy(): emits the _destroy_entity RPC then queue_frees this node.
             void setup_destroy() {
                 #if !defined(VSDK_Client)
                 if (net_id != 0) {
@@ -186,8 +184,5 @@ namespace Vital::Engine {
                 #endif
                 GodotBase::queue_free();
             }
-
-            PhysicsBodyBase() = default;
-            ~PhysicsBodyBase() override = default;
     };
 }

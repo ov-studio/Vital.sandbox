@@ -39,7 +39,7 @@
 #include <Vital.sandbox/Engine/public/static_body.h>
 #include <Vital.sandbox/Engine/public/character_body.h>
 #include <Vital.sandbox/Engine/public/animatable_body.h>
-#include <Vital.sandbox/Engine/public/area.h>
-#include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Engine/public/vehicle_body.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
+#include <Vital.sandbox/Engine/public/area.h>
+#include <Vital.sandbox/Engine/public/collision_shape.h>
