@@ -25,7 +25,7 @@ namespace Vital::Manager {
 }
 
 namespace Vital::Engine {
-    class Static_Body : public PhysicsBodyBase<godot::StaticBody3D> {
+    class Static_Body : public Physics_Body<godot::StaticBody3D> {
         GDCLASS(Static_Body, godot::StaticBody3D)
         friend class Manager::Network;
         friend class Network;

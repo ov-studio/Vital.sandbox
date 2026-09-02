@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Physics Body
+     Desc: Physics Body Utilities
 ----------------------------------------------------------------*/
 
 
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Engine/public/syncable.h>
 
 
-/////////////////////////////////
-// Vital: Engine: PhysicsBody //
-/////////////////////////////////
+//////////////////////////////////
+// Vital: Engine: Physics_Body //
+//////////////////////////////////
 
 // TODO: Improve 
 namespace Vital::Manager { 
@@ -39,7 +39,7 @@ namespace Vital::Engine {
     inline std::function<void(ISyncable*, PhysicsType)> on_destroyed_callback;
 
     template<typename Base>
-    class PhysicsBodyBase : public Base, public ISyncable {
+    class Physics_Body : public Base, public ISyncable {
         friend class Manager::Network;
         public:
             SyncType get_sync_type() const override { 
@@ -60,15 +60,15 @@ namespace Vital::Engine {
             }
 
             bool is_sync_active() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() && net_id != 0;
+                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() && net_id != 0;
             }
 
             godot::Vector3 get_sync_position() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> Base::get_global_position() : godot::Vector3();
+                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_global_position() : godot::Vector3();
             }
 
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<PhysicsBodyBase*>(this) -> Base::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
+                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
@@ -132,8 +132,8 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            PhysicsBodyBase() = default;
-            ~PhysicsBodyBase() override = default;
+            Physics_Body() = default;
+            ~Physics_Body() override = default;
 
             
             // Hooks //

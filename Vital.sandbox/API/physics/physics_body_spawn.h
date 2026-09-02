@@ -12,7 +12,7 @@
            _spawn_entity, mirroring Model::on_spawned_callback.
 
            Also registers the destroy-side counterpart: fired from
-           PhysicsBodyBase::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
+           Physics_Body::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
            for ANY physics body teardown — local ->destroy(), remote
            _destroy_entity RPC via destroy_sync(), or otherwise — so the
            Lua-facing Instance is always dropped and entity:destroyed
@@ -120,7 +120,7 @@ namespace Vital::Sandbox::API {
             };
 
             // Wire the single global physics body destroy callback.
-            // Fired from PhysicsBodyBase::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
+            // Fired from Physics_Body::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
             // for every teardown path of every subtype — not just Lua-initiated
             // ->destroy() calls. Drops the Lua-facing Instance (fires entity:destroyed
             // via erase_unlocked) and nulls its body pointer so nothing can touch the
