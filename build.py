@@ -56,13 +56,21 @@ class Build:
                 "use_static_crt=no"
             ])
         log_info("Compiling ...")
-        result = subprocess.run([
-            "scons", "-C", godot_dir,
-            f"target=template_{self.build_type.lower()}",
-            "use_static_cpp=no",
-            "use_static_crt=no",
-            f"-j{int(self.os_info['nproc'])}",
-        ])
+        process = None
+        try:
+            process = subprocess.Popen([
+                "scons", "-C", godot_dir,
+                f"target=template_{self.build_type.lower()}",
+                "use_static_cpp=no",
+                "use_static_crt=no",
+                f"-j{int(self.os_info['nproc'])}",
+            ], start_new_session=(os.name != "nt"))
+            process.wait()
+        except KeyboardInterrupt:
+            kill_process_tree(process)
+            log_warn("Build cancelled")
+            sys.exit(130)
+        result = process
         if result.returncode != 0:
             log_error("godot-cpp build failed")
             sys.exit(result.returncode)
@@ -94,45 +102,57 @@ class Build:
             f"-j{int(self.os_info['nproc'])}",
         ]
 
-        if self.verbose:
-            log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
-            with open(log_path, "w", buffering=1) as log_file:
-                process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file)
+        process = None
+        try:
+            if self.verbose:
+                log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
+                with open(log_path, "w", buffering=1) as log_file:
+                    process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file,
+                                                start_new_session=(os.name != "nt"))
+                    stop = threading.Event()
+
+                    def tail_log():
+                        with open(log_path, "r", errors="replace") as f:
+                            f.seek(0, 2)
+                            while not stop.is_set() or process.poll() is None:
+                                line = f.readline()
+                                if not line:
+                                    time.sleep(0.05)
+                                    continue
+                                stripped = line.strip()
+                                if not stripped:
+                                    continue
+                                if stripped.startswith("==>"):
+                                    log_step(stripped[4:].strip())
+                                elif any(stripped.startswith(p) for p in ignore):
+                                    log_info(stripped)
+                                else:
+                                    log_ok(stripped)
+
+                    tail_thread = threading.Thread(target=tail_log, daemon=True)
+                    tail_thread.start()
+                    try:
+                        process.wait()
+                    finally:
+                        stop.set()
+                        tail_thread.join(timeout=2)
+            else:
                 stop = threading.Event()
-
-                def tail_log():
-                    with open(log_path, "r", errors="replace") as f:
-                        f.seek(0, 2)
-                        while not stop.is_set() or process.poll() is None:
-                            line = f.readline()
-                            if not line:
-                                time.sleep(0.05)
-                                continue
-                            stripped = line.strip()
-                            if not stripped:
-                                continue
-                            if stripped.startswith("==>"):
-                                log_step(stripped[4:].strip())
-                            elif any(stripped.startswith(p) for p in ignore):
-                                log_info(stripped)
-                            else:
-                                log_ok(stripped)
-
-                tail_thread = threading.Thread(target=tail_log)
-                tail_thread.start()
-                process.wait()
-                stop.set()
-                tail_thread.join()
-        else:
-            stop = threading.Event()
-            thread = threading.Thread(target=spinner, args=("Compiling", stop))
-            thread.start()
-            log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
-            with open(log_path, "w") as log_file:
-                process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file)
-                process.wait()
-            stop.set()
-            thread.join()
+                thread = threading.Thread(target=spinner, args=("Compiling", stop), daemon=True)
+                thread.start()
+                log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
+                try:
+                    with open(log_path, "w") as log_file:
+                        process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file,
+                                                    start_new_session=(os.name != "nt"))
+                        process.wait()
+                finally:
+                    stop.set()
+                    thread.join(timeout=2)
+        except KeyboardInterrupt:
+            kill_process_tree(process)
+            log_warn("Build cancelled")
+            sys.exit(130)
 
         if process.returncode != 0:
             log_error("Extension build failed — last 30 lines:")
@@ -263,12 +283,21 @@ class Build:
         ]
         env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
 
-        result = subprocess.run([
-            godot_bin, "--headless",
-            "--path", b["project_dir"],
-            b["export_mode"], b["preset"],
-            b["output_path"]
-        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+        process = None
+        try:
+            process = subprocess.Popen([
+                godot_bin, "--headless",
+                "--path", b["project_dir"],
+                b["export_mode"], b["preset"],
+                b["output_path"]
+            ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env,
+               start_new_session=(os.name != "nt"))
+            stdout, _ = process.communicate()
+        except KeyboardInterrupt:
+            kill_process_tree(process)
+            log_warn("Export cancelled")
+            sys.exit(130)
+        result = subprocess.CompletedProcess(process.args, process.returncode, stdout)
 
         for line in result.stdout.splitlines():
             if line.strip():
@@ -319,16 +348,20 @@ def main():
 
     godot_version = Godot(None).get_version(script_dir)
 
-    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
-    b.reload_vendors()
-    b.build_godot_cpp(force=args.rebuild_godot)
-    wry_version = b.reload_wry()
+    try:
+        b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
+        b.reload_vendors()
+        b.build_godot_cpp(force=args.rebuild_godot)
+        wry_version = b.reload_wry()
 
-    for platform_type in platforms:
-        build = Build(script_dir, platform_type, build_type, verbose=args.verbose, wry_version=wry_version, godot_version=godot_version)
-        build.build_sandbox()
-        if not args.skip_export:
-            build.export()
+        for platform_type in platforms:
+            build = Build(script_dir, platform_type, build_type, verbose=args.verbose, wry_version=wry_version, godot_version=godot_version)
+            build.build_sandbox()
+            if not args.skip_export:
+                build.export()
+    except KeyboardInterrupt:
+        log_warn("Build cancelled")
+        sys.exit(130)
 
     log_step("Build complete")
     log_ok("Done")

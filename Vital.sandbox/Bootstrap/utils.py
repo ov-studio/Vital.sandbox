@@ -49,6 +49,31 @@ def Throw_Error(msg):
     log_error(msg)
     sys.exit(2)
 
+def kill_process_tree(process):
+    if process is None or process.poll() is not None:
+        return
+    try:
+        if os.name == "nt":
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+        else:
+            import signal
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+    except Exception:
+        try:
+            process.kill()
+        except Exception:
+            pass
+    try:
+        process.wait(timeout=5)
+    except Exception:
+        pass
+
 def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):
     result_nodes = []
     excludes = []
