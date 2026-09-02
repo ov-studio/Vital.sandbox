@@ -84,7 +84,6 @@ namespace Vital::Sandbox::API {
             auto thread_vm = instance -> thread_vm;
             instance -> thread_vm = nullptr;
             if (!thread_vm -> resume(args)) {
-                instance -> thread_state = nullptr;
                 instance -> clean();
                 return false;
             }
