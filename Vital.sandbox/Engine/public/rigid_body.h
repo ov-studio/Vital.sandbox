@@ -35,8 +35,7 @@ namespace Vital::Engine {
             ~Rigid_Body() override = default;
             static void _bind_methods() {}
         public:
-            PhysicsType get_physics_type() const override { return PhysicsType::Rigid; }
-
+            // Hooks //
             void _ready() override { _ready_sync(pending_authority); }
             void _process(double delta) override { on_sync_process(delta); }
 
@@ -44,5 +43,9 @@ namespace Vital::Engine {
             // Managers //
             static Rigid_Body* create(int authority_peer = 0);
             void destroy();
+
+
+            // Getters //
+            PhysicsType get_physics_type() const override { return PhysicsType::Rigid; }
     };
 }

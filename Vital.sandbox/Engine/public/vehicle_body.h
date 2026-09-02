@@ -35,13 +35,7 @@ namespace Vital::Engine {
             ~Vehicle_Body() override = default;
             static void _bind_methods() {}
         public:
-            PhysicsType get_physics_type() const override { return PhysicsType::Vehicle; }
-
-            // _notification is shared via PhysicsBodyBase (see physics_body.h).
-            // _ready/_process must be redeclared per leaf class — godot-cpp's
-            // GDCLASS registration needs them on this exact class (see the NOTE
-            // in physics_body.h) — but just delegate to the shared helpers so
-            // there's no duplicated logic.
+            // Hooks //
             void _ready() override { _ready_sync(pending_authority); }
             void _process(double delta) override { on_sync_process(delta); }
 
@@ -49,5 +43,9 @@ namespace Vital::Engine {
             // Managers //
             static Vehicle_Body* create(int authority_peer = 0);
             void destroy();
+
+
+            // Getters //
+            PhysicsType get_physics_type() const override { return PhysicsType::Vehicle; }
     };
 }
