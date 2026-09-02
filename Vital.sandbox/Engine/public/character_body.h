@@ -43,9 +43,7 @@ namespace Vital::Engine {
             // Managers //
             static Character_Body* create(int authority_peer = 0);
             void destroy();
-
-            #if !defined(VSDK_Client)
-            using PhysicsBodyBase<godot::CharacterBody3D>::set_syncer;
-            #endif
+            // set_syncer() is already public on PhysicsBodyBase — no need to
+            // re-expose it here.
     };
 }
