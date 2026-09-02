@@ -30,9 +30,10 @@ namespace Vital::Engine {
         friend class Manager::Network;
         friend class Network;
         private:
-            static void _bind_methods() {}
+            // Instantiators //
             Rigid_Body() = default;
             ~Rigid_Body() override = default;
+            static void _bind_methods() {}
         public:
             PhysicsSubType get_physics_sub_type() const override { return PhysicsSubType::Rigid; }
 
