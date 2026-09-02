@@ -50,7 +50,6 @@ namespace Vital::Engine {
             //   authority_peer == 1  -> server-authoritative (server simulates, broadcasts)
             //   authority_peer == N  -> client-authoritative (peer N simulates, server relays)
             enum class AuthorityMode { Server, Client };
-
         private:
             static void _bind_methods() {}
 
@@ -117,7 +116,6 @@ namespace Vital::Engine {
             // Instantiators //
             Model() = default;
             ~Model() override = default;
-
         public:
             // Hooks //
             void _ready() override;
