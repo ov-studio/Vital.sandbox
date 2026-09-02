@@ -469,8 +469,8 @@ namespace Vital::Sandbox {
                 push_nil();
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference("env", id);
-                lua_gc(state, LUA_GCCOLLECT, 0);
                 for (auto& clean : env_cleaners) clean(id);
+                lua_gc(state, LUA_GCCOLLECT, 0);
             }
 
 
