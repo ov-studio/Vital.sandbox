@@ -65,7 +65,6 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 instance -> set_reference(instance -> value_reference("exec"), 1);
                 vm -> pop(1);
-                instance -> store(true);
 
                 auto weak = std::weak_ptr<Instance>(instance);
                 auto timer = Tool::Timer::create([weak, executions](Tool::Timer*, int count) {
@@ -77,20 +76,14 @@ namespace Vital::Sandbox::API {
                         instance -> get_reference(instance -> value_reference("exec"), true);
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> call(1, 0);
-                        if (captured_stop) {
-                            {
-                                std::lock_guard<std::mutex> lock(registry.mutex);
-                                instance -> timer = nullptr;
-                            }
-                            instance -> clean();
-                        }
+                        if (captured_stop) instance -> clean();
                     });
                 }, interval, executions);
-
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     instance -> timer = timer;
                 }
+                instance -> store(true);
                 return 1;
             });
 
