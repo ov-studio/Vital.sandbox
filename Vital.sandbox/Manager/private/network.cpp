@@ -565,12 +565,8 @@ namespace Vital::Manager {
             if (probe->listen(net_port) != godot::OK) {
                 log("error", fmt::format("Port {} is already in use", net_port));
                 log("error", "Shutting down in 2.5 seconds...");
-                Tool::Timer::create([](Tool::Timer*, int) {
-                    Engine::Core::get_singleton()->enqueue([]() {
-                        auto tree = Engine::Core::get_scene_tree();
-                        if (tree) tree->quit(1);
-                    });
-                }, 2500, 1);
+                std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+                std::exit(1);
                 return false;
             }
             probe->stop();
