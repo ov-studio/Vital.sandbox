@@ -72,10 +72,10 @@
 #include <Vital.sandbox/API/physics/static_body.h>
 #include <Vital.sandbox/API/physics/character_body.h>
 #include <Vital.sandbox/API/physics/animatable_body.h>
-#include <Vital.sandbox/API/physics/area.h>
-#include <Vital.sandbox/API/physics/collision_shape.h>
 #include <Vital.sandbox/API/physics/vehicle_body.h>
 #include <Vital.sandbox/API/physics/vehicle_wheel.h>
+#include <Vital.sandbox/API/physics/area.h>
+#include <Vital.sandbox/API/physics/collision_shape.h>
 #include <Vital.sandbox/API/physics/space.h>
 #include <Vital.sandbox/API/physics/physics_body_spawn.h>  // TODO: SHARE IN BETTER WAY?
 
