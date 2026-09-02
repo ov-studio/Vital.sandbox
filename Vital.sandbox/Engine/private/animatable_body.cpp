@@ -25,8 +25,13 @@
 
 namespace Vital::Engine {
     // Hooks //
-    void Animatable_Body::_ready() { _ready_sync(pending_authority); }
-    void Animatable_Body::_process(double delta) { on_sync_process(delta); }
+    void Animatable_Body::_ready() { 
+        _ready_sync(pending_authority); 
+    }
+
+    void Animatable_Body::_process(double delta) { 
+        on_sync_process(delta); 
+    }
 
 
     // Managers //
@@ -60,5 +65,11 @@ namespace Vital::Engine {
         }
         #endif
         queue_free();
+    }
+
+
+    // Getters //
+    PhysicsType get_physics_type() const { 
+        return PhysicsType::Animatable; 
     }
 }

@@ -46,6 +46,6 @@ namespace Vital::Engine {
 
 
             // Getters //
-            PhysicsType get_physics_type() const override { return PhysicsType::Animatable; }
+            PhysicsType get_physics_type() const override;
     };
 }
