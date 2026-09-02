@@ -91,11 +91,13 @@ namespace Vital::Manager {
 
             // Sync interval in seconds — set from config on host(), read each poll().
             // Default 1/20 = 20 Hz. Configurable via network.sync_rate in config.yaml.
-            float sync_interval = 1.0f / static_cast<float>(SyncConfig{}.rate);
+            float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::SyncConfig{}.rate);
             // Same value as an integer Hz — set alongside sync_interval in host().
             // Sent verbatim to each peer on connect via the "_sync_config" RPC so
             // client builds (which never call host()) stop defaulting to 20 Hz.
-            Engine::ISyncable::SyncConfig sync_config;
+            // No local copy here anymore — host()/apply_sync_config() write straight
+            // into Engine::ISyncable::s_sync_config, and get_sync_config() below
+            // just reads it back.
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -198,7 +200,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             const Config::Server& get_server_config() const;
-            const Engine::ISyncable::SyncConfig& get_sync_config() const { return sync_config; }
+            const Engine::ISyncable::SyncConfig& get_sync_config() const { return Engine::ISyncable::s_sync_config; }
             std::string get_server_ip() const;
             #endif
 

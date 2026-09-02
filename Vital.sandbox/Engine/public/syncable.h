@@ -61,9 +61,11 @@ namespace Vital::Engine {
                 float jitter_margin    = JITTER_MARGIN;
                 float snap_threshold   = SNAP_THRESHOLD;
             };
-            // Set once by Manager::Network on host()/connect — avoids a circular
-            // include between Engine/syncable.cpp and Manager/network.h.
-            static inline SyncConfig (*s_get_sync_config)() = nullptr;
+            // Written directly by Manager::Network on host()/connect — avoids a
+            // circular include between Engine/syncable.cpp and Manager/network.h.
+            // Defaults to the compile-time SyncConfig{} values, so callers are
+            // always safe to read even before host()/connect ever runs.
+            static inline SyncConfig s_sync_config;
 
 
             // Type //
