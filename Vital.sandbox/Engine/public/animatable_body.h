@@ -20,9 +20,9 @@
 // Vital: Engine: Animatable_Body //
 /////////////////////////////////////
 
-// TODO: Improve
-
-namespace Vital::Manager { class Network; }
+namespace Vital::Manager { 
+    class Network; 
+}
 
 namespace Vital::Engine {
     class Animatable_Body : public PhysicsBodyBase<godot::AnimatableBody3D> {

@@ -21,8 +21,6 @@
 // Vital: Engine: Animatable_Body //
 /////////////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Engine {
     // Hooks //
     void Animatable_Body::_ready() { 
