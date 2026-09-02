@@ -91,12 +91,12 @@ namespace Vital::Manager {
 
             // Sync interval in seconds — set from config on host(), read each poll().
             // Default 1/20 = 20 Hz. Configurable via network.sync_rate in config.yaml.
-            float sync_interval = 1.0f / 20.0f;
+            float sync_interval = 1.0f / static_cast<float>(SyncConfig{}.rate);
             // Same value as an integer Hz — set alongside sync_interval in host().
             // Sent verbatim to each peer on connect via the "_sync_config" RPC so
             // client builds (which never call host()) stop defaulting to 20 Hz.
             struct SyncConfig {
-                int   rate            = 20;
+                int   rate            = Engine::ISyncable::SYNC_RATE;
                 float buffer_delay_max = Engine::ISyncable::BUFFER_DELAY_MAX;
                 float jitter_margin    = Engine::ISyncable::JITTER_MARGIN;
                 float snap_threshold   = Engine::ISyncable::SNAP_THRESHOLD;

@@ -35,6 +35,7 @@ namespace Vital::Engine {
             static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
 
             // Snapshot buffer constants //
+            static constexpr int   SYNC_RATE        = 20;    // default sync rate in Hz
             static constexpr int   SNAPSHOT_COUNT   = 32;    // ~530ms of history at 60Hz —
                                                               // headroom above BUFFER_DELAY_MAX
                                                               // so a big adaptive buffer still
