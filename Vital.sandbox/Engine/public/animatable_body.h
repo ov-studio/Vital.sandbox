@@ -36,8 +36,8 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         public:
             // Hooks //
-            void _ready() override { _ready_sync(pending_authority); }
-            void _process(double delta) override { on_sync_process(delta); }
+            void _ready() override;
+            void _process(double delta) override;
 
             
             // Managers //
