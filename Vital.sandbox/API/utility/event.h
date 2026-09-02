@@ -26,6 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Event : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "event"};
+        inline static constexpr bool pre_cleanup = false;
 
         struct Handler {
             std::string env;
