@@ -119,11 +119,6 @@ namespace Vital::Engine {
             // Hooks //
             void _ready() override;
             void _notification(int what);
-
-            // Apply an inbound sync packet — sets interpolation target on non-authority clients.
-            // Skipped entirely when this peer is the authority (raw local physics drives position).
-
-            // Called every rendered frame — advances interpolation on non-authority clients.
             void _process(double delta) override;
 
 
