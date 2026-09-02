@@ -213,11 +213,9 @@ namespace Vital::Manager {
         if (rate > 128) rate = 128;
         sync_rate_hz  = rate;
         sync_interval = 1.0f / static_cast<float>(rate);
-        #if defined(VSDK_Client)
         sync_config.buffer_delay_max = buffer_delay_max;
         sync_config.jitter_margin    = jitter_margin;
         sync_config.snap_threshold   = snap_threshold;
-        #endif
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* m : sync_models) m->interp_step = sync_interval;
@@ -606,8 +604,11 @@ namespace Vital::Manager {
         // change more often than physics steps it, so sending faster than that
         // just re-sends stale data. Clamp and warn if the owner set it higher.
         int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
-        sync_interval         = 1.0f / static_cast<float>(effective_sync_rate);
-        sync_rate_hz          = effective_sync_rate;
+        sync_interval              = 1.0f / static_cast<float>(effective_sync_rate);
+        sync_rate_hz               = effective_sync_rate;
+        sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
+        sync_config.jitter_margin    = config.get_sync_jitter_margin();
+        sync_config.snap_threshold   = config.get_sync_snap_threshold();
         if (effective_sync_rate < config.get_sync_rate()) {
             log("warn", fmt::format(
                 "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
