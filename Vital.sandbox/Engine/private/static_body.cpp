@@ -21,9 +21,18 @@
 // Vital: Engine: Static_Body //
 /////////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Engine {
+    // Hooks //
+    void Static_Body::_ready() { 
+        _ready_sync(pending_authority); 
+    }
+
+    void Static_Body::_process(double delta) { 
+        on_sync_process(delta);
+    }
+
+    
+    // Managers //
     Static_Body* Static_Body::create(int authority_peer) {
         auto body = memnew(Static_Body);
         #if !defined(VSDK_Client)
@@ -61,5 +70,11 @@ namespace Vital::Engine {
         }
         #endif
         queue_free();
+    }
+
+
+    // Getters //
+    Engine::PhysicsType get_physics_type() const { 
+        return PhysicsType::Static; 
     }
 }
