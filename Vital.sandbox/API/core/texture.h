@@ -34,25 +34,27 @@ namespace Vital::Sandbox::API {
             { "LINEAR_MIPMAP_ANISOTROPIC",   godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC  }
         };
 
-        // TODO: RENAME LIKE AUDIO EFFECT.H
-        template<typename BoundInstance>
-        static void bind_filter_methods(Machine* vm) {
-            vm_module::bind_method<BoundInstance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
+        template<typename Instance>
+        static void bind(Machine* vm) {}
+
+        template<typename Instance>
+        static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> has_mipmaps());
                 return 1;
             });
 
-            vm_module::bind_method<BoundInstance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> get_size());
                 return 1;
             });
 
-            vm_module::bind_method<BoundInstance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
                 return 1;
             });
 
-            vm_module::bind_method<BoundInstance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, texture_filter_registry);
 

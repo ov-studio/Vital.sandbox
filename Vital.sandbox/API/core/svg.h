@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Texture::bind_filter_methods<Instance>(vm);
+            API::Texture::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)", true)

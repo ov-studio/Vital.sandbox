@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Texture::bind_filter_methods<Instance>(vm);
+            API::Texture::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_compressed", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> is_compressed());
