@@ -173,8 +173,7 @@ namespace Vital::Engine {
                     // TODO: SHARE IN BETTER WAY?
                     // Notify Lua so it can hydrate collision shapes / wheels on
                     // this remote body — mirrors Model::on_spawned_callback.
-                    if (Engine::on_physics_body_spawned_callback)
-                        Engine::on_physics_body_spawned_callback(entity, sub_type, true);
+                    if (Engine::on_spawned_callback) Engine::on_spawned_callback(entity, sub_type, true);
                 }
                 break;
             }
@@ -320,8 +319,7 @@ namespace Vital::Engine {
         if (!col) {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
-            if (Engine::Collision_Shape::on_spawned_callback)
-                Engine::Collision_Shape::on_spawned_callback(col);
+            if (Engine::Collision_Shape::on_spawned_callback) Engine::Collision_Shape::on_spawned_callback(col);
         }
 
         std::string type = Tool::to_std_string(shape_type);

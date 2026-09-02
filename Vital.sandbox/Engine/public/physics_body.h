@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Physics Body Base (Syncable)
+     Desc: Physics Body
 ----------------------------------------------------------------*/
 
 
@@ -35,8 +35,8 @@ namespace Vital::Engine {
         Vehicle,
     };
 
-    inline std::function<void(ISyncable*, PhysicsType, bool)> on_physics_body_spawned_callback;
-    inline std::function<void(ISyncable*, PhysicsType)> on_physics_body_destroyed_callback;
+    inline std::function<void(ISyncable*, PhysicsType, bool)> on_spawned_callback;
+    inline std::function<void(ISyncable*, PhysicsType)> on_destroyed_callback;
 
     template<typename Base>
     class PhysicsBodyBase : public Base, public ISyncable {
@@ -147,7 +147,7 @@ namespace Vital::Engine {
             }
 
             void _notify_predelete_sync() {
-                if (on_physics_body_destroyed_callback) on_physics_body_destroyed_callback(this, get_physics_type());
+                if (on_destroyed_callback) on_destroyed_callback(this, get_physics_type());
                 Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }

@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             // On the client, _spawn_entity fires this for every remotely spawned
             // body so Lua can attach collision shapes / wheels in its own handler.
 
-            Vital::Engine::on_physics_body_spawned_callback = [vm](
+            Vital::Engine::on_spawned_callback = [vm](
                 Vital::Engine::ISyncable* entity,
                 Vital::Engine::PhysicsType sub_type,
                 bool remote)
@@ -130,7 +130,7 @@ namespace Vital::Sandbox::API {
             // we're already inside the object's own destruction (PREDELETE), so that
             // would either be a no-op re-entrant call or a double-free depending on the
             // Godot build. Only registry bookkeeping happens here.
-            Vital::Engine::on_physics_body_destroyed_callback = [](
+            Vital::Engine::on_destroyed_callback = [](
                 Vital::Engine::ISyncable* entity,
                 Vital::Engine::PhysicsType sub_type)
             {

@@ -368,8 +368,7 @@ namespace Vital::Engine {
         }
         set_visible(true);
         if (on_spawned_callback) on_spawned_callback(this, true);
-        godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ",
-            Tool::to_godot_string(model_name));
+        godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
     }
     #endif
 
