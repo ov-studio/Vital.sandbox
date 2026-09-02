@@ -37,11 +37,8 @@ namespace Vital::Engine {
         public:
             PhysicsType get_physics_type() const override { return PhysicsType::Animatable; }
 
-            void _ready() override { _ready_sync(pending_authority); }
-            void _notification(int what) {
-                if (what == NOTIFICATION_PREDELETE) _notify_predelete_sync();
-            }
-            void _process(double delta) override { on_sync_process(delta); }
+            // Node lifecycle (_ready/_notification/_process) lives in PhysicsBodyBase —
+            // shared across every physics body subtype, see physics_body.h.
 
             // Managers //
             static Animatable_Body* create(int authority_peer = 0);

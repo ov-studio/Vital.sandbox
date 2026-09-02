@@ -37,15 +37,8 @@ namespace Vital::Engine {
         public:
             PhysicsType get_physics_type() const override { return PhysicsType::Static; }
 
-            void _ready() override { _ready_sync(pending_authority); }
-            void _notification(int what) {
-                if (what == NOTIFICATION_PREDELETE) _notify_predelete_sync();
-            }
-            // See Character_Body::_process for why this moved off _physics_process:
-            // remote-side interpolation is a visual read-out of the snapshot buffer,
-            // not a physics simulation step, so it should run once per rendered
-            // frame via _process, matching Model, Animatable_Body and Vehicle_Body.
-            void _process(double delta) override { on_sync_process(delta); }
+            // Node lifecycle (_ready/_notification/_process) lives in PhysicsBodyBase —
+            // shared across every physics body subtype, see physics_body.h.
 
             // Managers //
             static Static_Body* create(int authority_peer = 0);
