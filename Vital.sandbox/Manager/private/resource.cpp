@@ -256,7 +256,10 @@ namespace Vital::Manager {
     bool Resource::Internal::reload_manifest(const std::string& name, std::vector<std::string>& errors) {
         auto rm = Resource::get_singleton();
         const std::string base = Resource::get_resource_base(name);
-        if (!Tool::File::exists(base, "manifest.yaml")) { errors.push_back("manifest.yaml not found"); return false; }
+        try {
+            if (!Tool::File::exists(base, "manifest.yaml")) { errors.push_back("manifest.yaml not found"); return false; }
+        }
+        catch (...) { errors.push_back("resource directory not found"); return false; }
 
         std::string content;
         try { content = Tool::File::read_text(base, "manifest.yaml"); }
