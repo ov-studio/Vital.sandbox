@@ -65,30 +65,21 @@ namespace Vital::Engine {
             }
 
             bool is_sync_active() const override {
-                return const_cast<PhysicsBodyBase*>(this)->GodotBase::is_inside_tree() && net_id != 0;
+                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() && net_id != 0;
             }
 
             godot::Vector3 get_sync_position() const override {
-                return const_cast<PhysicsBodyBase*>(this)->GodotBase::is_inside_tree()
-                    ? const_cast<PhysicsBodyBase*>(this)->GodotBase::get_global_position()
-                    : godot::Vector3();
+                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> GodotBase::get_global_position() : godot::Vector3();
             }
 
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<PhysicsBodyBase*>(this)->GodotBase::is_inside_tree()
-                    ? const_cast<PhysicsBodyBase*>(this)->GodotBase::get_rotation_degrees()
-                    : godot::Vector3();
+                return const_cast<PhysicsBodyBase*>(this) -> GodotBase::is_inside_tree() ? const_cast<PhysicsBodyBase*>(this) -> GodotBase::get_rotation_degrees() : godot::Vector3();
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
                 if (!GodotBase::is_inside_tree()) return;
                 auto net = Manager::Network::get_singleton();
-                if (net && net->get_peer_id() == sync_authority) return;
-                // Snap to position on the very first sync packet so the body doesn't
-                // sit at origin (or drift under local physics) while interp_ready is
-                // false. Without this, remote CharacterBody3D nodes fall from {0,0,0}
-                // under the client's gravity until the interpolator takes over, landing
-                // at the wrong height and staying there until a snap threshold is hit.
+                if (net && net -> get_peer_id() == sync_authority) return;
                 if (!interp_ready) {
                     GodotBase::set_global_position(pos);
                     GodotBase::set_rotation_degrees(rot);
@@ -103,26 +94,13 @@ namespace Vital::Engine {
             void on_sync_process(double delta) override {
                 if (!GodotBase::is_inside_tree() || !interp_ready || net_id == 0) return;
                 auto net = Manager::Network::get_singleton();
-                if (net && net->get_peer_id() == sync_authority) return;
+                if (net && net -> get_peer_id() == sync_authority) return;
                 godot::Vector3 out_pos, out_rot;
                 interp_process(delta, out_pos, out_rot);
                 GodotBase::set_global_position(out_pos);
                 GodotBase::set_rotation_degrees(out_rot);
             }
 
-            // NOTE: _ready/_process are NOT hoisted here even though every subtype's
-            // override is identical (`{ _ready_sync(pending_authority); }` /
-            // `{ on_sync_process(delta); }`). godot-cpp's GDCLASS registration takes
-            // &T::_process and feeds it through call_with_ptr_args<T,R>(...) for
-            // template deduction; if the override only lives in this base template,
-            // &Vehicle_Body::_process has static type
-            // void (PhysicsBodyBase<VehicleBody3D>::*)(double) instead of
-            // void (Vehicle_Body::*)(double) (pointer-to-member type is tied to the
-            // declaring class, not the class it's inherited through), which makes T
-            // ambiguous and fails to compile (MSVC C2672). Each leaf class must
-            // redeclare a one-line _ready()/_process() itself — see e.g. vehicle_body.h.
-            // _notification is fine hoisted here: GDCLASS binds it via a plain
-            // reinterpret-style pointer cast, not template deduction.
             void _notification(int what) {
                 if (what == GodotBase::NOTIFICATION_PREDELETE) _notify_predelete_sync();
             }
@@ -133,7 +111,7 @@ namespace Vital::Engine {
                 ISyncable::reset_sync_state();
                 if constexpr (std::is_base_of_v<godot::RigidBody3D, GodotBase>) {
                     auto net = Manager::Network::get_singleton();
-                    bool is_authority = net && net->get_peer_id() == sync_authority;
+                    bool is_authority = net && net -> get_peer_id() == sync_authority;
                     GodotBase::set_freeze_mode(godot::RigidBody3D::FREEZE_MODE_KINEMATIC);
                     GodotBase::set_freeze_enabled(net_id == 0 ? false : !is_authority);
                 }
@@ -150,8 +128,8 @@ namespace Vital::Engine {
                 sync_authority = (peer_id <= 1) ? 1 : peer_id;
                 sync_sleeping  = false;
                 reset_sync_state();
-                auto net_node = Manager::Network::get_singleton()->get_node();
-                if (net_node) net_node->rpc("_set_authority", (int)net_id, sync_authority);
+                auto net_node = Manager::Network::get_singleton() -> get_node();
+                if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
             }
             #endif
         protected:
@@ -160,21 +138,16 @@ namespace Vital::Engine {
 
             void _ready_sync(int authority_peer) {
                 sync_authority = authority_peer;
-                sync_last_pos  = GodotBase::get_global_position();
-                sync_last_rot  = GodotBase::get_rotation_degrees();
-                sync_sleeping  = false;
-                sync_accum     = 0.0f;
+                sync_last_pos = GodotBase::get_global_position();
+                sync_last_rot = GodotBase::get_rotation_degrees();
+                sync_sleeping = false;
+                sync_accum = 0.0f;
                 reset_sync_state();
             }
 
             void _notify_predelete_sync() {
-                // Fire before unregistering: on_physics_body_destroyed_callback still
-                // needs a valid, findable object to match against the Lua-side registry.
-                // Covers every teardown path (local ->destroy(), remote _destroy_entity
-                // RPC via destroy_sync(), scene-tree cleanup, etc.) since PREDELETE is a
-                // Godot-level hook, not something callers have to remember to invoke.
                 if (on_physics_body_destroyed_callback) on_physics_body_destroyed_callback(this, get_physics_type());
-                Manager::Network::get_singleton()->unregister_syncable(this);
+                Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }
 
