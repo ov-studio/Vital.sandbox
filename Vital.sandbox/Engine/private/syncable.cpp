@@ -180,9 +180,8 @@ namespace Vital::Engine {
                 // back on every direction change, since it assumes velocity stays
                 // constant. Keeping a real bracketing snapshot on hand avoids that.
                 auto* net = Manager::Network::get_singleton();
-                float delay_max     = net ? net->get_sync_buffer_delay_max() : BUFFER_DELAY_MAX;
-                float jitter_margin = net ? net->get_sync_jitter_margin()    : JITTER_MARGIN;
-                float target = std::clamp(interp_step + jitter_margin * stddev, BUFFER_DELAY_MIN, delay_max);
+                auto cfg = net ? net->get_sync_config() : Manager::Network::SyncConfig{};
+                float target = std::clamp(interp_step + cfg.jitter_margin * stddev, BUFFER_DELAY_MIN, cfg.buffer_delay_max);
                 // Faster EMA: 0.8 old + 0.2 new — responds to network changes in ~5 packets
                 // instead of the old 0.95/0.05 which took ~20 packets to converge.
                 adaptive_delay = adaptive_delay * 0.8f + target * 0.2f;
@@ -250,8 +249,8 @@ namespace Vital::Engine {
         if (span <= 0.0f) { out_pos = after -> pos; out_rot = after -> rot; return; }
         float t = std::clamp((render_time - before -> time) / span, 0.0f, 1.0f);
         auto* net = Manager::Network::get_singleton();
-        float snap_threshold = net ? net->get_sync_snap_threshold() : SNAP_THRESHOLD;
-        if (before -> pos.distance_to(after -> pos) > snap_threshold) {
+        auto cfg = net ? net->get_sync_config() : Manager::Network::SyncConfig{};
+        if (before -> pos.distance_to(after -> pos) > cfg.snap_threshold) {
             out_pos = after -> pos;
             out_rot = after -> rot;
         } 

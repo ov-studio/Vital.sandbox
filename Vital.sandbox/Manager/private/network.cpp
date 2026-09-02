@@ -213,9 +213,11 @@ namespace Vital::Manager {
         if (rate > 128) rate = 128;
         sync_rate_hz  = rate;
         sync_interval = 1.0f / static_cast<float>(rate);
-        sync_buffer_delay_max = buffer_delay_max;
-        sync_jitter_margin    = jitter_margin;
-        sync_snap_threshold   = snap_threshold;
+        #if defined(VSDK_Client)
+        sync_config.buffer_delay_max = buffer_delay_max;
+        sync_config.jitter_margin    = jitter_margin;
+        sync_config.snap_threshold   = snap_threshold;
+        #endif
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* m : sync_models) m->interp_step = sync_interval;
