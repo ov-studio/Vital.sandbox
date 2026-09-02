@@ -64,7 +64,7 @@ namespace Vital::Engine {
             // Written directly by Manager::Network on host()/connect (avoids a circular
             // include between Engine/syncable.cpp and Manager/network.h). Defaults to
             // the compile-time values above, so it's always safe to read.
-            static inline SyncConfig s_sync_config;
+            static inline SyncConfig sync_config;
 
 
             // Type //

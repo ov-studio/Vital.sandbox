@@ -168,7 +168,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             const Config::Server& get_server_config() const;
-            const Engine::ISyncable::SyncConfig& get_sync_config() const { return Engine::ISyncable::s_sync_config; }
+            const Engine::ISyncable::SyncConfig& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;
             #endif
 

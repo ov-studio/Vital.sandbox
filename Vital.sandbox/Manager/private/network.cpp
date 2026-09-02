@@ -211,11 +211,11 @@ namespace Vital::Manager {
     void Network::apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         if (rate < 1) rate = 1;
         if (rate > 128) rate = 128;
-        Engine::ISyncable::s_sync_config.rate             = rate;
+        Engine::ISyncable::sync_config.rate             = rate;
         sync_interval                                     = 1.0f / static_cast<float>(rate);
-        Engine::ISyncable::s_sync_config.buffer_delay_max = buffer_delay_max;
-        Engine::ISyncable::s_sync_config.jitter_margin    = jitter_margin;
-        Engine::ISyncable::s_sync_config.snap_threshold   = snap_threshold;
+        Engine::ISyncable::sync_config.buffer_delay_max = buffer_delay_max;
+        Engine::ISyncable::sync_config.jitter_margin    = jitter_margin;
+        Engine::ISyncable::sync_config.snap_threshold   = snap_threshold;
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto* m : sync_models) m->interp_step = sync_interval;
@@ -605,10 +605,10 @@ namespace Vital::Manager {
         // just re-sends stale data. Clamp and warn if the owner set it higher.
         int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
         sync_interval                                     = 1.0f / static_cast<float>(effective_sync_rate);
-        Engine::ISyncable::s_sync_config.rate             = effective_sync_rate;
-        Engine::ISyncable::s_sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
-        Engine::ISyncable::s_sync_config.jitter_margin    = config.get_sync_jitter_margin();
-        Engine::ISyncable::s_sync_config.snap_threshold   = config.get_sync_snap_threshold();
+        Engine::ISyncable::sync_config.rate             = effective_sync_rate;
+        Engine::ISyncable::sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
+        Engine::ISyncable::sync_config.jitter_margin    = config.get_sync_jitter_margin();
+        Engine::ISyncable::sync_config.snap_threshold   = config.get_sync_snap_threshold();
         if (effective_sync_rate < config.get_sync_rate()) {
             log("warn", fmt::format(
                 "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
@@ -731,9 +731,9 @@ namespace Vital::Manager {
         //    before the spawn/state-dump RPCs below on the same channel, so ENet's
         //    ordering guarantee lands it first. Fixes relayed/remote entities being
         //    interpolated as if packets arrive at the 20 Hz client-side default
-        //    (see sync_interval / ISyncable::s_sync_config.rate) instead of the
+        //    (see sync_interval / ISyncable::sync_config.rate) instead of the
         //    server's configured physics_tick_rate/sync_rate.
-        if (node) node->rpc_id(id, "_sync_config", Engine::ISyncable::s_sync_config.rate,
+        if (node) node->rpc_id(id, "_sync_config", Engine::ISyncable::sync_config.rate,
             get_server_config().get_sync_buffer_delay_max(),
             get_server_config().get_sync_jitter_margin(),
             get_server_config().get_sync_snap_threshold());
