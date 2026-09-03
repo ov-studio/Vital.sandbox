@@ -294,6 +294,7 @@ namespace Vital::Sandbox::API {
                 godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
                 return;
             }
+            pending_non_visible_apply = false;
             godot::Input::get_singleton() -> set_mouse_mode(last_non_visible_mode);
         }
 
