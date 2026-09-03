@@ -100,39 +100,39 @@ namespace Vital::Sandbox::API {
                 std::weak_ptr<Instance> weak = instance;
 
                 auto key = std::to_string(reinterpret_cast<uint64_t>(instance -> body));
-                auto resolve = [](std::shared_ptr<Instance>& self, const std::string& lua_signal, godot::Node3D* other) {
+                auto resolve = [](std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other) {
                     if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
-                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity));
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
-                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity));
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
-                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity));
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
-                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity));
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
-                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity));
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
                     }
                 };
 
-                auto resolve_shape = [](std::shared_ptr<Instance>& self, const std::string& lua_signal, godot::Node3D* other, int other_shape, int local_shape) {
+                auto resolve_shape = [](std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other, int other_shape, int local_shape) {
                     if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
-                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
                     }
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
-                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
-                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
-                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
                     } 
                     else if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
-                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(lua_signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
                     }
                 };
 
