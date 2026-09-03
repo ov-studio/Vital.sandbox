@@ -288,21 +288,21 @@ namespace Vital::Sandbox::API {
         static void apply_cursor_mode() {
             if (sandbox_ui_visible_count > 0) {
                 // Sandbox UI is open: force VISIBLE, don't touch last_non_visible_mode.
-                // Sandbox UI is open: force VISIBLE, don't touch last_non_visible_mode.
                 godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_VISIBLE);
                 return;
             }
             int visible_resource_count = 0;
-            for e_resource_count;
+            for (auto& [env, wants_visible] : visible_votes) {
+                if (wants_visible) ++visible_resource_count;
             }
             if (visible_resource_count > 0) {
-                 // At least one resource wants cursor visible → CONFINED (not VISIBLE,
+                // At least one resource wants cursor visible → CONFINED (not VISIBLE,
                 // which is reserved for sandbox UI panels like the console/splash).
-               godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
+                godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
                 return;
             }
-             // No sandbox UI, no visible-voting resource → honour last non-visible mode.
-           pending_non_visible_apply = false;
+            // No sandbox UI, no visible-voting resource → honour last non-visible mode.
+            pending_non_visible_apply = false;
             godot::Input::get_singleton() -> set_mouse_mode(last_non_visible_mode);
         }
 
@@ -313,11 +313,11 @@ namespace Vital::Sandbox::API {
 
         static void pop_sandbox_ui_visible() {
             if (sandbox_ui_visible_count > 0) --sandbox_ui_visible_count;
-             // Flush any deferred non-visible mode that a resource set while the UI was up.
-           if (sandbox_ui_visible_count == 0 && pending_non_visible_apply) {{
-                ending_non_visible_apply = false;
-             }
-           apply_cursor_mode();
+            // Flush any deferred non-visible mode that a resource set while the UI was up.
+            if (sandbox_ui_visible_count == 0 && pending_non_visible_apply) {
+                pending_non_visible_apply = false;
+            }
+            apply_cursor_mode();
         }
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
@@ -465,6 +465,7 @@ namespace Vital::Sandbox::API {
                 std::vector<std::string> arguments;
                 arguments.reserve(arg_stack_ptr -> array.size());
                 for (auto& value : arg_stack_ptr -> array) arguments.push_back(value.as<std::string>());
+
                 dispatch_command(vm, name, arguments);
             });
         }
@@ -634,7 +635,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "key", key_registry);
-            vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry); // TODO: LUA SHOULDNT BE AWARE OF             { "CONFINED", godot::Input::MOUSE_MODE_CONFINED  } just VISIBLE WHICH FROM LUA WHEN CALLS THEN CONFINED IS SET, HIDDEN, CAPTURED ALLOWED NORMALLY AND CONFINED NOT POSSIBLE SINCE VISIBLE IS CONFINED FOR LUA
+            vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry);
         }
 
         static void clean(const std::string& env) {
@@ -645,10 +646,10 @@ namespace Vital::Sandbox::API {
             release_env(mouse_binds, vm, env);
             release_env(command_list, vm, env);
             visible_votes.erase(env);
-
             // After cleaning an environment, fall back to CONFINED rather than
             // keeping whatever CAPTURED/HIDDEN that resource last requested.
-            // This ensures stopping a resource never leaves the cursor stuck.            if (visible_votes.empty()) {
+            // This ensures stopping a resource never leaves the cursor stuck.
+            if (visible_votes.empty()) {
                 last_non_visible_mode = godot::Input::MOUSE_MODE_CONFINED;
                 pending_non_visible_apply = false;
             }
