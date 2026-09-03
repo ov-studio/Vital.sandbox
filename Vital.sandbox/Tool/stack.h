@@ -31,6 +31,7 @@ namespace Vital::Tool {
             float,
             double,
             std::string,
+            void*,
             std::shared_ptr<void>,
             std::shared_ptr<Stack>
         >;
@@ -51,6 +52,8 @@ namespace Vital::Tool {
         StackValue(std::shared_ptr<Stack> v)      : value(std::move(v)) {}
         template<typename T>
         explicit StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))), ptr_type(&typeid(T)) {}
+        template<typename T>
+        StackValue(T* v)                          : value(static_cast<void*>(v)), ptr_type(&typeid(T)) {}
         template<typename T = void>
         explicit StackValue(Stack v) : value(std::make_shared<Stack>(std::move(v))) {}
 
@@ -61,15 +64,26 @@ namespace Vital::Tool {
         bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
         template<typename T>
         bool is_ptr() const { return is_ptr() && ptr_type && *ptr_type == typeid(T); }
+        bool is_raw_ptr() const { return std::holds_alternative<void*>(value) && std::get<void*>(value) != nullptr; }
+        template<typename T>
+        bool is_raw_ptr() const { return is_raw_ptr() && ptr_type && *ptr_type == typeid(T); }
 
 
         // Accessors //
         template<typename T>
-        const T& as() const { return std::get<T>(value); }
+        decltype(auto) as() const {
+            if constexpr (std::is_pointer_v<T>) return as_raw_ptr<std::remove_pointer_t<T>>();
+            else return (std::get<T>(value));
+        }
         template<typename T>
         std::shared_ptr<T> as_ptr() const {
             if (!is_ptr<T>()) return nullptr;
             return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value));
+        }
+        template<typename T>
+        T* as_raw_ptr() const {
+            if (!std::holds_alternative<void*>(value)) return nullptr;
+            return static_cast<T*>(std::get<void*>(value));
         }
 
 
@@ -85,6 +99,7 @@ namespace Vital::Tool {
                 else if constexpr (std::is_same_v<V, float>)                  return (double)v;
                 else if constexpr (std::is_same_v<V, double>)                 return v;
                 else if constexpr (std::is_same_v<V, std::string>)            return godot::String(v.c_str());
+                else if constexpr (std::is_same_v<V, void*>)                  return godot::Variant();
                 else if constexpr (std::is_same_v<V, std::shared_ptr<void>>)  return godot::Variant();
                 else if constexpr (std::is_same_v<V, std::shared_ptr<Stack>>) return v ? v -> to_dict() : godot::Variant();
                 return godot::Variant();
