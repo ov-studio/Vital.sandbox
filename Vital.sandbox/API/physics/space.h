@@ -89,14 +89,12 @@ namespace Vital::Sandbox::API {
                 shape -> set_size(size);
                 return shape;
             }
-
             if (type == "sphere") {
                 godot::Ref<godot::SphereShape3D> shape;
                 shape.instantiate();
                 shape -> set_radius(read_float("radius", 0.5f));
                 return shape;
             }
-
             if (type == "capsule") {
                 godot::Ref<godot::CapsuleShape3D> shape;
                 shape.instantiate();
@@ -104,7 +102,6 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(read_float("height", 1.8f));
                 return shape;
             }
-
             if (type == "cylinder") {
                 godot::Ref<godot::CylinderShape3D> shape;
                 shape.instantiate();
@@ -112,7 +109,6 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(read_float("height", 1.8f));
                 return shape;
             }
-
             return nullptr;
         }
 
