@@ -424,7 +424,7 @@ namespace Vital::Sandbox::API {
             static bool initialized = false;
             if (initialized) return;
             initialized = true;
-            godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
+            godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_VISIBLE);
 
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
