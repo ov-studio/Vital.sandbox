@@ -63,8 +63,7 @@ namespace Vital::Sandbox::API {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0) return;
                 auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_config", (int)nid, body->wheel_index,
-                                  godot::String(key), value);
+                if (net) net->rpc("_sync_wheel_config", (int)nid, body->wheel_index, godot::String(key), value);
                 #endif
             }
 
@@ -75,8 +74,7 @@ namespace Vital::Sandbox::API {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0) return;
                 auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index,
-                                  body->get_position(), body->get_rotation());
+                if (net) net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index, body->get_position(), body->get_rotation());
                 #endif
             }
 
