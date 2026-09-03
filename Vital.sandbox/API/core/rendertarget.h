@@ -51,14 +51,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static std::shared_ptr<Instance> find_by_ptr(base_class* ptr) {
-            if (!ptr) return nullptr;
-            std::lock_guard<std::mutex> lock(registry.mutex);
-            for (auto& [id, instance] : registry.buffer) {
-                if (Instance::find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
-            }
-            return nullptr;
-        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Rendertarget>(vm);
@@ -78,7 +70,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_active", [](auto vm, auto& id) -> int {
                 auto ptr = base_class::get_active();
-                auto instance = find_by_ptr(ptr);
+                auto instance = Instance::find_by_ptr(ptr);
                 if (!instance) vm -> push_value(false);
                 else instance -> push_self(vm);
                 return 1;

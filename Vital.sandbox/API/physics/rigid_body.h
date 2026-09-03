@@ -66,14 +66,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static std::shared_ptr<Instance> find_by_ptr(base_class* ptr) {
-            if (!ptr) return nullptr;
-            std::lock_guard<std::mutex> lock(registry.mutex);
-            for (auto& [id, instance] : registry.buffer) {
-                if (Instance::find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
-            }
-            return nullptr;
-        }
 
 
         static void bind(Machine* vm) {
@@ -174,7 +166,7 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 for (int i = 0; i < bodies.size(); i++) {
                     auto node = godot::Object::cast_to<godot::Node3D>(bodies[i]);
-                    auto other = Rigid_Body::find_by_ptr(static_cast<base_class*>(node));
+                    auto other = Instance::find_by_ptr(static_cast<base_class*>(node));
                     if (other) {
                         other -> get_reference(other -> self_reference(), true, vm);
                         vm -> set_table_field(i + 1, -2);

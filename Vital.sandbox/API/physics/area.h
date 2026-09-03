@@ -63,49 +63,41 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static std::shared_ptr<Instance> find_by_ptr(base_class* ptr) {
-            if (!ptr) return nullptr;
-            std::lock_guard<std::mutex> lock(registry.mutex);
-            for (auto& [id, instance] : registry.buffer) {
-                if (Instance::find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
-            }
-            return nullptr;
-        }
 
 
         static void resolve_entity(std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
-                if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
+                if (auto entity = Rigid_Body::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             } 
             else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
-                if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
+                if (auto entity = Static_Body::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             } 
             else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
-                if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
+                if (auto entity = Character_Body::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             } 
             else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
-                if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
+                if (auto entity = Animatable_Body::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             } 
             else if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
-                if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
+                if (auto entity = Area::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             }
         }
 
         static bool push_entity(Machine* vm, godot::Node3D* node) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(node)) {
-                if (auto instance = Rigid_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
+                if (auto instance = Rigid_Body::Instance::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(node)) {
-                if (auto instance = Static_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
+                if (auto instance = Static_Body::Instance::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(node)) {
-                if (auto instance = Character_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
+                if (auto instance = Character_Body::Instance::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(node)) {
-                if (auto instance = Animatable_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
+                if (auto instance = Animatable_Body::Instance::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(node)) {
-                if (auto instance = Area::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
+                if (auto instance = Area::Instance::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
             return false;
         }
