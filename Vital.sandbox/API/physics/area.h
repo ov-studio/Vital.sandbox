@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        static void resolve_instance(std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other) {
+        static void resolve_entity(std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
                 if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));
             } 
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        static bool push_instance(Machine* vm, godot::Node3D* node) {
+        static bool push_entity(Machine* vm, godot::Node3D* node) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(node)) {
                 if (auto instance = Rigid_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
             }
@@ -121,35 +121,35 @@ namespace Vital::Sandbox::API {
 
                 Tool::Event::bind("area:body_entered:"  + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:enter", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:enter", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:body_exited:"   + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:leave", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:leave", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:area_entered:"  + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:enter", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:enter", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:area_exited:"   + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:leave", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:leave", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:body_shape_entered:"  + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:shape_enter", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:shape_enter", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:body_shape_exited:"   + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:shape_leave", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:shape_leave", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:area_shape_entered:"  + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:shape_enter", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:shape_enter", args.array[0].as<godot::Node3D*>());
                 });
                 Tool::Event::bind("area:area_shape_exited:"   + key, [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;
-                    resolve_instance(self, "area:shape_leave", args.array[0].as<godot::Node3D*>());
+                    resolve_entity(self, "area:shape_leave", args.array[0].as<godot::Node3D*>());
                 });
 
                 instance -> store(true);
@@ -216,7 +216,7 @@ namespace Vital::Sandbox::API {
                 int count = 0;
                 for (int i = 0; i < bodies.size(); i++) {
                     auto node = godot::Object::cast_to<godot::Node3D>(bodies[i]);
-                    if (node && push_instance(vm, node)) vm -> set_table_field(++count, -2);
+                    if (node && push_entity(vm, node)) vm -> set_table_field(++count, -2);
                 }
                 return 1;
             });
@@ -227,7 +227,7 @@ namespace Vital::Sandbox::API {
                 int count = 0;
                 for (int i = 0; i < areas.size(); i++) {
                     auto node = godot::Object::cast_to<godot::Node3D>(areas[i]);
-                    if (node && push_instance(vm, node)) vm -> set_table_field(++count, -2);
+                    if (node && push_entity(vm, node)) vm -> set_table_field(++count, -2);
                 }
                 return 1;
             });
