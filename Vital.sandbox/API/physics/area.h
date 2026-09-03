@@ -72,7 +72,6 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        // Cross-type resolver: finds whichever physics API instance (of any body/area type) owns this node. //
         static bool push_node_instance(Machine* vm, godot::Node3D* node) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(node)) {
                 if (auto instance = Rigid_Body::find_by_ptr(ptr)) { instance -> get_reference(instance -> self_reference(), true, vm); return true; }
@@ -92,12 +91,140 @@ namespace Vital::Sandbox::API {
             return false;
         }
 
+        static void emit_overlap(std::weak_ptr<Instance> instance_weak, const std::string& signal, godot::Node3D* other_node) {
+            auto instance = instance_weak.lock();
+            if (!instance || !Instance::find_unlocked(instance)) return;
+            auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+            if (!vm) return;
+            auto area_sv = Tool::StackValue(instance);
+            if (!push_node_instance(vm, other_node)) return;
+            Manager::Sandbox::get_singleton() -> signal(signal, area_sv);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Area>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
                 instance -> body = base_class::create();
+                std::weak_ptr<Instance> weak = instance;
+
+                instance -> body -> connect("body_entered", godot::callable_mp_lambda(instance -> body, [weak](godot::Node3D* other) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:enter", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:enter", Tool::StackValue(self), Tool::StackValue(entity));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:enter", Tool::StackValue(self), Tool::StackValue(entity));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:enter", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                }));
+
+                instance -> body -> connect("body_exited", godot::callable_mp_lambda(instance -> body, [weak](godot::Node3D* other) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:leave", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:leave", Tool::StackValue(self), Tool::StackValue(entity));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:leave", Tool::StackValue(self), Tool::StackValue(entity));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:leave", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                }));
+
+                instance -> body -> connect("area_entered", godot::callable_mp_lambda(instance -> body, [weak](godot::Area3D* other) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:enter", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                }));
+
+                instance -> body -> connect("area_exited", godot::callable_mp_lambda(instance -> body, [weak](godot::Area3D* other) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:leave", Tool::StackValue(self), Tool::StackValue(entity));
+                    }
+                }));
+
+                instance -> body -> connect("body_shape_entered", godot::callable_mp_lambda(instance -> body, [weak](godot::RID, godot::Node3D* other, int other_shape, int local_shape) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_enter", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    }
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_enter", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_enter", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_enter", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    }
+                }));
+
+                instance -> body -> connect("body_shape_exited", godot::callable_mp_lambda(instance -> body, [weak](godot::RID, godot::Node3D* other, int other_shape, int local_shape) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
+                        if (auto entity = Rigid_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_leave", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Static_Body>(other)) {
+                        if (auto entity = Static_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_leave", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Character_Body>(other)) {
+                        if (auto entity = Character_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_leave", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    } 
+                    else if (auto ptr = godot::Object::cast_to<Vital::Engine::Animatable_Body>(other)) {
+                        if (auto entity = Animatable_Body::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_leave", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    }
+                }));
+
+                instance -> body -> connect("area_shape_entered", godot::callable_mp_lambda(instance -> body, [weak](godot::RID, godot::Area3D* other, int other_shape, int local_shape) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_enter", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    }
+                }));
+
+                instance -> body -> connect("area_shape_exited", godot::callable_mp_lambda(instance -> body, [weak](godot::RID, godot::Area3D* other, int other_shape, int local_shape) {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self)) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    if (auto ptr = godot::Object::cast_to<Vital::Engine::Area>(other)) {
+                        if (auto entity = Area::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal("area:shape_leave", Tool::StackValue(self), Tool::StackValue(entity), Tool::StackValue(other_shape), Tool::StackValue(local_shape));
+                    }
+                }));
+
                 instance -> store(true);
                 return 1;
             });
@@ -181,8 +308,10 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "overlaps_body", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
                     .require(2, [](Machine* vm, int idx) {
-                        return vm_module::is_userdata<Rigid_Body::Instance>(vm, idx) || vm_module::is_userdata<Static_Body::Instance>(vm, idx) ||
-                               vm_module::is_userdata<Character_Body::Instance>(vm, idx) || vm_module::is_userdata<Animatable_Body::Instance>(vm, idx);
+                        return vm_module::is_userdata<Rigid_Body::Instance>(vm, idx) || 
+                               vm_module::is_userdata<Static_Body::Instance>(vm, idx) ||
+                               vm_module::is_userdata<Character_Body::Instance>(vm, idx) || 
+                               vm_module::is_userdata<Animatable_Body::Instance>(vm, idx);
                     });
 
                 godot::Node* target = nullptr;
@@ -190,7 +319,6 @@ namespace Vital::Sandbox::API {
                 else if (vm_module::is_userdata<Static_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Static_Body::Instance>(vm, 2) -> get_node();
                 else if (vm_module::is_userdata<Character_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Character_Body::Instance>(vm, 2) -> get_node();
                 else if (vm_module::is_userdata<Animatable_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Animatable_Body::Instance>(vm, 2) -> get_node();
-
                 vm -> push_value(target ? self -> body -> overlaps_body(target) : false);
                 return 1;
             });
