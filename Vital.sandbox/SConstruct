@@ -91,8 +91,7 @@ obj_root = os.path.join(
 obj_targets = []
 for src in env.sources:
     src_path     = os.path.abspath(str(src))
-    obj_path     = make_obj_path(src_path, cwd, obj_root)
-    obj_base     = os.path.splitext(obj_path)[0]
+    obj_base     = env.MakeObjPath(src_path, cwd, obj_root)
     obj_targets += env.SharedObject(target=obj_base, source=src_path)
 
 shutil.rmtree(bin_dir, ignore_errors=True)
