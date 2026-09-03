@@ -316,11 +316,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // get_parent()
-            // Returns the scripted parent instance if one exists (i.e. the
-            // immediate parent is a vm-managed Node3D tracked in vm_node_registry).
-            // Returns false if the node has no parent, is parented to the scene
-            // root, or is parented to a node not managed by any Lua instance.
             vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
                 auto* parent = self -> get_node() -> get_parent();
                 if (!parent || parent == Vital::Engine::Core::get_singleton()) {
