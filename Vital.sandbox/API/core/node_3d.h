@@ -291,7 +291,6 @@ namespace Vital::Sandbox::API {
 
                 auto* node = self -> get_node();
                 if (vm -> is_nil(2)) {
-                    // nil = detach: reparent to scene root, preserving world transform
                     auto* core = Vital::Engine::Core::get_singleton();
                     if (node -> get_parent() != core) node -> reparent(core, true);
                 }
