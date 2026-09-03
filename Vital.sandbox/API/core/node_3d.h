@@ -289,15 +289,15 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(entity = nil)", true)
                     .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
 
-                auto* node = self -> get_node();
+                auto node = self -> get_node();
                 if (vm -> is_nil(2)) {
-                    auto* core = Vital::Engine::Core::get_singleton();
+                    auto core = Vital::Engine::Core::get_singleton();
                     if (node -> get_parent() != core) node -> reparent(core, true);
                 }
                 else {
-                    auto** ud = vm_module::get_userdata_ptr(vm, 2);
+                    auto ud = vm_module::get_userdata_ptr(vm, 2);
                     if (!ud || !*ud) { vm -> push_value(false); return 1; }
-                    auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
+                    auto parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
                     if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
                         vm -> push_value(false);
                         return 1;
@@ -309,7 +309,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
-                auto* parent = self -> get_node() -> get_parent();
+                auto parent = self -> get_node() -> get_parent();
                 if (!parent || parent == Vital::Engine::Core::get_singleton()) {
                     vm -> push_value(false);
                     return 1;
