@@ -75,15 +75,6 @@ if os_info["type"] == "Windows":
     env.Append(LINKFLAGS=["/WX:NO", "/ignore:4099"])
 
 
-# Helpers
-def make_obj_path(src_abs, root, obj_dir):
-    try:
-        rel = os.path.relpath(src_abs, root)
-    except ValueError:
-        rel = os.path.basename(src_abs)
-    return os.path.join(obj_dir, rel)
-
-
 # Build
 platform   = env["platform"]
 suffix     = env["suffix"].replace(".dev","").replace(".universal","").replace(f".{platform}","").replace("template_","")
