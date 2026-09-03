@@ -306,9 +306,6 @@ namespace Vital::Sandbox::API {
                     auto** ud = vm_module::get_userdata_ptr(vm, 2);
                     if (!ud || !*ud) { vm -> push_value(false); return 1; }
                     auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
-                    // Reject if the candidate parent isn't a Node3D, is the same
-                    // node, or is already a descendant of this node (which would
-                    // create a cycle in the scene tree).
                     if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
                         vm -> push_value(false);
                         return 1;
