@@ -37,7 +37,6 @@ namespace Vital::Sandbox::API {
     struct Space : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "space"};
 
-        // Resolves any physics body/area/vehicle API instance from userdata to its underlying Node3D. //
         static godot::Node3D* resolve_node(Machine* vm, int idx) {
             if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
             if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
@@ -54,7 +53,6 @@ namespace Vital::Sandbox::API {
             return core -> get_viewport() -> get_world_3d() -> get_direct_space_state();
         }
 
-        // Builds a TypedArray<RID> from a Lua array table of body/area/vehicle instances. //
         static godot::TypedArray<godot::RID> build_exclude(Machine* vm, int idx) {
             godot::TypedArray<godot::RID> exclude;
             if (!vm -> is_table(idx)) return exclude;
@@ -70,7 +68,6 @@ namespace Vital::Sandbox::API {
             return exclude;
         }
 
-        // Builds a Ref<Shape3D> from a Lua table: {type = "box"/"sphere"/"capsule"/"cylinder", ...}. //
         static godot::Ref<godot::Shape3D> build_shape(Machine* vm, int idx) {
             vm -> get_table_field("type", idx);
             auto type = vm -> is_string(-1) ? vm -> get_string(-1) : std::string();
@@ -119,12 +116,11 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        // Pushes whichever Lua-wrapped instance owns a "collider" Object from a query result Dictionary, or false. //
         static void push_collider(Machine* vm, const godot::Dictionary& dict) {
             if (!dict.has("collider")) { vm -> push_value(false); return; }
             auto object = static_cast<godot::Object*>(dict["collider"]);
             auto node = object ? godot::Object::cast_to<godot::Node3D>(object) : nullptr;
-            if (!node || !Area::push_node_instance(vm, node)) vm -> push_value(false);
+            if (!node || !Area::push_entity(vm, node)) vm -> push_value(false);
         }
 
         static void bind(Machine* vm) {

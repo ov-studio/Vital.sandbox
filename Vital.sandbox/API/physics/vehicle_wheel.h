@@ -266,10 +266,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_contact_body", [](auto vm, auto self, auto& id) -> int {
                 auto node = self -> body -> get_contact_body();
-                if (!node || !Area::push_node_instance(vm, node)) {
-                    vm -> push_value(false);
-                    return 1;
-                }
+                if (!node || !Area::push_entity(vm, node)) vm -> push_value(false);
                 return 1;
             });
 
