@@ -92,7 +92,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::~Machine");
                 if (!state) return;
                 if (!virtualized) {
-                    for (auto* child : children) {
+                    for (auto child : children) {
                         child -> parent = nullptr;
                         machines.erase(child -> state);
                         child -> state = nullptr;
@@ -411,7 +411,7 @@ namespace Vital::Sandbox {
 
             Machine* create_thread() {
                 Tool::assert_main_thread("Machine::create_thread");
-                auto* thread = new Machine(lua_newthread(state), this);
+                auto thread = new Machine(lua_newthread(state), this);
                 children.emplace(thread);
                 return thread;
             }
