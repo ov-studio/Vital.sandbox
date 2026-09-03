@@ -616,6 +616,10 @@ namespace Vital::Sandbox::API {
             release_env(mouse_binds, vm, env);
             release_env(command_list, vm, env);
             visible_votes.erase(env);
+            if (visible_votes.empty()) {
+                last_non_visible_mode = godot::Input::MOUSE_MODE_CONFINED;
+                pending_non_visible_apply = false;
+            }
             apply_cursor_mode();
         }
     };
