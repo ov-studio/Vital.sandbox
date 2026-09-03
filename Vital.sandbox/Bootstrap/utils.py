@@ -49,7 +49,7 @@ def Throw_Error(msg):
     log_error(msg)
     sys.exit(2)
 
-def kill_process_tree(process):
+def Kill_Process_Tree(process):
     if process is None or process.poll() is not None:
         return
     try:
@@ -73,6 +73,15 @@ def kill_process_tree(process):
         process.wait(timeout=5)
     except Exception:
         pass
+
+def Github_Auth_Headers(extra=None):
+    headers = {"User-Agent": "Vital.sandbox-bootstrap"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    if extra:
+        headers.update(extra)
+    return headers
 
 def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):
     result_nodes = []
@@ -101,15 +110,14 @@ def _RCopy(self, destination, src):
 def _RGlobCopy(self, destination, pattern):
     return [self.RCopy(destination, f) for f in glob.glob(pattern)]
 
-def Github_Auth_Headers(extra=None):
-    headers = {"User-Agent": "Vital.sandbox-bootstrap"}
-    token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    if extra:
-        headers.update(extra)
-    return headers
+def _MakeObjPath(self, src_abs, cwd, obj_dir):
+    try:
+        rel = os.path.relpath(src_abs, cwd)
+    except ValueError:
+        rel = os.path.basename(src_abs)
+    return os.path.splitext(os.path.join(obj_dir, rel))[0]
 
 BaseEnvironment.RGlob = _RGlob
 BaseEnvironment.RCopy = _RCopy
 BaseEnvironment.RGlobCopy = _RGlobCopy
+BaseEnvironment.MakeObjPath = _MakeObjPath

@@ -67,7 +67,7 @@ class Build:
             ], start_new_session=(os.name != "nt"))
             process.wait()
         except KeyboardInterrupt:
-            kill_process_tree(process)
+            Kill_Process_Tree(process)
             log_warn("Build cancelled")
             sys.exit(130)
         result = process
@@ -150,7 +150,7 @@ class Build:
                     stop.set()
                     thread.join(timeout=2)
         except KeyboardInterrupt:
-            kill_process_tree(process)
+            Kill_Process_Tree(process)
             log_warn("Build cancelled")
             sys.exit(130)
 
@@ -294,7 +294,7 @@ class Build:
                start_new_session=(os.name != "nt"))
             stdout, _ = process.communicate()
         except KeyboardInterrupt:
-            kill_process_tree(process)
+            Kill_Process_Tree(process)
             log_warn("Export cancelled")
             sys.exit(130)
         result = subprocess.CompletedProcess(process.args, process.returncode, stdout)
