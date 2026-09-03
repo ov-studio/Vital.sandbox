@@ -143,6 +143,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
 
             // Override transform setters to broadcast to clients after applying locally.
             // set_global_position is intentionally excluded — wheels must use local space.

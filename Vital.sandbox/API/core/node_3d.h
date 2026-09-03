@@ -274,7 +274,45 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        template<typename Instance>
+        template<typename Instance, Type node_type = Type::Spatial>
+        static void parent_methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(entity = nil)", true)
+                    .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
+
+                auto* node = self -> get_node();
+                if (vm -> is_nil(2)) {
+                    auto* core = Engine::Core::get_singleton();
+                    if (node -> get_parent() != core) node -> reparent(core, true);
+                } else {
+                    auto** ud = vm_module::get_userdata_ptr(vm, 2);
+                    if (!ud || !*ud) { vm -> push_value(false); return 1; }
+                    auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
+                    if (!parent_node || parent_node == node) { vm -> push_value(false); return 1; }
+                    node -> reparent(parent_node, true);
+                }
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
+                auto* parent = self -> get_node() -> get_parent();
+                if (!parent || parent == Engine::Core::get_singleton()) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+                std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                auto it = vm_node_registry.find(parent);
+                if (it != vm_node_registry.end()) {
+                    it -> second -> push_self(vm);
+                } else {
+                    vm -> push_value(false);
+                }
+                return 1;
+            });
+        }
+
+                template<typename Instance>
         static void inject(Machine* vm) {}
     };
 }

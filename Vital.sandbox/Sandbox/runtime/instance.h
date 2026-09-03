@@ -21,9 +21,13 @@
 /////////////////////
 
 namespace Vital::Sandbox {
+    inline std::unordered_map<void*, vm_instance_base*> vm_node_registry;
+    inline std::mutex vm_node_registry_mutex;
+
     struct vm_instance_base {
         virtual ~vm_instance_base() = default;
         virtual void push_self(Machine* vm) = 0;
+        virtual godot::Node3D* get_node_3d() { return nullptr; }
     };
 
     template<typename Derived>
@@ -73,8 +77,13 @@ namespace Vital::Sandbox {
                 if (it != references.end()) references.erase(it);
             }
 
+            godot::Node3D* get_node_3d() override {
+                if constexpr (requires { static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node()); }) return static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node());
+                return nullptr;
+            }
+
             void push_self(Machine* vm) override {
-                auto* self = static_cast<Derived*>(this);
+                auto self = static_cast<Derived*>(this);
                 if (!self -> userdata) vm -> push_nil();
                 else self -> get_reference(self_reference(), true, vm);
             }
@@ -99,6 +108,16 @@ namespace Vital::Sandbox {
                 return Derived::clean(static_cast<Derived*>(this) -> shared_from_this());
             }
 
+            template<typename T = Derived, typename = typename T::Owner::base_class>
+            static std::shared_ptr<Derived> find_by_ptr(typename T::Owner::base_class* ptr) {
+                if (!ptr) return nullptr;
+                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                for (auto& [id, instance] : Derived::Owner::registry.buffer) {
+                    if (find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
+                }
+                return nullptr;
+            }
+
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return find_unlocked(id);
@@ -115,16 +134,6 @@ namespace Vital::Sandbox {
                 return instance;
             }
 
-            template<typename T = Derived, typename = typename T::Owner::base_class>
-            static std::shared_ptr<Derived> find_by_ptr(typename T::Owner::base_class* ptr) {
-                if (!ptr) return nullptr;
-                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
-                for (auto& [id, instance] : Derived::Owner::registry.buffer) {
-                    if (find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
-                }
-                return nullptr;
-            }
-
             static bool store(const std::shared_ptr<Derived> instance, bool push_to_stack = false) {
                 {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
@@ -134,6 +143,13 @@ namespace Vital::Sandbox {
                 auto root_vm = calling_vm -> get_root();
                 calling_vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(calling_vm, -1);
+                {
+                    auto node3d = instance -> get_node_3d();
+                    if (node3d) {
+                        std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                        vm_node_registry[node3d] = instance.get();
+                    }
+                }
                 if (calling_vm != root_vm) {
                     calling_vm -> move(root_vm, 1);
                     instance -> vm = root_vm;
@@ -147,7 +163,6 @@ namespace Vital::Sandbox {
                     instance -> set_reference(instance -> self_reference(), -1);
                     if (!push_to_stack) calling_vm -> pop(1);
                 }
-
                 Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
                 return true;
             }
@@ -167,6 +182,13 @@ namespace Vital::Sandbox {
             }
 
             static bool release(const std::shared_ptr<Derived> instance) {
+                {
+                    auto node3d = instance -> get_node_3d();
+                    if (node3d) {
+                        std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                        vm_node_registry.erase(node3d);
+                    }
+                }
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
                     auto snapshot = instance -> references;

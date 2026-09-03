@@ -41,6 +41,7 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type light_type = Type::Point>
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_shadow_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> has_shadow());

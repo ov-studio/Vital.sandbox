@@ -89,6 +89,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm);
+            API::Node_3D::parent_methods<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
