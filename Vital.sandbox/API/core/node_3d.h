@@ -285,13 +285,6 @@ namespace Vital::Sandbox::API {
         // intentionally unused inside the body.
         template<typename Instance, Type node_type = Type::Spatial>
         static void parent_methods(Machine* vm) {
-            // TODO: Move to top under methods
-            // set_parent(entity = nil)
-            // Pass nil to detach from any scripted parent (reparents to the
-            // scene root). Pass another Node3D instance to attach to it.
-            // Guards: cannot parent to self, cannot parent to a node that is
-            // already in this node's own subtree (which would create an invalid
-            // Godot scene tree and trigger an engine error).
             vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(entity = nil)", true)
                     .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
