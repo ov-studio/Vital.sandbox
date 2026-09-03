@@ -21,14 +21,13 @@
 /////////////////////
 
 namespace Vital::Sandbox {
-    inline std::unordered_map<void*, vm_instance_base*> vm_node_registry;
-    inline std::mutex vm_node_registry_mutex;
-
     struct vm_instance_base {
         virtual ~vm_instance_base() = default;
         virtual void push_self(Machine* vm) = 0;
         virtual godot::Node3D* get_node_3d() { return nullptr; }
     };
+    inline std::unordered_map<void*, vm_instance_base*> vm_node_registry;
+    inline std::mutex vm_node_registry_mutex;
 
     template<typename Derived>
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
@@ -76,9 +75,14 @@ namespace Vital::Sandbox {
                 auto it = std::find(references.begin(), references.end(), name);
                 if (it != references.end()) references.erase(it);
             }
-
+        private:
+            template<typename T, typename = void>
+            struct has_node3d_node : std::false_type {};
+            template<typename T>
+            struct has_node3d_node<T, std::void_t<decltype(static_cast<godot::Node3D*>(std::declval<T*>() -> get_node()))>> : std::true_type {};
+        public:
             godot::Node3D* get_node_3d() override {
-                if constexpr (requires { static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node()); }) return static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node());
+                if constexpr (has_node3d_node<Derived>::value) return static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node());
                 return nullptr;
             }
 
