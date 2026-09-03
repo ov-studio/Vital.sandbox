@@ -20,6 +20,12 @@
 // Vital: API: Node 3D //
 //////////////////////////
 
+namespace Vital::Sandbox {
+    struct vm_instance_base;
+    extern std::unordered_map<void*, vm_instance_base*> vm_node_registry;
+    extern std::mutex vm_node_registry_mutex;
+}
+
 namespace Vital::Sandbox::API {
     struct Node_3D {
         enum class Type {
@@ -274,45 +280,65 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        // node_type is accepted for call-site consistency with methods<> but
+        // parenting behaviour is identical regardless of node type, so it is
+        // intentionally unused inside the body.
         template<typename Instance, Type node_type = Type::Spatial>
         static void parent_methods(Machine* vm) {
+            // TODO: Move to top under methods
+            // set_parent(entity = nil)
+            // Pass nil to detach from any scripted parent (reparents to the
+            // scene root). Pass another Node3D instance to attach to it.
+            // Guards: cannot parent to self, cannot parent to a node that is
+            // already in this node's own subtree (which would create an invalid
+            // Godot scene tree and trigger an engine error).
             vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(entity = nil)", true)
                     .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
 
                 auto* node = self -> get_node();
                 if (vm -> is_nil(2)) {
-                    auto* core = Engine::Core::get_singleton();
+                    // nil = detach: reparent to scene root, preserving world transform
+                    auto* core = Vital::Engine::Core::get_singleton();
                     if (node -> get_parent() != core) node -> reparent(core, true);
-                } else {
+                }
+                else {
                     auto** ud = vm_module::get_userdata_ptr(vm, 2);
                     if (!ud || !*ud) { vm -> push_value(false); return 1; }
                     auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
-                    if (!parent_node || parent_node == node) { vm -> push_value(false); return 1; }
+                    // Reject if the candidate parent isn't a Node3D, is the same
+                    // node, or is already a descendant of this node (which would
+                    // create a cycle in the scene tree).
+                    if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
+                        vm -> push_value(false);
+                        return 1;
+                    }
                     node -> reparent(parent_node, true);
                 }
                 vm -> push_value(true);
                 return 1;
             });
 
+            // get_parent()
+            // Returns the scripted parent instance if one exists (i.e. the
+            // immediate parent is a vm-managed Node3D tracked in vm_node_registry).
+            // Returns false if the node has no parent, is parented to the scene
+            // root, or is parented to a node not managed by any Lua instance.
             vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
                 auto* parent = self -> get_node() -> get_parent();
-                if (!parent || parent == Engine::Core::get_singleton()) {
+                if (!parent || parent == Vital::Engine::Core::get_singleton()) {
                     vm -> push_value(false);
                     return 1;
                 }
                 std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
                 auto it = vm_node_registry.find(parent);
-                if (it != vm_node_registry.end()) {
-                    it -> second -> push_self(vm);
-                } else {
-                    vm -> push_value(false);
-                }
+                if (it != vm_node_registry.end()) it -> second -> push_self(vm);
+                else vm -> push_value(false);
                 return 1;
             });
         }
 
-                template<typename Instance>
+        template<typename Instance, Type node_type = Type::Spatial>
         static void inject(Machine* vm) {}
     };
 }
