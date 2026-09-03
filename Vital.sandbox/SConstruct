@@ -3,13 +3,13 @@ from vital import *
 
 
 # Environment
-os_info = Fetch_OS()
-cwd = os.path.abspath(os.getcwd())
-env = Environment(tools=Fetch_Compiler(), PLATFORM="")
-env.name = "vital.sdk"
-env.Args = ARGUMENTS
-env.Args["platform_type"] = env.Args.get("platform_type", "Server")
-env.Args["build_type"] = env.Args.get("build_type", "Debug")
+os_info                      = Fetch_OS()
+cwd                          = os.path.abspath(os.getcwd())
+env                          = Environment(tools=Fetch_Compiler(), PLATFORM="")
+env.name                     = "vital.sdk"
+env.Args                     = ARGUMENTS
+env.Args["platform_type"]    = env.Args.get("platform_type", "Server")
+env.Args["build_type"]       = env.Args.get("build_type", "Debug")
 env.Args["extra_cppdefines"] = env.Args.get("extra_cppdefines", "")
 
 
@@ -48,14 +48,14 @@ vendor_exclude = [
     "Vendor/godot-cpp"
 ]
 env.sources = (
-    env.RGlob("Tool", "*.cpp") +
+    env.RGlob("Tool",    "*.cpp") +
     env.RGlob("Sandbox", "*.cpp") +
-    env.RGlob("Engine", "*.cpp") +
+    env.RGlob("Engine",  "*.cpp") +
     env.RGlob("Manager", "*.cpp") +
-    env.RGlob("System", "*.cpp") +
-    env.RGlob("Vendor", "*.cpp", exclude=vendor_exclude) +
-    env.RGlob("Vendor", "*.c",   exclude=vendor_exclude) +
-    env.RGlob("Vendor", "*.cc",  exclude=vendor_exclude)
+    env.RGlob("System",  "*.cpp") +
+    env.RGlob("Vendor",  "*.cpp", exclude=vendor_exclude) +
+    env.RGlob("Vendor",  "*.c",   exclude=vendor_exclude) +
+    env.RGlob("Vendor",  "*.cc",  exclude=vendor_exclude)
 )
 env.Append(CPPPATH=[
     cwd,
@@ -75,14 +75,37 @@ if os_info["type"] == "Windows":
     env.Append(LINKFLAGS=["/WX:NO", "/ignore:4099"])
 
 
+# Helpers
+def make_obj_path(src_abs, root, obj_dir):
+    try:
+        rel = os.path.relpath(src_abs, root)
+    except ValueError:
+        rel = os.path.basename(src_abs)
+    return os.path.join(obj_dir, rel)
+
+
 # Build
-platform = env["platform"]
-suffix = env["suffix"].replace(".dev","").replace(".universal","").replace(f".{platform}","").replace("template_","")
-bin_dir = f".bin/{env.Args['platform_type'].lower()}/{platform}"
-build_dir = f".build/{env.Args['platform_type'].lower()}/{platform}"
-bin_out = f"{bin_dir}/{env.name}{suffix}{env.subst('$SHLIBSUFFIX')}"
+platform   = env["platform"]
+suffix     = env["suffix"].replace(".dev","").replace(".universal","").replace(f".{platform}","").replace("template_","")
+bin_dir    = f".bin/{env.Args['platform_type'].lower()}/{platform}"
+build_dir  = f".build/{env.Args['platform_type'].lower()}/{platform}"
+bin_out    = f"{bin_dir}/{env.name}{suffix}{env.subst('$SHLIBSUFFIX')}"
+obj_root = os.path.join(
+    cwd, ".obj",
+    env.Args["platform_type"].lower(),
+    env.Args["build_type"].lower(),
+    platform,
+)
+
+obj_targets = []
+for src in env.sources:
+    src_path     = os.path.abspath(str(src))
+    obj_path     = make_obj_path(src_path, cwd, obj_root)
+    obj_base     = os.path.splitext(obj_path)[0]
+    obj_targets += env.SharedObject(target=obj_base, source=src_path)
+
 shutil.rmtree(bin_dir, ignore_errors=True)
-bin = env.SharedLibrary(bin_out, source=env.sources)
+bin   = env.SharedLibrary(bin_out, source=obj_targets)
 build = env.Install(build_dir, bin)
 env.Module.stage(build)
 Default([bin, build])
