@@ -346,7 +346,6 @@ namespace Vital::Sandbox::API {
                 }
 
                 if (!shape.is_valid()) { vm -> push_value(false); return 1; }
-
                 auto space_state = Space::get_space_state();
                 if (!space_state) { vm -> push_value(false); return 1; }
 
