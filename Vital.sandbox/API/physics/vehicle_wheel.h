@@ -96,10 +96,11 @@ namespace Vital::Sandbox::API {
             if (!ptr) return nullptr;
             std::lock_guard<std::mutex> lock(registry.mutex);
             for (auto& [id, instance] : registry.buffer) {
-                if (Instance::find_unlocked(instance) && (instance -> body == ptr)) return instance;
+                if (Instance::find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
             }
             return nullptr;
         }
+
 
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);

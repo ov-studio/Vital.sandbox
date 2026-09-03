@@ -37,16 +37,6 @@ namespace Vital::Sandbox::API {
     struct Space : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "space"};
 
-        static godot::Node3D* resolve_node(Machine* vm, int idx) {
-            if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Character_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Character_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Animatable_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Animatable_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Vehicle_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
-            return nullptr;
-        }
-
         static godot::PhysicsDirectSpaceState3D* get_space_state() {
             auto core = Vital::Engine::Core::get_singleton();
             if (!core || !core -> get_viewport() || !core -> get_viewport() -> get_world_3d().is_valid()) return nullptr;
@@ -60,7 +50,7 @@ namespace Vital::Sandbox::API {
             auto count = vm -> get_length(idx);
             for (int i = 1; i <= count; i++) {
                 vm -> get_table_field(i, idx);
-                auto node = resolve_node(vm, -1);
+                auto node = resolve_entity(vm, -1);
                 auto collision_object = node ? godot::Object::cast_to<godot::CollisionObject3D>(node) : nullptr;
                 if (collision_object) exclude.push_back(collision_object -> get_rid());
                 vm -> pop(1);
@@ -119,6 +109,16 @@ namespace Vital::Sandbox::API {
             if (!node || !Area::push_entity(vm, node)) vm -> push_value(false);
         }
 
+        static godot::Node3D* resolve_entity(Machine* vm, int idx) {
+            if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Character_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Character_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Animatable_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Animatable_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Vehicle_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, idx) -> get_node();
+            if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
+            return nullptr;
+        }
+        
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "raycast", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(from, to, options = {})", true)
