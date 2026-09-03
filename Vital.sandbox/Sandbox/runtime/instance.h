@@ -99,16 +99,6 @@ namespace Vital::Sandbox {
                 return Derived::clean(static_cast<Derived*>(this) -> shared_from_this());
             }
 
-            template<typename T = Derived, typename = typename T::Owner::base_class>
-            static std::shared_ptr<Derived> find_by_ptr(typename T::Owner::base_class* ptr) {
-                if (!ptr) return nullptr;
-                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
-                for (auto& [id, instance] : Derived::Owner::registry.buffer) {
-                    if (find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
-                }
-                return nullptr;
-            }
-
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return find_unlocked(id);
@@ -123,6 +113,16 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> find_unlocked(const std::shared_ptr<Derived> instance) {
                 if (!instance || instance -> destroyed || !instance -> is_alive()) return nullptr;
                 return instance;
+            }
+
+            template<typename T = Derived, typename = typename T::Owner::base_class>
+            static std::shared_ptr<Derived> find_by_ptr(typename T::Owner::base_class* ptr) {
+                if (!ptr) return nullptr;
+                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                for (auto& [id, instance] : Derived::Owner::registry.buffer) {
+                    if (find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
+                }
+                return nullptr;
             }
 
             static bool store(const std::shared_ptr<Derived> instance, bool push_to_stack = false) {

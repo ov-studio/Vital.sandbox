@@ -63,8 +63,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-
-
         static void resolve_entity(std::shared_ptr<Instance>& self, const std::string& signal, godot::Node3D* other) {
             if (auto ptr = godot::Object::cast_to<Vital::Engine::Rigid_Body>(other)) {
                 if (auto entity = Rigid_Body::Instance::find_by_ptr(ptr)) Manager::Sandbox::get_singleton() -> signal(signal, Tool::StackValue(self), Tool::StackValue(entity));

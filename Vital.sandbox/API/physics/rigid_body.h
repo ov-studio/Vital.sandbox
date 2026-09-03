@@ -66,8 +66,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-
-
         static void bind(Machine* vm) {
             vm_module::register_type<Rigid_Body>(vm);
 

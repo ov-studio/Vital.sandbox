@@ -92,8 +92,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-
-
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);
 
@@ -109,8 +107,7 @@ namespace Vital::Sandbox::API {
                 auto* vnode = owner->get_node();
                 int idx_count = 0;
                 for (int i = 0; i < vnode->get_child_count(); i++) {
-                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(vnode->get_child(i)))
-                        idx_count++;
+                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(vnode->get_child(i))) idx_count++;
                 }
                 // The newly added wheel is already a child, so subtract 1
                 instance->body->wheel_index = idx_count - 1;
@@ -120,17 +117,14 @@ namespace Vital::Sandbox::API {
                 uint32_t nid = instance->get_parent_net_id();
                 if (nid != 0) {
                     auto* net = Manager::Network::get_singleton()->get_node();
-                    if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->wheel_index,
-                                      instance->body->get_position(),
-                                      instance->body->get_rotation());
+                    if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->wheel_index, instance->body->get_position(), instance->body->get_rotation());
                 }
                 #endif
 
                 // Wire destroy callback once (idempotent — same lambda each time).
                 Vital::Engine::Vehicle_Wheel::on_destroyed_callback = [](Vital::Engine::Vehicle_Wheel* node) {
                     std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                    for (auto it = Vehicle_Wheel::registry.buffer.begin();
-                              it != Vehicle_Wheel::registry.buffer.end();) {
+                    for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
                         auto& inst = it->second;
                         if (inst->body != node) { ++it; continue; }
                         ++it;
