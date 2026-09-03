@@ -279,6 +279,7 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<std::string, bool> visible_votes;
         inline static godot::Input::MouseMode last_non_visible_mode = godot::Input::MOUSE_MODE_CONFINED;
         inline static int sandbox_ui_visible_count = 0;
+        inline static bool pending_non_visible_apply = false;
 
         static void apply_cursor_mode() {
             if (sandbox_ui_visible_count > 0) {
@@ -605,7 +606,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "key", key_registry);
-            vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry);
+            vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry); // TODO: LUA SHOULDNT BE AWARE OF             { "CONFINED", godot::Input::MOUSE_MODE_CONFINED  } just VISIBLE WHICH FROM LUA WHEN CALLS THEN CONFINED IS SET, HIDDEN, CAPTURED ALLOWED NORMALLY AND CONFINED NOT POSSIBLE SINCE VISIBLE IS CONFINED FOR LUA
         }
 
         static void clean(const std::string& env) {
