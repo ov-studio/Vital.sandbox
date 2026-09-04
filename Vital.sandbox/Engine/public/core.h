@@ -66,6 +66,7 @@ namespace Vital::Engine {
             #endif
             void execute(std::function<void()> exec);
             void enqueue(std::function<void()> exec);
+            // TODO: Improve
             // Runs fn(node, target) once both `node` and `target` (if given)
             // are actually inside the scene tree. If either isn't ready yet —
             // e.g. a Model or Physics_Body whose own add_child()/spawn is

@@ -127,6 +127,7 @@ namespace Vital::Engine {
         work_queue.push_back(std::move(exec));
     }
 
+    // TODO: Improve
     void Core::when_parent_ready(godot::Node3D* node, godot::Node* target,
                                   std::function<void(godot::Node3D*, godot::Node*)> fn) {
         if (!node) return;
