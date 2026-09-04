@@ -374,19 +374,40 @@ namespace Vital::Sandbox::API {
                 }
 
                 // Determine whether the requested parent is a server entity.
-                bool parent_is_server = false;
-                {
-                    auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
-                    parent_is_server = (syncable && syncable->get_net_id() > 0);
-                }
+                // These are kept as two separate booleans (rather than folded into
+                // one) purely so the error message below can tell apart two very
+                // different situations that both fail the same "is it synced?"
+                // test:
+                //   - parent_is_syncable_type: the node's C++ type derives from
+                //     ISyncable at all (Model, Physics_Body, ...). Types like
+                //     Collision_Shape, Vehicle_Wheel, etc. never do — by design,
+                //     they have no net_id and are intentionally excluded from the
+                //     sync system (see collision_shape.h / vehicle_wheel.h). This
+                //     is NOT a "client" node; it's simply not a syncable node type.
+                //   - parent_is_server: it IS a syncable type, but its net_id is 0,
+                //     meaning it's a genuine client-local instance (created by
+                //     client Lua, never spawned/tracked on the server).
+                auto* parent_syncable         = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
+                bool  parent_is_syncable_type = (parent_syncable != nullptr);
+                bool  parent_is_server        = (parent_syncable && parent_syncable->get_net_id() > 0);
 
                 #if !defined(VSDK_Client)
                 if (self_is_server) {
                     // Rule A: server entity → parent MUST also be a server entity.
                     // (Client code cannot reach this branch — rejected above.)
                     if (!parent_is_server) {
+                        if (!parent_is_syncable_type) {
+                            // e.g. Collision_Shape, Vehicle_Wheel: never synced by
+                            // design, regardless of which side created them.
+                            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
+                                "set_parent: this node type is never network-synced and cannot be used "
+                                "as a parent for a server entity (no net_id — e.g. Collision_Shape, "
+                                "Vehicle_Wheel). Parent to the owning synced entity instead "
+                                "(e.g. the Rigid_Body/Character/Static body, not its Collision_Shape).");
+                        }
                         throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                            "set_parent: server entity cannot be parented to a client-local entity");
+                            "set_parent: server entity cannot be parented to a client-local entity "
+                            "(net_id == 0 — this node was created by client Lua and never spawned on the server)");
                     }
                     // Delegate to Engine::Model::set_parent() which also broadcasts
                     // _reparent_entity to all clients.
