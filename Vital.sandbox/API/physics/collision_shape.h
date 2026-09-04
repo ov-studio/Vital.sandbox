@@ -23,14 +23,6 @@
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/area.h>
 
-// TODO: REMOVE LATER ALREADY INCLUDED IN PCH?
-#include <godot_cpp/classes/box_shape3d.hpp>
-#include <godot_cpp/classes/sphere_shape3d.hpp>
-#include <godot_cpp/classes/capsule_shape3d.hpp>
-#include <godot_cpp/classes/cylinder_shape3d.hpp>
-#include <godot_cpp/classes/world_boundary_shape3d.hpp>
-#include <godot_cpp/classes/separation_ray_shape3d.hpp>
-
 
 //////////////////////////////////
 // Vital: API: Collision_Shape //
@@ -45,10 +37,6 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Collision_Shape;
             base_class* body = nullptr;
-            godot::Ref<godot::Shape3D> current_shape;
-            #if defined(VSDK_Client)
-            godot::MeshInstance3D* debug_mesh = nullptr;
-            #endif
 
             auto get_node() {
                 return body;
@@ -58,14 +46,11 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
-            // Returns net_id of the parent physics body (0 = local-only, never synced).
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
                 auto parent = body -> get_parent();
                 if (!parent) return 0;
-                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(
-                    godot::Object::cast_to<godot::Object>(parent)
-                );
+                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
                 return syncable ? syncable -> get_net_id() : 0;
             }
 
@@ -80,40 +65,9 @@ namespace Vital::Sandbox::API {
                 #endif
             }
 
-            #if defined(VSDK_Client)
-            // Builds/rebuilds the wireframe debug mesh from whatever shape is currently assigned. //
-            void refresh_debug_mesh();
-
-            void set_debug_visible(bool state) {
-                if (!body) return;
-                if (state) {
-                    if (!debug_mesh) {
-                        debug_mesh = memnew(godot::MeshInstance3D);
-                        body -> add_child(debug_mesh);
-                    }
-                    debug_mesh -> set_visible(true);
-                    refresh_debug_mesh();
-                }
-                else if (debug_mesh) debug_mesh -> set_visible(false);
-            }
-
-            bool is_debug_visible() const {
-                return debug_mesh && debug_mesh -> is_visible();
-            }
-            #else
-            void set_debug_visible(bool) {}
-            bool is_debug_visible() const { return false; }
-            #endif
-
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
-                #if defined(VSDK_Client)
-                if (instance -> debug_mesh) {
-                    instance -> debug_mesh -> queue_free();
-                    instance -> debug_mesh = nullptr;
-                }
-                #endif
                 if (instance -> body) {
                     instance -> body -> destroy();
                     instance -> body = nullptr;
@@ -122,110 +76,6 @@ namespace Vital::Sandbox::API {
             }
         };
         inline static vm_registry<Instance> registry;
-        inline static bool default_debug_enabled = false;
-
-        #if defined(VSDK_Client)
-        // Wireframe geometry builders — one closed ring/line-set per shape type, assembled into a PRIMITIVE_LINES mesh. //
-        static void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24) {
-            // plane: 0 = XZ (horizontal ring), 1 = XY (vertical ring), 2 = YZ (vertical ring) //
-            for (int i = 0; i < segments; i++) {
-                float a0 = (float)i / segments * 6.28318530717958647692f;
-                float a1 = (float)(i + 1) / segments * 6.28318530717958647692f;
-                godot::Vector3 p0, p1;
-                if (plane == 0) {
-                    p0 = godot::Vector3(std::cos(a0) * radius, y, std::sin(a0) * radius);
-                    p1 = godot::Vector3(std::cos(a1) * radius, y, std::sin(a1) * radius);
-                } 
-                else if (plane == 1) {
-                    p0 = godot::Vector3(std::cos(a0) * radius, std::sin(a0) * radius + y, 0);
-                    p1 = godot::Vector3(std::cos(a1) * radius, std::sin(a1) * radius + y, 0);
-                } 
-                else {
-                    p0 = godot::Vector3(0, std::sin(a0) * radius + y, std::cos(a0) * radius);
-                    p1 = godot::Vector3(0, std::sin(a1) * radius + y, std::cos(a1) * radius);
-                }
-                points.push_back(p0);
-                points.push_back(p1);
-            }
-        }
-
-        static void add_half_ring(godot::PackedVector3Array& points, float radius, float center_y, int plane, bool upper, int segments = 12) {
-            // Vertical half-circle used for capsule hemisphere caps. //
-            float start = upper ? 0.0f : 3.14159265358979323846f;
-            float end = upper ? 3.14159265358979323846f : 6.28318530717958647692f;
-            for (int i = 0; i < segments; i++) {
-                float a0 = start + (end - start) * (float)i / segments;
-                float a1 = start + (end - start) * (float)(i + 1) / segments;
-                godot::Vector3 p0, p1;
-                if (plane == 1) {
-                    p0 = godot::Vector3(std::cos(a0) * radius, std::sin(a0) * radius + center_y, 0);
-                    p1 = godot::Vector3(std::cos(a1) * radius, std::sin(a1) * radius + center_y, 0);
-                } 
-                else {
-                    p0 = godot::Vector3(0, std::sin(a0) * radius + center_y, std::cos(a0) * radius);
-                    p1 = godot::Vector3(0, std::sin(a1) * radius + center_y, std::cos(a1) * radius);
-                }
-                points.push_back(p0);
-                points.push_back(p1);
-            }
-        }
-
-        static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape) {
-            godot::PackedVector3Array points;
-
-            if (auto box = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
-                auto s = box -> get_size() * 0.5f;
-                godot::Vector3 corners[8] = {
-                    {-s.x,-s.y,-s.z}, { s.x,-s.y,-s.z}, { s.x,-s.y, s.z}, {-s.x,-s.y, s.z},
-                    {-s.x, s.y,-s.z}, { s.x, s.y,-s.z}, { s.x, s.y, s.z}, {-s.x, s.y, s.z}
-                };
-                int edges[12][2] = {{0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7},{7,4}, {0,4},{1,5},{2,6},{3,7}};
-                for (auto& e : edges) { points.push_back(corners[e[0]]); points.push_back(corners[e[1]]); }
-            } 
-            else if (auto sphere = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
-                float r = static_cast<float>(sphere -> get_radius());
-                add_ring(points, r, 0, 0); add_ring(points, r, 0, 1); add_ring(points, r, 0, 2);
-            } 
-            else if (auto capsule = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
-                float r = static_cast<float>(capsule -> get_radius());
-                float half_h = std::max<float>(static_cast<float>(capsule -> get_height()) * 0.5f - r, 0.0f);
-                add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
-                add_half_ring(points, r, half_h, 1, true); add_half_ring(points, r, half_h, 2, true);
-                add_half_ring(points, r, -half_h, 1, false); add_half_ring(points, r, -half_h, 2, false);
-                float side_pts[4][2] = {{r,0},{-r,0},{0,r},{0,-r}};
-                for (auto& p : side_pts) {
-                    points.push_back(godot::Vector3(p[0], half_h, p[1]));
-                    points.push_back(godot::Vector3(p[0], -half_h, p[1]));
-                }
-            } 
-            else if (auto cylinder = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
-                float r = static_cast<float>(cylinder -> get_radius());
-                float half_h = static_cast<float>(cylinder -> get_height()) * 0.5f;
-                add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
-                float side_pts[4][2] = {{r,0},{-r,0},{0,r},{0,-r}};
-                for (auto& p : side_pts) {
-                    points.push_back(godot::Vector3(p[0], half_h, p[1]));
-                    points.push_back(godot::Vector3(p[0], -half_h, p[1]));
-                }
-            }
-
-            godot::Ref<godot::ArrayMesh> mesh;
-            mesh.instantiate();
-            if (points.size() > 0) {
-                godot::Array arrays;
-                arrays.resize(godot::Mesh::ARRAY_MAX);
-                arrays[godot::Mesh::ARRAY_VERTEX] = points;
-                mesh -> add_surface_from_arrays(godot::Mesh::PRIMITIVE_LINES, arrays);
-
-                godot::Ref<godot::StandardMaterial3D> material;
-                material.instantiate();
-                material -> set_shading_mode(godot::StandardMaterial3D::SHADING_MODE_UNSHADED);
-                material -> set_albedo(godot::Color(0, 1, 0));
-                mesh -> surface_set_material(0, material);
-            }
-            return mesh;
-        }
-        #endif
 
         // Resolves any of the physics body/area API types to their underlying Node3D owner. //
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
@@ -246,31 +96,30 @@ namespace Vital::Sandbox::API {
 
                 auto owner = resolve_owner(vm, 1);
                 auto instance = Instance::init(vm);
+                // Engine::Collision_Shape::create() now applies the current
+                // default_debug_enabled itself — nothing else to do here.
                 instance -> body = base_class::create(owner);
-                if (default_debug_enabled) instance -> set_debug_visible(true);
                 instance -> store(true);
                 return 1;
             });
 
             #if defined(VSDK_Client)
-            // Global toggle: shows/hides wireframes on every collision shape that currently exists,
-            // and sets the default for any collision shape created afterward. //
+            // Global toggle: shows/hides wireframes on every collision shape that currently
+            // exists (Lua-created AND network-replicated alike), and sets the default for
+            // any collision shape created afterward. Delegates straight to the engine layer,
+            // which tracks live shapes independently of the Lua registry.
             API::bind(vm, base_scope, "set_debug_all", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(1, &Machine::is_bool);
 
                 auto state = vm -> get_bool(1);
-                default_debug_enabled = state;
-                std::lock_guard<std::mutex> lock(registry.mutex);
-                for (auto& [key, instance] : registry.buffer) {
-                    if (Instance::find_unlocked(instance)) instance -> set_debug_visible(state);
-                }
+                base_class::set_debug_all(state);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
-                vm -> push_value(default_debug_enabled);
+                vm -> push_value(base_class::default_debug_enabled);
                 return 1;
             });
             #endif
@@ -302,7 +151,7 @@ namespace Vital::Sandbox::API {
 
             #if defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, "is_debug_visible", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_debug_visible());
+                vm -> push_value(self -> body -> is_debug_visible());
                 return 1;
             });
 
@@ -311,7 +160,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_bool);
 
                 auto state = vm -> get_bool(2);
-                self -> set_debug_visible(state);
+                self -> body -> set_debug_visible(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -325,11 +174,8 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::BoxShape3D> shape;
                 shape.instantiate();
                 shape -> set_size(size);
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(size.x); p.push_back(size.y); p.push_back(size.z); self -> broadcast_shape("box", p); }
                 #endif
                 vm -> push_value(true);
@@ -344,11 +190,8 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::SphereShape3D> shape;
                 shape.instantiate();
                 shape -> set_radius(radius);
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(radius); self -> broadcast_shape("sphere", p); }
                 #endif
                 vm -> push_value(true);
@@ -366,11 +209,8 @@ namespace Vital::Sandbox::API {
                 shape.instantiate();
                 shape -> set_radius(radius);
                 shape -> set_height(height);
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("capsule", p); }
                 #endif
                 vm -> push_value(true);
@@ -388,11 +228,8 @@ namespace Vital::Sandbox::API {
                 shape.instantiate();
                 shape -> set_radius(radius);
                 shape -> set_height(height);
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("cylinder", p); }
                 #endif
                 vm -> push_value(true);
@@ -409,11 +246,8 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::WorldBoundaryShape3D> shape;
                 shape.instantiate();
                 shape -> set_plane(godot::Plane(normal, distance));
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(normal.x); p.push_back(normal.y); p.push_back(normal.z); p.push_back(distance); self -> broadcast_shape("world_boundary", p); }
                 #endif
                 vm -> push_value(true);
@@ -428,11 +262,8 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::SeparationRayShape3D> shape;
                 shape.instantiate();
                 shape -> set_length(length);
-                self -> body -> set_shape(shape);
-                self -> current_shape = shape;
-                #if defined(VSDK_Client)
-                self -> refresh_debug_mesh();
-                #else
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
                 { godot::Array p; p.push_back(length); self -> broadcast_shape("separation_ray", p); }
                 #endif
                 vm -> push_value(true);
@@ -448,11 +279,4 @@ namespace Vital::Sandbox::API {
             Instance::collect_env(env);
         }
     };
-
-    #if defined(VSDK_Client)
-    inline void Collision_Shape::Instance::refresh_debug_mesh() {
-        if (!debug_mesh || !current_shape.is_valid()) return;
-        debug_mesh -> set_mesh(Collision_Shape::build_wireframe_mesh(current_shape));
-    }
-    #endif
 }

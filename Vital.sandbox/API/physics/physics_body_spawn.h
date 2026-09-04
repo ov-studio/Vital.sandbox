@@ -41,15 +41,9 @@
 // TODO: Improve
 namespace Vital::Sandbox::API {
     struct Physics_Body_Spawn : vm_module {
-        // No Lua-visible scope — this is purely an internal wiring module.
         inline static const std::vector<std::string> base_scope = {};
 
         static void bind(Machine* vm) {
-            // Wire the single global physics body spawn callback.
-            // Called once at sandbox init (after all body APIs are registered).
-            // On the client, _spawn_entity fires this for every remotely spawned
-            // body so Lua can attach collision shapes / wheels in its own handler.
-
             Vital::Engine::on_spawned_callback = [vm](Vital::Engine::ISyncable* entity, Vital::Engine::PhysicsType sub_type, bool remote) {
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid: {
@@ -57,7 +51,7 @@ namespace Vital::Sandbox::API {
                         {
                             std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
                             for (auto& [id, inst] : Rigid_Body::registry.buffer)
-                                if (inst->body == typed) return; // already tracked
+                                if (inst->body == typed) return;
                         }
                         auto instance = Rigid_Body::Instance::init(vm, remote);
                         instance->body = typed;
@@ -115,17 +109,6 @@ namespace Vital::Sandbox::API {
                 }
             };
 
-            // Wire the single global physics body destroy callback.
-            // Fired from Physics_Body::_notify_predelete_sync() (NOTIFICATION_PREDELETE)
-            // for every teardown path of every subtype — not just Lua-initiated
-            // ->destroy() calls. Drops the Lua-facing Instance (fires entity:destroyed
-            // via erase_unlocked) and nulls its body pointer so nothing can touch the
-            // about-to-be-freed object afterward. Mirrors Model::on_destroyed_callback.
-            //
-            // NOTE: unlike Instance::clean(), this must NOT call body->destroy() again —
-            // we're already inside the object's own destruction (PREDELETE), so that
-            // would either be a no-op re-entrant call or a double-free depending on the
-            // Godot build. Only registry bookkeeping happens here.
             Vital::Engine::on_destroyed_callback = [](
                 Vital::Engine::ISyncable* entity,
                 Vital::Engine::PhysicsType sub_type)
@@ -139,12 +122,6 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Rigid_Body::Instance::erase_unlocked(instance);
-                            // Defer the teardown (same reasoning as erase_unlocked's own
-                            // deferred buffer-erase): release_userdata_ptr() nulls
-                            // instance->userdata, which push_self() also checks. Running
-                            // it synchronously here would beat a deferred entity:destroyed
-                            // dispatch to the punch, just like the registry erase did.
-                            // Queuing it keeps it strictly after that dispatch.
                             Vital::Engine::Core::get_singleton() -> execute([instance]() {
                                 instance->body = nullptr;
                                 Rigid_Body::Instance::release(instance);
@@ -160,12 +137,6 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Static_Body::Instance::erase_unlocked(instance);
-                            // Defer the teardown (same reasoning as erase_unlocked's own
-                            // deferred buffer-erase): release_userdata_ptr() nulls
-                            // instance->userdata, which push_self() also checks. Running
-                            // it synchronously here would beat a deferred entity:destroyed
-                            // dispatch to the punch, just like the registry erase did.
-                            // Queuing it keeps it strictly after that dispatch.
                             Vital::Engine::Core::get_singleton() -> execute([instance]() {
                                 instance->body = nullptr;
                                 Static_Body::Instance::release(instance);
@@ -181,12 +152,6 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Character_Body::Instance::erase_unlocked(instance);
-                            // Defer the teardown (same reasoning as erase_unlocked's own
-                            // deferred buffer-erase): release_userdata_ptr() nulls
-                            // instance->userdata, which push_self() also checks. Running
-                            // it synchronously here would beat a deferred entity:destroyed
-                            // dispatch to the punch, just like the registry erase did.
-                            // Queuing it keeps it strictly after that dispatch.
                             Vital::Engine::Core::get_singleton() -> execute([instance]() {
                                 instance->body = nullptr;
                                 Character_Body::Instance::release(instance);
@@ -202,12 +167,6 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Animatable_Body::Instance::erase_unlocked(instance);
-                            // Defer the teardown (same reasoning as erase_unlocked's own
-                            // deferred buffer-erase): release_userdata_ptr() nulls
-                            // instance->userdata, which push_self() also checks. Running
-                            // it synchronously here would beat a deferred entity:destroyed
-                            // dispatch to the punch, just like the registry erase did.
-                            // Queuing it keeps it strictly after that dispatch.
                             Vital::Engine::Core::get_singleton() -> execute([instance]() {
                                 instance->body = nullptr;
                                 Animatable_Body::Instance::release(instance);
@@ -223,12 +182,6 @@ namespace Vital::Sandbox::API {
                             if (instance->body != typed) { ++it; continue; }
                             ++it;
                             Vehicle_Body::Instance::erase_unlocked(instance);
-                            // Defer the teardown (same reasoning as erase_unlocked's own
-                            // deferred buffer-erase): release_userdata_ptr() nulls
-                            // instance->userdata, which push_self() also checks. Running
-                            // it synchronously here would beat a deferred entity:destroyed
-                            // dispatch to the punch, just like the registry erase did.
-                            // Queuing it keeps it strictly after that dispatch.
                             Vital::Engine::Core::get_singleton() -> execute([instance]() {
                                 instance->body = nullptr;
                                 Vehicle_Body::Instance::release(instance);
@@ -239,28 +192,17 @@ namespace Vital::Sandbox::API {
                 }
             };
 
-            // Wire the Collision_Shape spawn callback.
-            // Fired right after Network::_sync_shape() creates a new Collision_Shape
-            // node on a remote-synced physics body (client only). Hydrates a
-            // Lua-facing Instance for it so entity:created fires for it like
-            // any locally-created shape.
             Vital::Engine::Collision_Shape::on_spawned_callback = [vm](Vital::Engine::Collision_Shape* node) {
                 {
                     std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
                     for (auto& [id, inst] : Collision_Shape::registry.buffer)
-                        if (inst->body == node) return; // already tracked
+                        if (inst->body == node) return;
                 }
                 auto instance = Collision_Shape::Instance::init(vm, true);
                 instance->body = node;
-                if (Collision_Shape::default_debug_enabled) instance->set_debug_visible(true);
                 instance->store(true);
             };
 
-            // Wire the Collision_Shape destroy callback.
-            // Fired on PREDELETE of any Engine::Collision_Shape node — covers both
-            // explicit shape:destroy() and the implicit child-free when the parent
-            // body is queue_free()'d by Godot. Nulls instance->body so no Lua call
-            // can touch the freed node, then releases the Instance.
             Vital::Engine::Collision_Shape::on_destroyed_callback = [](Vital::Engine::Collision_Shape* node) {
                 std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
                 for (auto it = Collision_Shape::registry.buffer.begin(); it != Collision_Shape::registry.buffer.end();) {
@@ -276,7 +218,6 @@ namespace Vital::Sandbox::API {
             };
         }
 
-        // No per-instance cleanup needed — bodies clean themselves.
         static void clean(const std::string&) {}
     };
 }
