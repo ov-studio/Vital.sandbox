@@ -600,6 +600,31 @@ namespace Vital::Engine {
         auto core = Engine::Core::get_singleton();
         if (!core) return;
 
+        // A freshly-created Model queues its own add_child()/_spawn_entity RPC
+        // via core->enqueue() (see Model::create) instead of doing it inline —
+        // adding to the tree during the originating Lua C call can re-enter
+        // Lua via deferred signals and corrupt engine state. That means a
+        // script that calls set_parent() in the same tick as create() used
+        // to race it: the local reparent was silently skipped (node not in
+        // tree yet), while the _reparent_entity RPC still went out
+        // immediately — arriving at clients BEFORE _spawn_entity did, so
+        // they dropped it and later spawned the model unparented.
+        //
+        // Core::when_parent_ready() is the shared fix for this (also used by
+        // the generic Node_3D::set_parent Lua binding for every non-Model
+        // type): it only invokes apply_parent() once both this model and the
+        // requested parent are confirmed to be inside the tree, safely
+        // retrying via ObjectID if either was only just created this tick.
+        core->when_parent_ready(this, parent_node,
+            [](godot::Node3D* self_node, godot::Node* parent) {
+                static_cast<Model*>(self_node)->apply_parent(parent);
+            });
+    }
+
+    void Model::apply_parent(godot::Node* parent_node) {
+        auto core = Engine::Core::get_singleton();
+        if (!core) return;
+
         uint32_t parent_net_id = 0;
         godot::Node* target    = core;
 
@@ -612,7 +637,7 @@ namespace Vital::Engine {
             // already rejected client-only parents before reaching here.
         }
 
-        if (is_inside_tree() && get_parent() != target) {
+        if (get_parent() != target) {
             reparent(target, true);  // keep_global_transform = true
         }
 
@@ -637,6 +662,7 @@ namespace Vital::Engine {
             "Model::set_parent net_id=", net_id,
             " -> parent_net_id=", parent_net_id);
     }
+
 
     uint32_t Model::get_parent_net_id() const {
         if (!is_inside_tree()) return 0;

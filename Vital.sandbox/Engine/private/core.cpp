@@ -127,6 +127,30 @@ namespace Vital::Engine {
         work_queue.push_back(std::move(exec));
     }
 
+    void Core::when_parent_ready(godot::Node3D* node, godot::Node* target,
+                                  std::function<void(godot::Node3D*, godot::Node*)> fn) {
+        if (!node) return;
+        if (node -> is_inside_tree() && (!target || target -> is_inside_tree())) {
+            fn(node, target);
+            return;
+        }
+        godot::ObjectID node_id   = node -> get_instance_id();
+        godot::ObjectID target_id = target ? target -> get_instance_id() : godot::ObjectID();
+        enqueue([node_id, target_id, fn]() {
+            auto* n = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(node_id));
+            if (!n) return; // node was destroyed before this ran
+            godot::Node* t = target_id.is_valid()
+                ? godot::Object::cast_to<godot::Node>(godot::ObjectDB::get_instance(target_id))
+                : nullptr;
+            if (target_id.is_valid() && !t) return; // requested target was destroyed
+            // Either side may still not be ready (e.g. both created the same
+            // tick) — re-enter through the same guard rather than assuming
+            // one deferral is always enough.
+            auto* core = Core::get_singleton();
+            if (core) core -> when_parent_ready(n, t, fn);
+        });
+    }
+
     void Core::drain() {
         std::vector<std::function<void()>> local;
         {

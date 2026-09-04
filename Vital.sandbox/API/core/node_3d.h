@@ -307,6 +307,18 @@ namespace Vital::Sandbox::API {
         //      The #if !defined(VSDK_Client) guard in model.h::methods() ensures
         //      the binding simply does not exist in the client VM for server-owned
         //      models; any attempt produces a nil-method error naturally.
+
+        // Thin wrapper around Core::when_parent_ready() for the raw (non-Model)
+        // reparent calls below — physics bodies today, any future node type
+        // that funnels through this generic binding. The actual defer/retry
+        // logic lives once, in Engine::Core, shared with Model::set_parent().
+        static void reparent_safe(Vital::Engine::Core* core, godot::Node3D* node, godot::Node* target) {
+            if (!core || !node) return;
+            core -> when_parent_ready(node, target, [](godot::Node3D* n, godot::Node* t) {
+                if (n -> get_parent() != t) n -> reparent(t, true);
+            });
+        }
+
         template<typename Instance, Type node_type = Type::Spatial>
         static void parent_methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
@@ -353,12 +365,12 @@ namespace Vital::Sandbox::API {
                         // client, which would still think this entity is parented.
                         auto* model = dynamic_cast<Vital::Engine::Model*>(node);
                         if (model) model -> set_parent(nullptr);
-                        else if (node -> get_parent() != core) node -> reparent(core, true);
+                        else reparent_safe(core, node, core);
                     } else
                     #endif
                     {
                         // Rule B: client entity — purely local, no RPC needed.
-                        if (node -> get_parent() != core) node -> reparent(core, true);
+                        reparent_safe(core, node, core);
                     }
                     vm -> push_value(true);
                     return 1;
@@ -417,8 +429,7 @@ namespace Vital::Sandbox::API {
                     } else {
                         // Fallback for non-Model server entities (physics bodies etc.)
                         // — plain local reparent; those types manage their own sync.
-                        if (node -> get_parent() != parent_node)
-                            node -> reparent(parent_node, true);
+                        reparent_safe(core, node, parent_node);
                     }
                 } else
                 #endif
@@ -426,7 +437,7 @@ namespace Vital::Sandbox::API {
                     // Rule B: client entity — parent may be anything (server or client,
                     // e.g. a camera or a client-created model attaching to a remote
                     // server entity). This is purely local; no RPC.
-                    node -> reparent(parent_node, true);
+                    reparent_safe(core, node, parent_node);
                 }
 
                 vm -> push_value(true);

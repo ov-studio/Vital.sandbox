@@ -66,6 +66,19 @@ namespace Vital::Engine {
             #endif
             void execute(std::function<void()> exec);
             void enqueue(std::function<void()> exec);
+            // Runs fn(node, target) once both `node` and `target` (if given)
+            // are actually inside the scene tree. If either isn't ready yet —
+            // e.g. a Model or Physics_Body whose own add_child()/spawn is
+            // still queued via enqueue() — this captures both by ObjectID and
+            // retries on the next drain(), re-validating that neither was
+            // freed in the meantime. Safe to call immediately: if both are
+            // already ready, fn runs synchronously with no deferral at all.
+            // Single shared primitive so every "reparent this" call site
+            // (Model::set_parent, the generic Node_3D::set_parent binding,
+            // future entity types, ...) gets the same guarantee for free
+            // instead of hand-rolling its own defer/retry logic.
+            void when_parent_ready(godot::Node3D* node, godot::Node* target,
+                                    std::function<void(godot::Node3D*, godot::Node*)> fn);
             void drain();
             void teardown();
             void shutdown();
