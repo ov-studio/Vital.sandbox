@@ -603,7 +603,7 @@ namespace Vital::Engine {
         uint32_t parent_net_id = 0;
         godot::Node* target    = core;
 
-        if (parent_node && parent_node != core) {
+        if (parent_node && parent_node != target) {
             if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
                 parent_net_id = syncable->get_net_id();
                 target = parent_node;

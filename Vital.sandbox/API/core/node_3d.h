@@ -350,8 +350,8 @@ namespace Vital::Sandbox::API {
                     // Rule A: server entity → parent MUST also be a server entity.
                     // (Client code cannot reach this branch — binding not exposed.)
                     if (!parent_is_server) {
-                        vm -> error("set_parent: server entity cannot be parented to a client-local entity");
-                        return 0;
+                        throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
+                            "set_parent: server entity cannot be parented to a client-local entity");
                     }
                     // Delegate to Engine::Model::set_parent() which also broadcasts
                     // _reparent_entity to all clients.
