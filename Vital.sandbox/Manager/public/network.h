@@ -68,6 +68,11 @@ namespace Vital::Manager {
             // only the latest state per net_id; applied and cleared on registration.
             std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
             std::mutex pending_transform_mutex;
+
+            // Same problem for _reparent_entity RPCs — parent may not be in
+            // sync_id_map yet when the RPC arrives. Stores (child_net_id → parent_net_id).
+            std::unordered_map<uint32_t, uint32_t> pending_reparent_syncs;
+            std::mutex pending_reparent_mutex;
             #endif
 
             // Per-frame dirty batch buffer reused across frames (avoids realloc).
@@ -103,6 +108,14 @@ namespace Vital::Manager {
         public:
             Network() = default;
             ~Network() = default;
+
+            #if defined(VSDK_Client)
+            // Buffer a _reparent_entity for replay once child/parent register.
+            void buffer_reparent(uint32_t child_net_id, uint32_t parent_net_id) {
+                std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+                pending_reparent_syncs[child_net_id] = parent_net_id;
+            }
+            #endif
 
 
             // Managers //

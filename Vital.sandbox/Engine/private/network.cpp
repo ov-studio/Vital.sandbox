@@ -206,62 +206,28 @@ namespace Vital::Engine {
         #endif
     }
 
-
-    // _reparent_entity — server → all clients
-    // Moves the remote node for net_id under the remote node for parent_net_id
-    // (or back to Core root when parent_net_id == 0).
-    // Only the client-side scene tree is touched; the server already performed
-    // the real reparent before broadcasting this RPC.
     void Network::_reparent_entity(int net_id, int parent_net_id) {
         #if defined(VSDK_Client)
-        auto* mgr  = Manager::Network::get_singleton();
-        auto* core = Engine::Core::get_singleton();
-        if (!mgr || !core) return;
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
 
-        Engine::ISyncable* child_sync = mgr->find_syncable((uint32_t)net_id);
-        if (!child_sync) return;
-        auto* child_node = godot::Object::cast_to<godot::Node3D>(
-            dynamic_cast<godot::Object*>(child_sync));
-        if (!child_node) return;
+        // Try to apply immediately; if either side isn't registered yet, buffer.
+        Engine::ISyncable* child_sync  = mgr->find_syncable((uint32_t)net_id);
+        Engine::ISyncable* parent_sync = (parent_net_id != 0)
+            ? mgr->find_syncable((uint32_t)parent_net_id) : nullptr;
 
-        godot::Node* target = core;
-        if (parent_net_id != 0) {
-            Engine::ISyncable* parent_sync = mgr->find_syncable((uint32_t)parent_net_id);
-            if (!parent_sync) {
-                godot::UtilityFunctions::push_warning(
-                    "_reparent_entity: parent net_id=", parent_net_id,
-                    " not found — ignoring");
-                return;
-            }
-            auto* parent_node = godot::Object::cast_to<godot::Node3D>(
-                dynamic_cast<godot::Object*>(parent_sync));
-            if (!parent_node) return;
-            target = parent_node;
+        bool child_ready  = child_sync  != nullptr;
+        bool parent_ready = (parent_net_id == 0) || (parent_sync != nullptr);
+
+        if (child_ready && parent_ready) {
+            apply_reparent_entity((uint32_t)net_id, (uint32_t)parent_net_id);
+        } else {
+            mgr->buffer_reparent((uint32_t)net_id, (uint32_t)parent_net_id);
+            godot::UtilityFunctions::print(
+                "_reparent_entity: buffering net_id=", net_id,
+                " -> parent_net_id=", parent_net_id,
+                " (child_ready=", child_ready, " parent_ready=", parent_ready, ")");
         }
-
-        if (child_node->is_inside_tree() && child_node->get_parent() != target) {
-            child_node->reparent(target, true);  // keep_global_transform = true
-        }
-
-        // Mirror the server's sync-space switch so this client decodes future
-        // packets for this entity as local transforms.  Re-seed delta baselines
-        // from the new space so the first incoming delta decodes correctly.
-        // Use set_sync_parent_net_id() available on Model; physics bodies cannot
-        // be reparented so the cast is expected to succeed.
-        auto* model = dynamic_cast<Engine::Model*>(child_sync);
-        if (model) {
-            model->set_sync_parent_net_id((uint32_t)parent_net_id);
-            child_sync->sync_last_pos = child_sync->get_sync_position();
-            child_sync->sync_last_rot = child_sync->get_sync_rotation();
-            child_sync->sync_last_vel = godot::Vector3();
-            child_sync->delta_last_pos = child_sync->sync_last_pos;
-            child_sync->delta_last_rot = child_sync->sync_last_rot;
-            child_sync->delta_last_vel = godot::Vector3();
-        }
-
-        godot::UtilityFunctions::print(
-            "_reparent_entity: net_id=", net_id,
-            " -> parent_net_id=", parent_net_id);
         #endif
     }
 
@@ -441,6 +407,63 @@ namespace Vital::Engine {
         #endif
     }
 
+    // _reparent_entity — server → all clients
+    // Moves the remote node for net_id under the remote node for parent_net_id
+    // (or back to Core root when parent_net_id == 0).
+    // Only the client-side scene tree is touched; the server already performed
+    // the real reparent before broadcasting this RPC.
+    //
+    // Both the child and parent may not be in sync_id_map yet when this RPC
+    // arrives — _spawn_entity calls enqueue_syncable_registration which is only
+    // drained by poll() on the next frame.  If either is missing we buffer the
+    // reparent in pending_reparent_syncs; poll() replays it once both register.
+    void Network::apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id) {
+        auto* mgr  = Manager::Network::get_singleton();
+        auto* core = Engine::Core::get_singleton();
+        if (!mgr || !core) return;
+
+        Engine::ISyncable* child_sync = mgr->find_syncable(net_id);
+        if (!child_sync) return;
+        auto* child_node = godot::Object::cast_to<godot::Node3D>(
+            dynamic_cast<godot::Object*>(child_sync));
+        if (!child_node) return;
+
+        godot::Node* target = core;
+        if (parent_net_id != 0) {
+            Engine::ISyncable* parent_sync = mgr->find_syncable(parent_net_id);
+            if (!parent_sync) return;  // caller must retry
+            auto* parent_node = godot::Object::cast_to<godot::Node3D>(
+                dynamic_cast<godot::Object*>(parent_sync));
+            if (!parent_node) return;
+            target = parent_node;
+        }
+
+        if (child_node->is_inside_tree() && child_node->get_parent() != target) {
+            // keep_global_transform = false: snap to parent origin.
+            // The server snaps to zero local on apply_parent, then drives
+            // placement via the sync stream — preserving global here would
+            // bake in a spurious offset equal to the child's current world pos.
+            child_node->reparent(target, false);
+            child_node->set_position(godot::Vector3());
+            child_node->set_rotation_degrees(godot::Vector3());
+        }
+
+        auto* model = dynamic_cast<Engine::Model*>(child_sync);
+        if (model) {
+            model->set_sync_parent_net_id(parent_net_id);
+            child_sync->sync_last_pos = child_sync->get_sync_position();
+            child_sync->sync_last_rot = child_sync->get_sync_rotation();
+            child_sync->sync_last_vel = godot::Vector3();
+            child_sync->delta_last_pos = child_sync->sync_last_pos;
+            child_sync->delta_last_rot = child_sync->sync_last_rot;
+            child_sync->delta_last_vel = godot::Vector3();
+        }
+
+        godot::UtilityFunctions::print(
+            "_reparent_entity: net_id=", net_id,
+            " -> parent_net_id=", parent_net_id);
+    }
+    
     #if defined(VSDK_Client)
     void Network::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
     void Network::_on_connection_failed() { if (on_connection_failed) on_connection_failed(); }

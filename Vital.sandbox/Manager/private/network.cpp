@@ -1066,6 +1066,32 @@ namespace Vital::Manager {
                 for (auto& [nid, shape] : to_apply)
                     Engine::Network::apply_shape(nid, shape.first, shape.second);
             }
+
+            // Replay any reparents that arrived before child or parent registered.
+            if (!incoming.empty()) {
+                std::vector<std::pair<uint32_t, uint32_t>> reparents_to_apply;
+                {
+                    std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+                    for (auto* entity : incoming) {
+                        uint32_t nid = entity->get_net_id();
+                        // Child just registered.
+                        auto it = pending_reparent_syncs.find(nid);
+                        if (it != pending_reparent_syncs.end()) {
+                            reparents_to_apply.emplace_back(nid, it->second);
+                            pending_reparent_syncs.erase(it);
+                        }
+                        // Parent just registered — child was already registered.
+                        for (auto it2 = pending_reparent_syncs.begin(); it2 != pending_reparent_syncs.end(); ) {
+                            if (it2->second == nid) {
+                                reparents_to_apply.emplace_back(it2->first, it2->second);
+                                it2 = pending_reparent_syncs.erase(it2);
+                            } else ++it2;
+                        }
+                    }
+                }
+                for (auto& [child_nid, parent_nid] : reparents_to_apply)
+                    Engine::Network::apply_reparent_entity(child_nid, parent_nid);
+            }
             #endif
         }
 

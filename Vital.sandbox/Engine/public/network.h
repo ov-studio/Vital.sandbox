@@ -68,6 +68,7 @@ namespace Vital::Engine {
             void _wake_sync();
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             static void apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params);
+            static void apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id);
             void _spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
             void _sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value);
             void _sync_wheel_transform(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
