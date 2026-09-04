@@ -87,8 +87,15 @@ namespace Vital::Engine {
         // Delegate snapshot interpolation to ISyncable shared implementation.
         godot::Vector3 out_pos, out_rot;
         interp_process(delta, out_pos, out_rot);
-        set_global_position(out_pos);
-        set_rotation_degrees(out_rot);
+        // When parented to another synced entity the snapshot values are in local
+        // space, so write them back as local transform — not global.
+        if (sync_parent_net_id != 0) {
+            set_position(out_pos);
+            set_rotation_degrees(out_rot);
+        } else {
+            set_global_position(out_pos);
+            set_rotation_degrees(out_rot);
+        }
     }
 
     void Model::on_sync_process(double delta) { _process(delta); }
@@ -477,8 +484,21 @@ namespace Vital::Engine {
     // ISyncable overrides
     bool Model::is_sync_active() const { return const_cast<Model*>(this)->is_inside_tree() && !placeholder; }
 
-    godot::Vector3 Model::get_sync_position() const { return const_cast<Model*>(this)->is_inside_tree() ? const_cast<Model*>(this)->get_global_position() : godot::Vector3(); }
-    godot::Vector3 Model::get_sync_rotation() const { return const_cast<Model*>(this)->is_inside_tree() ? const_cast<Model*>(this)->get_rotation_degrees() : godot::Vector3(); }
+    godot::Vector3 Model::get_sync_position() const {
+        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3();
+        // When parented to another synced entity, sync local position so the child
+        // packet only carries the offset from the parent — not the full world coordinate.
+        if (sync_parent_net_id != 0) return const_cast<Model*>(this)->get_position();
+        return const_cast<Model*>(this)->get_global_position();
+    }
+    godot::Vector3 Model::get_sync_rotation() const {
+        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3();
+        // Local rotation_degrees when parented — no change needed since Godot's
+        // get_rotation_degrees() already returns local Euler angles.
+        // When unparented it is also local (== global when parent is Core root),
+        // so this is consistent in both cases.
+        return const_cast<Model*>(this)->get_rotation_degrees();
+    }
     godot::Vector3 Model::get_rotation()      { return get_rotation_degrees(); }
     int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
@@ -576,6 +596,54 @@ namespace Vital::Engine {
     }
 
     #if !defined(VSDK_Client)
+    void Model::set_parent(godot::Node3D* parent_node) {
+        auto core = Engine::Core::get_singleton();
+        if (!core) return;
+
+        uint32_t parent_net_id = 0;
+        godot::Node* target    = core;
+
+        if (parent_node && parent_node != core) {
+            if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
+                parent_net_id = syncable->get_net_id();
+                target = parent_node;
+            }
+            // If the node is not an ISyncable we refuse: caller (API layer) has
+            // already rejected client-only parents before reaching here.
+        }
+
+        if (is_inside_tree() && get_parent() != target) {
+            reparent(target, true);  // keep_global_transform = true
+        }
+
+        // Switch sync space to local (or back to global when detaching).
+        // Re-seed delta baselines from the new coordinate space so the very next
+        // encode_delta produces a clean full packet rather than a stale diff.
+        // Wake the entity so at least one packet goes out to update receivers.
+        sync_parent_net_id = parent_net_id;
+        sync_last_pos      = get_sync_position();  // now returns local if parented
+        sync_last_rot      = get_sync_rotation();
+        sync_last_vel      = godot::Vector3();
+        sync_sleeping      = false;
+
+        // Broadcast so all current clients reparent their remote copy and
+        // switch their own sync_parent_net_id via _reparent_entity.
+        auto* net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node) {
+            net_node->rpc("_reparent_entity", (int)net_id, (int)parent_net_id);
+        }
+
+        godot::UtilityFunctions::print(
+            "Model::set_parent net_id=", net_id,
+            " -> parent_net_id=", parent_net_id);
+    }
+
+    uint32_t Model::get_parent_net_id() const {
+        if (!is_inside_tree()) return 0;
+        auto* syncable = dynamic_cast<const ISyncable*>(get_parent());
+        return syncable ? syncable->get_net_id() : 0;
+    }
+
     void Model::set_syncer(int peer_id) {
         sync_authority = (peer_id <= 1) ? 1 : peer_id;
         sync_sleeping  = false;

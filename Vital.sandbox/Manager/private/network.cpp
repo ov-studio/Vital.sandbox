@@ -865,6 +865,25 @@ namespace Vital::Manager {
             }
         }
 
+        // 2.6. Replay parent relationships so late-joiners reconstruct the correct
+        //      scene tree.  Only models can be server-reparented via set_parent();
+        //      physics bodies are always Core children.  We check every synced model:
+        //      if its Godot parent is itself an ISyncable (non-zero net_id) we send a
+        //      _reparent_entity so the client mirrors that relationship before the
+        //      first transform dump arrives (which uses global positions — the client
+        //      must already have the right scene hierarchy for reparent to be a no-op).
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* e : sync_models) {
+                auto* model = dynamic_cast<Engine::Model*>(e);
+                if (!model) continue;
+                uint32_t parent_net_id = model->get_parent_net_id();
+                if (parent_net_id == 0) continue;  // parented to Core, no replay needed
+                node->rpc_id(id, "_reparent_entity",
+                    (int)e->get_net_id(), (int)parent_net_id);
+            }
+        }
+
         // 3. Send transform state dump (reliable) so models snap to correct positions.
         send_full_state_to_peer(id);
 

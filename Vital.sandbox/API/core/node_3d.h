@@ -283,33 +283,99 @@ namespace Vital::Sandbox::API {
         // node_type is accepted for call-site consistency with methods<> but
         // parenting behaviour is identical regardless of node type, so it is
         // intentionally unused inside the body.
+        //
+        // Ownership rules enforced here:
+        //
+        //   A) self is a SERVER entity (is_remote() == false, has a net_id > 0):
+        //      → May only be parented to another SERVER entity.
+        //      → Must only be called from server-side Lua (VSDK_Server compile unit).
+        //        The API::Model::methods() block wraps set_parent in #if !VSDK_Client
+        //        for server entities, so client Lua never sees this binding on them.
+        //      → Internally calls Engine::Model::set_parent() which broadcasts
+        //        _reparent_entity to all clients.
+        //      → Trying to parent to a client-local entity throws a Lua error.
+        //
+        //   B) self is a CLIENT entity (client-only, no net_id):
+        //      → May be parented to any other entity — including a server entity
+        //        (e.g. camera parented to a remote model).  The reparent is purely
+        //        local; no RPC is sent.
+        //      → May NOT be used to parent a server entity (covered by rule A).
+        //      → Trying to parent a client entity to another client entity that is
+        //        itself a server entity's child is fine (Godot handles it locally).
+        //
+        //   C) Client Lua MUST NOT call set_parent on a server entity.
+        //      The #if !defined(VSDK_Client) guard in model.h::methods() ensures
+        //      the binding simply does not exist in the client VM for server-owned
+        //      models; any attempt produces a nil-method error naturally.
         template<typename Instance, Type node_type = Type::Spatial>
         static void parent_methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(entity = nil)", true)
                     .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
 
-                auto node = self -> get_node();
-                if (vm -> is_nil(2)) {
-                    auto core = Vital::Engine::Core::get_singleton();
-                    if (node -> get_parent() != core) node -> reparent(core, true);
+                auto* node = self -> get_node();
+                auto* core = Vital::Engine::Core::get_singleton();
+
+                // Determine whether self is a server entity (ISyncable with net_id > 0).
+                bool self_is_server = false;
+                {
+                    auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
+                    self_is_server  = (syncable && syncable->get_net_id() > 0);
                 }
-                else {
-                    auto ud = vm_module::get_userdata_ptr(vm, 2);
-                    if (!ud || !*ud) { vm -> push_value(false); return 1; }
-                    auto parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
-                    if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
-                        vm -> push_value(false);
-                        return 1;
+
+                if (vm -> is_nil(2)) {
+                    // Detach to Core root — always allowed.
+                    if (node -> get_parent() != core) node -> reparent(core, true);
+                    vm -> push_value(true);
+                    return 1;
+                }
+
+                auto* ud = vm_module::get_userdata_ptr(vm, 2);
+                if (!ud || !*ud) { vm -> push_value(false); return 1; }
+
+                auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
+                if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+
+                // Determine whether the requested parent is a server entity.
+                bool parent_is_server = false;
+                {
+                    auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
+                    parent_is_server = (syncable && syncable->get_net_id() > 0);
+                }
+
+                if (self_is_server) {
+                    // Rule A: server entity → parent MUST also be a server entity.
+                    // (Client code cannot reach this branch — binding not exposed.)
+                    if (!parent_is_server) {
+                        vm -> error("set_parent: server entity cannot be parented to a client-local entity");
+                        return 0;
                     }
+                    // Delegate to Engine::Model::set_parent() which also broadcasts
+                    // _reparent_entity to all clients.
+                    auto* model = dynamic_cast<Vital::Engine::Model*>(node);
+                    if (model) {
+                        model->set_parent(parent_node);
+                    } else {
+                        // Fallback for non-Model server entities (physics bodies etc.)
+                        // — plain local reparent; those types manage their own sync.
+                        if (node -> get_parent() != parent_node)
+                            node -> reparent(parent_node, true);
+                    }
+                } else {
+                    // Rule B: client entity — parent may be anything (server or client).
+                    // This is purely local; no RPC.
                     node -> reparent(parent_node, true);
                 }
+
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
-                auto parent = self -> get_node() -> get_parent();
+                auto* parent = self -> get_node() -> get_parent();
                 if (!parent || parent == Vital::Engine::Core::get_singleton()) {
                     vm -> push_value(false);
                     return 1;

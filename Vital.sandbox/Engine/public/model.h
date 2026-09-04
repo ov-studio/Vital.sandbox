@@ -163,6 +163,12 @@ namespace Vital::Engine {
             void           on_sync_process(double delta) override;
             void           destroy_sync()       override { this->queue_free(); }
 
+            // Called by Engine::Network::_reparent_entity (client) and
+            // Model::set_parent (server) to switch the sync space for this entity.
+            // id == 0  → detached, back to global sync.
+            // id != 0  → parented; pos/rot are sent/received in local space.
+            void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
+
             // Getters //
             static Models get_loaded_models();
             std::string get_model_name();
@@ -192,6 +198,16 @@ namespace Vital::Engine {
             // enable/disable interpolation correctly. Called automatically on disconnect.
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id);
+
+            // set_parent(parent_node) — reparent this server model under another
+            //   server-authoritative ISyncable (Model or physics body) on the server
+            //   scene tree and broadcast _reparent_entity to all current clients.
+            //   Pass nullptr to detach back to Core root (parent_net_id == 0).
+            //   ONLY call from the server VM; the API layer enforces this.
+            // get_parent_net_id() — returns the net_id of the current sync parent,
+            //   or 0 when parented directly to Core.
+            void     set_parent(godot::Node3D* parent_node);
+            uint32_t get_parent_net_id() const;
             #endif
 
             bool set_component_visible(const std::string& component, bool state);

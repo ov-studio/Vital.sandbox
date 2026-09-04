@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/API/utility/promise.h>
+#include <Vital.sandbox/API/core/node_3d.h>
 
 
 ////////////////////////
@@ -32,6 +33,10 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Model;
             base_class* model = nullptr;
+
+            // Exposes the underlying Node3D* so vm_instance<>::get_node_3d() and
+            // Node_3D::parent_methods<> can work with Model instances on both sides.
+            auto get_node() { return model; }
 
             bool is_alive() const {
                 return model ? true : false;
@@ -157,6 +162,26 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            // Spatial getters/setters (position, rotation, visibility) are available
+            // on both sides via Node_3D::methods.  These duplicate the existing
+            // hand-written get_position / set_position etc. — keeping them is fine;
+            // the node_3d versions add global variants and extra helpers.
+            API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+
+            // set_parent / get_parent:
+            //   • Server side: Model is a server entity; parent_methods delegates to
+            //     Engine::Model::set_parent() which broadcasts _reparent_entity.
+            //     Rule A (server→server only) is enforced inside parent_methods.
+            //   • Client side: server-owned Model instances are remote; client Lua
+            //     must NOT call set_parent on them (Rule C / Rule A's complement).
+            //     We do NOT bind parent_methods for Models on the client so any
+            //     attempt naturally produces a nil-method error.  Client-local
+            //     entities (camera, audio, …) have their own separate parent_methods
+            //     binding in their own API headers (camera.h etc.) where Rule B applies.
+            #if !defined(VSDK_Client)
+            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
+            #endif
+
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
