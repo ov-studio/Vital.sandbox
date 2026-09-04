@@ -135,8 +135,8 @@ namespace Vital::Engine {
             fn(node, target);
             return;
         }
-        godot::ObjectID node_id   = node -> get_instance_id();
-        godot::ObjectID target_id = target ? target -> get_instance_id() : godot::ObjectID();
+        godot::ObjectID node_id   = godot::ObjectID(node -> get_instance_id());
+        godot::ObjectID target_id = target ? godot::ObjectID(target -> get_instance_id()) : godot::ObjectID();
         enqueue([node_id, target_id, fn]() {
             auto* n = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(node_id));
             if (!n) return; // node was destroyed before this ran
