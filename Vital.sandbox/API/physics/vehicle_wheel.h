@@ -141,7 +141,12 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
+            // set_parent/get_parent intentionally NOT bound here: a Vehicle_Wheel is
+            // always created attached to its owning vehicle body (Vehicle_Wheel::create()
+            // requires an owner and add_child()s it directly — see "create" above) and
+            // isn't ISyncable itself, so parent_methods' server/client rules (Rule A/B/C)
+            // don't have a net_id to key off for it. Exposing set_parent would let client
+            // Lua silently detach a wheel from a server-owned vehicle with no restriction.
 
             // Override transform setters to broadcast to clients after applying locally.
             // set_global_position is intentionally excluded — wheels must use local space.

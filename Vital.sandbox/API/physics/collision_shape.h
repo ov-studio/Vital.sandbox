@@ -283,7 +283,12 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
+            // set_parent/get_parent intentionally NOT bound here: a Collision_Shape
+            // is always created attached to its owning body (Collision_Shape::create()
+            // add_child()s it directly — see "create" above) and isn't ISyncable itself,
+            // so parent_methods' server/client rules (Rule A/B/C) don't have a net_id
+            // to key off for it. Exposing set_parent would let client Lua silently
+            // detach a shape from a server-owned body with no restriction at all.
 
             vm_module::bind_method<Instance>(vm, "is_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_disabled());
