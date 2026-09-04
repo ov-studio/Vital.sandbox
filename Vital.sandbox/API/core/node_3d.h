@@ -334,11 +334,8 @@ namespace Vital::Sandbox::API {
                 // client-side copy too. A purely client-created model (API::Model::create()
                 // called from client Lua) never gets a net_id, so this still correctly
                 // tells the two apart on the client build.
-                bool self_is_server = false;
-                {
-                    auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
-                    self_is_server  = (syncable && syncable->get_net_id() > 0);
-                }
+                auto* self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
+                bool  self_is_server = (self_syncable && self_syncable->get_net_id() > 0);
 
                 #if defined(VSDK_Client)
                 // Rule C: client Lua must NEVER reparent a server entity — attach or
@@ -357,15 +354,14 @@ namespace Vital::Sandbox::API {
                     // Detach to Core root.
                     #if !defined(VSDK_Client)
                     if (self_is_server) {
-                        // Must go through Engine::Model::set_parent() (same as the
-                        // attach path below) so sync_parent_net_id resets to 0,
-                        // sync_last_pos/rot re-seed in global space, and clients
-                        // receive the _reparent_entity(net_id, 0) broadcast.
-                        // A raw local reparent() here would silently desync every
-                        // client, which would still think this entity is parented.
-                        auto* model = dynamic_cast<Vital::Engine::Model*>(node);
-                        if (model) model -> set_parent(nullptr);
-                        else reparent_safe(core, node, core);
+                        // Must go through ISyncable::set_parent() (same as the
+                        // attach path below, shared by every synced type) so
+                        // sync_parent_net_id resets to 0, sync_last_pos/rot
+                        // re-seed in global space, and clients receive the
+                        // _reparent_entity(net_id, 0) broadcast. A raw local
+                        // reparent() here would silently desync every client,
+                        // which would still think this entity is parented.
+                        self_syncable -> set_parent(nullptr);
                     } else
                     #endif
                     {
@@ -421,16 +417,11 @@ namespace Vital::Sandbox::API {
                             "set_parent: server entity cannot be parented to a client-local entity "
                             "(net_id == 0 — this node was created by client Lua and never spawned on the server)");
                     }
-                    // Delegate to Engine::Model::set_parent() which also broadcasts
-                    // _reparent_entity to all clients.
-                    auto* model = dynamic_cast<Vital::Engine::Model*>(node);
-                    if (model) {
-                        model->set_parent(parent_node);
-                    } else {
-                        // Fallback for non-Model server entities (physics bodies etc.)
-                        // — plain local reparent; those types manage their own sync.
-                        reparent_safe(core, node, parent_node);
-                    }
+                    // Delegate to ISyncable::set_parent() — shared by every synced
+                    // type (Model, Physics_Body, ...) — which also broadcasts
+                    // _reparent_entity to all clients. self_is_server already
+                    // proved self_syncable is non-null.
+                    self_syncable -> set_parent(parent_node);
                 } else
                 #endif
                 {

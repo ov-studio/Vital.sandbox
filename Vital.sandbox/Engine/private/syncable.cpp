@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/Manager/public/network.h>
 
 
 ///////////////////////////////
@@ -261,4 +262,86 @@ namespace Vital::Engine {
             out_rot = godot::Basis(q_interp).get_euler() * RAD2DEG;
         }
     }
+
+    #if !defined(VSDK_Client)
+    void ISyncable::set_parent(godot::Node3D* parent_node) {
+        auto core = Engine::Core::get_singleton();
+        if (!core) return;
+
+        godot::Node3D* self_node = get_sync_node();
+        if (!self_node) return;
+
+        // A freshly-created entity may still have its own add_child()/
+        // _spawn_entity RPC queued (Model::create defers both — see
+        // model.cpp — to avoid re-entering Lua mid-call). Calling set_parent
+        // in the same tick used to race that: the local reparent silently
+        // no-op'd (node not in the tree yet) while the _reparent_entity RPC
+        // still went out immediately, reaching clients BEFORE _spawn_entity
+        // did, so they dropped it and the entity ended up spawned unparented
+        // with no further hint it should have followed anything.
+        //
+        // Core::when_parent_ready() only invokes apply_parent() once both
+        // this entity and the requested parent are confirmed to be inside
+        // the scene tree, safely retrying via ObjectID if either was only
+        // just created this same tick. Shared by every ISyncable type and by
+        // the generic Node_3D::set_parent Lua binding for non-syncable nodes.
+        core->when_parent_ready(self_node, parent_node,
+            [](godot::Node3D* self_n, godot::Node* parent) {
+                if (auto* syncable = dynamic_cast<ISyncable*>(self_n))
+                    syncable->apply_parent(parent);
+            });
+    }
+
+    void ISyncable::apply_parent(godot::Node* parent_node) {
+        auto core = Engine::Core::get_singleton();
+        if (!core) return;
+
+        godot::Node3D* self_node = get_sync_node();
+        if (!self_node) return;
+
+        uint32_t parent_net_id = 0;
+        godot::Node* target     = core;
+
+        if (parent_node && parent_node != target) {
+            if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
+                parent_net_id = syncable->get_net_id();
+                target = parent_node;
+            }
+            // If the node is not an ISyncable we refuse: caller (API layer) has
+            // already rejected client-only / non-synced parents before this.
+        }
+
+        if (self_node->get_parent() != target) {
+            self_node->reparent(target, true);  // keep_global_transform = true
+        }
+
+        // Switch sync space to local (or back to global when detaching).
+        // Re-seed delta baselines from the new coordinate space so the very next
+        // encode_delta produces a clean full packet rather than a stale diff.
+        // Wake the entity so at least one packet goes out to update receivers.
+        sync_parent_net_id = parent_net_id;
+        sync_last_pos      = get_sync_position();  // now returns local if parented
+        sync_last_rot      = get_sync_rotation();
+        sync_last_vel      = godot::Vector3();
+        sync_sleeping      = false;
+
+        // Broadcast so all current clients reparent their remote copy and
+        // switch their own sync_parent_net_id via _reparent_entity.
+        auto* net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node) {
+            net_node->rpc("_reparent_entity", (int)net_id, (int)parent_net_id);
+        }
+
+        godot::UtilityFunctions::print(
+            "ISyncable::set_parent net_id=", net_id,
+            " -> parent_net_id=", parent_net_id);
+    }
+
+    uint32_t ISyncable::get_parent_net_id() const {
+        auto* self_node = const_cast<ISyncable*>(this)->get_sync_node();
+        if (!self_node || !self_node->is_inside_tree()) return 0;
+        auto* syncable = dynamic_cast<const ISyncable*>(self_node->get_parent());
+        return syncable ? syncable->get_net_id() : 0;
+    }
+    #endif
 }

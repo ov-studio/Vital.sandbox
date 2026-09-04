@@ -147,6 +147,24 @@ namespace Vital::Engine {
             // Helpers //
             void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
+
+            // Bridges this mixin interface to the concrete Node3D each synced
+            // type is layered onto — Model IS-A Node3D directly; Physics_Body<Base>
+            // is layered onto a Base that IS-A Node3D (RigidBody3D, StaticBody3D,
+            // CharacterBody3D, ...). set_parent()/apply_parent() below need to
+            // touch the actual scene graph (reparent, is_inside_tree, get_parent)
+            // without knowing the concrete type, hence this hook. Every subclass
+            // implements it as a trivial `return this;`.
+            virtual godot::Node3D* get_sync_node() = 0;
+
+            #if !defined(VSDK_Client)
+            // Actual reparent + sync-baseline-reset + _reparent_entity broadcast,
+            // factored out of set_parent() so it can be handed to
+            // Core::when_parent_ready() as a plain callback and only ever run
+            // once both this entity and the requested parent are confirmed to
+            // be inside the scene tree. `parent_node` is nullable (detach).
+            void apply_parent(godot::Node* parent_node);
+            #endif
         public:
             // Misc //
             static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset) {
@@ -172,5 +190,22 @@ namespace Vital::Engine {
             virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) = 0;
             virtual void on_sync_process(double delta) = 0;
             virtual void reset_sync_state();
+
+            #if !defined(VSDK_Client)
+            // set_parent(parent_node) — reparent this server-authoritative synced
+            //   entity under another synced entity (Model, Physics_Body, ...) on
+            //   the server scene tree and broadcast _reparent_entity to all
+            //   current clients. Pass nullptr to detach back to Core root
+            //   (sync_parent_net_id == 0). ONLY call from the server VM; the API
+            //   layer enforces this.
+            //   Shared across every ISyncable type — Model, Physics_Body, and
+            //   anything added later — so none of them have to reimplement this
+            //   (or, worse, fall back to a raw, un-synced reparent() that never
+            //   tells clients).
+            // get_parent_net_id() — returns the net_id of the current sync
+            //   parent, or 0 when parented directly to Core.
+            void     set_parent(godot::Node3D* parent_node);
+            uint32_t get_parent_net_id() const;
+            #endif
     };
 }

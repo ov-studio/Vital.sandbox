@@ -101,6 +101,7 @@ namespace Vital::Engine {
             }
 
             void destroy_sync() override { Base::queue_free(); }
+            godot::Node3D* get_sync_node() override { return this; }
 
             void reset_sync_state() override {
                 ISyncable::reset_sync_state();

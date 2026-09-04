@@ -595,81 +595,11 @@ namespace Vital::Engine {
         #endif
     }
 
+    // set_parent() / apply_parent() / get_parent_net_id() now live on
+    // ISyncable (see syncable.cpp) — Model has no override here, it just
+    // inherits the shared implementation.
+
     #if !defined(VSDK_Client)
-    void Model::set_parent(godot::Node3D* parent_node) {
-        auto core = Engine::Core::get_singleton();
-        if (!core) return;
-
-        // A freshly-created Model queues its own add_child()/_spawn_entity RPC
-        // via core->enqueue() (see Model::create) instead of doing it inline —
-        // adding to the tree during the originating Lua C call can re-enter
-        // Lua via deferred signals and corrupt engine state. That means a
-        // script that calls set_parent() in the same tick as create() used
-        // to race it: the local reparent was silently skipped (node not in
-        // tree yet), while the _reparent_entity RPC still went out
-        // immediately — arriving at clients BEFORE _spawn_entity did, so
-        // they dropped it and later spawned the model unparented.
-        //
-        // Core::when_parent_ready() is the shared fix for this (also used by
-        // the generic Node_3D::set_parent Lua binding for every non-Model
-        // type): it only invokes apply_parent() once both this model and the
-        // requested parent are confirmed to be inside the tree, safely
-        // retrying via ObjectID if either was only just created this tick.
-        core->when_parent_ready(this, parent_node,
-            [](godot::Node3D* self_node, godot::Node* parent) {
-                static_cast<Model*>(self_node)->apply_parent(parent);
-            });
-    }
-
-    void Model::apply_parent(godot::Node* parent_node) {
-        auto core = Engine::Core::get_singleton();
-        if (!core) return;
-
-        uint32_t parent_net_id = 0;
-        godot::Node* target    = core;
-
-        if (parent_node && parent_node != target) {
-            if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
-                parent_net_id = syncable->get_net_id();
-                target = parent_node;
-            }
-            // If the node is not an ISyncable we refuse: caller (API layer) has
-            // already rejected client-only parents before reaching here.
-        }
-
-        if (get_parent() != target) {
-            reparent(target, true);  // keep_global_transform = true
-        }
-
-        // Switch sync space to local (or back to global when detaching).
-        // Re-seed delta baselines from the new coordinate space so the very next
-        // encode_delta produces a clean full packet rather than a stale diff.
-        // Wake the entity so at least one packet goes out to update receivers.
-        sync_parent_net_id = parent_net_id;
-        sync_last_pos      = get_sync_position();  // now returns local if parented
-        sync_last_rot      = get_sync_rotation();
-        sync_last_vel      = godot::Vector3();
-        sync_sleeping      = false;
-
-        // Broadcast so all current clients reparent their remote copy and
-        // switch their own sync_parent_net_id via _reparent_entity.
-        auto* net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) {
-            net_node->rpc("_reparent_entity", (int)net_id, (int)parent_net_id);
-        }
-
-        godot::UtilityFunctions::print(
-            "Model::set_parent net_id=", net_id,
-            " -> parent_net_id=", parent_net_id);
-    }
-
-
-    uint32_t Model::get_parent_net_id() const {
-        if (!is_inside_tree()) return 0;
-        auto* syncable = dynamic_cast<const ISyncable*>(get_parent());
-        return syncable ? syncable->get_net_id() : 0;
-    }
-
     void Model::set_syncer(int peer_id) {
         sync_authority = (peer_id <= 1) ? 1 : peer_id;
         sync_sleeping  = false;

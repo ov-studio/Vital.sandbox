@@ -63,15 +63,6 @@ namespace Vital::Engine {
 
             inline static Models cache_loaded;
 
-            #if !defined(VSDK_Client)
-            // Actual reparent + sync-baseline-reset + _reparent_entity broadcast
-            // logic, factored out of set_parent() so it can be handed to
-            // Core::when_parent_ready() as a plain callback and only ever run
-            // once both this model and the requested parent are confirmed to
-            // be inside the scene tree. `parent_node` is nullable (detach).
-            void apply_parent(godot::Node* parent_node);
-            #endif
-
 
             // Helpers //
             template<typename T>
@@ -171,6 +162,7 @@ namespace Vital::Engine {
             void           apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override;
             void           on_sync_process(double delta) override;
             void           destroy_sync()       override { this->queue_free(); }
+            godot::Node3D* get_sync_node()       override { return this; }
 
             // Called by Engine::Network::_reparent_entity (client) and
             // Model::set_parent (server) to switch the sync space for this entity.
@@ -205,18 +197,11 @@ namespace Vital::Engine {
             // set_syncer(0 or 1) — revert to server authority.
             // Server-side only. Broadcasts _set_authority to all clients so they
             // enable/disable interpolation correctly. Called automatically on disconnect.
+            // set_parent()/get_parent_net_id() are inherited as-is from
+            // ISyncable — see syncable.h. Every synced type shares the same
+            // networked-reparent behaviour rather than each reimplementing it.
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id);
-
-            // set_parent(parent_node) — reparent this server model under another
-            //   server-authoritative ISyncable (Model or physics body) on the server
-            //   scene tree and broadcast _reparent_entity to all current clients.
-            //   Pass nullptr to detach back to Core root (parent_net_id == 0).
-            //   ONLY call from the server VM; the API layer enforces this.
-            // get_parent_net_id() — returns the net_id of the current sync parent,
-            //   or 0 when parented directly to Core.
-            void     set_parent(godot::Node3D* parent_node);
-            uint32_t get_parent_net_id() const;
             #endif
 
             bool set_component_visible(const std::string& component, bool state);
