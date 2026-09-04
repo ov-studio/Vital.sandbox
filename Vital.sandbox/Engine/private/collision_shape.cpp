@@ -63,14 +63,7 @@ namespace Vital::Engine {
         refresh_debug_mesh();
         #endif
     }
-
-    bool Collision_Shape::is_replicated() const {
-        auto* parent = get_parent();
-        if (!parent) return false;
-        auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-        return syncable && syncable -> get_net_id() > 0;
-    }
-
+    
     #if defined(VSDK_Client)
     void Collision_Shape::set_debug_visible(bool state) {
         if (state) {
