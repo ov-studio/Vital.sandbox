@@ -28,6 +28,7 @@ namespace Vital::Engine {
         private:
             Webview* webview = nullptr;
             godot::ColorRect* blackcover = nullptr;
+            std::atomic<bool> webview_ready { false };
 
 
             // Instantiators //
@@ -38,6 +39,7 @@ namespace Vital::Engine {
 
 
             // Managers //
+            bool is_ready();
             bool is_visible();
             void ready();
             void show();
