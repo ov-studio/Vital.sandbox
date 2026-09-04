@@ -242,9 +242,8 @@ namespace Vital::Sandbox::API {
             // Wire the Collision_Shape spawn callback.
             // Fired right after Network::_sync_shape() creates a new Collision_Shape
             // node on a remote-synced physics body (client only). Hydrates a
-            // Lua-facing Instance for it — mirrors the physics-body spawn hydration
-            // above — so entity:created fires and physics.collision_shape.set_debug_all
-            // can find it like any locally-created shape.
+            // Lua-facing Instance for it so entity:created fires for it like
+            // any locally-created shape.
             Vital::Engine::Collision_Shape::on_spawned_callback = [vm](
                 Vital::Engine::Collision_Shape* node)
             {
@@ -256,7 +255,6 @@ namespace Vital::Sandbox::API {
                 auto instance = Collision_Shape::Instance::init(vm, true);
                 instance->body = node;
                 instance->store(true);
-                if (Collision_Shape::default_debug_enabled) instance->set_debug_visible(true);
             };
 
             // Wire the Collision_Shape destroy callback.

@@ -252,6 +252,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            #if defined(VSDK_Client)
             // Global toggle: shows/hides wireframes on every collision shape that currently exists,
             // and sets the default for any collision shape created afterward. //
             API::bind(vm, base_scope, "set_debug_all", [](auto vm, auto& id) -> int {
@@ -260,12 +261,10 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(1);
                 default_debug_enabled = state;
-                #if defined(VSDK_Client)
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto& [key, instance] : registry.buffer) {
                     if (Instance::find_unlocked(instance)) instance -> set_debug_visible(state);
                 }
-                #endif
                 vm -> push_value(true);
                 return 1;
             });
@@ -274,6 +273,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(default_debug_enabled);
                 return 1;
             });
+            #endif
         }
 
         static void methods(Machine* vm) {
@@ -300,6 +300,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            #if defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, "is_debug_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> is_debug_visible());
                 return 1;
@@ -314,6 +315,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+            #endif
 
             vm_module::bind_method<Instance>(vm, "set_shape_box", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)", true)

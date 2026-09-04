@@ -46,7 +46,6 @@ namespace Vital::Tool {
                     ryml::set_callbacks(prev);
                 }
             };
-
         public:
             YAML() = default;
 
