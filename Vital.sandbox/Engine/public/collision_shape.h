@@ -42,16 +42,28 @@ namespace Vital::Engine {
             // shapes, and can't race against Lua Instance hydration.
             inline static std::unordered_set<Collision_Shape*> live_instances;
             inline static std::mutex live_instances_mutex;
-            static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape);
+
+            static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
             #endif
         public:
             inline static std::function<void(Collision_Shape*)> on_spawned_callback;
             inline static std::function<void(Collision_Shape*)> on_destroyed_callback;
 
-            
             // Managers //
             static Collision_Shape* create(godot::Node3D* owner);
             void destroy();
+
+            // True if this shape's owning body is a synced (server-authoritative,
+            // network-replicated) entity — i.e. it arrived via Network::apply_shape
+            // rather than being made purely client-side by Lua. Used to color the
+            // debug wireframe differently so it's obvious at a glance which shapes
+            // are server-driven vs. local-only.
+            bool is_replicated() const {
+                auto* parent = get_parent();
+                if (!parent) return false;
+                auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
+                return syncable && syncable -> get_net_id() > 0;
+            }
 
             // Applies a shape via Godot's native set_shape() AND (client-only)
             // keeps current_shape + the debug wireframe in sync. Every code path
@@ -65,6 +77,13 @@ namespace Vital::Engine {
             void set_debug_visible(bool state);
             bool is_debug_visible() const { return debug_mesh && debug_mesh -> is_visible(); }
             void refresh_debug_mesh();
+
+            // Debug wireframe colors — green for shapes made locally on this
+            // client, orange for shapes that arrived via network replication
+            // (server-authoritative bodies). Tweak these if you want different
+            // colors.
+            inline static godot::Color local_debug_color      = godot::Color(0, 1, 0);
+            inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
 
             inline static bool default_debug_enabled = false;
 

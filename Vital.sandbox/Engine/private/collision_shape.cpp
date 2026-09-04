@@ -79,7 +79,8 @@ namespace Vital::Engine {
 
     void Collision_Shape::refresh_debug_mesh() {
         if (!debug_mesh || !current_shape.is_valid()) return;
-        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape));
+        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
+        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape, color));
     }
 
     // Wireframe geometry builders — one closed ring/line-set per shape type,
@@ -133,7 +134,7 @@ namespace Vital::Engine {
         }
     }
 
-    godot::Ref<godot::ArrayMesh> Collision_Shape::build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape) {
+    godot::Ref<godot::ArrayMesh> Collision_Shape::build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color) {
         godot::PackedVector3Array points;
 
         if (auto box = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
@@ -183,7 +184,7 @@ namespace Vital::Engine {
             godot::Ref<godot::StandardMaterial3D> material;
             material.instantiate();
             material -> set_shading_mode(godot::StandardMaterial3D::SHADING_MODE_UNSHADED);
-            material -> set_albedo(godot::Color(0, 1, 0));
+            material -> set_albedo(color);
             mesh -> surface_set_material(0, material);
         }
         return mesh;
