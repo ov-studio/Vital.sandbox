@@ -58,12 +58,14 @@ namespace Vital::Engine {
             // rather than being made purely client-side by Lua. Used to color the
             // debug wireframe differently so it's obvious at a glance which shapes
             // are server-driven vs. local-only.
-            bool is_replicated() const {
-                auto* parent = get_parent();
-                if (!parent) return false;
-                auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable && syncable -> get_net_id() > 0;
-            }
+            // NOTE: implemented in collision_shape.cpp, not inline here — this
+            // header is included from several TUs with different include orders
+            // (Vital/engine.h, Manager/private/network.cpp, Sandbox/runtime/apis.h,
+            // ...) and inlining a dynamic_cast<ISyncable*> here meant every one of
+            // them had to already have ISyncable fully defined at this exact point,
+            // which wasn't reliably true and caused a C2061 on some TUs. Keeping
+            // ISyncable's #include local to the .cpp avoids that entirely.
+            bool is_replicated() const;
 
             // Applies a shape via Godot's native set_shape() AND (client-only)
             // keeps current_shape + the debug wireframe in sync. Every code path
