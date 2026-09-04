@@ -60,9 +60,13 @@ namespace Vital::Manager {
     }
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
+        Tool::print("warn", "dada 3");
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
+            Tool::print("warn", "dada 4");
             if (event_key -> is_echo()) return;
+            Tool::print("warn", "dada 5");
             if (event_key -> is_pressed()) {
+                Tool::print("warn", "dada 6");
                 bool handled = false;
                 auto keycode = event_key -> get_keycode();
                 auto resolve = [](const std::string& config, const std::string& key) {
@@ -70,6 +74,8 @@ namespace Vital::Manager {
                     return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
                 };
 
+                godot::UtilityFunctions::print("INPUT 7?", keycode);
+                Tool::print("warn", "dada 7", keycode);
                 if (keycode == resolve("config/console", "bind")) {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();

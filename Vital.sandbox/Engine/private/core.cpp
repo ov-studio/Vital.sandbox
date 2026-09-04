@@ -31,10 +31,12 @@
 namespace Vital::Engine {
     // Hooks //
     void Core::_ready() {
+        godot::UtilityFunctions::print("CALL 1?");
         singleton = singleton ? singleton : this;
         set_process(false);
         if (!Tool::is_runtime()) return;
 
+        godot::UtilityFunctions::print("CALL 2?");
         kit_abort.store(false);
         Tool::Event::emit("core:preready");
         Tool::print("sbox", "Core: bootstrapping Vital.kit...");
@@ -42,6 +44,7 @@ namespace Vital::Engine {
             Manager::Kit::ensure();
             if (!kit_abort.load()) {
                 enqueue([this]() {
+                    godot::UtilityFunctions::print("CALL 3?");
                     Tool::print("sbox", "Core: Vital.kit ready");
                     #if defined(VSDK_Client)
                     http_server.set_bind_address("127.0.0.1");
@@ -50,10 +53,13 @@ namespace Vital::Engine {
                     http_server.add_mount("/resources", Tool::get_directory("resources"));
                     http_server.start(true);
                     #endif
+                    godot::UtilityFunctions::print("CALL 4?");
+                    Tool::print("warn", "!!!!!!!!!!!! ATTACHED !!!!!!!!!!!!");
                     kit_ready.store(true);
                     Tool::Event::emit("kit:ready");
                     Tool::Event::emit("core:ready");
                     set_process(true);
+                    set_process_unhandled_input(true);
                 });
                 call_deferred("drain");
             }
@@ -85,7 +91,13 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
-        if (!is_ready()) return;
+        godot::UtilityFunctions::print("INPUT 1?");
+        if (!is_ready()) {
+            Tool::print("warn", "dada 1");
+            return;
+        }
+        godot::UtilityFunctions::print("INPUT 2?");
+        Tool::print("warn", "dada 2");
         Manager::Sandbox::get_singleton() -> input(event);
     }
     #endif

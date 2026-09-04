@@ -37,6 +37,7 @@ namespace Vital::Engine {
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
+        webview -> set("focused_when_created", false);
         Engine::Canvas::get_singleton() -> add_child(webview);
         webview -> connect("page_load_started", godot::Callable(this, "on_preload"));
         webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
