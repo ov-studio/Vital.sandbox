@@ -172,15 +172,14 @@ namespace Vital::Sandbox::API {
             //   • Server side: Model is a server entity; parent_methods delegates to
             //     Engine::Model::set_parent() which broadcasts _reparent_entity.
             //     Rule A (server→server only) is enforced inside parent_methods.
-            //   • Client side: server-owned Model instances are remote; client Lua
-            //     must NOT call set_parent on them (Rule C / Rule A's complement).
-            //     We do NOT bind parent_methods for Models on the client so any
-            //     attempt naturally produces a nil-method error.  Client-local
-            //     entities (camera, audio, …) have their own separate parent_methods
-            //     binding in their own API headers (camera.h etc.) where Rule B applies.
-            #if !defined(VSDK_Client)
+            //   • Client side: bound too, so a purely client-created model (created
+            //     via this API's "create" on the client, which never gets a net_id)
+            //     can attach to anything, including a remote server entity — Rule B.
+            //     A client-side REMOTE MIRROR of a server model still has a non-zero
+            //     net_id (see Network::_spawn_entity), so parent_methods' own
+            //     self_is_server check correctly tells the two apart and rejects any
+            //     attempt to reparent a server entity from the client — Rule C.
             API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
-            #endif
 
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)

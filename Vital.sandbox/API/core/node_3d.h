@@ -317,15 +317,49 @@ namespace Vital::Sandbox::API {
                 auto* core = Vital::Engine::Core::get_singleton();
 
                 // Determine whether self is a server entity (ISyncable with net_id > 0).
+                // NOTE: on the client this is also true for a REMOTE MIRROR of a server
+                // entity — Network::_spawn_entity assigns the server's net_id to the
+                // client-side copy too. A purely client-created model (API::Model::create()
+                // called from client Lua) never gets a net_id, so this still correctly
+                // tells the two apart on the client build.
                 bool self_is_server = false;
                 {
                     auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
                     self_is_server  = (syncable && syncable->get_net_id() > 0);
                 }
 
+                #if defined(VSDK_Client)
+                // Rule C: client Lua must NEVER reparent a server entity — attach or
+                // detach. Engine::Model::set_parent() (the function that actually does
+                // this safely: resets sync_parent_net_id, re-seeds the sync baseline,
+                // and broadcasts _reparent_entity to every peer) doesn't even exist in
+                // a client build, so this has to be rejected here, up front, before any
+                // of the server-only logic below.
+                if (self_is_server) {
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
+                        "set_parent: cannot be called on a server entity from the client");
+                }
+                #endif
+
                 if (vm -> is_nil(2)) {
-                    // Detach to Core root — always allowed.
-                    if (node -> get_parent() != core) node -> reparent(core, true);
+                    // Detach to Core root.
+                    #if !defined(VSDK_Client)
+                    if (self_is_server) {
+                        // Must go through Engine::Model::set_parent() (same as the
+                        // attach path below) so sync_parent_net_id resets to 0,
+                        // sync_last_pos/rot re-seed in global space, and clients
+                        // receive the _reparent_entity(net_id, 0) broadcast.
+                        // A raw local reparent() here would silently desync every
+                        // client, which would still think this entity is parented.
+                        auto* model = dynamic_cast<Vital::Engine::Model*>(node);
+                        if (model) model -> set_parent(nullptr);
+                        else if (node -> get_parent() != core) node -> reparent(core, true);
+                    } else
+                    #endif
+                    {
+                        // Rule B: client entity — purely local, no RPC needed.
+                        if (node -> get_parent() != core) node -> reparent(core, true);
+                    }
                     vm -> push_value(true);
                     return 1;
                 }
@@ -346,9 +380,10 @@ namespace Vital::Sandbox::API {
                     parent_is_server = (syncable && syncable->get_net_id() > 0);
                 }
 
+                #if !defined(VSDK_Client)
                 if (self_is_server) {
                     // Rule A: server entity → parent MUST also be a server entity.
-                    // (Client code cannot reach this branch — binding not exposed.)
+                    // (Client code cannot reach this branch — rejected above.)
                     if (!parent_is_server) {
                         throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
                             "set_parent: server entity cannot be parented to a client-local entity");
@@ -364,9 +399,12 @@ namespace Vital::Sandbox::API {
                         if (node -> get_parent() != parent_node)
                             node -> reparent(parent_node, true);
                     }
-                } else {
-                    // Rule B: client entity — parent may be anything (server or client).
-                    // This is purely local; no RPC.
+                } else
+                #endif
+                {
+                    // Rule B: client entity — parent may be anything (server or client,
+                    // e.g. a camera or a client-created model attaching to a remote
+                    // server entity). This is purely local; no RPC.
                     node -> reparent(parent_node, true);
                 }
 
