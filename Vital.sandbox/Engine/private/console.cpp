@@ -593,14 +593,6 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         godot::UtilityFunctions::print("CONSOLE READY?");
         webview_ready.store(true);
-        {
-            std::vector<std::pair<std::string, std::string>> queue;
-            {
-                std::lock_guard<std::mutex> lock(pre_ready_mutex);
-                queue.swap(pre_ready_queue);
-            }
-            for (auto& [m, msg] : queue) print(m, msg);
-        }
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -637,6 +629,14 @@ namespace Vital::Engine {
             document.AddMember("types", types, alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
+            {
+                std::vector<std::pair<std::string, std::string>> queue;
+                {
+                    std::lock_guard<std::mutex> lock(pre_ready_mutex);
+                    queue.swap(pre_ready_queue);
+                }
+                for (auto& [m, msg] : queue) print(m, msg);
+            }
         }
         #endif
     }
