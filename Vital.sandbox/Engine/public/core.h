@@ -62,6 +62,7 @@ namespace Vital::Engine {
             // Managers //
             bool is_ready();
             #if defined(VSDK_Client)
+            bool is_sandbox_ui_ready();
             bool is_sandbox_ui_visible();
             #endif
             void execute(std::function<void()> exec);

@@ -51,11 +51,15 @@ namespace Vital::Manager {
     }
 
     void Sandbox::process(double delta) {
+        #if defined(VSDK_Client)
+        if (!Engine::Core::get_singleton() -> is_sandbox_ui_ready()) return;
+        #endif
         signal("sandbox:process", Tool::StackValue(delta));
     }
 
     #if defined(VSDK_Client)
     void Sandbox::draw(Engine::Canvas* canvas) {
+        if (!Engine::Core::get_singleton() -> is_sandbox_ui_ready()) return;
         signal("sandbox:draw");
     }
 

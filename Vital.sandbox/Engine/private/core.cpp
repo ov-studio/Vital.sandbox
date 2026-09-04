@@ -113,6 +113,14 @@ namespace Vital::Engine {
     }
 
     #if defined(VSDK_Client)
+    bool Core::is_sandbox_ui_ready() {
+        static const std::vector<std::function<bool()>> checks = {
+            [] { return Console::has_singleton() && Console::get_singleton() -> is_ready(); },
+            [] { return Splash::has_singleton() && Splash::get_singleton() -> is_ready(); }
+        };
+        return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
+    }
+
     bool Core::is_sandbox_ui_visible() {
         static const std::vector<std::function<bool()>> checks = {
             [] { return Console::has_singleton() && Console::get_singleton() -> is_visible(); },
