@@ -298,23 +298,26 @@ namespace Vital::Engine {
             }
             object->set_model_name(name);
 
-            // Defer add_child to next frame — adding to the scene tree during a
-            // Lua C call can trigger deferred signals that re-enter Lua and corrupt
-            // get_environment_id(). Poll() will pick up the registration lazily.
+            // Synchronous add_child — matches physics body behaviour so that
+            // set_parent / set_global_position called in the same Lua tick see
+            // the node already inside the scene tree.
+            // _ready() and _notification() touch no Lua state, so there is no
+            // re-entrancy risk from entering the tree here.
+            object->add_child(instance);
+            Core::get_singleton()->add_child(object);
+
+            godot::UtilityFunctions::print("Model::create -> net_id=",
+                object->net_id, " name=", Tool::to_godot_string(name));
+
+            // Defer only the network side-effects (RPC + sync registration)
+            // to the next frame so the _spawn_entity RPC goes out after _ready()
+            // has run and the node is fully initialised on the server.
             uint32_t captured_net_id = object->net_id;
             godot::String captured_name = Tool::to_godot_string(name);
             int captured_authority = authority_peer;
 
-            Core::get_singleton()->enqueue([object, instance, captured_net_id,
+            Core::get_singleton()->enqueue([object, captured_net_id,
                                             captured_name, captured_authority]() {
-                object->add_child(instance);
-                Core::get_singleton()->add_child(object);
-
-                godot::UtilityFunctions::print("Model::create (deferred) -> net_id=",
-                    captured_net_id, " name=", captured_name);
-
-                // Use enqueue_model_registration so poll() picks it up via the
-                // pending queue rather than the O(N) child scan.
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
 
                 auto net_node = Manager::Network::get_singleton()->get_node();
