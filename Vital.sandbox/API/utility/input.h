@@ -21,7 +21,6 @@
 // Vital: API: Input //
 ////////////////////////
 
-// TODO: improve
 namespace Vital::Sandbox::API {
     struct Input : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "input"};
@@ -260,10 +259,9 @@ namespace Vital::Sandbox::API {
         };
 
         inline static const std::vector<std::pair<std::string, int>> cursor_mode_registry = {
-            { "VISIBLE",  godot::Input::MOUSE_MODE_VISIBLE   },
-            { "HIDDEN",   godot::Input::MOUSE_MODE_HIDDEN    },
-            { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED  },
-            { "CONFINED", godot::Input::MOUSE_MODE_CONFINED  }
+            { "VISIBLE",  godot::Input::MOUSE_MODE_CONFINED },
+            { "HIDDEN",   godot::Input::MOUSE_MODE_HIDDEN   },
+            { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED }
         };
 
         struct BindHandler {
@@ -281,13 +279,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<std::string, bool> visible_votes;
         inline static godot::Input::MouseMode last_non_visible_mode = godot::Input::MOUSE_MODE_CONFINED;
         inline static int sandbox_ui_visible_count = 0;
-        // Tracks whether any resource set a non-visible mode while sandbox UI was up.
-        // Flushed (without clobbering last_non_visible_mode) when UI count drops to 0.
         inline static bool pending_non_visible_apply = false;
 
         static void apply_cursor_mode() {
             if (sandbox_ui_visible_count > 0) {
-                // Sandbox UI is open: force VISIBLE, don't touch last_non_visible_mode.
                 godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_VISIBLE);
                 return;
             }
@@ -296,12 +291,9 @@ namespace Vital::Sandbox::API {
                 if (wants_visible) ++visible_resource_count;
             }
             if (visible_resource_count > 0) {
-                // At least one resource wants cursor visible → CONFINED (not VISIBLE,
-                // which is reserved for sandbox UI panels like the console/splash).
                 godot::Input::get_singleton() -> set_mouse_mode(godot::Input::MOUSE_MODE_CONFINED);
                 return;
             }
-            // No sandbox UI, no visible-voting resource → honour last non-visible mode.
             pending_non_visible_apply = false;
             godot::Input::get_singleton() -> set_mouse_mode(last_non_visible_mode);
         }
@@ -313,10 +305,7 @@ namespace Vital::Sandbox::API {
 
         static void pop_sandbox_ui_visible() {
             if (sandbox_ui_visible_count > 0) --sandbox_ui_visible_count;
-            // Flush any deferred non-visible mode that a resource set while the UI was up.
-            if (sandbox_ui_visible_count == 0 && pending_non_visible_apply) {
-                pending_non_visible_apply = false;
-            }
+            if (sandbox_ui_visible_count == 0 && pending_non_visible_apply) pending_non_visible_apply = false;
             apply_cursor_mode();
         }
 
@@ -485,16 +474,12 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_cursor_mode", [](auto vm, auto& id) -> int {
-                // Return the actual Godot mouse mode.  CONFINED is now a first-class
-                // value in the Lua enum so we no longer need to paper over it.
-                auto actual = godot::Input::get_singleton() -> get_mouse_mode();
-                vm -> push_value(static_cast<int>(actual));
+                vm -> push_value(static_cast<int>(godot::Input::get_singleton() -> get_mouse_mode()));
                 return 1;
             });
 
             API::bind(vm, base_scope, "get_cursor_position", [](auto vm, auto& id) -> int {
-                auto position = Vital::Engine::Core::get_scene_root() -> get_mouse_position();
-                vm -> push_value(position);
+                vm -> push_value(Vital::Engine::Core::get_scene_root() -> get_mouse_position());
                 return 1;
             });
             
@@ -509,25 +494,14 @@ namespace Vital::Sandbox::API {
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
                 auto env = vm -> get_environment_id();
-                if (mode == godot::Input::MOUSE_MODE_VISIBLE || mode == godot::Input::MOUSE_MODE_CONFINED) {
-                    // Resource wants cursor visible/confined — record the vote.
-                    // VISIBLE and CONFINED from resources both map to the "wants visible" bucket;
-                    // apply_cursor_mode() will use CONFINED so true VISIBLE stays reserved for
-                    // sandbox UI panels (console, splash).
-                    visible_votes[env] = true;
-                }
+                if (mode == godot::Input::MOUSE_MODE_CONFINED) visible_votes[env] = true;
                 else {
                     visible_votes[env] = false;
                     if (sandbox_ui_visible_count > 0) {
-                        // Sandbox UI is currently open: don't apply CAPTURED/HIDDEN immediately
-                        // (doing so during an input callback would swallow the next key event).
-                        // Record the desired mode and let pop_sandbox_ui_visible() flush it.
                         last_non_visible_mode = mode;
                         pending_non_visible_apply = true;
                     }
-                    else {
-                        last_non_visible_mode = mode;
-                    }
+                    else last_non_visible_mode = mode;
                 }
                 apply_cursor_mode();
                 vm -> push_value(true);
@@ -646,9 +620,6 @@ namespace Vital::Sandbox::API {
             release_env(mouse_binds, vm, env);
             release_env(command_list, vm, env);
             visible_votes.erase(env);
-            // After cleaning an environment, fall back to CONFINED rather than
-            // keeping whatever CAPTURED/HIDDEN that resource last requested.
-            // This ensures stopping a resource never leaves the cursor stuck.
             if (visible_votes.empty()) {
                 last_non_visible_mode = godot::Input::MOUSE_MODE_CONFINED;
                 pending_non_visible_apply = false;
