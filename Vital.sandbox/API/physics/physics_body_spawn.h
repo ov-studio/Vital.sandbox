@@ -244,9 +244,7 @@ namespace Vital::Sandbox::API {
             // node on a remote-synced physics body (client only). Hydrates a
             // Lua-facing Instance for it so entity:created fires for it like
             // any locally-created shape.
-            Vital::Engine::Collision_Shape::on_spawned_callback = [vm](
-                Vital::Engine::Collision_Shape* node)
-            {
+            Vital::Engine::Collision_Shape::on_spawned_callback = [vm](Vital::Engine::Collision_Shape* node) {
                 {
                     std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
                     for (auto& [id, inst] : Collision_Shape::registry.buffer)
@@ -254,6 +252,7 @@ namespace Vital::Sandbox::API {
                 }
                 auto instance = Collision_Shape::Instance::init(vm, true);
                 instance->body = node;
+                if (Collision_Shape::default_debug_enabled) instance->set_debug_visible(true);
                 instance->store(true);
             };
 
@@ -262,12 +261,9 @@ namespace Vital::Sandbox::API {
             // explicit shape:destroy() and the implicit child-free when the parent
             // body is queue_free()'d by Godot. Nulls instance->body so no Lua call
             // can touch the freed node, then releases the Instance.
-            Vital::Engine::Collision_Shape::on_destroyed_callback = [](
-                Vital::Engine::Collision_Shape* node)
-            {
+            Vital::Engine::Collision_Shape::on_destroyed_callback = [](Vital::Engine::Collision_Shape* node) {
                 std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
-                for (auto it = Collision_Shape::registry.buffer.begin();
-                          it != Collision_Shape::registry.buffer.end();) {
+                for (auto it = Collision_Shape::registry.buffer.begin(); it != Collision_Shape::registry.buffer.end();) {
                     auto& instance = it->second;
                     if (instance->body != node) { ++it; continue; }
                     ++it;
