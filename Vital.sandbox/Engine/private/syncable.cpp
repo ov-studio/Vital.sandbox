@@ -271,20 +271,6 @@ namespace Vital::Engine {
         godot::Node3D* self_node = get_sync_node();
         if (!self_node) return;
 
-        // A freshly-created entity may still have its own add_child()/
-        // _spawn_entity RPC queued (Model::create defers both — see
-        // model.cpp — to avoid re-entering Lua mid-call). Calling set_parent
-        // in the same tick used to race that: the local reparent silently
-        // no-op'd (node not in the tree yet) while the _reparent_entity RPC
-        // still went out immediately, reaching clients BEFORE _spawn_entity
-        // did, so they dropped it and the entity ended up spawned unparented
-        // with no further hint it should have followed anything.
-        //
-        // Core::when_parent_ready() only invokes apply_parent() once both
-        // this entity and the requested parent are confirmed to be inside
-        // the scene tree, safely retrying via ObjectID if either was only
-        // just created this same tick. Shared by every ISyncable type and by
-        // the generic Node_3D::set_parent Lua binding for non-syncable nodes.
         core->when_parent_ready(self_node, parent_node,
             [](godot::Node3D* self_n, godot::Node* parent) {
                 if (auto* syncable = dynamic_cast<ISyncable*>(self_n))
@@ -307,8 +293,6 @@ namespace Vital::Engine {
                 parent_net_id = syncable->get_net_id();
                 target = parent_node;
             }
-            // If the node is not an ISyncable we refuse: caller (API layer) has
-            // already rejected client-only / non-synced parents before this.
         }
 
         if (self_node->get_parent() != target) {
@@ -318,23 +302,29 @@ namespace Vital::Engine {
         // Switch sync space to local (or back to global when detaching).
         // Re-seed delta baselines from the new coordinate space so the very next
         // encode_delta produces a clean full packet rather than a stale diff.
-        // Wake the entity so at least one packet goes out to update receivers.
         sync_parent_net_id = parent_net_id;
         sync_last_pos      = get_sync_position();  // now returns local if parented
         sync_last_rot      = get_sync_rotation();
         sync_last_vel      = godot::Vector3();
         sync_sleeping      = false;
 
-        // Broadcast so all current clients reparent their remote copy and
-        // switch their own sync_parent_net_id via _reparent_entity.
-        auto* net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) {
-            net_node->rpc("_reparent_entity", (int)net_id, (int)parent_net_id);
-        }
-
-        godot::UtilityFunctions::print(
-            "ISyncable::set_parent net_id=", net_id,
-            " -> parent_net_id=", parent_net_id);
+        // Defer the _reparent_entity RPC to the next enqueue flush so it always
+        // arrives on clients AFTER the _spawn_entity RPCs for both this entity
+        // and its parent — which are themselves enqueued from Model::create /
+        // Physics_Body::setup_create.  Firing it inline here would race those
+        // and the client would silently drop the reparent (find_syncable returns
+        // null because the entity isn't registered yet).
+        uint32_t captured_net_id    = net_id;
+        uint32_t captured_parent_id = parent_net_id;
+        core->enqueue([captured_net_id, captured_parent_id]() {
+            auto* net_node = Manager::Network::get_singleton()->get_node();
+            if (net_node)
+                net_node->rpc("_reparent_entity",
+                    (int)captured_net_id, (int)captured_parent_id);
+            godot::UtilityFunctions::print(
+                "ISyncable::apply_parent net_id=", captured_net_id,
+                " -> parent_net_id=", captured_parent_id);
+        });
     }
 
     uint32_t ISyncable::get_parent_net_id() const {
