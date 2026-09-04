@@ -30,11 +30,6 @@
 #include <godot_cpp/classes/cylinder_shape3d.hpp>
 #include <godot_cpp/classes/world_boundary_shape3d.hpp>
 #include <godot_cpp/classes/separation_ray_shape3d.hpp>
-#if defined(VSDK_Client)
-#include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
-#endif
 
 
 //////////////////////////////////
