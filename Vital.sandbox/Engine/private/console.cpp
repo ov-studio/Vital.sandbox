@@ -317,10 +317,8 @@ namespace Vital::Engine {
                 if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
             });
 
-            godot::UtilityFunctions::print("CONSOLE 1?");
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 Engine::Core::get_singleton() -> enqueue([this]() {
-                    godot::UtilityFunctions::print("CONSOLE 2?", Tool::to_godot_string(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/console/build/index.html")));
                     webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/console/build/index.html"));
                 });
             });
@@ -505,7 +503,6 @@ namespace Vital::Engine {
             stdin_thread.detach();
         #endif
 
-        godot::UtilityFunctions::print("CONSOLE 3?");
         Tool::print_sink = [](const std::string& mode, const std::string& message) {
             Engine::Console::get_singleton() -> print(mode, message);
         };
@@ -591,7 +588,6 @@ namespace Vital::Engine {
 
     void Console::ready() {
         #if defined(VSDK_Client)
-        godot::UtilityFunctions::print("CONSOLE READY?");
         webview_ready.store(true);
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
@@ -609,7 +605,7 @@ namespace Vital::Engine {
         document.AddMember("action", "init", alloc);
         document.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        godot::UtilityFunctions::print("CONSOLE READY 1?");
+
         auto logs = Manager::Kit::fetch_json_node("config/console", "log");
         if (logs && logs -> IsObject()) {
             for (auto it = logs -> MemberBegin(); it != logs -> MemberEnd(); ++it) {
@@ -635,7 +631,7 @@ namespace Vital::Engine {
                     std::lock_guard<std::mutex> lock(pre_ready_mutex);
                     queue.swap(pre_ready_queue);
                 }
-                for (auto& [m, msg] : queue) print(m, msg);
+                for (auto& [mode, message] : queue) print(mode, message);
             }
         }
         #endif
@@ -813,7 +809,6 @@ namespace Vital::Engine {
     // Events //
     #if defined(VSDK_Client)
     void Console::on_message(godot::String message) {
-        godot::UtilityFunctions::print("CONSOLE READY 1?", message);
         rapidjson::Document document;
         document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
