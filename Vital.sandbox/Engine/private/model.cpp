@@ -482,7 +482,6 @@ namespace Vital::Engine {
 
     Model::Models Model::get_loaded_models() { return cache_loaded; }
     std::string   Model::get_model_name()     { return model_name; }
-    godot::Vector3 Model::get_position()      { return is_inside_tree() ? get_global_position() : godot::Vector3(); }
 
     // ISyncable overrides
     bool Model::is_sync_active() const { return const_cast<Model*>(this)->is_inside_tree() && !placeholder; }
@@ -502,7 +501,6 @@ namespace Vital::Engine {
         // so this is consistent in both cases.
         return const_cast<Model*>(this)->get_rotation_degrees();
     }
-    godot::Vector3 Model::get_rotation()      { return get_rotation_degrees(); }
     int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
 
@@ -578,25 +576,7 @@ namespace Vital::Engine {
 
     void Model::set_model_name(const std::string& name) { model_name = name; }
 
-    void Model::set_position(godot::Vector3 position) {
-        #if defined(VSDK_Client)
-        Engine::Core::get_singleton()->enqueue([this, position]() { set_global_position(position); });
-        #else
-        // Server is always on the main thread — apply directly so get_position()
-        // returns the correct value immediately in the same Lua timer tick.
-        if (is_inside_tree()) set_global_position(position);
-        else sync_last_pos = position;
-        #endif
-    }
 
-    void Model::set_rotation(godot::Vector3 rotation) {
-        #if defined(VSDK_Client)
-        Engine::Core::get_singleton()->enqueue([this, rotation]() { set_rotation_degrees(rotation); });
-        #else
-        if (is_inside_tree()) set_rotation_degrees(rotation);
-        else sync_last_rot = rotation;
-        #endif
-    }
 
     // set_parent() / apply_parent() / get_parent_net_id() now live on
     // ISyncable (see syncable.cpp) — Model has no override here, it just

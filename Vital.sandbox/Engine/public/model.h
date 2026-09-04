@@ -173,8 +173,6 @@ namespace Vital::Engine {
             // Getters //
             static Models get_loaded_models();
             std::string get_model_name();
-            godot::Vector3 get_position();
-            godot::Vector3 get_rotation();
             std::vector<std::string> get_components();
             std::vector<std::string> get_materials(const std::string& component);
             std::vector<std::string> get_blendshapes(const std::string& component);
@@ -190,8 +188,6 @@ namespace Vital::Engine {
 
             // Setters //
             void set_model_name(const std::string& name);
-            void set_position(godot::Vector3 position);
-            void set_rotation(godot::Vector3 rotation);
 
             // set_syncer(peer_id) — assign authority to a client (client-auth mode).
             // set_syncer(0 or 1) — revert to server authority.

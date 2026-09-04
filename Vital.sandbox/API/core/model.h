@@ -162,10 +162,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // Spatial getters/setters (position, rotation, visibility) are available
-            // on both sides via Node_3D::methods.  These duplicate the existing
-            // hand-written get_position / set_position etc. — keeping them is fine;
-            // the node_3d versions add global variants and extra helpers.
+            // Spatial getters/setters (position, rotation, scale, visibility, etc.)
+            // are provided by Node_3D::methods — no hand-written duplicates needed.
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
 
             // set_parent / get_parent:
@@ -234,16 +232,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_model_name", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> model -> get_model_name());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_position());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_rotation());
                 return 1;
             });
 
@@ -337,26 +325,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> model -> get_sync_authority());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto position = vm -> get_vector3(2);
-                self -> model -> set_position(position);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(rotation)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto rotation = vm -> get_vector3(2);
-                self -> model -> set_rotation(rotation);
-                vm -> push_value(true);
                 return 1;
             });
 
