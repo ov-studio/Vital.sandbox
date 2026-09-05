@@ -82,11 +82,11 @@ namespace Vital::Engine {
     void Core::_process(double delta) {
         if (!is_ready()) return;
         Manager::Sandbox::get_singleton() -> drain();
-        Manager::Sandbox::get_singleton() -> process(delta);
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!work_queue.empty()) call_deferred("drain");
         }
+        Manager::Sandbox::get_singleton() -> process(delta);
     }
 
     // Runs once per fixed physics tick — the same clock that actually moves
