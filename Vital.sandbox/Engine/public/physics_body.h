@@ -183,9 +183,25 @@ namespace Vital::Engine {
                         uint32_t captured_id = net_id;
                         int captured_auth = authority_peer;
                         godot::String captured_name = godot::String(get_sync_name().c_str());
+                        // Captured by instance id, NOT by raw `this`. This lambda runs
+                        // on a later drain() of Core's deferred queue — if setup_destroy()
+                        // (queue_free()) runs on this same body before that drain happens,
+                        // the raw pointer capture would be dangling by the time we get
+                        // here, and enqueue_syncable_registration() would push a freed
+                        // pointer straight into sync_pending (unregister_syncable's
+                        // sync_pending cleanup can't help — this push happens AFTER
+                        // unregister already ran). ObjectDB::get_instance() is godot-cpp's
+                        // safe "is this object still alive" check: it returns nullptr once
+                        // the object is actually freed, instead of returning a stale
+                        // pointer to freed memory.
+                        godot::ObjectID captured_oid = godot::ObjectID(get_instance_id());
                         Core::get_singleton() -> add_child(this);
-                        Core::get_singleton() -> enqueue([this, captured_id, captured_auth, captured_name]() {
-                            Manager::Network::get_singleton() -> enqueue_syncable_registration(this);
+                        Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_auth, captured_name]() {
+                            godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
+                            if (!obj) return; // destroyed before this deferred registration ran
+                            auto* self = dynamic_cast<Physics_Body<Base>*>(obj);
+                            if (!self) return;
+                            Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
                             if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth);
                         });

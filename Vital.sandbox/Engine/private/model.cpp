@@ -315,9 +315,19 @@ namespace Vital::Engine {
             uint32_t captured_net_id = object->net_id;
             godot::String captured_name = Tool::to_godot_string(name);
             int captured_authority = authority_peer;
+            // Same UAF risk as Physics_Body::setup_create() had: this lambda
+            // runs on a later drain() of Core's work queue, so a raw `object`
+            // capture would be dangling if Model::destroy() runs first.
+            // Capture by ObjectID and re-validate through ObjectDB instead.
+            godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
 
-            Core::get_singleton()->enqueue([object, captured_net_id,
+            Core::get_singleton()->enqueue([captured_oid, captured_net_id,
                                             captured_name, captured_authority]() {
+                godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
+                if (!obj) return; // destroyed before this deferred registration ran
+                auto* object = godot::Object::cast_to<Model>(obj);
+                if (!object) return;
+
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
 
                 auto net_node = Manager::Network::get_singleton()->get_node();
