@@ -212,5 +212,19 @@ namespace Vital::Manager {
             Engine::Network* get_node() const { return node; }
 
             void poll(double delta = 0.0);
+
+            // Fixed-timestep counterpart to poll() — called once per physics
+            // tick from Core::_physics_process. Owns the actual "sample this
+            // peer's authoritative transforms / decide who's moved / encode
+            // + broadcast or relay a sync packet" work, which poll() used to
+            // do from the variable render tick. Splitting it out means every
+            // sample lines up with a real simulation step instead of an
+            // arbitrary render frame — see the .cpp for the full story on why
+            // that mismatch was producing visible jitter/overshoot on
+            // interpolated remote bodies. poll() keeps everything else
+            // (reconnect/handshake, pending-registration flush, buffered
+            // shape/transform/reparent replay) on the render tick, since
+            // those are about responsiveness, not physics timing.
+            void sync_tick(double delta);
     };
 }
