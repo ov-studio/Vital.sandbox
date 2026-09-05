@@ -963,6 +963,12 @@ namespace Vital::Manager {
     //----------//
     //   Poll   //
     //----------//
+    //
+    // Render-tick housekeeping only: reconnect/handshake state, draining the
+    // pending-registration queue, and replaying anything buffered for a
+    // net_id that just registered. Deliberately does NOT sample or send any
+    // transform data any more — that moved to sync_tick(), driven by the
+    // fixed physics tick. See sync_tick() for why.
 
     void Network::poll(double delta) {
         #if defined(VSDK_Client)
@@ -1094,8 +1100,31 @@ namespace Vital::Manager {
             }
             #endif
         }
+    }
 
-        // ── Sync batch — one VSST packet per frame, broadcast to all peers ──────
+
+    //--------------//
+    //  Sync Tick   //
+    //--------------//
+    //
+    // Split out of poll() — see the header comment on sync_tick() for why.
+    // Short version: RigidBody3D/CharacterBody3D transforms only actually
+    // change once per physics step, but poll() used to sample
+    // get_sync_position() once per *rendered* frame. On any machine where
+    // render fps doesn't line up 1:1 with the physics tick (i.e. basically
+    // always), that meant several consecutive samples reading the exact same
+    // stale transform, followed by one sample that jumped a whole physics
+    // step at once — and since the outgoing "velocity" was derived from
+    // (displacement / sync_interval) across THAT uneven sampling, the value
+    // sent over the wire swung between ~0 and a spike instead of tracking
+    // the real, smoothly-changing velocity. The client's jitter buffer and
+    // extrapolation are built to smooth over real network jitter, not a
+    // corrupted source signal — so it faithfully reproduced the corruption
+    // as visible overshoot-then-snap-back stutter on every falling/moving
+    // synced body. Calling this from Core::_physics_process instead makes
+    // every sample line up with exactly one simulation step, so the
+    // position/velocity actually sent is clean.
+    void Network::sync_tick(double delta) {
         #if !defined(VSDK_Client)
         {
             std::vector<Engine::ISyncable*> snapshot;
@@ -1133,7 +1162,15 @@ namespace Vital::Manager {
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
 
-                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
+                // Divide by the real accumulated time (sync_accum), not the
+                // fixed sync_interval constant — sync_accum can legitimately
+                // run a little over sync_interval (or under it, on the
+                // forced "going to sleep" resend just above) and now that
+                // sampling happens on the fixed physics tick, sync_accum IS
+                // an accurate measurement of the true elapsed time, so this
+                // is a strictly more correct velocity estimate than assuming
+                // every send was exactly sync_interval apart.
+                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / model->sync_accum;
                 model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
@@ -1190,7 +1227,9 @@ namespace Vital::Manager {
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
 
-                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / sync_interval;
+                // See the server branch above for why this divides by the
+                // real accumulated time instead of the fixed sync_interval.
+                godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / model->sync_accum;
                 model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
@@ -1212,6 +1251,5 @@ namespace Vital::Manager {
             }
         }
         #endif
-
     }
 }
