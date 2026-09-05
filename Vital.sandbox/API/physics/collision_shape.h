@@ -51,7 +51,37 @@ namespace Vital::Sandbox::API {
             void broadcast_shape(const char* shape_type, godot::Array params) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = body ? body->get_parent_net_id() : 0;
-                if (nid == 0) return;
+                if (nid == 0) {
+                    // net_id not registered yet — this happens when set_shape_* is
+                    // called in the same Lua tick as create(), before setup_create()'s
+                    // deferred enqueue has drained. Stash the shape on the parent body;
+                    // Physics_Body::flush_pending_shape_broadcast() will send the RPC
+                    // after _spawn_entity, once net_id is live on the clients.
+                    // Only the last shape set before the flush is kept, matching the
+                    // behaviour you'd get if the calls ran after registration.
+                    if (body) {
+                        auto* parent = body -> get_parent();
+                        if (parent) {
+                            // Dynamic-cast through godot::Object since Physics_Body is a
+                            // template and we have no common non-template base to cast to
+                            // directly. We try each concrete synced body type in turn.
+                            using PB_Rigid       = Vital::Engine::Physics_Body<godot::RigidBody3D>;
+                            using PB_Static      = Vital::Engine::Physics_Body<godot::StaticBody3D>;
+                            using PB_Character   = Vital::Engine::Physics_Body<godot::CharacterBody3D>;
+                            using PB_Animatable  = Vital::Engine::Physics_Body<godot::AnimatableBody3D>;
+                            auto try_stash = [&](auto* pb) -> bool {
+                                if (!pb) return false;
+                                pb -> pending_shape_broadcast = { shape_type, params };
+                                return true;
+                            };
+                            try_stash(dynamic_cast<PB_Rigid*>(parent))      ||
+                            try_stash(dynamic_cast<PB_Static*>(parent))     ||
+                            try_stash(dynamic_cast<PB_Character*>(parent))  ||
+                            try_stash(dynamic_cast<PB_Animatable*>(parent));
+                        }
+                    }
+                    return;
+                }
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);
                 #endif

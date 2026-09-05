@@ -147,6 +147,34 @@ namespace Vital::Engine {
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
             }
+
+            // Called from the deferred enqueue lambda in setup_create(), after
+            // net_id is registered and _spawn_entity has been sent.
+            // If set_shape_box/sphere/etc. was called in the same Lua tick as
+            // create() (the common case), broadcast_shape() bailed early because
+            // get_parent_net_id() returned 0 at that point — the shape RPC was
+            // never sent. We stashed it in pending_shape_broadcast; flush it now.
+            void flush_pending_shape_broadcast() {
+                if (!pending_shape_broadcast.has_value()) return;
+                auto net_node = Manager::Network::get_singleton() -> get_node();
+                if (net_node) {
+                    net_node -> rpc("_sync_shape",
+                        (int)net_id,
+                        godot::String(pending_shape_broadcast->type.c_str()),
+                        pending_shape_broadcast->params);
+                }
+                pending_shape_broadcast.reset();
+            }
+
+            // Storage for a shape that was set before net_id was registered.
+            // Only the most-recently-set shape is kept — calling set_shape_box
+            // after set_shape_sphere before the flush simply overwrites it,
+            // which matches what would happen if the calls ran post-registration.
+            struct PendingShape {
+                std::string   type;
+                godot::Array  params;
+            };
+            std::optional<PendingShape> pending_shape_broadcast;
             #endif
         protected:
             int pending_authority = 1;
@@ -204,6 +232,13 @@ namespace Vital::Engine {
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
                             if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth);
+                            // Flush any shape that was set before net_id was registered.
+                            // broadcast_shape() bails when get_parent_net_id() == 0, which
+                            // is always the case when set_shape_* is called in the same
+                            // Lua tick as create(). The shape is stashed in
+                            // pending_shape_broadcast and replayed here, after _spawn_entity,
+                            // so clients receive the body first and then its shape.
+                            self -> flush_pending_shape_broadcast();
                         });
                     }
                     else Core::get_singleton() -> add_child(this);
