@@ -15,7 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
-#include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/API/physics/rigid_body.h>
 #include <Vital.sandbox/API/physics/static_body.h>
