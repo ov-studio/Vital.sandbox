@@ -49,6 +49,7 @@ namespace Vital::Engine {
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;
+            void _physics_process(double delta) override;
             #if defined(VSDK_Client)
             void _unhandled_input(godot::Ref<godot::InputEvent> event);
             #endif
