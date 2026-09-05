@@ -143,12 +143,56 @@ namespace Vital::Manager {
     }
 
     void Network::unregister_syncable(Engine::ISyncable* entity) {
-        std::lock_guard<std::mutex> lock(sync_models_mutex);
-        sync_models.erase(
-            std::remove(sync_models.begin(), sync_models.end(), entity),
-            sync_models.end()
-        );
-        sync_id_map.erase(entity->get_net_id());
+        {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            sync_models.erase(
+                std::remove(sync_models.begin(), sync_models.end(), entity),
+                sync_models.end()
+            );
+            sync_id_map.erase(entity->get_net_id());
+        }
+
+        // Also purge it from the pending-registration queue. An entity that
+        // is created and destroyed inside the same tick (or any tick before
+        // poll() next drains sync_pending) leaves a dangling raw pointer in
+        // that queue — poll() would then dereference freed memory
+        // (entity->sync_registered, entity->get_net_id()) on the next flush.
+        // Without this, that's a guaranteed use-after-free/crash any time a
+        // resource creates and immediately destroys a body (e.g. a throwaway
+        // physics entity), or destroys one mid-frame right after creation.
+        {
+            std::lock_guard<std::mutex> lock(sync_pending_mutex);
+            sync_pending.erase(
+                std::remove(sync_pending.begin(), sync_pending.end(), entity),
+                sync_pending.end()
+            );
+        }
+
+        #if defined(VSDK_Client)
+        // Same reasoning for the buffered pre-registration replay maps: if
+        // the entity never lives long enough to register, these can hold
+        // state keyed to a net_id that will now never be claimed. Harmless
+        // memory-wise (no dangling pointer — these are stored by value/
+        // net_id, not by ISyncable*), but left forever they're a slow leak,
+        // so clear them here too.
+        uint32_t nid = entity->get_net_id();
+        {
+            std::lock_guard<std::mutex> lock(pending_shape_mutex);
+            pending_shape_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_transform_mutex);
+            pending_transform_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+            pending_reparent_syncs.erase(nid);
+            for (auto it = pending_reparent_syncs.begin(); it != pending_reparent_syncs.end(); ) {
+                if (it->second == nid) it = pending_reparent_syncs.erase(it);
+                else ++it;
+            }
+        }
+        #endif
     }
 
     // Posts to the pending queue — safe to call from any thread/enqueue context.
