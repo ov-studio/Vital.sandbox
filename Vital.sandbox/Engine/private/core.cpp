@@ -22,6 +22,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
+#include <Vital.sandbox/Manager/public/network.h>
 
 
 //////////////////////////
