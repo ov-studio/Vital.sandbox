@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
-            // Returns the net_id of the parent vehicle body (0 = local-only).
+            // Returns the net_id of the parent vehicle body (0 = local-only / not yet registered).
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
                 auto* parent = body->get_parent();
@@ -56,23 +56,78 @@ namespace Vital::Sandbox::API {
                 return syncable ? syncable->get_net_id() : 0;
             }
 
+            #if !defined(VSDK_Client)
+            // ---------------------------------------------------------------
+            // Pending-broadcast buffers
+            //
+            // All three categories can be set before the parent vehicle body's
+            // net_id is registered (i.e. in the same Lua tick as vehicle body
+            // create()).  We stash them here and flush from
+            // on_vehicle_ready_callback once the deferred enqueue drains.
+            //
+            // pending_spawn   — whether _spawn_wheel still needs to be sent.
+            // pending_configs — queue of (key, value) pairs for _sync_wheel_config.
+            // pending_transform — whether _sync_wheel_transform still needs sending
+            //                    (only the final position/rotation matters, so we
+            //                    collapse repeated calls to a single RPC).
+            // ---------------------------------------------------------------
+            bool pending_spawn = false;
+            std::vector<std::pair<std::string, godot::Variant>> pending_configs;
+            bool pending_transform = false;
+
+            // Flush all buffered RPCs now that net_id is live.
+            // Called from on_vehicle_ready_callback which is invoked by
+            // Physics_Body::setup_create()'s deferred enqueue after _spawn_entity.
+            void flush_pending_broadcasts() {
+                uint32_t nid = get_parent_net_id();
+                if (nid == 0 || !body) return;
+                auto* net = Manager::Network::get_singleton()->get_node();
+                if (!net) return;
+
+                if (pending_spawn) {
+                    net->rpc("_spawn_wheel", (int)nid, body->wheel_index,
+                             body->get_position(), body->get_rotation());
+                    pending_spawn = false;
+                }
+                for (auto& [key, value] : pending_configs) {
+                    net->rpc("_sync_wheel_config", (int)nid, body->wheel_index,
+                             godot::String(key.c_str()), value);
+                }
+                pending_configs.clear();
+                if (pending_transform) {
+                    net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index,
+                             body->get_position(), body->get_rotation());
+                    pending_transform = false;
+                }
+            }
+            #endif
+
             // Server-side: broadcast a single config property to all clients.
             // Never call for per-tick inputs (engine_force, brake, steering).
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
-                if (nid == 0) return;
+                if (nid == 0) {
+                    // Vehicle body not registered yet — buffer for later flush.
+                    pending_configs.emplace_back(key, value);
+                    return;
+                }
                 auto* net = Manager::Network::get_singleton()->get_node();
                 if (net) net->rpc("_sync_wheel_config", (int)nid, body->wheel_index, godot::String(key), value);
                 #endif
             }
 
             // Server-side: broadcast current local position + rotation to all clients.
-            // Call after any set_position/translate/set_global_position on a wheel.
+            // Call after any set_position/translate/set_rotation on a wheel.
             void broadcast_transform() {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
-                if (nid == 0) return;
+                if (nid == 0) {
+                    // Vehicle body not registered yet — mark dirty; flush will send
+                    // the final transform once net_id is live.
+                    pending_transform = true;
+                    return;
+                }
                 auto* net = Manager::Network::get_singleton()->get_node();
                 if (net) net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index, body->get_position(), body->get_rotation());
                 #endif
@@ -111,11 +166,17 @@ namespace Vital::Sandbox::API {
                 instance->body->wheel_index = idx_count - 1;
 
                 // Server-side: tell clients to create the matching wheel node.
+                // If the parent vehicle body's net_id isn't registered yet (because
+                // setup_create()'s enqueue hasn't drained — the common case when the
+                // wheel is created in the same Lua tick as the vehicle body), buffer
+                // the spawn RPC and let on_vehicle_ready_callback flush it later.
                 #if !defined(VSDK_Client)
                 uint32_t nid = instance->get_parent_net_id();
                 if (nid != 0) {
                     auto* net = Manager::Network::get_singleton()->get_node();
                     if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->wheel_index, instance->body->get_position(), instance->body->get_rotation());
+                } else {
+                    instance->pending_spawn = true;
                 }
                 #endif
 
@@ -133,6 +194,23 @@ namespace Vital::Sandbox::API {
                         });
                     }
                 };
+
+                // Wire the vehicle-ready callback once (idempotent).
+                // Physics_Body::setup_create()'s deferred enqueue calls this after
+                // _spawn_entity fires, passing the vehicle body Node3D. We walk its
+                // VehicleWheel3D children, look each one up in our Instance registry,
+                // and flush any buffered spawn/config/transform RPCs.
+                #if !defined(VSDK_Client)
+                Vital::Engine::Vehicle_Wheel::on_vehicle_ready_callback = [](godot::Node3D* vnode) {
+                    std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                    for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
+                        if (!inst || !inst->body) continue;
+                        // Only flush wheels whose parent is this vehicle node.
+                        if (inst->body->get_parent() != vnode) continue;
+                        inst->flush_pending_broadcasts();
+                    }
+                };
+                #endif
 
                 instance -> store(true);
                 return 1;

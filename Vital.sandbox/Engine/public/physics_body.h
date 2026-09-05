@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 
 
 //////////////////////////////////
@@ -176,6 +177,7 @@ namespace Vital::Engine {
             };
             std::optional<PendingShape> pending_shape_broadcast;
             #endif
+
         protected:
             int pending_authority = 1;
 
@@ -239,6 +241,14 @@ namespace Vital::Engine {
                             // pending_shape_broadcast and replayed here, after _spawn_entity,
                             // so clients receive the body first and then its shape.
                             self -> flush_pending_shape_broadcast();
+                            // For VehicleBody3D: flush any wheel RPCs (_spawn_wheel,
+                            // _sync_wheel_config, _sync_wheel_transform) that were buffered
+                            // because the vehicle body wasn't registered yet when wheels were
+                            // created or configured in the same Lua tick as the vehicle body.
+                            if constexpr (std::is_base_of_v<godot::VehicleBody3D, Base>) {
+                                if (Engine::Vehicle_Wheel::on_vehicle_ready_callback)
+                                    Engine::Vehicle_Wheel::on_vehicle_ready_callback(self);
+                            }
                         });
                     }
                     else Core::get_singleton() -> add_child(this);
