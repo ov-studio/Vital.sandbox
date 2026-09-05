@@ -164,12 +164,6 @@ namespace Vital::Engine {
             void           destroy_sync()       override { this->queue_free(); }
             godot::Node3D* get_sync_node()       override { return this; }
 
-            // Called by Engine::Network::_reparent_entity (client) and
-            // Model::set_parent (server) to switch the sync space for this entity.
-            // id == 0  → detached, back to global sync.
-            // id != 0  → parented; pos/rot are sent/received in local space.
-            void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
-
             // Getters //
             static Models get_loaded_models();
             std::string get_model_name();

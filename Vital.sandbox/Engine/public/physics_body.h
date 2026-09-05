@@ -63,12 +63,22 @@ namespace Vital::Engine {
                 return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() && net_id != 0;
             }
 
+            // When parented to another synced entity, return local-space position
+            // so the packet only carries the child's offset from the parent, not
+            // full world coordinates — mirrors Model::get_sync_position().
             godot::Vector3 get_sync_position() const override {
-                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_global_position() : godot::Vector3();
+                if (!const_cast<Physics_Body*>(this)->Base::is_inside_tree()) return godot::Vector3();
+                if (sync_parent_net_id != 0)
+                    return const_cast<Physics_Body*>(this)->Base::get_position();
+                return const_cast<Physics_Body*>(this)->Base::get_global_position();
             }
 
+            // get_rotation_degrees() is always local in Godot — consistent whether
+            // parented or not, same reasoning as Model::get_sync_rotation().
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
+                return const_cast<Physics_Body*>(this)->Base::is_inside_tree()
+                    ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees()
+                    : godot::Vector3();
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
@@ -76,7 +86,12 @@ namespace Vital::Engine {
                 auto net = Manager::Network::get_singleton();
                 if (net && net -> get_peer_id() == sync_authority) return;
                 if (!interp_ready) {
-                    Base::set_global_position(pos);
+                    // Parented: incoming pos/rot are local-space — write back as local.
+                    if (sync_parent_net_id != 0) {
+                        Base::set_position(pos);
+                    } else {
+                        Base::set_global_position(pos);
+                    }
                     Base::set_rotation_degrees(rot);
                 }
                 sync_push_snapshot(pos, rot, vel);
@@ -92,7 +107,12 @@ namespace Vital::Engine {
                 if (net && net -> get_peer_id() == sync_authority) return;
                 godot::Vector3 out_pos, out_rot;
                 interp_process(delta, out_pos, out_rot);
-                Base::set_global_position(out_pos);
+                // Parented: snapshot values are local-space — write back as local.
+                if (sync_parent_net_id != 0) {
+                    Base::set_position(out_pos);
+                } else {
+                    Base::set_global_position(out_pos);
+                }
                 Base::set_rotation_degrees(out_rot);
             }
 

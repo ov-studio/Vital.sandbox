@@ -20,8 +20,9 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager { class Network; }
-namespace Vital::Engine  { class Network; }
+namespace Vital::Engine { class Network; }
 namespace Vital::Engine {
     class ISyncable {
         friend class Manager::Network;
@@ -190,6 +191,16 @@ namespace Vital::Engine {
             virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) = 0;
             virtual void on_sync_process(double delta) = 0;
             virtual void reset_sync_state();
+
+            // Switch sync coordinate space.
+            // id == 0  → detached, global sync.
+            // id != 0  → parented; pos/rot are sent/received in local space.
+            // Shared by every ISyncable type (Model, Physics_Body, …) so
+            // apply_reparent_entity (client) and apply_parent (server) need no
+            // per-type casting — they call this through the ISyncable* directly.
+            // Model and Physics_Body no longer define their own copies.
+            void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
+            uint32_t get_sync_parent_net_id() const  { return sync_parent_net_id; }
 
             #if !defined(VSDK_Client)
             // set_parent(parent_node) — reparent this server-authoritative synced

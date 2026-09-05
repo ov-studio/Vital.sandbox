@@ -45,19 +45,12 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
-            uint32_t get_parent_net_id() const {
-                if (!body) return 0;
-                auto parent = body -> get_parent();
-                if (!parent) return 0;
-                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable ? syncable -> get_net_id() : 0;
-            }
-
             // Server-side: broadcast shape type + params to all clients via RPC.
-            // No-op for local (net_id == 0) bodies.
+            // No-op for local (net_id == 0) bodies. Delegates parent lookup to
+            // Engine::Collision_Shape::get_parent_net_id() — no duplicate cast here.
             void broadcast_shape(const char* shape_type, godot::Array params) {
                 #if !defined(VSDK_Client)
-                uint32_t nid = get_parent_net_id();
+                uint32_t nid = body ? body->get_parent_net_id() : 0;
                 if (nid == 0) return;
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);

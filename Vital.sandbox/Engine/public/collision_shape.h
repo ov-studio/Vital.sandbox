@@ -54,17 +54,20 @@ namespace Vital::Engine {
             static Collision_Shape* create(godot::Node3D* owner);
             void destroy();
 
-            // True if this shape's owning body is a synced (server-authoritative,
-            // network-replicated) entity — i.e. it arrived via Network::apply_shape
-            // rather than being made purely client-side by Lua. Used to color the
-            // debug wireframe differently so it's obvious at a glance which shapes
-            // are server-driven vs. local-only.
-            bool is_replicated() const {
+            // Returns the net_id of the owning synced body, or 0 if the parent is
+            // not a server entity (local-only, no parent, or not ISyncable).
+            // Single source of truth: Instance::broadcast_shape and is_replicated
+            // both delegate here instead of each independently doing a cast + walk.
+            uint32_t get_parent_net_id() const {
                 auto* parent = get_parent();
-                if (!parent) return false;
+                if (!parent) return 0;
                 auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable && syncable -> get_net_id() > 0;
+                return syncable ? syncable->get_net_id() : 0;
             }
+
+            // True if this shape's owning body is server-authoritative. Used to
+            // color debug wireframes differently (server-driven vs. local-only).
+            bool is_replicated() const { return get_parent_net_id() > 0; }
 
             // Applies a shape via Godot's native set_shape() AND (client-only)
             // keeps current_shape + the debug wireframe in sync. Every code path

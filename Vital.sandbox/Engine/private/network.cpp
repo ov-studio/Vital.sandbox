@@ -435,16 +435,18 @@ namespace Vital::Engine {
             child_node->set_rotation_degrees(godot::Vector3());
         }
 
-        auto* model = dynamic_cast<Engine::Model*>(child_sync);
-        if (model) {
-            model->set_sync_parent_net_id(parent_net_id);
-            child_sync->sync_last_pos = child_sync->get_sync_position();
-            child_sync->sync_last_rot = child_sync->get_sync_rotation();
-            child_sync->sync_last_vel = godot::Vector3();
-            child_sync->delta_last_pos = child_sync->sync_last_pos;
-            child_sync->delta_last_rot = child_sync->sync_last_rot;
-            child_sync->delta_last_vel = godot::Vector3();
-        }
+        // Switch sync coordinate space for every ISyncable type (Model,
+        // Physics_Body subtypes, or anything added later).
+        // set_sync_parent_net_id is defined once on ISyncable — no per-type
+        // casting required here.  Baseline re-seed must happen AFTER reparent
+        // so get_sync_position/rotation already return local-space values.
+        child_sync->set_sync_parent_net_id(parent_net_id);
+        child_sync->sync_last_pos  = child_sync->get_sync_position();
+        child_sync->sync_last_rot  = child_sync->get_sync_rotation();
+        child_sync->sync_last_vel  = godot::Vector3();
+        child_sync->delta_last_pos = child_sync->sync_last_pos;
+        child_sync->delta_last_rot = child_sync->sync_last_rot;
+        child_sync->delta_last_vel = godot::Vector3();
 
         godot::UtilityFunctions::print(
             "_reparent_entity: net_id=", net_id,
