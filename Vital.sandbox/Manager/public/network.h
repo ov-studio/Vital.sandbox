@@ -130,6 +130,19 @@ namespace Vital::Manager {
             void enqueue_syncable_registration(Engine::ISyncable* entity);
             void cleanup_remote_bodies();
 
+            #if defined(VSDK_Client)
+            // Destroys *every* networked entity this client currently knows about
+            // (unlike cleanup_remote_bodies(), which deliberately skips locally-
+            // authoritative ones on the assumption something else — e.g. the
+            // owning resource — handles those). Used for a full session reset
+            // (see Engine::Core::end_session()), where nothing should survive
+            // regardless of who owned it: the next server's fresh net_id
+            // numbering has no relationship to this session's entities, so a
+            // locally-owned leftover would be exactly the kind of duplicate/ghost
+            // entity this exists to prevent.
+            void destroy_all_syncables();
+            #endif
+
             // Clears sync_sleeping on every locally-authoritative syncable (without
             // touching sync_last_pos/rot), forcing one real resend before it re-sleeps.
             // Called for the server's own models and mirrored to clients via
