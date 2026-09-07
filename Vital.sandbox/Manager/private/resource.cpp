@@ -181,7 +181,6 @@ namespace Vital::Manager {
             });
         #else
             Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
-            /* Notify server so it can emit peer:resource:started for this peer */
             {
                 Tool::Stack notify;
                 notify.object["event"] = Tool::StackValue(std::string("system"));
