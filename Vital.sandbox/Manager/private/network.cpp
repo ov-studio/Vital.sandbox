@@ -142,6 +142,44 @@ namespace Vital::Manager {
         #endif
     }
 
+    #if defined(VSDK_Client)
+    void Network::destroy_all_syncables() {
+        std::vector<Engine::ISyncable*> snapshot;
+        {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            snapshot = sync_models;
+        }
+        {
+            // Anything still waiting on its own _spawn_entity RPC to actually
+            // register (see enqueue_syncable_registration/poll()) hasn't made it
+            // into sync_models above yet — without this it would be neither
+            // destroyed here nor ever findable again, an orphaned live Node.
+            std::lock_guard<std::mutex> lock(sync_pending_mutex);
+            snapshot.insert(snapshot.end(), sync_pending.begin(), sync_pending.end());
+            sync_pending.clear();
+        }
+        // No authority check, unlike cleanup_remote_bodies() — see the header
+        // comment for why. destroy_sync() -> queue_free(); each entity's own
+        // NOTIFICATION_PREDELETE handler calls unregister_syncable() when Godot
+        // actually frees it, so sync_models/sync_id_map are already correctly
+        // emptied by the time that happens — nothing further to clear there.
+        for (auto* entity : snapshot) entity -> destroy_sync();
+
+        {
+            std::lock_guard<std::mutex> lock(pending_shape_mutex);
+            pending_shape_syncs.clear();
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_transform_mutex);
+            pending_transform_syncs.clear();
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+            pending_reparent_syncs.clear();
+        }
+    }
+    #endif
+
     void Network::unregister_syncable(Engine::ISyncable* entity) {
         {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
