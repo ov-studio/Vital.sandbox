@@ -692,7 +692,18 @@ namespace Vital::Engine {
             if (cmd == "version") { print("sbox", Internal::fetch_version()); return true; }
             if (cmd == "help") { print("sbox", Internal::fetch_help()); return true; }
             if (cmd == "clear") { clear(); return true; }
-            #if defined(VSDK_Client)
+            #if !defined(VSDK_Client)
+            if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
+            if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
+            if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
+            if (cmd == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
+            if (cmd == "restart") { Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
+            if (cmd == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
+            if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
+            if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
+            if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
+            #else
+            // TODO: Improve connecdt disconnect status reports
             if (cmd == "connect") {
                 auto nm = Manager::Network::get_singleton();
                 const int port = std::atoi(tokens[2].c_str());
@@ -718,17 +729,6 @@ namespace Vital::Engine {
                 ));
                 return true;
             }
-            #endif
-            #if !defined(VSDK_Client)
-            if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
-            if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
-            if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
-            if (cmd == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
-            if (cmd == "restart") { Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
-            if (cmd == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
-            if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
-            if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #endif
             return false;
         };
