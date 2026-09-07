@@ -214,7 +214,7 @@ namespace Vital::Engine {
     }
 
     // TODO: Improve
-    void Core::end_session() {
+    void Core::session_end() {
         Tool::print("sbox", "Core: ending session...");
 
         // Stops every running resource. Each one's own Internal::stop() already
@@ -249,7 +249,7 @@ namespace Vital::Engine {
         // registered event handlers, nothing at all surviving from this session.
         enqueue([]() {
             Manager::Sandbox::free_singleton();
-            Tool::Event::emit("core:session_end");
+            Tool::Event::emit("core:session:end");
         });
     }
 

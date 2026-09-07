@@ -131,7 +131,7 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
-        Vital::Engine::Core::get_singleton() -> end_session();
+        Vital::Engine::Core::get_singleton() -> session_end();
     });
 
     // Same full reset for a *manual* disconnect (leaving to a main menu /
@@ -140,7 +140,7 @@ void vsdk_initialize() {
     // server-initiated drop got.
     Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Disconnected from server");
-        Vital::Engine::Core::get_singleton() -> end_session();
+        Vital::Engine::Core::get_singleton() -> session_end();
     });
     #endif
 

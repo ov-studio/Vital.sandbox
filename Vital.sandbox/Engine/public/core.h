@@ -99,7 +99,7 @@ namespace Vital::Engine {
             // Hooked to both "network:server:disconnect" and "network:disconnect"
             // in event.cpp, so it runs the same way whether the server dropped us
             // or we chose to leave.
-            void end_session();
+            void session_end();
 
 
             // Misc //
