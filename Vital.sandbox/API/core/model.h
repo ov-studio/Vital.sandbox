@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/core/node_3d.h>
+#include <Vital.sandbox/API/core/syncable.h>
 
 
 ////////////////////////
@@ -178,6 +179,11 @@ namespace Vital::Sandbox::API {
             //     self_is_server check correctly tells the two apart and rejects any
             //     attempt to reparent a server entity from the client — Rule C.
             API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
+
+            // get_net_id() — shared with every physics body type via API::Syncable,
+            // so "net_id, or false if not replicated" means the same thing for a
+            // Model as it does for a Rigid_Body/Static_Body/etc.
+            API::Syncable::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)

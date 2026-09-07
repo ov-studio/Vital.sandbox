@@ -14,14 +14,22 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/API/utility/file.h>
 
 
 /////////////////////////
 // Vital: API: Engine //
 /////////////////////////
+
+namespace Vital::Sandbox {
+    struct vm_instance_base;
+    extern std::unordered_map<void*, vm_instance_base*> vm_node_registry;
+    extern std::mutex vm_node_registry_mutex;
+}
 
 namespace Vital::Sandbox::API {
     struct Engine : vm_module {
@@ -107,6 +115,27 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 int count = 0;
                 vm_module::collect_entities(vm, category, count, streamed);
+                return 1;
+            });
+
+            // TODO: Verify if it works?
+            API::bind(vm, base_scope, "get_entity_by_net_id", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(net_id)")
+                    .require(1, &Machine::is_number);
+
+                int raw_net_id = vm -> get_int(1);
+                uint32_t net_id = raw_net_id > 0 ? (uint32_t)raw_net_id : 0;
+                Vital::Engine::ISyncable* syncable = (net_id != 0 && Manager::Network::has_singleton()) ? Manager::Network::get_singleton() -> find_syncable(net_id) : nullptr;
+                godot::Node3D* node = syncable ? dynamic_cast<godot::Node3D*>(syncable) : nullptr;
+                if (node) {
+                    std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                    auto it = vm_node_registry.find(node);
+                    if (it != vm_node_registry.end()) {
+                        it -> second -> push_self(vm);
+                        return 1;
+                    }
+                }
+                vm -> push_value(false);
                 return 1;
             });
 

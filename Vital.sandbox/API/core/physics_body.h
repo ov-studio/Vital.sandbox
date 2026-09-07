@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/core/collision_object.h>
+#include <Vital.sandbox/API/core/syncable.h>
 #include <godot_cpp/classes/physics_server3d.hpp>
 #include <godot_cpp/classes/physics_material.hpp>
 
@@ -51,12 +52,13 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Collision_Object::methods<Instance, Collision_Object::Type::Body>(vm);
 
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "get_net_id", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value((int)self -> get_node() -> get_net_id()); // TODO: Cast not needed?
-                return 1;
-            });
+            // get_net_id() is shared by every ISyncable-backed type — see
+            // API::Syncable — so Model and every physics body specialization
+            // (Rigid/Static/Character/Animatable/Vehicle) return identical
+            // "net_id, or false if not replicated" results from one place.
+            API::Syncable::methods<Instance>(vm);
 
+            #if !defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> get_node() -> get_sync_authority());
                 return 1;

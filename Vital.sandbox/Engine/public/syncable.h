@@ -185,6 +185,14 @@ namespace Vital::Engine {
             virtual void destroy_sync() = 0;
             virtual std::string get_sync_name() const { return ""; }
             virtual uint32_t get_net_id() const { return net_id; }
+            // True once this entity has been assigned a server net_id — i.e. it is
+            // actually being network-replicated, as opposed to a client-local-only
+            // instance (net_id == 0). Shared by every ISyncable type (Model,
+            // Physics_Body, ...) so "replicated or not" is defined in exactly one
+            // place. Mirrors Collision_Shape::is_replicated(), which asks the same
+            // question about its *parent* body, since a collision shape is never
+            // itself an ISyncable.
+            bool is_replicated() const { return net_id != 0; }
             virtual int get_sync_authority() const { return sync_authority; }
             virtual godot::Vector3 get_sync_position() const = 0;
             virtual godot::Vector3 get_sync_rotation() const = 0;
