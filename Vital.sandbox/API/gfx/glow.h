@@ -38,11 +38,10 @@ namespace Vital::Sandbox::API {
         };
 
         static void init(Machine* vm) {
-            static bool initialized = false;
-            if (initialized) return;
-            initialized = true;
+            static Tool::Event::event_id binding = 0;
+            if (binding) Tool::Event::unbind("environment:free", binding);
 
-            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+            binding = Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
                 vm -> del_reference("sandbox", map_reference);
             });
         }

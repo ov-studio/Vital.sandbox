@@ -30,11 +30,10 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void init(Machine* vm) {
-            static bool initialized = false;
-            if (initialized) return;
-            initialized = true;
-        
-            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+            static Tool::Event::event_id binding = 0;
+            if (binding) Tool::Event::unbind("environment:free", binding);
+
+            binding = Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
                 vm -> del_reference("sandbox", lut_reference);
             });
         }
