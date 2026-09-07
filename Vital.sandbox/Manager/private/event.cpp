@@ -26,11 +26,14 @@
 
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
+#include <Vital.sandbox/Manager/public/masterlist.h>
 static Vital::Config::Server g_server_config;
 #endif
 
 void shutdown() {
     #if !defined(VSDK_Client)
+    Vital::Manager::Masterlist::get_singleton() -> stop();
+    Vital::Manager::Masterlist::free_singleton();
     Vital::Manager::Network::get_singleton() -> close();
     #endif
     #if defined(VSDK_Client)
@@ -62,16 +65,19 @@ void setup() {
     nm -> set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("network:host", [](Vital::Tool::Stack) {
-
+        Vital::Manager::Masterlist::get_singleton() -> start(g_server_config);
     });
     Vital::Tool::Event::bind("network:peer:join", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:peer:leave", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player left: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:close", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Server closed");
+        Vital::Manager::Masterlist::get_singleton() -> stop();
     });
     #endif
 }
@@ -79,6 +85,9 @@ void setup() {
 void vsdk_initialize() {
     // Core //
     Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
+        #if defined(VSDK_Client)
+        Vital::Engine::Splash::get_singleton();
+        #endif
         Vital::Engine::Console::get_singleton();
     });
 
@@ -88,7 +97,7 @@ void vsdk_initialize() {
         Vital::Engine::Monitor::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
-        Vital::Manager::Sandbox::get_singleton() -> ready();
+        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
         Vital::Manager::Asset::get_singleton();
         Vital::Manager::Resource::get_singleton();
         setup();
@@ -96,6 +105,7 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("core:free", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
+        Vital::Engine::Splash::free_singleton();
         Vital::Engine::Canvas::free_singleton();
         Vital::Engine::Monitor::free_singleton();
         Vital::Manager::Discord::free_singleton();
@@ -104,12 +114,6 @@ void vsdk_initialize() {
         Vital::Manager::Sandbox::free_singleton();
         Vital::Manager::Resource::free_singleton();
         shutdown();
-    });
-
-
-    // Sandbox //
-    Vital::Tool::Event::bind("sandbox:ready", [](Vital::Tool::Stack arguments) {
-        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
     });
 
 
@@ -127,12 +131,16 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
-        Vital::Manager::Resource::get_singleton() -> stop_all();
-        Vital::Manager::Asset::get_singleton() -> clear();
-        Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
-        #if defined(VSDK_Client)
-        Vital::Engine::Core::get_singleton() -> free_environment();
-        #endif
+        Vital::Engine::Core::get_singleton() -> session_end();
+    });
+
+    // Same full reset for a *manual* disconnect (leaving to a main menu /
+    // connecting to a different server) — previously nothing at all handled
+    // this event, so leaving on purpose skipped every bit of cleanup that a
+    // server-initiated drop got.
+    Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
+        Vital::Tool::print("sbox", "Disconnected from server");
+        Vital::Engine::Core::get_singleton() -> session_end();
     });
     #endif
 
@@ -144,14 +152,11 @@ void vsdk_initialize() {
             network_initialized = true;
             auto nm = Vital::Manager::Network::get_singleton();
             #if defined(VSDK_Client)
-                // No implicit connection: this used to auto-connect to 127.0.0.1:7777 with
-                // reconnect enabled, which left the client permanently mid-retry against
-                // localhost — and connect_to_server() refuses while a retry is in flight, so
-                // the `connect` command could never take effect. Connect on demand instead.
-                (void)nm;
+                // TODO: 7777?
+                nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
-                nm -> host(g_server_config);
+                if (!nm -> host(g_server_config)) return;
                 Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
@@ -162,6 +167,8 @@ void vsdk_initialize() {
         #endif
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
+
+
 
     Vital::Tool::Event::bind("entity:created", [](Vital::Tool::Stack arguments) {        
         if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
