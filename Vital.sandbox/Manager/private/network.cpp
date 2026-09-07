@@ -368,6 +368,25 @@ namespace Vital::Manager {
 
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
+        #if !defined(VSDK_Client)
+        // Server-side handshake: client sends {event:"system", array:["ping"]} immediately
+        // after connected_to_server fires (via poll()'s pending_handshake path).
+        // We defer network:peer:join until this ping arrives so Lua scripts never see
+        // a peer that isn't ready to receive resource and sync data yet.
+        if (stack.object.count("event") && stack.object.at("event").as<std::string>() == "system") {
+            if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
+                if (!connected_peers.count(sender)) {
+                    connected_peers.insert(sender);
+                    log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
+                    Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)sender));
+                }
+            }
+            return;
+        }
+        // Drop all other packets from peers that haven't completed handshake yet.
+        if (!connected_peers.count(sender)) return;
+        #endif
+
         if (stack.has("__event") || stack.has("__reply_serial")) {
             auto vm = Manager::Sandbox::get_singleton()->get_vm();
             Vital::Sandbox::API::Event::dispatch_remote(vm, stack);
@@ -809,8 +828,7 @@ namespace Vital::Manager {
     }
 
     void Network::_on_peer_connected(int id) {
-        connected_peers.insert(id);
-        log("sbox", fmt::format("peer joined -> {}  total: {}", id, (int)connected_peers.size()));
+        log("sbox", fmt::format("peer connecting -> {} (awaiting handshake)", id));
 
         // 0. Tell the joining peer our real sync rate. Reliable + channel 0, sent
         //    before the spawn/state-dump RPCs below on the same channel, so ENet's
@@ -987,34 +1005,36 @@ namespace Vital::Manager {
         wake_all_syncables();
         if (node) node->rpc("_wake_sync");
 
-        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)id));
+        // network:peer:join is now deferred — it fires in _on_packet_received once
+        // the client's handshake ping arrives, not here. This ensures Lua scripts only
+        // see fully-ready peers (connected + handshaked), not raw ENet connections.
     }
 
     void Network::_on_peer_disconnected(int id) {
-        connected_peers.erase(id);
+        bool was_handshaked = connected_peers.erase(id) > 0;
         log("sbox", fmt::format("peer left -> {}  remaining: {}", id, (int)connected_peers.size()));
 
-        // Auto-revoke: any model owned by this peer falls back to server authority.
-        // set_syncer(1) also broadcasts _set_authority to all remaining clients.
-        {
-            std::vector<Engine::ISyncable*> snapshot;
+        // Auto-revoke and peer:leave only apply to peers that completed handshake —
+        // a peer that dropped before handshaking was never visible to Lua scripts.
+        if (was_handshaked) {
             {
-                std::lock_guard<std::mutex> lock(sync_models_mutex);
-                snapshot = sync_models;
-            }
-            for (auto* entity : snapshot) {
-                if (entity->get_sync_authority() == id) {
-                    // Revert to server authority and broadcast to all remaining clients.
-                    entity->sync_authority = 1;
-                    entity->sync_sleeping  = false;
-                    if (node) node->rpc("_set_authority", (int)entity->get_net_id(), 1);
-                    log("sbox", fmt::format("auto-revoke: net_id={} -> server (peer {} disconnected)",
-                    entity->get_net_id(), id));
+                std::vector<Engine::ISyncable*> snapshot;
+                {
+                    std::lock_guard<std::mutex> lock(sync_models_mutex);
+                    snapshot = sync_models;
+                }
+                for (auto* entity : snapshot) {
+                    if (entity->get_sync_authority() == id) {
+                        entity->sync_authority = 1;
+                        entity->sync_sleeping  = false;
+                        if (node) node->rpc("_set_authority", (int)entity->get_net_id(), 1);
+                        log("sbox", fmt::format("auto-revoke: net_id={} -> server (peer {} disconnected)",
+                        entity->get_net_id(), id));
+                    }
                 }
             }
+            Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue((int32_t)id));
         }
-
-        Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue((int32_t)id));
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
