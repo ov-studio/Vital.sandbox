@@ -382,11 +382,8 @@ namespace Vital::Manager {
                 }
             }
             else if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
-                // Client finished starting a resource — emit peer:resource:started on server
                 std::string resource_name = stack.array[1].as<std::string>();
-                Manager::Sandbox::get_singleton() -> signal("peer:resource:started",
-                    Tool::StackValue((int32_t)sender),
-                    Tool::StackValue(resource_name));
+                Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue((int32_t)sender), Tool::StackValue(resource_name));
             }
             return;
         }

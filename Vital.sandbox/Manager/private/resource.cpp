@@ -182,6 +182,7 @@ namespace Vital::Manager {
         #else
             Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
             {
+                // TODO: Maybe a helper class packet.cpp/h or something similar to split network into better structured fragements and making it easier to emit events
                 Tool::Stack notify;
                 notify.object["event"] = Tool::StackValue(std::string("system"));
                 notify.array.push_back(Tool::StackValue(std::string("resource:ready")));
