@@ -149,7 +149,6 @@ namespace Vital::Sandbox::API {
                     if (i != 2) buffer << " ";
                     buffer << vm -> to_string(i);
                 }
-
                 if (Tool::Log::is_type(mode) && !Tool::Log::is_runtime_level(mode)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("log level '{}' is not runtime accessible", mode));
                 Tool::print(mode, buffer.str());
                 vm -> push_value(true);
