@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/utility/thread.h>
 
@@ -76,6 +77,9 @@ namespace Vital::Sandbox::API {
         inline static std::atomic<uint32_t> serial_counter { 0 };
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
+        // Remote packets tagged with __source_resource that arrived before that resource started on the client
+        inline static std::unordered_map<std::string, std::vector<Tool::Stack>> pending_resource_remote;
+        inline static std::mutex pending_resource_remote_mutex;
 
         static void read_config(Machine* vm, int idx, Handler& handler) {
             if ((vm -> get_count() < idx) || !vm -> is_table(idx)) return;
@@ -160,6 +164,9 @@ namespace Vital::Sandbox::API {
 
         static std::shared_ptr<API::Promise::Instance> send_remote_emit(Machine* vm, const std::string& name, Tool::Stack payload, int peer_id, bool wants_callback) {
             payload.object["__event"] = Tool::StackValue(name);
+            // Tag with the sending resource so the receiver can queue it until that resource is ready
+            std::string src_resource = Manager::Resource::get_resource_from_vm(vm);
+            if (!src_resource.empty()) payload.object["__source_resource"] = Tool::StackValue(src_resource);
             std::shared_ptr<API::Promise::Instance> promise;
             if (wants_callback) {
                 uint32_t serial = ++serial_counter;
@@ -385,6 +392,21 @@ namespace Vital::Sandbox::API {
             if (!event_name_ptr || !event_name_ptr -> is<std::string>()) return;
             std::string name = event_name_ptr -> as<std::string>();
 
+            // On client: if the packet came from a resource that hasn't started here yet, queue it
+            #if defined(VSDK_Client)
+            {
+                auto src_ptr = payload.get("__source_resource");
+                if (src_ptr && src_ptr -> is<std::string>()) {
+                    std::string src = src_ptr -> as<std::string>();
+                    if (!Manager::Resource::get_singleton() -> is_running(src)) {
+                        std::lock_guard lock(pending_resource_remote_mutex);
+                        pending_resource_remote[src].push_back(payload);
+                        return;
+                    }
+                }
+            }
+            #endif
+
             auto serial_ptr = payload.get("__serial");
             bool wants_reply = serial_ptr && serial_ptr -> is<double>();
             uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
@@ -456,6 +478,36 @@ namespace Vital::Sandbox::API {
                 }
                 cb(root_vm, results);
             });
+
+            // Client: flush queued remote packets once their source resource starts
+            #if defined(VSDK_Client)
+            Tool::Event::bind("resource:stopped", [](Tool::Stack args) {
+                if (args.array.empty() || !args.array[0].is<std::string>()) return;
+                std::string resource_name = args.array[0].as<std::string>();
+                std::lock_guard lock(pending_resource_remote_mutex);
+                pending_resource_remote.erase(resource_name);
+            });
+
+            Tool::Event::bind("resource:started", [](Tool::Stack args) {
+                if (args.array.empty() || !args.array[0].is<std::string>()) return;
+                std::string resource_name = args.array[0].as<std::string>();
+                std::vector<Tool::Stack> queued;
+                {
+                    std::lock_guard lock(pending_resource_remote_mutex);
+                    auto it = pending_resource_remote.find(resource_name);
+                    if (it != pending_resource_remote.end()) {
+                        queued = std::move(it -> second);
+                        pending_resource_remote.erase(it);
+                    }
+                }
+                if (queued.empty()) return;
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+                for (auto& packet : queued) {
+                    dispatch_remote(vm, packet);
+                }
+            });
+            #endif
 
             Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
