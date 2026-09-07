@@ -86,6 +86,21 @@ namespace Vital::Engine {
             void teardown();
             void shutdown();
 
+            // TODO: Improve
+            // Full reset of everything a connected session accumulated, without
+            // tearing down Core/the engine process itself — for a client that's
+            // leaving one server to go back to a menu / connect to a different one
+            // (unlike shutdown(), which is for quitting the app). Stops every
+            // running resource (unloading its Lua environment), destroys every
+            // networked entity this client currently knows about, clears the model
+            // asset cache, and finally frees the Sandbox singleton outright so the
+            // Lua VM itself is gone — the next get_singleton() call anywhere builds
+            // a completely fresh one with nothing left over from this session.
+            // Hooked to both "network:server:disconnect" and "network:disconnect"
+            // in event.cpp, so it runs the same way whether the server dropped us
+            // or we chose to leave.
+            void end_session();
+
 
             // Misc //
             static godot::SceneTree* get_scene_tree();

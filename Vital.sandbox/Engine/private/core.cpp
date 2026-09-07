@@ -204,13 +204,52 @@ namespace Vital::Engine {
         Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
             Tool::print("sbox", "Core: shut down successfully!");
-            // TODO: Use some hook? maybe teardown needs to be called here? but then asset etc should be torn down when disconnect instead of just shutdown...
             #if !defined(VSDK_Client)
             Manager::Masterlist::get_singleton() -> stop();
             #endif
             Engine::Console::get_singleton() -> teardown();
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
+        });
+    }
+
+    // TODO: Improve
+    void Core::end_session() {
+        Tool::print("sbox", "Core: ending session...");
+
+        // Stops every running resource. Each one's own Internal::stop() already
+        // clears its Lua environment out of the (still-alive) VM and unloads its
+        // cached model assets — see Manager::Resource::Internal::stop(). This call
+        // enqueues its real work; see the enqueue() below for why that matters.
+        Manager::Resource::get_singleton() -> stop_all();
+
+        #if defined(VSDK_Client)
+        // Resource::stop() only unloads a resource's *cached* model assets
+        // (Model::unload_resource_models — the PackedScene templates), not any
+        // already-spawned instance. destroy_all_syncables() below covers every
+        // live networked entity regardless of authority, but a Model spawned
+        // purely locally (never synced) wouldn't be in that registry at all, so
+        // cleanup_spawned() sweeps every Model child of Core as a second pass —
+        // same belt-and-suspenders pairing already used by the disconnect path
+        // this replaces (see event.cpp's old "network:server:disconnect" bind).
+        Manager::Network::get_singleton() -> destroy_all_syncables();
+        Engine::Model::cleanup_spawned();
+        Manager::Asset::get_singleton() -> clear();
+        free_environment();
+        #endif
+
+        // Queued after stop_all()'s own enqueue() above, on the same work_queue —
+        // drain() runs everything currently queued in one FIFO pass, so this is
+        // guaranteed to execute only once every resource's stop handling (which
+        // still needs a live VM to run its Lua-side "resource:stopped" reaction)
+        // has fully finished. Freeing the Sandbox singleton here — rather than
+        // just clearing its exports/state — means the *next* get_singleton() call
+        // (whenever the next server connection starts a resource) constructs a
+        // brand new Vital::Sandbox::Machine: no leftover globals, no leftover
+        // registered event handlers, nothing at all surviving from this session.
+        enqueue([]() {
+            Manager::Sandbox::free_singleton();
+            Tool::Event::emit("core:session_end");
         });
     }
 

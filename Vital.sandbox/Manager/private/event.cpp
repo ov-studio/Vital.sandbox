@@ -131,15 +131,16 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
-        Vital::Manager::Resource::get_singleton() -> stop_all();
-        Vital::Manager::Asset::get_singleton() -> clear();
-        Vital::Engine::Model::cleanup_spawned();
-        // Free remote physics bodies spawned by _spawn_entity — they live as direct
-        // Core children and are not freed by stop_all() or cleanup_spawned().
-        Vital::Manager::Network::get_singleton() -> cleanup_remote_bodies();
-        #if defined(VSDK_Client)
-        Vital::Engine::Core::get_singleton() -> free_environment();
-        #endif
+        Vital::Engine::Core::get_singleton() -> end_session();
+    });
+
+    // Same full reset for a *manual* disconnect (leaving to a main menu /
+    // connecting to a different server) — previously nothing at all handled
+    // this event, so leaving on purpose skipped every bit of cleanup that a
+    // server-initiated drop got.
+    Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
+        Vital::Tool::print("sbox", "Disconnected from server");
+        Vital::Engine::Core::get_singleton() -> end_session();
     });
     #endif
 
