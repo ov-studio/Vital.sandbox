@@ -1,0 +1,6 @@
+name: "benchmark"
+author: "ov-studio"
+version: "1.0.0"
+
+scripts:
+  - { src: "benchmark.lua", type: "server" }
