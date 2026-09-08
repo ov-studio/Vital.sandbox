@@ -47,7 +47,7 @@ const LUA_COMPLETE_EVENT := "benchmark:lua:complete"
 
 # Tests in this set measure pure scripting runtime - geomean is computed
 # only over these. Tests not listed here are treated as "native_api".
-const SCRIPTING_TESTS := ["arithmetic", "function_calls", "table_access", "math_calls"]
+const SCRIPTING_TESTS := ["arithmetic", "function_calls", "table_access", "math_calls", "string_ops", "table_construction", "closures", "varargs", "table_iteration", "entity_simulation"]
 
 @onready var core: Node = $"../Core"
 
@@ -182,7 +182,6 @@ func run_gdscript_benchmark(script_path: String) -> Array:
 	# and the benchmark doesn't run twice.
 	var instance = gd_script.new()
 	var results: Array = instance.run_all()
-	instance.free()
 	return results
 
 
