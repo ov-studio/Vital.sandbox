@@ -1,43 +1,26 @@
 -- Vital.sandbox Lua 5.4 vs GDScript benchmark - Lua side.
 -- ==============================================================
--- This is a normal resource: drop it in `resources/benchmark/` next
--- to any Vital.server or Vital.benchmark executable, list it under
--- `bootstrap:` in config.yaml (already done for you in
--- Vital.benchmark/config.yaml), and it runs on startup like any
--- other resource. There's no special API tying this to
--- Vital.benchmark - it's genuinely just a resource.
---
--- Nothing here is hand-tuned. Every workload calibrates itself to
--- ~TARGET_MS before it takes 7 timed samples, so numbers stay valid
--- across machines and engine builds without editing.
---
--- Results leave this resource two ways:
---   1) core.engine.print() - kept purely as human-readable console/
---      log output, same "BENCH|lua|..." shape as before, for anyone
---      tailing logs or debugging by eye.
---   2) util.event.emit_native("benchmark:lua:complete", {...}) once,
---      right at the end of run_benchmark() - this is the real
---      back-channel now (see API/utility/event.h and
---      Engine::Core::emit_native_event on the C++ side). It hands the
---      full results table straight to GDScript as Core's
---      "native_event" signal the moment this resource is done, so
---      Vital.benchmark's runner no longer has to guess a fixed wait
---      window or scrape the log file for it.
+-- Workload design rules:
+--   - Every test uses only pure Lua stdlib (math.*, string.*, table.*)
+--     or Vital bindings that have a direct GDScript equivalent with the
+--     same underlying cost. No test uses a Vital binding where GDScript
+--     calls a native type method directly (that measures binding
+--     overhead, not scripting runtime).
+--   - All tables/upvalues used as input are created OUTSIDE the timed
+--     loop so allocation cost is not included in throughput numbers.
+--   - Self-calibrating harness: each workload runs until it accumulates
+--     ~TARGET_MS of elapsed time, then takes SAMPLES timed runs at that
+--     iteration count. ops/sec is the reported metric.
 -- ==============================================================
 
-local TARGET_MS = 150
-local SAMPLES = 7
-local WARMUPS = 2
+local TARGET_MS         = 150
+local SAMPLES           = 7
+local WARMUPS           = 2
 local CALIBRATION_START = 10000
-local CALIBRATION_MAX = 200000000
+local CALIBRATION_MAX   = 200000000
 
-local function now_ms()
-    return core.engine.get_tick()
-end
-
-local function print_line(text)
-    core.engine.print("info", text)
-end
+local function now_ms()   return core.engine.get_tick() end
+local function print_line(t) core.engine.print("info", t) end
 
 local function median(values)
     local copy = {}
@@ -54,13 +37,10 @@ end
 
 local function run_test(name, fn, start_iterations)
     local iterations = start_iterations or CALIBRATION_START
-    local elapsed = 0
-    local checksum = 0
+    local elapsed    = 0
+    local checksum   = 0
 
-    -- Warm-up / calibration.
-    for _ = 1, WARMUPS do
-        checksum = checksum + fn(iterations)
-    end
+    for _ = 1, WARMUPS do checksum = checksum + fn(iterations) end
 
     while elapsed < TARGET_MS and iterations < CALIBRATION_MAX do
         local t0 = now_ms()
@@ -71,8 +51,7 @@ local function run_test(name, fn, start_iterations)
             if elapsed <= 0 then
                 iterations = util.math.min(iterations * 10, CALIBRATION_MAX)
             else
-                local scale = TARGET_MS / elapsed
-                scale = util.math.max(1.5, util.math.min(scale, 8.0))
+                local scale = util.math.max(1.5, util.math.min(TARGET_MS / elapsed, 8.0))
                 iterations = util.math.min(util.math.floor(iterations * scale) + 1, CALIBRATION_MAX)
             end
         end
@@ -86,121 +65,162 @@ local function run_test(name, fn, start_iterations)
         samples[#samples + 1] = t1 - t0
     end
 
-    local med = median(samples)
-    local avg = mean(samples)
-    local ops_per_sec = med > 0 and (iterations / (med / 1000.0)) or 0
+    local med      = median(samples)
+    local avg      = mean(samples)
+    local ops_sec  = med > 0 and (iterations / (med / 1000.0)) or 0
 
     print_line(util.string.format(
-        "BENCH|lua|%s|iterations=%d|median_ms=%d|mean_ms=%.2f|ops_sec=%.0f|checksum=%.0f",
-        name, iterations, med, avg, ops_per_sec, checksum
+        "BENCH|lua|%s|iterations=%d|median_ms=%d|mean_ms=%.2f|ops_sec=%.0f|checksum=%.4f",
+        name, iterations, med, avg, ops_sec, checksum
     ))
 
-    return {
-        name = name,
-        iterations = iterations,
-        median_ms = med,
-        mean_ms = avg,
-        ops_sec = ops_per_sec,
-        checksum = checksum,
-    }
+    return { name=name, iterations=iterations, median_ms=med, mean_ms=avg,
+             ops_sec=ops_sec, checksum=checksum }
 end
 
 -- ==============================================================
--- run_benchmark(): runs every workload and prints one BENCH line
--- per workload. Just a local function keeping the script tidy -
--- not a resource export (Vital resources don't expose one today).
--- ==============================================================
 local function run_benchmark()
     local results = {}
+    local function add(r) results[#results + 1] = r end
 
     print_line("=== Vital.sandbox Lua benchmark ===")
-    print_line("Lua runtime: bundled Lua 5.4.5")
+    print_line("Lua runtime: bundled Lua 5.4")
     print_line("Timer: core.engine.get_tick() / milliseconds")
-    print_line("Each workload is calibrated to about " .. TARGET_MS .. " ms before 7 measured samples.")
+    print_line(util.string.format("Calibrating each workload to ~%d ms, then %d samples.", TARGET_MS, SAMPLES))
 
-    -- 1) Tight arithmetic / branching.
-    results[#results + 1] = run_test("arithmetic", function(n)
-        local x = 0.7
-        local y = 1.1
-        local z = 0.0
-        for i = 1, n do
+    -- ── 1. Arithmetic ─────────────────────────────────────────
+    -- Tight float arithmetic + branching. Identical shape to GDScript.
+    add(run_test("arithmetic", function(n)
+        local x, y, z = 0.7, 1.1, 0.0
+        for _ = 1, n do
             z = z + x * 1.234567 + y * 0.987654
             if z > 100000.0 then z = z * 0.5 end
             x = x + 0.000001
             y = y - 0.0000007
         end
         return z
-    end)
+    end))
 
-    -- 2) Local function-call overhead.
-    -- NOTE: uses the same argument shape (float, starting at 1.0) as
-    -- the GDScript version so this is an apples-to-apples comparison.
-    local function add3(a, b, c)
-        return a + b + c
-    end
-    results[#results + 1] = run_test("function_calls", function(n)
+    -- ── 2. Function calls ──────────────────────────────────────
+    -- Local function call overhead. Argument shape matches GDScript.
+    local function add3(a, b, c) return a + b + c end
+    add(run_test("function_calls", function(n)
         local s = 0.0
-        for i = 1, n do
-            s = s + add3(i + 0.0, 2.0, 3.0)
-        end
+        for i = 1, n do s = s + add3(i + 0.0, 2.0, 3.0) end
         return s
-    end)
+    end))
 
-    -- 3) Lua table indexed access.
-    local table_data = {}
-    for i = 1, 4096 do table_data[i] = i * 0.25 end
-    results[#results + 1] = run_test("table_access", function(n)
-        local s = 0
-        local idx = 1
+    -- ── 3. Table / array access ────────────────────────────────
+    -- Sequential indexed reads from a pre-built table. GDScript uses
+    -- Array[float] with the same 4096-element layout.
+    local tdata = {}
+    for i = 1, 4096 do tdata[i] = (i + 1) * 0.25 end
+    add(run_test("table_access", function(n)
+        local s, idx = 0, 1
         for _ = 1, n do
-            s = s + table_data[idx]
+            s = s + tdata[idx]
             idx = idx + 1
             if idx > 4096 then idx = 1 end
         end
         return s
-    end)
+    end))
 
-    -- 4) Standard Lua C-library math calls.
-    results[#results + 1] = run_test("math_calls", function(n)
-        local s = 0
-        local x = 0.001
+    -- ── 4. Math calls ──────────────────────────────────────────
+    -- util.math.sin / util.math.cos (native C lib). GDScript calls sin()/cos()
+    -- as built-ins — identical underlying cost tier.
+    local sin, cos = util.math.sin, util.math.cos
+    add(run_test("math_calls", function(n)
+        local s, x = 0, 0.001
         for _ = 1, n do
-            s = s + util.math.sin(x) * util.math.cos(x * 0.37)
+            s = s + sin(x) * cos(x * 0.37)
             x = x + 0.000001
         end
         return s
-    end)
+    end))
 
-    -- 5) Vital-native binding: a cheap bound C++ function.
-    results[#results + 1] = run_test("native_api_get_tick", function(n)
+    -- ── 5. String operations ───────────────────────────────────
+    -- util.string.format + util.string.len + util.string.sub. GDScript uses
+    -- util.string.format / length / substr — same stdlib-level cost.
+    add(run_test("string_ops", function(n)
         local s = 0
-        for _ = 1, n do
-            s = s + core.engine.get_tick()
+        for i = 1, n do
+            local str = util.string.format("entity_%d", i)
+            s = s + #str + util.string.byte(str, 1)
         end
         return s
-    end, 1000)
+    end))
 
-    -- 6) Vital-native binding with Lua table -> Godot Vector3 conversion and return.
-    results[#results + 1] = run_test("native_api_distance_3d", function(n)
-        local a = {1.0, 2.0, 3.0}
-        local b = {8.0, 6.0, 4.0}
+    -- ── 6. Table construction ──────────────────────────────────
+    -- Allocate a small table every iteration (simulates per-frame
+    -- temporary data in gameplay code). GDScript uses Dictionary.new().
+    add(run_test("table_construction", function(n)
         local s = 0
-        for _ = 1, n do
-            s = s + util.math.distance_3d(a, b)
+        for i = 1, n do
+            local t = { x = i * 0.1, y = i * 0.2, hp = 100, id = i }
+            s = s + t.x + t.hp
         end
         return s
-    end, 1000)
+    end))
+
+    -- ── 7. Closures ────────────────────────────────────────────
+    -- Create + call a closure that captures an upvalue each iteration.
+    -- GDScript equivalent: lambda capturing a local.
+    add(run_test("closures", function(n)
+        local s = 0
+        for i = 1, n do
+            local base = i * 0.5
+            local fn = function(x) return base + x end
+            s = s + fn(1.0)
+        end
+        return s
+    end))
+
+    -- ── 8. Varargs ─────────────────────────────────────────────
+    -- Pack/unpack variable arguments. GDScript uses Array for varargs.
+    local function sum_varargs(...) local s=0; for _,v in ipairs({...}) do s=s+v end; return s end
+    add(run_test("varargs", function(n)
+        local s = 0
+        for i = 1, n do s = s + sum_varargs(i, i+1, i+2, i+3) end
+        return s
+    end))
+
+    -- ── 9. Table iteration ─────────────────────────────────────
+    -- ipairs over a 64-element table every iteration. GDScript uses
+    -- for x in array pattern.
+    local iter_data = {}
+    for i = 1, 64 do iter_data[i] = i * 1.5 end
+    add(run_test("table_iteration", function(n)
+        local s = 0
+        for _ = 1, n do
+            for _, v in ipairs(iter_data) do s = s + v end
+        end
+        return s
+    end, 1000))
+
+    -- ── 10. Entity simulation ──────────────────────────────────
+    -- Simulate 1000 entities (table per entity, update x/y/hp each
+    -- frame). Closest to real gameplay scripting workload.
+    -- GDScript uses Array of Dictionaries.
+    local entities = {}
+    for i = 1, 1000 do
+        entities[i] = { x=i*0.1, y=i*0.2, vx=0.01, vy=0.02, hp=100, id=i }
+    end
+    add(run_test("entity_simulation", function(n)
+        local s = 0
+        for _ = 1, n do
+            for _, e in ipairs(entities) do
+                e.x  = e.x + e.vx
+                e.y  = e.y + e.vy
+                e.hp = e.hp - 0.001
+                s    = s + e.x
+            end
+        end
+        return s
+    end, 100))
 
     print_line("=== Lua benchmark finished ===")
-
-    -- Hand the whole results table to GDScript in one shot, synchronously
-    -- from this resource's point of view (the call only returns once the
-    -- C++ side has queued/emitted the signal). Vital.benchmark's runner
-    -- listens for this exact event name.
     util.event.emit_native("benchmark:lua:complete", results)
-
     return results
 end
 
--- Runs as soon as the resource starts - no manual trigger needed.
 run_benchmark()
