@@ -24,6 +24,8 @@ if env.Args["extra_cppdefines"]:
 
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["VSDK_Client"])
+if env.Args["platform_type"] == "Benchmark":
+    env.Append(CPPDEFINES=["VSDK_Benchmark"])
 if env.Args["build_type"] == "Debug":
     env.Append(CPPDEFINES=["VSDK_Debug"])
 
