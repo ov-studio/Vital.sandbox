@@ -32,7 +32,7 @@ extends Node
 # (observed ~8s extra) plus 6 workloads x ~9 runs x ~150ms each.
 const WAIT_FOR_LUA_SECONDS := 60.0
 
-const GDSCRIPT_BENCHMARK_PATH := "gdscript/benchmark.gd"
+const GDSCRIPT_BENCHMARK_PATH := "resources/benchmark/benchmark.gd"
 const LUA_COMPLETE_EVENT := "benchmark:lua:complete"
 
 @onready var core: Node = $"../Core"
@@ -52,8 +52,8 @@ func _ready() -> void:
 	var result_path := base_dir.path_join("result.json")
 
 	print("Vital.benchmark")
-	print("Lua side:      resources/benchmark/ (auto-started via config.yaml bootstrap)")
-	print("GDScript side: " + gd_path)
+	print("Lua/GDScript:  resources/benchmark/ (Lua auto-started via config.yaml bootstrap)")
+	print("GDScript path: " + gd_path)
 	print("")
 
 	core.native_event.connect(_on_native_event)
@@ -145,7 +145,7 @@ func shutdown_and_quit() -> void:
 		get_tree().quit()
 
 
-## Loads gdscript/benchmark.gd from disk and runs it, returning its
+## Loads resources/benchmark/benchmark.gd from disk and runs it, returning its
 ## Array[Dictionary] results directly - no parsing needed for this
 ## half. Intentionally excluded from the exported .pck (see
 ## export_presets.cfg's exclude_filter) so it stays a plain, readable,
