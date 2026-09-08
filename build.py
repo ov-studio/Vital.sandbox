@@ -331,6 +331,7 @@ def main():
     platform_group = parser.add_mutually_exclusive_group(required=True)
     platform_group.add_argument("--client", action="store_true")
     platform_group.add_argument("--server", action="store_true")
+    platform_group.add_argument("--benchmark", action="store_true", help="Build the benchmark tool")
     platform_group.add_argument("--all", action="store_true", help="Build both client and server")
 
     build_group = parser.add_mutually_exclusive_group(required=True)
@@ -344,7 +345,15 @@ def main():
     args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
+
+    if args.client:
+        platforms = ["Client"]
+    elif args.server:
+        platforms = ["Server"]
+    elif args.benchmark:
+        platforms = ["Benchmark"]
+    else:
+        platforms = ["Client", "Server"]
 
     godot_version = Godot(None).get_version(script_dir)
 
