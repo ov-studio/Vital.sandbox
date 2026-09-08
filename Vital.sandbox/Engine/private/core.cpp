@@ -157,12 +157,6 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Benchmark)
     void Core::emit_native_event(const std::string& name, const Tool::Stack& payload) {
-        // execute() runs immediately if we're already on the main thread,
-        // otherwise it's queued into work_queue and picked up by the next
-        // drain() (called every _process() tick, plus one extra
-        // call_deferred("drain") guaranteed whenever the queue is non-empty -
-        // see _process() above). Either way emit_signal() itself only ever
-        // runs on the main thread, which is a hard Godot requirement.
         execute([this, name, payload]() {
             emit_signal("native_event", Tool::to_godot_string(name), payload.to_dict());
         });

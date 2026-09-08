@@ -94,13 +94,6 @@ namespace Vital::Engine {
             void execute(std::function<void()> exec);
             void enqueue(std::function<void()> exec);
             #if defined(VSDK_Benchmark)
-            // Benchmark-only. Delivers a Lua-originated event straight to
-            // GDScript as the "native_event" signal (name, payload). Safe to
-            // call from any thread - internally routed through execute(),
-            // same as Manager::Sandbox::signal(), so the actual
-            // emit_signal() always happens on the main thread whether the
-            // caller is already on it or is Core's background Lua resource
-            // thread (e.g. a resource finishing a benchmark).
             void emit_native_event(const std::string& name, const Tool::Stack& payload);
             #endif
             // TODO: Improve
@@ -115,8 +108,7 @@ namespace Vital::Engine {
             // (Model::set_parent, the generic Node_3D::set_parent binding,
             // future entity types, ...) gets the same guarantee for free
             // instead of hand-rolling its own defer/retry logic.
-            void when_parent_ready(godot::Node3D* node, godot::Node* target,
-                                    std::function<void(godot::Node3D*, godot::Node*)> fn);
+            void when_parent_ready(godot::Node3D* node, godot::Node* target, std::function<void(godot::Node3D*, godot::Node*)> fn);
             void drain();
             void teardown();
             void shutdown();
