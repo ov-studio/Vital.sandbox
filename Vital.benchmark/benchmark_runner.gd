@@ -5,33 +5,40 @@ extends Node
 #
 # Core boots the Lua sandbox and bootstraps resources (see
 # config.yaml's `bootstrap: - "benchmark"`) on its own background
-# thread, and nothing in Vital.core today exposes a GDScript-callable
-# way to ask a resource for its results or even know when it finished
-# (Core only binds `drain()` - checked against the actual engine
-# source, not guessed). So this script:
+# thread. Core now exposes a real GDScript-facing "native_event"
+# signal (see Engine::Core::emit_native_event / _bind_methods in
+# Engine/public/core.h) that any resource can fire straight from Lua
+# via util.event.emit_native(name, ...) - see
+# API/utility/event.h and resources/benchmark/benchmark.lua. So this
+# script:
 #
 #   1. Runs the GDScript half directly, in-process - just a function
 #      call, results captured as real Dictionaries, no parsing.
-#   2. Gives the Lua half (running on Core's background thread) a
-#      fixed, generous window to finish printing its own
-#      "BENCH|lua|..." lines.
-#   3. Reads those lines back out of Godot's own log file (enabled in
-#      project.godot: debug/file_logging/enable_file_logging) rather
-#      than trying to read its own live stdout, which isn't something
-#      a process can generally do to itself.
-#   4. Writes result.json next to the executable and quits - no
-#      external tooling required for the basic case.
+#   2. Connects to Core's "native_event" signal and waits for the Lua
+#      resource to fire "benchmark:lua:complete" with its results
+#      table - no fixed sleep, no log-file scraping/regex. A generous
+#      timeout is kept only as a safety net in case a resource never
+#      starts (e.g. a cold Vital.kit download that hangs, or a script
+#      error before it reaches emit_native).
+#   3. Writes result.json next to the executable.
+#   4. Shuts Core down properly (Core.shutdown(), which stops every
+#      resource and tears down the sandbox singleton cleanly) before
+#      quitting, instead of calling get_tree().quit() cold.
 # ==============================================================
 
-# Comfortably above worst-case time for 6 workloads x ~9 runs x
-# ~150ms each, per language, PLUS a cold-cache Vital.kit download on
-# first run (observed ~8s extra). Bump this further if you add slower
-# workloads and result.json ends up missing tests.
+# Safety-net ceiling only - the normal path resolves the moment the
+# "benchmark:lua:complete" native_event arrives, almost always well
+# under this. Covers a cold-cache Vital.kit download on first run
+# (observed ~8s extra) plus 6 workloads x ~9 runs x ~150ms each.
 const WAIT_FOR_LUA_SECONDS := 60.0
 
 const GDSCRIPT_BENCHMARK_PATH := "gdscript/benchmark.gd"
+const LUA_COMPLETE_EVENT := "benchmark:lua:complete"
 
-const LUA_BENCH_PATTERN := "BENCH\\|lua\\|(?<name>[^|]+)\\|iterations=(?<iterations>\\d+)\\|median_ms=(?<median_ms>[\\d.]+)\\|mean_ms=(?<mean_ms>[\\d.]+)\\|ops_sec=(?<ops_sec>[\\d.]+)\\|checksum=(?<checksum>-?[\\d.]+)"
+@onready var core: Node = $"../Core"
+
+var _lua_payload: Dictionary
+var _lua_done := false
 
 
 func _ready() -> void:
@@ -49,20 +56,79 @@ func _ready() -> void:
 	print("GDScript side: " + gd_path)
 	print("")
 
+	core.native_event.connect(_on_native_event)
+
 	var gd_results := run_gdscript_benchmark(gd_path)
 
 	print("")
-	print("Waiting up to %.0fs for the Lua resource to finish on its own thread..." % WAIT_FOR_LUA_SECONDS)
-	await get_tree().create_timer(WAIT_FOR_LUA_SECONDS).timeout
+	print("Waiting for the Lua resource's \"%s\" event..." % LUA_COMPLETE_EVENT)
+	var lua_results := await wait_for_lua_results()
 
-	var lua_results := await read_lua_results_from_log()
 	var report := build_report(lua_results, gd_results)
 	write_result_json(result_path, report)
 
 	print_summary(report)
 	print("")
 	print("Wrote " + result_path)
-	get_tree().quit()
+
+	shutdown_and_quit()
+
+
+## Resolves as soon as _on_native_event() records the Lua side's
+## results, or after WAIT_FOR_LUA_SECONDS as a safety-net fallback
+## (in which case Lua's numbers are simply absent from result.json,
+## same graceful-degradation behavior the old log-scraping path had).
+func wait_for_lua_results() -> Array:
+	if not _lua_done:
+		var deadline := Time.get_ticks_msec() + int(WAIT_FOR_LUA_SECONDS * 1000.0)
+		# _on_native_event() is connected in _ready() and flips _lua_done
+		# the moment "benchmark:lua:complete" arrives (Core's emit_signal()
+		# always lands on the main thread - see Core::execute()/drain() -
+		# so this poll and that signal are never racing on different
+		# threads). Polling one frame at a time is simpler and just as
+		# fast in practice as racing a second Signal against native_event,
+		# and it keeps the fallback timeout trivially easy to reason about.
+		while not _lua_done and Time.get_ticks_msec() < deadline:
+			await get_tree().process_frame
+		if not _lua_done:
+			push_warning("Timed out waiting for \"%s\" - Lua results will be missing from result.json" % LUA_COMPLETE_EVENT)
+
+	if not _lua_done or not _lua_payload.has("array"):
+		return []
+
+	var results: Array = []
+	for entry_variant in (_lua_payload["array"] as Array):
+		if typeof(entry_variant) != TYPE_DICTIONARY or not entry_variant.has("object"):
+			continue
+		var obj: Dictionary = entry_variant["object"]
+		results.append({
+			"name": obj.get("name", ""),
+			"iterations": int(obj.get("iterations", 0)),
+			"median_ms": float(obj.get("median_ms", 0.0)),
+			"mean_ms": float(obj.get("mean_ms", 0.0)),
+			"ops_sec": float(obj.get("ops_sec", 0.0)),
+			"checksum": float(obj.get("checksum", 0.0)),
+		})
+	return results
+
+
+func _on_native_event(name: String, payload: Dictionary) -> void:
+	if name != LUA_COMPLETE_EVENT or _lua_done:
+		return
+	_lua_payload = payload
+	_lua_done = true
+
+
+func shutdown_and_quit() -> void:
+	# Core.shutdown() stops every running resource (unloads Lua
+	# environments cleanly) and tears down the Sandbox/VM singleton
+	# before freeing itself - the same graceful path used when a
+	# normal Vital.server/Vital.client process exits, rather than
+	# quitting the whole engine out from under a still-live sandbox.
+	if core.has_method("shutdown"):
+		core.call("shutdown")
+	else:
+		get_tree().quit()
 
 
 ## Loads gdscript/benchmark.gd from disk and runs it, returning its
@@ -89,46 +155,6 @@ func run_gdscript_benchmark(script_path: String) -> Array:
 	var instance = gd_script.new()
 	var results: Array = instance.run_all()
 	instance.free()
-	return results
-
-
-## Reads Godot's own log file (real-time, since file_logging is on)
-## and pulls out every "BENCH|lua|..." line printed by the resource.
-## This is the only channel a resource can currently reach the
-## outside world through - there's no GDScript-facing API to call
-## into one directly (see the header comment).
-func read_lua_results_from_log() -> Array:
-	var log_setting: String = ProjectSettings.get_setting("debug/file_logging/log_path", "user://logs/godot.log")
-	var log_path := ProjectSettings.globalize_path(log_setting)
-
-	var log_text := ""
-	for attempt in 3:
-		if FileAccess.file_exists(log_path):
-			log_text = FileAccess.get_file_as_string(log_path)
-			if not log_text.is_empty():
-				break
-		await get_tree().create_timer(0.5).timeout
-
-	if log_text.is_empty():
-		push_warning("Log file not found/empty at " + log_path + " - Lua results will be missing from result.json")
-		return []
-	var regex := RegEx.new()
-	regex.compile(LUA_BENCH_PATTERN)
-
-	var results: Array = []
-	for m in regex.search_all(log_text):
-		results.append({
-			"name": m.get_string("name"),
-			"iterations": m.get_string("iterations").to_int(),
-			"median_ms": m.get_string("median_ms").to_float(),
-			"mean_ms": m.get_string("mean_ms").to_float(),
-			"ops_sec": m.get_string("ops_sec").to_float(),
-			"checksum": m.get_string("checksum").to_float(),
-		})
-
-	if results.is_empty():
-		push_warning("No BENCH|lua| lines found in " + log_path + " - did the resource fail to start?")
-
 	return results
 
 

@@ -11,13 +11,18 @@
 -- ~TARGET_MS before it takes 7 timed samples, so numbers stay valid
 -- across machines and engine builds without editing.
 --
--- Results only ever leave this resource the normal way any resource
--- talks to the outside world today: core.engine.print(). The
--- "BENCH|lua|..." lines below are what Vital.benchmark's build/run
--- script (scripts/build_and_run.py) parses out of the process's
--- console output to build result.json - there is no back-channel API
--- for a resource to hand data straight to GDScript, so this is the
--- honest, currently-real way to get the numbers out.
+-- Results leave this resource two ways:
+--   1) core.engine.print() - kept purely as human-readable console/
+--      log output, same "BENCH|lua|..." shape as before, for anyone
+--      tailing logs or debugging by eye.
+--   2) util.event.emit_native("benchmark:lua:complete", {...}) once,
+--      right at the end of run_benchmark() - this is the real
+--      back-channel now (see API/utility/event.h and
+--      Engine::Core::emit_native_event on the C++ side). It hands the
+--      full results table straight to GDScript as Core's
+--      "native_event" signal the moment this resource is done, so
+--      Vital.benchmark's runner no longer has to guess a fixed wait
+--      window or scrape the log file for it.
 -- ==============================================================
 
 local TARGET_MS = 150
@@ -187,6 +192,12 @@ local function run_benchmark()
     end, 1000)
 
     print_line("=== Lua benchmark finished ===")
+
+    -- Hand the whole results table to GDScript in one shot, synchronously
+    -- from this resource's point of view (the call only returns once the
+    -- C++ side has queued/emitted the signal). Vital.benchmark's runner
+    -- listens for this exact event name.
+    util.event.emit_native("benchmark:lua:complete", results)
 
     return results
 end
