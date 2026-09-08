@@ -1,11 +1,11 @@
 -- Vital.sandbox Lua 5.4 vs GDScript benchmark - Lua side.
 -- ==============================================================
 -- Workload design rules:
---   - Every test uses only pure Lua stdlib (math.*, string.*, table.*)
---     or Vital bindings that have a direct GDScript equivalent with the
---     same underlying cost. No test uses a Vital binding where GDScript
---     calls a native type method directly (that measures binding
---     overhead, not scripting runtime).
+--   - Every test uses only pure Lua stdlib via util.* (math, string,
+--     table) or Vital bindings with a direct GDScript equivalent at
+--     the same cost tier. No test uses a binding where GDScript calls
+--     a native type method directly (that measures binding overhead,
+--     not scripting runtime).
 --   - All tables/upvalues used as input are created OUTSIDE the timed
 --     loop so allocation cost is not included in throughput numbers.
 --   - Self-calibrating harness: each workload runs until it accumulates
@@ -13,20 +13,34 @@
 --     iteration count. ops/sec is the reported metric.
 -- ==============================================================
 
+-- Localize util namespaces once at the top.
+-- Avoids repeated _ENV lookups for util.*, util.math.*, etc. inside
+-- hot loops — each global table index costs a hash lookup in Lua 5.4.
+local math   = util.math
+local str    = util.string
+local tbl    = util.table
+
+-- Localize the most-called math functions for maximum hot-loop speed.
+local sin    = math.sin
+local cos    = math.cos
+local floor  = math.floor
+local min    = math.min
+local max    = math.max
+
 local TARGET_MS         = 150
 local SAMPLES           = 7
 local WARMUPS           = 2
 local CALIBRATION_START = 10000
 local CALIBRATION_MAX   = 200000000
 
-local function now_ms()   return core.engine.get_tick() end
-local function print_line(t) core.engine.print("info", t) end
+local function now_ms()      return core.engine.get_tick() end
+local function print_line(t) core.engine.print("info", t)  end
 
 local function median(values)
     local copy = {}
     for i = 1, #values do copy[i] = values[i] end
-    util.table.sort(copy)
-    return copy[util.math.floor((#copy + 1) / 2)]
+    tbl.sort(copy)
+    return copy[floor((#copy + 1) / 2)]
 end
 
 local function mean(values)
@@ -49,10 +63,10 @@ local function run_test(name, fn, start_iterations)
         elapsed = t1 - t0
         if elapsed < TARGET_MS then
             if elapsed <= 0 then
-                iterations = util.math.min(iterations * 10, CALIBRATION_MAX)
+                iterations = min(iterations * 10, CALIBRATION_MAX)
             else
-                local scale = util.math.max(1.5, util.math.min(TARGET_MS / elapsed, 8.0))
-                iterations = util.math.min(util.math.floor(iterations * scale) + 1, CALIBRATION_MAX)
+                local scale = max(1.5, min(TARGET_MS / elapsed, 8.0))
+                iterations = min(floor(iterations * scale) + 1, CALIBRATION_MAX)
             end
         end
     end
@@ -65,11 +79,11 @@ local function run_test(name, fn, start_iterations)
         samples[#samples + 1] = t1 - t0
     end
 
-    local med      = median(samples)
-    local avg      = mean(samples)
-    local ops_sec  = med > 0 and (iterations / (med / 1000.0)) or 0
+    local med     = median(samples)
+    local avg     = mean(samples)
+    local ops_sec = med > 0 and (iterations / (med / 1000.0)) or 0
 
-    print_line(util.string.format(
+    print_line(str.format(
         "BENCH|lua|%s|iterations=%d|median_ms=%d|mean_ms=%.2f|ops_sec=%.0f|checksum=%.4f",
         name, iterations, med, avg, ops_sec, checksum
     ))
@@ -86,7 +100,7 @@ local function run_benchmark()
     print_line("=== Vital.sandbox Lua benchmark ===")
     print_line("Lua runtime: bundled Lua 5.4")
     print_line("Timer: core.engine.get_tick() / milliseconds")
-    print_line(util.string.format("Calibrating each workload to ~%d ms, then %d samples.", TARGET_MS, SAMPLES))
+    print_line(str.format("Calibrating each workload to ~%d ms, then %d samples.", TARGET_MS, SAMPLES))
 
     -- ── 1. Arithmetic ─────────────────────────────────────────
     -- Tight float arithmetic + branching. Identical shape to GDScript.
@@ -126,9 +140,8 @@ local function run_benchmark()
     end))
 
     -- ── 4. Math calls ──────────────────────────────────────────
-    -- util.math.sin / util.math.cos (native C lib). GDScript calls sin()/cos()
-    -- as built-ins — identical underlying cost tier.
-    local sin, cos = util.math.sin, util.math.cos
+    -- util.math.sin/cos localized at file top — same underlying C
+    -- function as GDScript's built-in sin()/cos().
     add(run_test("math_calls", function(n)
         local s, x = 0, 0.001
         for _ = 1, n do
@@ -139,13 +152,13 @@ local function run_benchmark()
     end))
 
     -- ── 5. String operations ───────────────────────────────────
-    -- util.string.format + util.string.len + util.string.sub. GDScript uses
-    -- util.string.format / length / substr — same stdlib-level cost.
+    -- util.string.format + len + byte. GDScript uses String.format /
+    -- length / unicode_at — same stdlib-level cost.
     add(run_test("string_ops", function(n)
         local s = 0
         for i = 1, n do
-            local str = util.string.format("entity_%d", i)
-            s = s + #str + util.string.byte(str, 1)
+            local st = str.format("entity_%d", i)
+            s = s + #st + str.byte(st, 1)
         end
         return s
     end))
