@@ -96,8 +96,22 @@ func wait_for_lua_results() -> Array:
 	if not _lua_done or not _lua_payload.has("array"):
 		return []
 
+	# util.event.emit_native("benchmark:lua:complete", results) passes the
+	# whole `results` table as a *single* Lua argument, so on the way over
+	# it gets one extra layer of nesting versus "each result is its own
+	# arg": payload.array (the varargs collected after `name`) has exactly
+	# one entry, and that entry - not _lua_payload["array"] itself - is the
+	# {"array": [...6 results...], "object": {}} produced from `results`.
+	# See Tool::Stack::to_dict()/StackValue::to_variant() on the C++ side.
+	var top_level: Array = _lua_payload["array"]
+	if top_level.is_empty() or typeof(top_level[0]) != TYPE_DICTIONARY:
+		return []
+	var wrapped: Dictionary = top_level[0]
+	if not wrapped.has("array"):
+		return []
+
 	var results: Array = []
-	for entry_variant in (_lua_payload["array"] as Array):
+	for entry_variant in (wrapped["array"] as Array):
 		if typeof(entry_variant) != TYPE_DICTIONARY or not entry_variant.has("object"):
 			continue
 		var obj: Dictionary = entry_variant["object"]
