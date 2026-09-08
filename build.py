@@ -268,7 +268,7 @@ class Build:
 
     def copy_assets(self):
         b = self.init()
-        asset_dirs = ("resources", "gdscript")
+        asset_dirs = ("resources", "scripts")
         log_step(f"Copying assets [{self.platform_type} | {self.build_type}]")
 
         copied_any = False
@@ -284,7 +284,7 @@ class Build:
             copied_any = True
 
         if not copied_any:
-            log_info("No resources/ or gdscript/ folders found")
+            log_info("No resources/ or scripts/ folders found")
 
     def export(self):
         b = self.init()
