@@ -43,6 +43,31 @@ namespace Vital::Engine {
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
+
+                #if defined(VSDK_Benchmark)
+                // Benchmark-only: lets Vital.benchmark's plain GDScript entry
+                // point terminate the same graceful way a normal
+                // Vital.server/Vital.client process does - stop every
+                // resource, tear the sandbox down, then quit - instead of
+                // calling get_tree().quit() cold out from under a still-live
+                // VM. Not exposed on Client/Server builds since nothing there
+                // drives shutdown from GDScript today.
+                godot::ClassDB::bind_method(godot::D_METHOD("shutdown"), &Core::shutdown);
+
+                // Benchmark-only: lets Lua (via util.event.emit_native(), see
+                // API/utility/event.h, also VSDK_Benchmark-guarded) hand data
+                // straight to whatever's listening on the GDScript side,
+                // instead of the old approach of scraping "BENCH|..." lines
+                // back out of the log file. `name` is the event identifier
+                // the Lua side passed, `payload` is that call's extra
+                // arguments collected into a Dictionary of shape
+                // {"array": [...], "object": {...}} (see
+                // Tool::Stack::to_dict()). Any GDScript node can just do:
+                //   $"../Core".native_event.connect(_on_native_event)
+                ADD_SIGNAL(godot::MethodInfo("native_event",
+                    godot::PropertyInfo(godot::Variant::STRING, "name"),
+                    godot::PropertyInfo(godot::Variant::DICTIONARY, "payload")));
+                #endif
             };
         public:
             // Hooks //
@@ -68,6 +93,16 @@ namespace Vital::Engine {
             #endif
             void execute(std::function<void()> exec);
             void enqueue(std::function<void()> exec);
+            #if defined(VSDK_Benchmark)
+            // Benchmark-only. Delivers a Lua-originated event straight to
+            // GDScript as the "native_event" signal (name, payload). Safe to
+            // call from any thread - internally routed through execute(),
+            // same as Manager::Sandbox::signal(), so the actual
+            // emit_signal() always happens on the main thread whether the
+            // caller is already on it or is Core's background Lua resource
+            // thread (e.g. a resource finishing a benchmark).
+            void emit_native_event(const std::string& name, const Tool::Stack& payload);
+            #endif
             // TODO: Improve
             // Runs fn(node, target) once both `node` and `target` (if given)
             // are actually inside the scene tree. If either isn't ready yet —

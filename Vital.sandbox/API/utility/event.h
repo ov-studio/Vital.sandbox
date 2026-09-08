@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/utility/thread.h>
 
@@ -641,6 +642,37 @@ namespace Vital::Sandbox::API {
                 push_promise(vm, agg);
                 return 1;
             });
+
+            // util.event.emit_native(name, ...) - hands `...` straight to
+            // GDScript as Vital::Engine::Core's "native_event" signal instead of
+            // going through another Lua handler. This is the supported
+            // replacement for resources that used to talk to the outside
+            // world by printing a parseable line (e.g. Vital.benchmark's old
+            // "BENCH|lua|..." log scraping): call this once with your
+            // results and whatever's listening on the GDScript side (see
+            // Vital::Engine::Core::emit_native_event) gets them the moment this
+            // call returns - no polling, no log file, no fixed wait window.
+            // Safe to call from a resource's own background thread; the
+            // actual signal emission is always marshalled onto the main
+            // thread by Core::execute().
+            //
+            // Benchmark-only: native_event is only bound/emitted on
+            // VSDK_Benchmark builds (see Engine/public/core.h), so this
+            // function itself is compiled out of Client/Server builds -
+            // calling util.event.emit_native() from a resource running under
+            // Vital.client/Vital.server simply won't find the function.
+            #if defined(VSDK_Benchmark)
+            API::bind(vm, base_scope, "emit_native", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, ...)")
+                    .require(1, &Machine::is_string);
+
+                std::string name = vm -> get_string(1);
+                Tool::Stack payload = vm -> collect_args(2);
+                Vital::Engine::Core::get_singleton() -> emit_native_event(name, payload);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
         }
 
         static void clean(const std::string& env) {
