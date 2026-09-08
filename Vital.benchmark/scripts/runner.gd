@@ -24,16 +24,30 @@ extends Node
 #   4. Shuts Core down properly (Core.shutdown(), which stops every
 #      resource and tears down the sandbox singleton cleanly) before
 #      quitting, instead of calling get_tree().quit() cold.
+#
+# Throughput ratio methodology:
+#   Each workload self-calibrates to ~150 ms independently, so raw
+#   iteration counts and elapsed times are NOT directly comparable.
+#   The correct metric is ops/sec: throughput_ratio = lua_ops_sec /
+#   gdscript_ops_sec. A ratio > 1.0 means Lua is faster; < 1.0 means
+#   GDScript is faster.
+#
+#   Tests are split into two groups:
+#     "scripting" - pure language runtime (arithmetic, function calls,
+#       table access, math). Geomean over this group is the headline
+#       scripting performance number.
+#     "native_api" - measures binding + engine call overhead, not the
+#       scripting runtime itself. Reported separately.
 # ==============================================================
 
-# Safety-net ceiling only - the normal path resolves the moment the
-# "benchmark:lua:complete" native_event arrives, almost always well
-# under this. Covers a cold-cache Vital.kit download on first run
-# (observed ~8s extra) plus 6 workloads x ~9 runs x ~150ms each.
 const WAIT_FOR_LUA_SECONDS := 60.0
 
 const GDSCRIPT_BENCHMARK_PATH := "resources/benchmark/benchmark.gd"
 const LUA_COMPLETE_EVENT := "benchmark:lua:complete"
+
+# Tests in this set measure pure scripting runtime - geomean is computed
+# only over these. Tests not listed here are treated as "native_api".
+const SCRIPTING_TESTS := ["arithmetic", "function_calls", "table_access", "math_calls"]
 
 @onready var core: Node = $"../Core"
 
@@ -181,7 +195,10 @@ func build_report(lua_results: Array, gd_results: Array) -> Dictionary:
 			by_name[r["name"]] = {}
 		by_name[r["name"]]["gdscript"] = r
 
-	var tests: Array = []
+	var scripting_tests: Array = []
+	var native_tests: Array = []
+
+	# Geomean over scripting tests only.
 	var log_sum := 0.0
 	var log_count := 0
 
@@ -195,19 +212,23 @@ func build_report(lua_results: Array, gd_results: Array) -> Dictionary:
 			row["gdscript"] = entry["gdscript"]
 
 		if entry.has("lua") and entry.has("gdscript"):
-			var lua_ms: float = entry["lua"]["median_ms"]
-			var gd_ms: float = entry["gdscript"]["median_ms"]
-			if lua_ms > 0.0 and gd_ms > 0.0:
-				var faster := "lua" if lua_ms < gd_ms else "gdscript"
-				var ratio: float = max(lua_ms, gd_ms) / min(lua_ms, gd_ms)
-				row["faster"] = faster
-				row["speedup"] = ratio
-				log_sum += log(ratio)
-				log_count += 1
+			var lua_ops: float = entry["lua"]["ops_sec"]
+			var gd_ops: float = entry["gdscript"]["ops_sec"]
+			if lua_ops > 0.0 and gd_ops > 0.0:
+				# throughput_ratio > 1.0 = Lua faster, < 1.0 = GDScript faster.
+				var ratio: float = lua_ops / gd_ops
+				row["throughput_ratio"] = ratio
+				row["faster"] = "lua" if ratio >= 1.0 else "gdscript"
+				if test_name in SCRIPTING_TESTS:
+					log_sum += log(ratio)
+					log_count += 1
 
-		tests.append(row)
+		if test_name in SCRIPTING_TESTS:
+			scripting_tests.append(row)
+		else:
+			native_tests.append(row)
 
-	var geomean := exp(log_sum / float(log_count)) if log_count > 0 else 0.0
+	var scripting_geomean := exp(log_sum / float(log_count)) if log_count > 0 else 0.0
 
 	return {
 		"generated_at_unix": Time.get_unix_time_from_system(),
@@ -215,10 +236,15 @@ func build_report(lua_results: Array, gd_results: Array) -> Dictionary:
 			"target_ms": 150,
 			"samples": 7,
 			"warmups": 2,
-			"note": "Each workload self-calibrates its iteration count to run for ~target_ms before timing. No iteration counts are hand-tuned or hardcoded.",
+			"note": "Each workload self-calibrates its iteration count to ~target_ms independently. Throughput ratio = lua_ops_sec / gdscript_ops_sec. Ratio > 1.0 means Lua is faster.",
 		},
-		"tests": tests,
-		"summary": {"geomean_speedup": geomean, "tests_compared": log_count},
+		"scripting_tests": scripting_tests,
+		"native_api_tests": native_tests,
+		"summary": {
+			"scripting_geomean_throughput_ratio": scripting_geomean,
+			"scripting_tests_compared": log_count,
+			"note": "Geomean is over scripting_tests only. native_api_tests measure binding overhead, not scripting runtime.",
+		},
 	}
 
 
@@ -233,13 +259,27 @@ func write_result_json(path: String, report: Dictionary) -> void:
 
 func print_summary(report: Dictionary) -> void:
 	print("")
-	print("=== Summary ===")
-	for row in report["tests"]:
-		if row.has("speedup"):
-			print("%-24s %s faster by %.2fx" % [row["name"], row["faster"], row["speedup"]])
+	print("=== Scripting Performance (Lua ops/sec / GDScript ops/sec) ===")
+	for row in report["scripting_tests"]:
+		if row.has("throughput_ratio"):
+			var ratio: float = row["throughput_ratio"]
+			var faster: String = row["faster"]
+			var label := "%.2fx  Lua" % ratio if faster == "lua" else "%.2fx  GDScript" % (1.0 / ratio)
+			print("  %-28s %s" % [row["name"], label])
 		else:
-			print("%-24s incomplete" % row["name"])
+			print("  %-28s incomplete" % row["name"])
+	var geomean: float = report["summary"]["scripting_geomean_throughput_ratio"]
+	var count: int = report["summary"]["scripting_tests_compared"]
 	print("")
-	print("Geometric mean speedup: %.2fx (%d tests compared)" % [
-		report["summary"]["geomean_speedup"], report["summary"]["tests_compared"]
-	])
+	print("  Geomean: %.2fx Lua  (%d scripting tests)" % [geomean, count])
+
+	print("")
+	print("=== Native API (binding + engine call overhead) ===")
+	for row in report["native_api_tests"]:
+		if row.has("throughput_ratio"):
+			var ratio: float = row["throughput_ratio"]
+			var faster: String = row["faster"]
+			var label := "%.2fx  Lua" % ratio if faster == "lua" else "%.2fx  GDScript" % (1.0 / ratio)
+			print("  %-28s %s" % [row["name"], label])
+		else:
+			print("  %-28s incomplete" % row["name"])
