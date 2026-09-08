@@ -266,6 +266,26 @@ class Build:
         if not pdbs_copied:
             log_info("No PDB files found")
 
+    def copy_assets(self):
+        b = self.init()
+        asset_dirs = ("resources", "gdscript")
+        log_step(f"Copying assets [{self.platform_type} | {self.build_type}]")
+
+        copied_any = False
+        for name in asset_dirs:
+            src = os.path.join(b["project_dir"], name)
+            if not os.path.isdir(src):
+                continue
+            dst = os.path.join(b["dist_dir"], name)
+            if os.path.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+            log_info(f"Copied: {name}/")
+            copied_any = True
+
+        if not copied_any:
+            log_info("No resources/ or gdscript/ folders found")
+
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
@@ -321,6 +341,7 @@ class Build:
         log_ok("Done")
         self.copy_config()
         self.copy_lib()
+        self.copy_assets()
         if self.build_type == "Debug":
             self.copy_pdb()
 
@@ -331,7 +352,7 @@ def main():
     platform_group = parser.add_mutually_exclusive_group(required=True)
     platform_group.add_argument("--client", action="store_true")
     platform_group.add_argument("--server", action="store_true")
-    platform_group.add_argument("--benchmark", action="store_true", help="Build the benchmark tool")
+    platform_group.add_argument("--benchmark", action="store_true", help="Build the Lua vs GDScript benchmark tool")
     platform_group.add_argument("--all", action="store_true", help="Build both client and server")
 
     build_group = parser.add_mutually_exclusive_group(required=True)
