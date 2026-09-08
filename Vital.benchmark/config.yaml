@@ -1,0 +1,7 @@
+server:
+  name: "Vital.benchmark"
+  version: "1.0.0"
+  description: "Lua vs GDScript performance benchmark"
+
+bootstrap:
+  - "benchmark"
