@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://djm1xdvd0reul"]
 
-[ext_resource type="Script" uid="uid://76nes2y8bra8" path="res://scripts/runner.gd" id="1"]
+[ext_resource type="Script" uid="uid://u6aabuhh8keo" path="res://scripts/runner.gd" id="1"]
 
 [node name="Node" type="Node" unique_id=1475836301]
 
