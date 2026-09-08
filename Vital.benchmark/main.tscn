@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://djm1xdvd0reul"]
+
+[ext_resource type="Script" uid="uid://76nes2y8bra8" path="res://benchmark_runner.gd" id="1"]
+
+[node name="Node" type="Node" unique_id=1475836301]
+
+[node name="Core" type="Core" parent="." unique_id=608114311]
+
+[node name="BenchmarkRunner" type="Node" parent="." unique_id=1604166602]
+script = ExtResource("1")
