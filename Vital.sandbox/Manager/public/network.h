@@ -124,7 +124,8 @@ namespace Vital::Manager {
 
 
             // Model sync registry //
-            void register_syncable(Engine::ISyncable* entity);
+            void register_syncable(Engine::ISyncable* entity);        // acquires sync_models_mutex
+            void register_syncable_locked(Engine::ISyncable* entity); // caller must already hold sync_models_mutex
             void unregister_syncable(Engine::ISyncable* entity);
             // Posts to pending queue — safe to call from any thread/enqueue context.
             void enqueue_syncable_registration(Engine::ISyncable* entity);

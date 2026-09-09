@@ -118,13 +118,23 @@ namespace Vital::Manager {
     //    Model Sync Registry     //
     //----------------------------//
 
-    void Network::register_syncable(Engine::ISyncable* entity) {
-        std::lock_guard<std::mutex> lock(sync_models_mutex);
-        if (entity->sync_registered) return; // idempotent — safe to call from any path
+    // Lock-free core — caller MUST already hold sync_models_mutex.
+    // Used by poll() (which locks the mutex itself before calling this) so we
+    // never attempt a recursive lock on a non-recursive mutex.
+    void Network::register_syncable_locked(Engine::ISyncable* entity) {
+        if (entity->sync_registered) return;
         sync_models.push_back(entity);
         sync_id_map[entity->get_net_id()] = entity;
         entity->sync_registered = true;
         entity->interp_step = sync_interval;
+    }
+
+    // Public entry point — acquires sync_models_mutex then delegates.
+    // Safe to call from any thread / Lua callback that does NOT already hold
+    // sync_models_mutex (e.g. _spawn_entity -> on_spawned_callback -> entity:created).
+    void Network::register_syncable(Engine::ISyncable* entity) {
+        std::lock_guard<std::mutex> lock(sync_models_mutex);
+        register_syncable_locked(entity);
     }
 
     // Frees all remote (non-authority) synced bodies on the client — called on
@@ -858,7 +868,7 @@ namespace Vital::Manager {
             }
             if (!incoming.empty()) {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
-                for (auto* m : incoming) register_syncable(m);
+                for (auto* m : incoming) register_syncable_locked(m);
             }
         }
 
@@ -1105,7 +1115,7 @@ namespace Vital::Manager {
             }
             if (!incoming.empty()) {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
-                for (auto* entity : incoming) register_syncable(entity);
+                for (auto* entity : incoming) register_syncable_locked(entity);
             }
 
             #if defined(VSDK_Client)
