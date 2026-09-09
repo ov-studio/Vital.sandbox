@@ -1,3 +1,12 @@
+################################################################
+#     Resource: Vital.sandbox
+#     Script: resources: benchmark: benchmark.gd
+#     Author: ov-studio
+#     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+#     DOC: 09/09/2026
+#     Desc: GDScript benchmark suitesssssss
+################################################################
+
 # Vital.sandbox — GDScript benchmark side.
 # Loaded from disk at runtime by scripts/runner.gd; not baked into the .pck.
 

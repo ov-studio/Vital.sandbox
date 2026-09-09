@@ -1,3 +1,12 @@
+----------------------------------------------------------------
+--[[ Resource: Vital.sandbox
+     Script: resources: benchmark: benchmark.lua
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 09/09/2026
+     Desc: Lua benchmark suite ]]--
+----------------------------------------------------------------
+
 -- Vital.sandbox — Lua 5.4 benchmark side.
 
 local math  = util.math

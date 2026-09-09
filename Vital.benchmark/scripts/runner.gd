@@ -1,3 +1,12 @@
+################################################################
+#     Resource: Vital.benchmark
+#     Script: scripts: runner.gd
+#     Author: ov-studio
+#     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+#     DOC: 09/09/2026
+#     Desc: Benchmark runner
+################################################################
+
 extends Node
 
 const WAIT_FOR_LUA_SECONDS    := 60.0
