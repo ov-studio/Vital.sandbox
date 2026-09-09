@@ -1,6 +1,6 @@
 ################################################################
 #     Resource: Vital.sandbox
-#     Script: resources: benchmark: benchmark.gd
+#     Script: benchmark.gd
 #     Author: ov-studio
 #     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
 #     DOC: 09/09/2026
