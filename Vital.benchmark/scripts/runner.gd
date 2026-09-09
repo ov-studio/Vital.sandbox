@@ -28,13 +28,14 @@ func _ready() -> void:
 		base_dir = ProjectSettings.globalize_path("res://")
 
 	var gd_path     := base_dir.path_join(GDSCRIPT_BENCHMARK_PATH)
-	var result_path := base_dir.path_join("result.json")
+	var result_path := base_dir.path_join("output/result.json")
 	core.native_event.connect(_on_native_event)
 
 	await wait_for_lua_start()
 	var gd_results  := run_gdscript_benchmark(gd_path)
 	var lua_results := await wait_for_lua_results()
 	var report := build_report(lua_results, gd_results)
+	DirAccess.make_dir_recursive_absolute(base_dir.path_join("output"))
 	write_result_json(result_path, report)
 	print("Wrote " + result_path)
 
