@@ -80,6 +80,7 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: "4"
           GODOT_RENDERING_DRIVER: "null"
           GODOT_AUDIO_DRIVER: "Dummy"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python build.py --all --release --verbose
 
       - name: Save Godot cache
