@@ -12,12 +12,14 @@ extends Node
 const WAIT_FOR_LUA_SECONDS    := 60.0
 const GDSCRIPT_BENCHMARK_PATH := "resources/benchmark/benchmark.gd"
 const LUA_COMPLETE_EVENT      := "benchmark:lua:complete"
+const LUA_START_EVENT         := "benchmark:lua:start"
 const SCRIPTING_TESTS         := ["arithmetic", "function_calls", "table_access", "math_calls", "string_ops", "table_construction", "closures", "varargs", "table_iteration", "entity_simulation"]
 
 @onready var core: Node = $"../Core"
 
 var _lua_payload: Dictionary
-var _lua_done := false
+var _lua_done    := false
+var _lua_started := false
 
 
 func _ready() -> void:
@@ -29,6 +31,7 @@ func _ready() -> void:
 	var result_path := base_dir.path_join("result.json")
 	core.native_event.connect(_on_native_event)
 
+	await wait_for_lua_start()
 	var gd_results  := run_gdscript_benchmark(gd_path)
 	var lua_results := await wait_for_lua_results()
 	var report := build_report(lua_results, gd_results)
@@ -38,6 +41,15 @@ func _ready() -> void:
 	print("Wrote " + result_path)
 
 	shutdown_and_quit()
+
+
+func wait_for_lua_start() -> void:
+	if not _lua_started:
+		var deadline := Time.get_ticks_msec() + int(WAIT_FOR_LUA_SECONDS * 1000.0)
+		while not _lua_started and Time.get_ticks_msec() < deadline:
+			await get_tree().process_frame
+		if not _lua_started:
+			push_warning("Timed out waiting for \"%s\"" % LUA_START_EVENT)
 
 
 func wait_for_lua_results() -> Array:
@@ -75,6 +87,9 @@ func wait_for_lua_results() -> Array:
 
 
 func _on_native_event(name: String, payload: Dictionary) -> void:
+	if name == LUA_START_EVENT:
+		_lua_started = true
+		return
 	if name != LUA_COMPLETE_EVENT or _lua_done:
 		return
 	_lua_payload = payload

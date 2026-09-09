@@ -4,7 +4,7 @@
 #     Author: ov-studio
 #     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
 #     DOC: 09/09/2026
-#     Desc: GDScript benchmark suitesssssss
+#     Desc: GDScript benchmark suite
 ################################################################
 
 const TARGET_MS         := 150
