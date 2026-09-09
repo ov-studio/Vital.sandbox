@@ -448,7 +448,6 @@ namespace Vital::Engine {
             // it. Zeroing rotation here would wipe that before the state dump
             // arrives, causing a one-frame (or permanent) wrong orientation.
             child_node->reparent(target, false);
-            child_node->set_position(godot::Vector3());
         }
 
         // Switch sync coordinate space for every ISyncable type (Model,
