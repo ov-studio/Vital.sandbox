@@ -233,7 +233,7 @@ namespace Vital::Engine {
                             if (!self) return;
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
-                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth);
+                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth, self->get_sync_position(), self->get_sync_rotation());
                             // Flush any shape that was set before net_id was registered.
                             // broadcast_shape() bails when get_parent_net_id() == 0, which
                             // is always the case when set_shape_* is called in the same

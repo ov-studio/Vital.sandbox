@@ -95,7 +95,7 @@ namespace Vital::Engine {
         Manager::Network::get_singleton() -> wake_all_syncables();
     }
 
-    void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority) {
+    void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority, godot::Vector3 init_pos, godot::Vector3 init_rot) {
         #if defined(VSDK_Client)
         using ST = Engine::ISyncable::SyncType;
         switch (static_cast<ST>(type_id)) {
@@ -122,10 +122,16 @@ namespace Vital::Engine {
                 // Register immediately so get_entity_by_net_id() works inside
                 // the entity:created Lua handler fired by on_spawned_callback.
                 // register_syncable() is idempotent, so poll() will skip it.
-                // replay_pending_syncs() flushes any shape/transform/reparent RPCs
-                // that arrived in the same batch before this entity was registered.
                 auto* net_mgr = Manager::Network::get_singleton();
                 net_mgr -> register_syncable(object);
+                // Apply server-supplied initial transform for remote bodies only.
+                // Own-authority bodies position themselves — never overwrite.
+                if (authority != net_mgr->get_peer_id()) {
+                    object->set_global_position(init_pos);
+                    object->set_rotation_degrees(init_rot);
+                    object->delta_last_pos = init_pos;
+                    object->delta_last_rot = init_rot;
+                }
                 net_mgr -> replay_pending_syncs(object);
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
@@ -178,10 +184,19 @@ namespace Vital::Engine {
                     // Register immediately so get_entity_by_net_id() works inside
                     // the entity:created Lua handler fired by on_spawned_callback.
                     // register_syncable() is idempotent, so poll() will skip it.
-                    // replay_pending_syncs() flushes any shape/transform/reparent RPCs
-                    // that arrived in the same batch before this entity was registered.
                     auto* net_mgr = Manager::Network::get_singleton();
                     net_mgr -> register_syncable(entity);
+                    // Apply server-supplied initial transform for remote bodies only.
+                    // Own-authority bodies position themselves via Lua — never overwrite.
+                    if (authority != net_mgr->get_peer_id()) {
+                        auto* node = entity->get_sync_node();
+                        if (node) {
+                            node->set_global_position(init_pos);
+                            node->set_rotation_degrees(init_rot);
+                        }
+                        entity->delta_last_pos = init_pos;
+                        entity->delta_last_rot = init_rot;
+                    }
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
@@ -448,6 +463,7 @@ namespace Vital::Engine {
             // it. Zeroing rotation here would wipe that before the state dump
             // arrives, causing a one-frame (or permanent) wrong orientation.
             child_node->reparent(target, false);
+            child_node->set_position(godot::Vector3());
         }
 
         // Switch sync coordinate space for every ISyncable type (Model,

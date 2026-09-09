@@ -336,7 +336,9 @@ namespace Vital::Engine {
                         (int)captured_net_id,
                         (int)Engine::ISyncable::SyncType::Model,
                         captured_name,
-                        captured_authority);
+                        captured_authority,
+                        object->get_sync_position(),
+                        object->get_sync_rotation());
                 }
 
                 if (Model::on_spawned_callback) Model::on_spawned_callback(object, false);

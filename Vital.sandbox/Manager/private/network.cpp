@@ -165,10 +165,25 @@ namespace Vital::Manager {
                 godot::Vector3 pos = std::get<0>(state);
                 godot::Vector3 rot = std::get<1>(state);
                 godot::Vector3 vel = std::get<2>(state);
-                entity->apply_sync(pos, rot, vel);
+                // Seed the decode baseline so the first live delta packet decodes
+                // correctly. Do NOT call apply_sync here — that would push a
+                // snapshot and set interp_ready=true with only one entry, causing
+                // the body to hang at this position until a second snapshot arrives
+                // (visible as other clients appearing below/wrong until they move).
+                // Instead set the node transform directly and leave interp_ready=false
+                // so the first real _sync_entities packet triggers the clean
+                // !interp_ready snap path and starts interpolation properly.
                 entity->delta_last_pos = pos;
                 entity->delta_last_rot = rot;
                 entity->delta_last_vel = vel;
+                auto* node = entity->get_sync_node();
+                if (node && node->is_inside_tree()) {
+                    if (entity->get_sync_parent_net_id() != 0)
+                        node->set_position(pos);
+                    else
+                        node->set_global_position(pos);
+                    node->set_rotation_degrees(rot);
+                }
             }
         }
 
@@ -965,7 +980,9 @@ namespace Vital::Manager {
                     (int)e->get_net_id(),
                     (int)e->get_sync_type(),
                     Tool::to_godot_string(e->get_sync_name()),
-                    e->get_sync_authority());
+                    e->get_sync_authority(),
+                    e->get_sync_position(),
+                    e->get_sync_rotation());
             }
         }
 

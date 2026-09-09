@@ -57,7 +57,7 @@ namespace Vital::Engine {
 
             // Signals //
             void _receive(godot::Dictionary data);
-            void _spawn_entity(int net_id, int type_id, godot::String name, int authority);
+            void _spawn_entity(int net_id, int type_id, godot::String name, int authority, godot::Vector3 init_pos, godot::Vector3 init_rot);
             void _destroy_entity(int net_id);
             void _reparent_entity(int net_id, int parent_net_id);
             void _set_authority(int net_id, int peer_id);
