@@ -441,12 +441,14 @@ namespace Vital::Engine {
 
         if (child_node->is_inside_tree() && child_node->get_parent() != target) {
             // keep_global_transform = false: snap to parent origin.
-            // The server snaps to zero local on apply_parent, then drives
-            // placement via the sync stream — preserving global here would
-            // bake in a spurious offset equal to the child's current world pos.
+            // The server snaps to zero local position on reparent, then drives
+            // placement via the sync stream. Rotation is NOT zeroed here —
+            // the server may have set a non-zero local rotation (e.g. model
+            // offset) before parenting, and replay_pending_syncs already applied
+            // it. Zeroing rotation here would wipe that before the state dump
+            // arrives, causing a one-frame (or permanent) wrong orientation.
             child_node->reparent(target, false);
             child_node->set_position(godot::Vector3());
-            child_node->set_rotation_degrees(godot::Vector3());
         }
 
         // Switch sync coordinate space for every ISyncable type (Model,
