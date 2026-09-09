@@ -27,18 +27,10 @@ func _ready() -> void:
 
 	var gd_path     := base_dir.path_join(GDSCRIPT_BENCHMARK_PATH)
 	var result_path := base_dir.path_join("result.json")
-
-	print("Vital.benchmark")
-	print("GDScript path: " + gd_path)
-	print("")
-
 	core.native_event.connect(_on_native_event)
 
 	var gd_results  := run_gdscript_benchmark(gd_path)
-	print("")
-	print("Waiting for Lua results...")
 	var lua_results := await wait_for_lua_results()
-
 	var report := build_report(lua_results, gd_results)
 	write_result_json(result_path, report)
 	print_summary(report)
