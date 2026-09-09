@@ -205,5 +205,3 @@ func write_result_json(path: String, report: Dictionary) -> void:
 		return
 	file.store_string(JSON.stringify(report, "  "))
 	file.close()
-
-
