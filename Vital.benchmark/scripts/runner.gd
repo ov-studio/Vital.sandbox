@@ -110,7 +110,7 @@ func run_gdscript_benchmark(script_path: String) -> Array:
 		return []
 
 	var instance = gd_script.new()
-	return instance.run_all()
+	return instance.run_benchmark()
 
 
 func build_report(lua_results: Array, gd_results: Array) -> Dictionary:

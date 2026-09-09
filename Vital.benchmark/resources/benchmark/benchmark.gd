@@ -54,7 +54,7 @@ func run_test(name: String, fn: Callable, start_iterations: int = CALIBRATION_ST
 	return { "name": name, "iterations": iterations, "median_ms": med,
 	         "mean_ms": avg, "ops_sec": ops_sec, "checksum": checksum }
 
-func run_all() -> Array:
+func run_benchmark() -> Array:
 	var results: Array = []
 
 	results.append(run_test("arithmetic", func(n: int) -> float:

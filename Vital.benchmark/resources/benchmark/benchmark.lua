@@ -23,7 +23,6 @@ local CALIBRATION_START = 10000
 local CALIBRATION_MAX   = 200000000
 
 local function now_ms()      return core.engine.get_tick() end
-local function print_line(t) core.engine.print("info", t)  end
 
 local function median(values)
     local copy = {}
@@ -69,24 +68,19 @@ local function run_test(name, fn, start_iterations)
     local med     = median(samples)
     local avg     = mean(samples)
     local ops_sec = med > 0 and (iterations / (med / 1000.0)) or 0
-
-    print_line(str.format(
-        "BENCH|lua|%s|iterations=%d|median_ms=%d|mean_ms=%.2f|ops_sec=%.0f|checksum=%.4f",
-        name, iterations, med, avg, ops_sec, checksum
-    ))
-
-    return { name=name, iterations=iterations, median_ms=med, mean_ms=avg,
-             ops_sec=ops_sec, checksum=checksum }
+    return { 
+        name=name, 
+        iterations=iterations, 
+        median_ms=med, 
+        mean_ms=avg,
+        ops_sec=ops_sec, 
+        checksum=checksum 
+    }
 end
 
 local function run_benchmark()
     local results = {}
     local function add(r) results[#results + 1] = r end
-
-    print_line("=== Vital.sandbox Lua benchmark ===")
-    print_line("Lua runtime: bundled Lua 5.4")
-    print_line("Timer: core.engine.get_tick() / milliseconds")
-    print_line(str.format("Calibrating to ~%d ms, %d samples.", TARGET_MS, SAMPLES))
 
     add(run_test("arithmetic", function(n)
         local x, y, z = 0.7, 1.1, 0.0
@@ -184,7 +178,6 @@ local function run_benchmark()
         return s
     end, 100))
 
-    print_line("=== Lua benchmark finished ===")
     util.event.emit_native("benchmark:lua:complete", results)
     return results
 end
