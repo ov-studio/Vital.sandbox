@@ -7,8 +7,6 @@
      Desc: Lua benchmark suite ]]--
 ----------------------------------------------------------------
 
--- Vital.sandbox — Lua 5.4 benchmark side.
-
 local math  = util.math
 local str   = util.string
 local tbl   = util.table

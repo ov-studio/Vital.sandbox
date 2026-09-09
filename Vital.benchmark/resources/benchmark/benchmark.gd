@@ -7,9 +7,6 @@
 #     Desc: GDScript benchmark suitesssssss
 ################################################################
 
-# Vital.sandbox — GDScript benchmark side.
-# Loaded from disk at runtime by scripts/runner.gd; not baked into the .pck.
-
 const TARGET_MS         := 150
 const SAMPLES           := 7
 const WARMUPS           := 2
