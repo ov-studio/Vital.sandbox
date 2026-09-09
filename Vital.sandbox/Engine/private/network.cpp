@@ -122,7 +122,11 @@ namespace Vital::Engine {
                 // Register immediately so get_entity_by_net_id() works inside
                 // the entity:created Lua handler fired by on_spawned_callback.
                 // register_syncable() is idempotent, so poll() will skip it.
-                Manager::Network::get_singleton() -> register_syncable(object);
+                // replay_pending_syncs() flushes any shape/transform/reparent RPCs
+                // that arrived in the same batch before this entity was registered.
+                auto* net_mgr = Manager::Network::get_singleton();
+                net_mgr -> register_syncable(object);
+                net_mgr -> replay_pending_syncs(object);
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
@@ -174,7 +178,11 @@ namespace Vital::Engine {
                     // Register immediately so get_entity_by_net_id() works inside
                     // the entity:created Lua handler fired by on_spawned_callback.
                     // register_syncable() is idempotent, so poll() will skip it.
-                    Manager::Network::get_singleton() -> register_syncable(entity);
+                    // replay_pending_syncs() flushes any shape/transform/reparent RPCs
+                    // that arrived in the same batch before this entity was registered.
+                    auto* net_mgr = Manager::Network::get_singleton();
+                    net_mgr -> register_syncable(entity);
+                    net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
                     // TODO: SHARE IN BETTER WAY?

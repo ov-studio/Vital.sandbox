@@ -127,6 +127,9 @@ namespace Vital::Manager {
             void register_syncable(Engine::ISyncable* entity);        // acquires sync_models_mutex
             void register_syncable_locked(Engine::ISyncable* entity); // caller must already hold sync_models_mutex
             void unregister_syncable(Engine::ISyncable* entity);
+            #if defined(VSDK_Client)
+            void replay_pending_syncs(Engine::ISyncable* entity);     // replays buffered shape/transform/reparent after immediate registration
+            #endif
             // Posts to pending queue — safe to call from any thread/enqueue context.
             void enqueue_syncable_registration(Engine::ISyncable* entity);
             void cleanup_remote_bodies();

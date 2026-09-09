@@ -137,6 +137,81 @@ namespace Vital::Manager {
         register_syncable_locked(entity);
     }
 
+    #if defined(VSDK_Client)
+    // Called immediately after register_syncable() in _spawn_entity so that
+    // shape/transform/reparent RPCs that arrived in the same batch (before the
+    // entity was in sync_id_map) are applied right away instead of being lost.
+    // Previously this was handled by the poll() flush loop's "incoming" list,
+    // but _spawn_entity now bypasses sync_pending so "incoming" is empty for
+    // these entities and the replay blocks never fired — causing the floor
+    // and ball to have no collision shape on the client.
+    void Network::replay_pending_syncs(Engine::ISyncable* entity) {
+        uint32_t nid = entity->get_net_id();
+
+        // 1. Transform
+        {
+            std::tuple<godot::Vector3, godot::Vector3, godot::Vector3> state;
+            bool found = false;
+            {
+                std::lock_guard<std::mutex> lock(pending_transform_mutex);
+                auto it = pending_transform_syncs.find(nid);
+                if (it != pending_transform_syncs.end()) {
+                    state = it->second;
+                    pending_transform_syncs.erase(it);
+                    found = true;
+                }
+            }
+            if (found && entity->get_sync_authority() != get_peer_id()) {
+                godot::Vector3 pos = std::get<0>(state);
+                godot::Vector3 rot = std::get<1>(state);
+                godot::Vector3 vel = std::get<2>(state);
+                entity->apply_sync(pos, rot, vel);
+                entity->delta_last_pos = pos;
+                entity->delta_last_rot = rot;
+                entity->delta_last_vel = vel;
+            }
+        }
+
+        // 2. Shape
+        {
+            std::pair<godot::String, godot::Array> shape;
+            bool found = false;
+            {
+                std::lock_guard<std::mutex> lock(pending_shape_mutex);
+                auto it = pending_shape_syncs.find(nid);
+                if (it != pending_shape_syncs.end()) {
+                    shape = it->second;
+                    pending_shape_syncs.erase(it);
+                    found = true;
+                }
+            }
+            if (found)
+                Engine::Network::apply_shape(nid, shape.first, shape.second);
+        }
+
+        // 3. Reparent (as child or as parent)
+        {
+            std::vector<std::pair<uint32_t, uint32_t>> to_apply;
+            {
+                std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+                auto it = pending_reparent_syncs.find(nid);
+                if (it != pending_reparent_syncs.end()) {
+                    to_apply.emplace_back(nid, it->second);
+                    pending_reparent_syncs.erase(it);
+                }
+                for (auto it2 = pending_reparent_syncs.begin(); it2 != pending_reparent_syncs.end(); ) {
+                    if (it2->second == nid) {
+                        to_apply.emplace_back(it2->first, it2->second);
+                        it2 = pending_reparent_syncs.erase(it2);
+                    } else ++it2;
+                }
+            }
+            for (size_t i = 0; i < to_apply.size(); ++i)
+                Engine::Network::apply_reparent_entity(to_apply[i].first, to_apply[i].second);
+        }
+    }
+    #endif
+
     // Frees all remote (non-authority) synced bodies on the client — called on
     // disconnect. Bodies spawned by _spawn_entity live as direct Core children and
     // are not owned by any resource, so stop_all() does not reach them.
