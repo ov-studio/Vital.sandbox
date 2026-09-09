@@ -1,4 +1,4 @@
-Fname: Install VS 17 2022 Build Toolsname: Release
+name: Release
 
 on:
   push:
