@@ -1,4 +1,4 @@
-name: Release
+Fname: Install VS 17 2022 Build Toolsname: Release
 
 on:
   push:
@@ -137,9 +137,102 @@ jobs:
   #   ...
 
 
+
+  # ── Benchmark: Build, run, upload result ────────────────────────────────────
+  benchmark-windows:
+    needs: [build-windows]
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install VS 17 2022 Build Tools
+        shell: powershell
+        run: |
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -y
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install SCons
+        run: pip install scons
+
+      - name: Restore Godot cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .godot
+          key: godot-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
+          restore-keys: godot-windows-
+
+      - name: Restore godot-cpp cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Vital.sandbox/Vendor/godot-cpp/bin
+            Vital.sandbox/.build_godotcpp.debug
+            Vital.sandbox/.build_godotcpp.release
+          key: godot-cpp-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
+          restore-keys: godot-cpp-windows-
+
+      - name: Restore Conan cache
+        uses: actions/cache/restore@v4
+        with:
+          path: C:\Users\runneradmin\.conan2
+          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}
+          restore-keys: conan-windows-
+
+      - name: Restore Discord SDK cache
+        uses: actions/cache/restore@v4
+        with:
+          path: Vital.sandbox/Vendor/discord-sdk
+          key: discord-sdk-windows-${{ hashFiles('Vital.sandbox/Bootstrap/discord.py') }}
+          restore-keys: discord-sdk-windows-
+
+      - name: Build benchmark
+        env:
+          PYTHONUNBUFFERED: "1"
+          CL: /MP
+          CONAN_CPU_COUNT: "4"
+          CMAKE_BUILD_PARALLEL_LEVEL: "4"
+          GODOT_RENDERING_DRIVER: "null"
+          GODOT_AUDIO_DRIVER: "Dummy"
+        run: python build.py --benchmark --release --verbose
+
+      - name: Run benchmark
+        env:
+          GODOT_RENDERING_DRIVER: "null"
+          GODOT_AUDIO_DRIVER: "Dummy"
+        shell: bash
+        run: |
+          EXE=$(find .dist/release/benchmark -name "Vital.benchmark.exe" | head -1)
+          if [ -z "$EXE" ]; then
+            echo "ERROR: Vital.benchmark.exe not found"
+            exit 1
+          fi
+          "$EXE" --headless || true
+          if [ ! -f ".dist/release/benchmark/output/benchmark.json" ]; then
+            echo "ERROR: benchmark.json not produced"
+            exit 1
+          fi
+          echo "benchmark.json produced successfully"
+
+      - name: Upload benchmark result
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-windows
+          path: .dist/release/benchmark/output/benchmark.json
+          if-no-files-found: error
+
   # ── Release: Collect & Publish ──────────────────────────────────────────────
   release:
-    needs: [build-windows]
+    needs: [build-windows, benchmark-windows]
     runs-on: ubuntu-latest
 
     steps:
@@ -147,6 +240,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: collected/
+
+      - name: Rename benchmark result for release
+        run: |
+          TAG="${{ github.ref_name }}"
+          mkdir -p release-extras
+          cp collected/benchmark-windows/benchmark.json "release-extras/benchmark-${TAG}-windows.json" || true
 
       - name: Debug collected structure
         run: |
@@ -184,4 +283,6 @@ jobs:
           generate_release_notes: true
           draft:                  false
           prerelease:             ${{ contains(github.ref_name, '-') }}
-          files: "*.zip"
+          files: |
+            *.zip
+            release-extras/*.json
