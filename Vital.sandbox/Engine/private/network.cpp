@@ -119,7 +119,17 @@ namespace Vital::Engine {
                     Manager::Asset::get_singleton() -> queue_spawn(model_name, object);
                 }
                 Engine::Core::get_singleton() -> add_child(object);
-                Manager::Network::get_singleton() -> enqueue_syncable_registration(object);
+                // Register into sync_id_map immediately (before firing the Lua
+                // on_spawned_callback / entity:created signal) so that
+                // get_entity_by_net_id() is usable right inside that handler.
+                // poll() guards its own flush with !sync_registered, so this
+                // entity will not be double-inserted.
+                {
+                    auto* nm = Manager::Network::get_singleton();
+                    nm -> register_syncable(object);
+                    object -> sync_registered = true;
+                    object -> interp_step = sync_interval;
+                }
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
@@ -168,7 +178,17 @@ namespace Vital::Engine {
                     entity -> net_id = (uint32_t)net_id;
                     entity -> sync_authority = authority;
                     entity -> reset_sync_state();
-                    Manager::Network::get_singleton() -> enqueue_syncable_registration(entity);
+                    // Register into sync_id_map immediately (before firing the Lua
+                    // on_spawned_callback / entity:created signal) so that
+                    // get_entity_by_net_id() is usable right inside that handler.
+                    // poll() guards its own flush with !sync_registered, so this
+                    // entity will not be double-inserted.
+                    {
+                        auto* nm = Manager::Network::get_singleton();
+                        nm -> register_syncable(entity);
+                        entity -> sync_registered = true;
+                        entity -> interp_step = sync_interval;
+                    }
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
                     // TODO: SHARE IN BETTER WAY?
@@ -419,8 +439,7 @@ namespace Vital::Engine {
         if (parent_net_id != 0) {
             Engine::ISyncable* parent_sync = mgr->find_syncable(parent_net_id);
             if (!parent_sync) return;  // caller must retry
-            auto* parent_node = godot::Object::cast_to<godot::Node3D>(
-                dynamic_cast<godot::Object*>(parent_sync));
+            auto* parent_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(parent_sync));
             if (!parent_node) return;
             target = parent_node;
         }
