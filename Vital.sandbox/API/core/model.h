@@ -457,6 +457,103 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            // Layered animation blending — lets several animations run and
+            // blend at once (e.g. base locomotion on layer 0, an aim/action
+            // overlay on layer 1+) instead of play_animation() replacing the
+            // single active clip outright.
+            vm_module::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_string)
+                    .optional(4, &Machine::is_bool)
+                    .optional(5, &Machine::is_number)
+                    .optional(6, &Machine::is_number)
+                    .optional(7, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                auto name = vm -> get_string(3);
+                auto loop = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                auto speed = vm -> is_number(5) ? vm -> get_float(5) : 1.0f;
+                auto weight = vm -> is_number(6) ? vm -> get_float(6) : 1.0f;
+                auto blend_time = vm -> is_number(7) ? vm -> get_float(7) : 0.25f;
+                vm -> push_value(self -> model -> play_animation_layer(layer, name, loop, speed, weight, blend_time));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "stop_animation_layer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, blend_time = 0.25)", true)
+                    .require(2, &Machine::is_number)
+                    .optional(3, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                auto blend_time = vm -> is_number(3) ? vm -> get_float(3) : 0.25f;
+                self -> model -> stop_animation_layer(layer, blend_time);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, weight, blend_time = 0)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_number)
+                    .optional(4, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                auto weight = vm -> get_float(3);
+                auto blend_time = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                vm -> push_value(self -> model -> set_animation_layer_weight(layer, weight, blend_time));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, speed)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                auto speed = vm -> get_float(3);
+                self -> model -> set_animation_layer_speed(layer, speed);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                vm -> push_value(self -> model -> get_animation_layer_weight(vm -> get_int(2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                vm -> push_value(self -> model -> get_animation_layer_speed(vm -> get_int(2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_current_animation_layer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                vm -> push_value(self -> model -> get_current_animation_layer(vm -> get_int(2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_animation_layer_playing", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                vm -> push_value(self -> model -> is_animation_layer_playing(vm -> get_int(2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_count", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(base_class::get_animation_layer_count());
+                return 1;
+            });
         }
 
         static void clean(const std::string& env) {

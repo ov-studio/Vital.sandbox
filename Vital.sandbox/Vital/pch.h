@@ -100,6 +100,14 @@
 #include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/animation_player.hpp>
 #include <godot_cpp/classes/animation_library.hpp>
+#include <godot_cpp/classes/animation_tree.hpp>
+#include <godot_cpp/classes/animation_node.hpp>
+#include <godot_cpp/classes/animation_root_node.hpp>
+#include <godot_cpp/classes/animation_node_blend_tree.hpp>
+#include <godot_cpp/classes/animation_node_animation.hpp>
+#include <godot_cpp/classes/animation_node_blend2.hpp>
+#include <godot_cpp/classes/animation_node_time_scale.hpp>
+#include <godot_cpp/classes/animation_node_output.hpp>
 #include <godot_cpp/classes/color_rect.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_texture.hpp>

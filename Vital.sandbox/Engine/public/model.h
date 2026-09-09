@@ -46,6 +46,8 @@ namespace Vital::Engine {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
 
+            static constexpr int ANIM_LAYER_COUNT = 4;
+
             inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
@@ -58,6 +60,34 @@ namespace Vital::Engine {
             bool placeholder = false;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
+
+            // Layered animation blending — lazily built the first time any
+            // *_animation_layer() call is made, so models that only ever use
+            // the legacy single-track play_animation() keep working exactly
+            // as before (AnimationTree, once active, takes over playback
+            // from the raw AnimationPlayer per Godot's own docs).
+            //
+            // Layer 0 is the always-on base layer (e.g. locomotion). Layers
+            // 1..ANIM_LAYER_COUNT-1 are overlay layers stacked on top of it
+            // and of each other, each with its own independently tweened
+            // weight (e.g. an aim-offset layer, a flinch layer, an upper
+            // body action layer) so several animations can play and blend
+            // simultaneously instead of one clip replacing another outright.
+            godot::AnimationTree* anim_tree = nullptr;
+            godot::Ref<godot::AnimationNodeBlendTree> blend_tree;
+
+            struct AnimLayerState {
+                std::string current_anim;
+                float speed = 1.0f;
+                bool loop = true;
+                float weight = 0.0f;
+                float weight_target = 0.0f;
+                float weight_rate = 0.0f; // units/sec applied while tweening
+            };
+            std::array<AnimLayerState, 4> anim_layers{};
+
+            void build_animation_tree();
+            void update_animation_layers(float delta);
 
             // Sync state lives in ISyncable base class.
 
@@ -151,6 +181,7 @@ namespace Vital::Engine {
             bool is_material_feature(const std::string& component, const std::string& material, int feature);
             bool is_material_flag(const std::string& component, const std::string& material, int flag);
             bool is_animation_playing();
+            bool is_animation_layer_playing(int layer) const;
 
 
             // ISyncable interface //
@@ -176,6 +207,10 @@ namespace Vital::Engine {
             godot::Vector3 get_bone_position(const std::string& bone);
             std::string get_current_animation();
             float get_animation_speed();
+            static int get_animation_layer_count();
+            float get_animation_layer_weight(int layer) const;
+            float get_animation_layer_speed(int layer) const;
+            std::string get_current_animation_layer(int layer) const;
             int get_sync_authority() const;
             uint32_t get_net_id() const;
 
@@ -200,6 +235,8 @@ namespace Vital::Engine {
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             void set_animation_speed(float speed);
+            void set_animation_layer_speed(int layer, float speed);
+            bool set_animation_layer_weight(int layer, float weight, float blend_time = 0.0f);
 
 
             // Misc //
@@ -207,5 +244,12 @@ namespace Vital::Engine {
             void stop_animation();
             void pause_animation();
             void resume_animation();
+
+            // Layered blending — several animations can run and blend at
+            // once instead of one clip replacing another. weight/blend_time
+            // are ignored for layer 0 (the always-on base layer).
+            bool play_animation_layer(int layer, const std::string& name, bool loop = true,
+                float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f);
+            void stop_animation_layer(int layer, float blend_time = 0.25f);
     };
 }

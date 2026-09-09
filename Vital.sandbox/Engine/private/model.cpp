@@ -81,6 +81,11 @@ namespace Vital::Engine {
     }
 
     void Model::_process(double delta) {
+        // Layer weight tweening runs regardless of sync authority/placeholder
+        // state — it's purely a local visual concern (every peer that has
+        // this model rendered needs its overlay layers to blend smoothly).
+        if (anim_tree) update_animation_layers((float)delta);
+
         if (placeholder || !is_inside_tree() || !interp_ready) return;
         auto net = Manager::Network::get_singleton();
         if (net && net->get_peer_id() == sync_authority) return;
@@ -718,5 +723,173 @@ namespace Vital::Engine {
         auto current = anim_player->get_current_animation();
         if (current.is_empty()) return;
         anim_player->play(current);
+    }
+
+
+    //--------------------------//
+    //  Layered Anim Blending   //
+    //--------------------------//
+    //
+    // Builds a small AnimationTree graph once per model:
+    //
+    //   anim_0 -> scale_0 ------------------------------\
+    //   anim_1 -> scale_1 -> [blend_1] ------------------+-> output
+    //   anim_2 -> scale_2 -> [blend_2] --/
+    //   anim_3 -> scale_3 -> [blend_3] --/
+    //
+    // scale_N (AnimationNodeTimeScale) drives that layer's playback speed.
+    // blend_N (AnimationNodeBlend2) fades that layer's contribution in/out
+    // over layer weight, tweened smoothly in update_animation_layers().
+    // Layer 0 is the base and always contributes at full weight.
+    void Model::build_animation_tree() {
+        if (anim_tree) return;
+        auto* player = assert_animation_player();
+
+        anim_tree = memnew(godot::AnimationTree);
+        anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
+        add_child(anim_tree);
+        anim_tree->set_animation_player(anim_tree->get_path_to(player));
+
+        blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
+        anim_tree->set_tree_root(blend_tree);
+
+        for (int i = 0; i < ANIM_LAYER_COUNT; i++) {
+            godot::Ref<godot::AnimationNodeAnimation> anim_node(memnew(godot::AnimationNodeAnimation));
+            godot::Ref<godot::AnimationNodeTimeScale> scale_node(memnew(godot::AnimationNodeTimeScale));
+            godot::String anim_name  = Tool::to_godot_string(fmt::format("anim_{}", i));
+            godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+            blend_tree->add_node(anim_name, anim_node);
+            blend_tree->add_node(scale_name, scale_node);
+            blend_tree->connect_node(scale_name, 0, anim_name);
+        }
+
+        godot::String chain = Tool::to_godot_string("scale_0");
+        for (int i = 1; i < ANIM_LAYER_COUNT; i++) {
+            godot::Ref<godot::AnimationNodeBlend2> blend_node(memnew(godot::AnimationNodeBlend2));
+            godot::String blend_name = Tool::to_godot_string(fmt::format("blend_{}", i));
+            godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+            blend_tree->add_node(blend_name, blend_node);
+            blend_tree->connect_node(blend_name, 0, chain);
+            blend_tree->connect_node(blend_name, 1, scale_name);
+            chain = blend_name;
+        }
+        blend_tree->connect_node(Tool::to_godot_string("output"), 0, chain);
+
+        anim_layers[0].weight = 1.0f;
+        anim_layers[0].weight_target = 1.0f;
+        anim_tree->set_active(true);
+    }
+
+    void Model::update_animation_layers(float delta) {
+        for (int i = 1; i < ANIM_LAYER_COUNT; i++) {
+            auto& layer = anim_layers[i];
+            if (layer.weight == layer.weight_target) continue;
+
+            float step = layer.weight_rate * delta;
+            if (layer.weight < layer.weight_target) layer.weight = std::min(layer.weight_target, layer.weight + step);
+            else layer.weight = std::max(layer.weight_target, layer.weight - step);
+
+            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), layer.weight);
+        }
+    }
+
+    int Model::get_animation_layer_count() { return ANIM_LAYER_COUNT; }
+
+    bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT) {
+            godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
+            return false;
+        }
+        auto* player = assert_animation_player();
+        if (!player->has_animation(Tool::to_godot_string(name))) {
+            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        build_animation_tree();
+
+        godot::Ref<godot::Animation> animation = player->get_animation(Tool::to_godot_string(name));
+        if (animation.is_valid())
+            animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+
+        auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(
+            blend_tree->get_node(Tool::to_godot_string(fmt::format("anim_{}", layer))).ptr());
+        if (anim_node) anim_node->set_animation(Tool::to_godot_string(name));
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
+
+        auto& state = anim_layers[layer];
+        state.current_anim = name;
+        state.speed = speed;
+        state.loop = loop;
+
+        if (layer == 0) {
+            // Base layer always contributes fully — nothing to tween.
+            state.weight = 1.0f;
+            state.weight_target = 1.0f;
+        } else {
+            weight = std::clamp(weight, 0.0f, 1.0f);
+            state.weight_target = weight;
+            state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+            if (blend_time <= 0.0001f) {
+                state.weight = weight;
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
+            }
+        }
+        return true;
+    }
+
+    void Model::stop_animation_layer(int layer, float blend_time) {
+        // Layer 0 is the always-on base — "stopping" it doesn't mean
+        // anything (use play_animation_layer(0, ...) to switch its clip).
+        if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
+
+        auto& state = anim_layers[layer];
+        state.weight_target = 0.0f;
+        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+        if (blend_time <= 0.0001f) {
+            state.weight = 0.0f;
+            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), 0.0f);
+        }
+    }
+
+    bool Model::set_animation_layer_weight(int layer, float weight, float blend_time) {
+        if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return false;
+
+        weight = std::clamp(weight, 0.0f, 1.0f);
+        auto& state = anim_layers[layer];
+        state.weight_target = weight;
+        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+        if (blend_time <= 0.0001f) {
+            state.weight = weight;
+            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
+        }
+        return true;
+    }
+
+    void Model::set_animation_layer_speed(int layer, float speed) {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
+        anim_layers[layer].speed = speed;
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
+    }
+
+    float Model::get_animation_layer_weight(int layer) const {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return 0.0f;
+        return anim_layers[layer].weight_target;
+    }
+
+    float Model::get_animation_layer_speed(int layer) const {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return 0.0f;
+        return anim_layers[layer].speed;
+    }
+
+    std::string Model::get_current_animation_layer(int layer) const {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return "";
+        return anim_layers[layer].current_anim;
+    }
+
+    bool Model::is_animation_layer_playing(int layer) const {
+        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return false;
+        if (anim_layers[layer].current_anim.empty()) return false;
+        return layer == 0 || anim_layers[layer].weight_target > 0.0f;
     }
 }
