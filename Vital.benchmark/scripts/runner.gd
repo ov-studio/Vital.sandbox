@@ -19,7 +19,8 @@ const SCRIPTING_TESTS         := ["arithmetic", "function_calls", "table_access"
 
 var _lua_payload: Dictionary
 var _lua_done    := false
-var _lua_started := false
+var _lua_started  := false
+var _lua_version  := "unknown"
 
 
 func _ready() -> void:
@@ -88,6 +89,10 @@ func wait_for_lua_results() -> Array:
 func _on_native_event(name: String, payload: Dictionary) -> void:
 	if name == LUA_START_EVENT:
 		_lua_started = true
+		var arr: Array = payload.get("array", [])
+		if not arr.is_empty() and typeof(arr[0]) == TYPE_DICTIONARY:
+			var obj: Dictionary = arr[0].get("object", {})
+			_lua_version = obj.get("lua_version", "unknown")
 		return
 	if name != LUA_COMPLETE_EVENT or _lua_done:
 		return
@@ -129,7 +134,7 @@ func build_environment() -> Dictionary:
 		"godot":          godot_ver,
 		"godot_hash":     gv.get("hash", ""),
 		"build":          "release" if OS.has_feature("release") else "debug",
-		"lua":            "5.4",
+		"lua":            _lua_version,
 		"samples":        7,
 		"warmups":        2,
 		"target_ms":      150,

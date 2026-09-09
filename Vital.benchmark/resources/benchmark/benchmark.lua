@@ -82,7 +82,7 @@ local function run_benchmark()
     local results = {}
     local function add(r) results[#results + 1] = r end
 
-    util.event.emit_native("benchmark:lua:start")
+    util.event.emit_native("benchmark:lua:start", { lua_version = _VERSION })
 
     add(run_test("arithmetic", function(n)
         local x, y, z = 0.7, 1.1, 0.0
