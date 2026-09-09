@@ -36,8 +36,6 @@ func _ready() -> void:
 	var lua_results := await wait_for_lua_results()
 	var report := build_report(lua_results, gd_results)
 	write_result_json(result_path, report)
-	print_summary(report)
-	print("")
 	print("Wrote " + result_path)
 
 	shutdown_and_quit()
@@ -185,28 +183,3 @@ func write_result_json(path: String, report: Dictionary) -> void:
 	file.close()
 
 
-func print_summary(report: Dictionary) -> void:
-	print("=== Scripting Performance (Lua ops/sec / GDScript ops/sec) ===")
-	for row in report["scripting_tests"]:
-		if row.has("throughput_ratio"):
-			var ratio: float  = row["throughput_ratio"]
-			var faster: String = row["faster"]
-			var label := "%.2fx  Lua" % ratio if faster == "lua" else "%.2fx  GDScript" % (1.0 / ratio)
-			print("  %-28s %s" % [row["name"], label])
-		else:
-			print("  %-28s incomplete" % row["name"])
-	print("")
-	print("  Geomean: %.2fx Lua  (%d scripting tests)" % [
-		report["summary"]["scripting_geomean_throughput_ratio"],
-		report["summary"]["scripting_tests_compared"]
-	])
-	print("")
-	print("=== Native API (binding overhead) ===")
-	for row in report["native_api_tests"]:
-		if row.has("throughput_ratio"):
-			var ratio: float   = row["throughput_ratio"]
-			var faster: String = row["faster"]
-			var label := "%.2fx  Lua" % ratio if faster == "lua" else "%.2fx  GDScript" % (1.0 / ratio)
-			print("  %-28s %s" % [row["name"], label])
-		else:
-			print("  %-28s incomplete" % row["name"])
