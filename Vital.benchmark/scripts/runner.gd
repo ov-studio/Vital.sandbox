@@ -119,6 +119,24 @@ func run_gdscript_benchmark(script_path: String) -> Array:
 	return instance.run_benchmark()
 
 
+func build_environment() -> Dictionary:
+	var gv  := Engine.get_version_info()
+	var godot_ver := "%d.%d.%d.%s" % [gv.get("major", 0), gv.get("minor", 0), gv.get("patch", 0), gv.get("status", "")]
+	return {
+		"cpu":            OS.get_processor_name(),
+		"os":             OS.get_name(),
+		"arch":           Engine.get_architecture_name(),
+		"godot":          godot_ver,
+		"godot_hash":     gv.get("hash", ""),
+		"build":          "release" if OS.has_feature("release") else "debug",
+		"lua":            "5.4",
+		"samples":        7,
+		"warmups":        2,
+		"target_ms":      150,
+		"statistic":      "median",
+	}
+
+
 func build_report(lua_results: Array, gd_results: Array) -> Dictionary:
 	var by_name: Dictionary = {}
 	for r in lua_results:
@@ -160,12 +178,8 @@ func build_report(lua_results: Array, gd_results: Array) -> Dictionary:
 
 	return {
 		"generated_at_unix": Time.get_unix_time_from_system(),
-		"methodology": {
-			"target_ms": 150,
-			"samples":   7,
-			"warmups":   2,
-			"note": "throughput_ratio = lua_ops_sec / gdscript_ops_sec. Ratio > 1.0 means Lua is faster.",
-		},
+		"environment":      build_environment(),
+		"note":             "throughput_ratio = lua_ops_sec / gdscript_ops_sec. Ratio > 1.0 means Lua is faster.",
 		"scripting_tests":  scripting_tests,
 		"native_api_tests": native_tests,
 		"summary": {
