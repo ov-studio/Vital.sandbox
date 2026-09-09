@@ -31,7 +31,7 @@ func _ready() -> void:
 		base_dir = ProjectSettings.globalize_path("res://")
 
 	var gd_path     := base_dir.path_join(GDSCRIPT_BENCHMARK_PATH)
-	var result_path := base_dir.path_join("output/result.json")
+	var result_path := base_dir.path_join("output/benchmark.json")
 	core.native_event.connect(_on_native_event)
 
 	await wait_for_lua_start()
