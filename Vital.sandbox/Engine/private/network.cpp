@@ -119,17 +119,10 @@ namespace Vital::Engine {
                     Manager::Asset::get_singleton() -> queue_spawn(model_name, object);
                 }
                 Engine::Core::get_singleton() -> add_child(object);
-                // Register into sync_id_map immediately (before firing the Lua
-                // on_spawned_callback / entity:created signal) so that
-                // get_entity_by_net_id() is usable right inside that handler.
-                // poll() guards its own flush with !sync_registered, so this
-                // entity will not be double-inserted.
-                {
-                    auto* nm = Manager::Network::get_singleton();
-                    nm -> register_syncable(object);
-                    object -> sync_registered = true;
-                    object -> interp_step = sync_interval;
-                }
+                // Register immediately so get_entity_by_net_id() works inside
+                // the entity:created Lua handler fired by on_spawned_callback.
+                // register_syncable() is idempotent, so poll() will skip it.
+                Manager::Network::get_singleton() -> register_syncable(object);
                 if (Engine::Model::on_spawned_callback) Engine::Model::on_spawned_callback(object, true);
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
@@ -178,17 +171,10 @@ namespace Vital::Engine {
                     entity -> net_id = (uint32_t)net_id;
                     entity -> sync_authority = authority;
                     entity -> reset_sync_state();
-                    // Register into sync_id_map immediately (before firing the Lua
-                    // on_spawned_callback / entity:created signal) so that
-                    // get_entity_by_net_id() is usable right inside that handler.
-                    // poll() guards its own flush with !sync_registered, so this
-                    // entity will not be double-inserted.
-                    {
-                        auto* nm = Manager::Network::get_singleton();
-                        nm -> register_syncable(entity);
-                        entity -> sync_registered = true;
-                        entity -> interp_step = sync_interval;
-                    }
+                    // Register immediately so get_entity_by_net_id() works inside
+                    // the entity:created Lua handler fired by on_spawned_callback.
+                    // register_syncable() is idempotent, so poll() will skip it.
+                    Manager::Network::get_singleton() -> register_syncable(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
                     // TODO: SHARE IN BETTER WAY?
@@ -421,9 +407,9 @@ namespace Vital::Engine {
     // the real reparent before broadcasting this RPC.
     //
     // Both the child and parent may not be in sync_id_map yet when this RPC
-    // arrives — _spawn_entity calls enqueue_syncable_registration which is only
-    // drained by poll() on the next frame.  If either is missing we buffer the
-    // reparent in pending_reparent_syncs; poll() replays it once both register.
+    // arrives (e.g. if apply_reparent_entity races with _spawn_entity on the
+    // same frame).  If either is missing we buffer the reparent in
+    // pending_reparent_syncs; poll() replays it once both register.
     void Network::apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id) {
         auto* mgr  = Manager::Network::get_singleton();
         auto* core = Engine::Core::get_singleton();
@@ -439,7 +425,8 @@ namespace Vital::Engine {
         if (parent_net_id != 0) {
             Engine::ISyncable* parent_sync = mgr->find_syncable(parent_net_id);
             if (!parent_sync) return;  // caller must retry
-            auto* parent_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(parent_sync));
+            auto* parent_node = godot::Object::cast_to<godot::Node3D>(
+                dynamic_cast<godot::Object*>(parent_sync));
             if (!parent_node) return;
             target = parent_node;
         }
