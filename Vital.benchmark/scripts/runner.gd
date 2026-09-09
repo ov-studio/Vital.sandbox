@@ -15,6 +15,8 @@ const LUA_COMPLETE_EVENT      := "benchmark:lua:complete"
 const LUA_START_EVENT         := "benchmark:lua:start"
 const SCRIPTING_TESTS         := ["arithmetic", "function_calls", "table_access", "math_calls", "string_ops", "table_construction", "closures", "varargs", "table_iteration", "entity_simulation"]
 
+var _config: Dictionary = {}
+
 @onready var core: Node = $"../Core"
 
 var _lua_payload: Dictionary
@@ -93,6 +95,8 @@ func _on_native_event(name: String, payload: Dictionary) -> void:
 		if not arr.is_empty() and typeof(arr[0]) == TYPE_DICTIONARY:
 			var obj: Dictionary = arr[0].get("object", {})
 			_lua_version = obj.get("lua_version", "unknown")
+			var cfg = obj.get("config", null)
+			if cfg is Dictionary: _config = cfg
 		return
 	if name != LUA_COMPLETE_EVENT or _lua_done:
 		return
@@ -121,7 +125,7 @@ func run_gdscript_benchmark(script_path: String) -> Array:
 		return []
 
 	var instance = gd_script.new()
-	return instance.run_benchmark()
+	return instance.run_benchmark(_config)
 
 
 func build_environment() -> Dictionary:
@@ -135,9 +139,9 @@ func build_environment() -> Dictionary:
 		"godot_hash":     gv.get("hash", ""),
 		"build":          "release" if OS.has_feature("release") else "debug",
 		"lua":            _lua_version,
-		"samples":        7,
-		"warmups":        2,
-		"target_ms":      150,
+		"samples":        _config.get("samples",   7),
+		"warmups":        _config.get("warmups",   2),
+		"target_ms":      _config.get("target_ms", 150),
 		"statistic":      "median",
 	}
 

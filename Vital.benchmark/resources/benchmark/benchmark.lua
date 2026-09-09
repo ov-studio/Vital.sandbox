@@ -16,9 +16,10 @@ local floor = math.floor
 local min   = math.min
 local max   = math.max
 
-local TARGET_MS         = 150
-local SAMPLES           = 7
-local WARMUPS           = 2
+local _config           = tbl.decode(util.file.read("config.json"))
+local TARGET_MS         = _config.target_ms   or 150
+local SAMPLES           = _config.samples      or 7
+local WARMUPS           = _config.warmups      or 2
 local CALIBRATION_START = 10000
 local CALIBRATION_MAX   = 200000000
 
@@ -82,7 +83,7 @@ local function run_benchmark()
     local results = {}
     local function add(r) results[#results + 1] = r end
 
-    util.event.emit_native("benchmark:lua:start", { lua_version = _VERSION })
+    util.event.emit_native("benchmark:lua:start", { lua_version = _VERSION, config = _config })
 
     add(run_test("arithmetic", function(n)
         local x, y, z = 0.7, 1.1, 0.0

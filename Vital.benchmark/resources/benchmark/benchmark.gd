@@ -7,11 +7,12 @@
 #     Desc: GDScript benchmark suite
 ################################################################
 
-const TARGET_MS         := 150
-const SAMPLES           := 7
-const WARMUPS           := 2
 const CALIBRATION_START := 10000
 const CALIBRATION_MAX   := 200000000
+
+var TARGET_MS := 150
+var SAMPLES   := 7
+var WARMUPS   := 2
 
 func median(values: Array) -> float:
 	var copy := values.duplicate()
@@ -54,7 +55,10 @@ func run_test(name: String, fn: Callable, start_iterations: int = CALIBRATION_ST
 	return { "name": name, "iterations": iterations, "median_ms": med,
 	         "mean_ms": avg, "ops_sec": ops_sec, "checksum": checksum }
 
-func run_benchmark() -> Array:
+func run_benchmark(config: Dictionary = {}) -> Array:
+	TARGET_MS = config.get("target_ms", 150)
+	SAMPLES   = config.get("samples",   7)
+	WARMUPS   = config.get("warmups",   2)
 	var results: Array = []
 
 	results.append(run_test("arithmetic", func(n: int) -> float:
