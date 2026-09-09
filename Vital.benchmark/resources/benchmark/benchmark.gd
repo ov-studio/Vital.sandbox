@@ -55,10 +55,10 @@ func run_test(name: String, fn: Callable, start_iterations: int = CALIBRATION_ST
 	return { "name": name, "iterations": iterations, "median_ms": med,
 	         "mean_ms": avg, "ops_sec": ops_sec, "checksum": checksum }
 
-func run_benchmark(config: Dictionary = {}) -> Array:
-	TARGET_MS = config.get("target_ms", 150)
-	SAMPLES   = config.get("samples",   7)
-	WARMUPS   = config.get("warmups",   2)
+func run_benchmark(config: Dictionary) -> Array:
+	TARGET_MS = config["target_ms"]
+	SAMPLES   = config["samples"]
+	WARMUPS   = config["warmups"]
 	var results: Array = []
 
 	results.append(run_test("arithmetic", func(n: int) -> float:

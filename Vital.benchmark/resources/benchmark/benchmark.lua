@@ -17,9 +17,9 @@ local min   = math.min
 local max   = math.max
 
 local _config           = tbl.decode(util.file.read("config.json"))
-local TARGET_MS         = _config.target_ms   or 150
-local SAMPLES           = _config.samples      or 7
-local WARMUPS           = _config.warmups      or 2
+local TARGET_MS         = _config.target_ms
+local SAMPLES           = _config.samples
+local WARMUPS           = _config.warmups
 local CALIBRATION_START = 10000
 local CALIBRATION_MAX   = 200000000
 

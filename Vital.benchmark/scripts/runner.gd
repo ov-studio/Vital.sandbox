@@ -139,9 +139,9 @@ func build_environment() -> Dictionary:
 		"godot_hash":     gv.get("hash", ""),
 		"build":          "release" if OS.has_feature("release") else "debug",
 		"lua":            _lua_version,
-		"samples":        _config.get("samples",   7),
-		"warmups":        _config.get("warmups",   2),
-		"target_ms":      _config.get("target_ms", 150),
+		"samples":        _config["samples"],
+		"warmups":        _config["warmups"],
+		"target_ms":      _config["target_ms"],
 		"statistic":      "median",
 	}
 
