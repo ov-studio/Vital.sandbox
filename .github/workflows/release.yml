@@ -243,11 +243,10 @@ jobs:
         with:
           path: collected/
 
-      - name: Rename benchmark result for release
+      - name: Stage benchmark result for release
         run: |
-          TAG="${{ github.ref_name }}"
           mkdir -p release-extras
-          cp collected/benchmark-windows/benchmark.json "release-extras/benchmark-${TAG}-windows.json" || true
+          cp collected/benchmark-windows/benchmark.json "release-extras/benchmark.json" || true
 
       - name: Debug collected structure
         run: |
