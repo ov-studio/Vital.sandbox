@@ -125,6 +125,21 @@ namespace Vital::Manager {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
                 pending_force_transform_syncs[net_id] = { pos, rot };
             }
+            // True if a _reparent_entity for this child is buffered and not yet applied.
+            bool has_pending_reparent(uint32_t child_net_id) {
+                std::lock_guard<std::mutex> lock(pending_reparent_mutex);
+                return pending_reparent_syncs.find(child_net_id) != pending_reparent_syncs.end();
+            }
+            // Consume a buffered _force_transform for this net_id, if any.
+            bool take_pending_force_transform(uint32_t net_id, godot::Vector3& out_pos, godot::Vector3& out_rot) {
+                std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
+                auto it = pending_force_transform_syncs.find(net_id);
+                if (it == pending_force_transform_syncs.end()) return false;
+                out_pos = it->second.first;
+                out_rot = it->second.second;
+                pending_force_transform_syncs.erase(it);
+                return true;
+            }
             #endif
 
 

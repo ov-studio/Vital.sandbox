@@ -403,9 +403,19 @@ namespace Vital::Engine {
         // Physics_Body::setup_create.  Firing it inline here would race those
         // and the client would silently drop the reparent (find_syncable returns
         // null because the entity isn't registered yet).
+        //
+        // After the reparent RPC we also force-broadcast the current local
+        // transform.  set_position/set_rotation called in the same Lua tick as
+        // set_parent() fire _force_transform immediately (before this enqueue
+        // drains).  On the owning client that force arrives first; then
+        // apply_reparent_entity zeros local position.  A second force sent
+        // *after* the reparent RPC re-applies the intended local offset once
+        // the client is already parented, so the authority peer no longer
+        // needs a util.timer workaround.
         uint32_t captured_net_id    = net_id;
         uint32_t captured_parent_id = parent_net_id;
-        core->enqueue([captured_net_id, captured_parent_id]() {
+        godot::ObjectID captured_oid = godot::ObjectID(self_node->get_instance_id());
+        core->enqueue([captured_net_id, captured_parent_id, captured_oid]() {
             auto* net_node = Manager::Network::get_singleton()->get_node();
             if (net_node)
                 net_node->rpc("_reparent_entity",
@@ -413,6 +423,17 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print(
                 "ISyncable::apply_parent net_id=", captured_net_id,
                 " -> parent_net_id=", captured_parent_id);
+
+            // Re-apply local transform after clients have processed reparent.
+            // Read live position/rotation so any set_position that ran after
+            // set_parent() in the same Lua tick is reflected.
+            auto* node = godot::Object::cast_to<godot::Node3D>(
+                godot::ObjectDB::get_instance(captured_oid));
+            if (!node) return;
+            auto* syncable = dynamic_cast<ISyncable*>(node);
+            if (!syncable || syncable->get_net_id() != captured_net_id) return;
+            if (syncable->get_sync_authority() > 1)
+                syncable->force_transform_broadcast();
         });
     }
 

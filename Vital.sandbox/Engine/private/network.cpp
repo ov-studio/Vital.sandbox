@@ -406,6 +406,18 @@ namespace Vital::Engine {
             return;
         }
 
+        // Force arrived before the matching _reparent_entity was applied (common
+        // when set_parent + set_position run in the same server Lua tick: force
+        // RPC is sent immediately, reparent RPC is enqueued a frame later).
+        // Buffer and let replay / post-reparent force apply it in the correct
+        // parent-relative space after reparent zeros local position.
+        if (entity->get_sync_parent_net_id() == 0 && mgr->has_pending_reparent((uint32_t)net_id)) {
+            mgr->buffer_force_transform((uint32_t)net_id, pos, rot);
+            godot::UtilityFunctions::print(
+                "_force_transform: buffering until reparent net_id=", net_id, " pos=", pos);
+            return;
+        }
+
         auto* node = entity->get_sync_node();
         if (!node) return;
 
@@ -575,6 +587,30 @@ namespace Vital::Engine {
         child_sync->delta_last_pos = child_sync->sync_last_pos;
         child_sync->delta_last_rot = child_sync->sync_last_rot;
         child_sync->delta_last_vel = godot::Vector3();
+
+#if defined(VSDK_Client)
+        // If a _force_transform was buffered because it arrived before this
+        // reparent (or while reparent was still pending), apply it now that
+        // we are in the correct parent-relative coordinate space.  Without
+        // this, the zeroed local position above would stick until a later
+        // force arrives — which is exactly the "local controller needs a
+        // timer" bug.  Helpers only exist on the client build.
+        {
+            godot::Vector3 fpos, frot;
+            if (mgr->take_pending_force_transform(net_id, fpos, frot)) {
+                child_node->set_position(fpos);
+                child_node->set_rotation_degrees(frot);
+                child_sync->sync_last_pos  = fpos;
+                child_sync->sync_last_rot  = frot;
+                child_sync->delta_last_pos = fpos;
+                child_sync->delta_last_rot = frot;
+                child_sync->sync_sleeping  = false;
+                child_sync->sync_accum     = 0.0f;
+                godot::UtilityFunctions::print(
+                    "_reparent_entity: applied buffered force net_id=", net_id, " pos=", fpos);
+            }
+        }
+#endif
 
         godot::UtilityFunctions::print(
             "_reparent_entity: net_id=", net_id,
