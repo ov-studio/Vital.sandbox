@@ -256,6 +256,9 @@ namespace Vital::Engine {
                             // pending_shape_broadcast and replayed here, after _spawn_entity,
                             // so clients receive the body first and then its shape.
                             self -> flush_pending_shape_broadcast();
+                            // Flush any set_position/set_rotation called before net_id
+                            // was registered — sends _force_transform to the owning peer.
+                            self -> flush_pending_force_transform();
                             // For VehicleBody3D: flush any wheel RPCs (_spawn_wheel,
                             // _sync_wheel_config, _sync_wheel_transform) that were buffered
                             // because the vehicle body wasn't registered yet when wheels were

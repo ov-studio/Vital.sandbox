@@ -154,11 +154,32 @@ namespace Vital::Engine {
     // circular header dependency.  Keep in sync with that value.
     static constexpr uint32_t FORCE_SYNC_MAGIC = 0x56535354u; // 'VSST'
 
-    void ISyncable::force_transform_broadcast() {
-        if (net_id == 0) return; // unreplicated — nothing to broadcast
+    void ISyncable::flush_pending_force_transform() {
+        if (!pending_force_transform.has_value()) return;
+        if (sync_authority <= 1) { pending_force_transform.reset(); return; }
+        auto* net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node)
+            net_node->rpc_id(sync_authority, "_force_transform",
+                (int)net_id,
+                pending_force_transform->pos,
+                pending_force_transform->rot);
+        pending_force_transform.reset();
+    }
 
+    void ISyncable::force_transform_broadcast() {
         godot::Vector3 cur_pos = get_sync_position();
         godot::Vector3 cur_rot = get_sync_rotation();
+
+        if (net_id == 0) {
+            // Not yet registered — stash for flush_pending_force_transform(),
+            // which the deferred registration lambda calls after _spawn_entity.
+            // The unreliable broadcast is skipped (no net_id to encode), but
+            // _spawn_entity already carries get_sync_position()/get_sync_rotation()
+            // fresh, so all non-owning clients get the correct position via that.
+            pending_force_transform = PendingForceTransform{ cur_pos, cur_rot };
+            return;
+        }
+
         godot::Vector3 cur_vel = godot::Vector3(); // standstill after a teleport
 
         // Reseed the baseline so the comparison inside sync_tick sees no

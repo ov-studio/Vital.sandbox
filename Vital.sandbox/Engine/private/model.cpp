@@ -352,6 +352,13 @@ namespace Vital::Engine {
                         object->get_sync_rotation());
                 }
 
+                // Flush any set_position/set_rotation that was called in the
+                // same Lua tick as create() — net_id was 0 then so
+                // force_transform_broadcast() stashed it instead of sending.
+                // Now that _spawn_entity is out, fire _force_transform to the
+                // owning peer so it applies the override and reseeds its baseline.
+                object->flush_pending_force_transform();
+
                 if (Model::on_spawned_callback) Model::on_spawned_callback(object, false);
             });
 

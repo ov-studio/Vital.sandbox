@@ -223,8 +223,24 @@ namespace Vital::Engine {
             void force_transform_broadcast();
             #endif
 
+            // When force_transform_broadcast() is called before net_id is assigned
+            // (i.e. in the same Lua tick as create()), the RPC can't go out yet.
+            // Stash pos/rot here; the deferred registration lambda flushes it after
+            // _spawn_entity is sent — mirrors flush_pending_shape_broadcast() on
+            // Physics_Body and the set_syncer() / pending_authority pattern on Model.
             #if !defined(VSDK_Client)
-            // set_parent(parent_node) — reparent this server-authoritative synced
+            struct PendingForceTransform {
+                godot::Vector3 pos;
+                godot::Vector3 rot;
+            };
+            std::optional<PendingForceTransform> pending_force_transform;
+
+            // Called from the deferred registration lambdas in Model::create() and
+            // Physics_Body::setup_create(), after net_id is live and _spawn_entity
+            // has been sent.  Sends _force_transform to the owning peer if a
+            // set_position/set_rotation was called in the same Lua tick as create().
+            void flush_pending_force_transform();
+
             //   entity under another synced entity (Model, Physics_Body, ...) on
             //   the server scene tree and broadcast _reparent_entity to all
             //   current clients. Pass nullptr to detach back to Core root
