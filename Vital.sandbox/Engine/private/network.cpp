@@ -54,6 +54,7 @@ namespace Vital::Engine {
         rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
         rpc_config("_force_transform", reliable);
+        rpc_config("_sync_scale", reliable);
         rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;
@@ -451,6 +452,46 @@ namespace Vital::Engine {
         entity->sync_sleeping  = false;
         entity->sync_accum     = 0.0f;
         godot::UtilityFunctions::print("_force_transform: net_id=", net_id, " pos=", pos);
+        #endif
+    }
+
+    // _sync_scale: reliable scale replication (set_scale is not in the pos/rot
+    // delta stream). Server broadcasts; clients apply. Buffered if the entity
+    // has not been registered yet (same race as _force_transform).
+    void Network::_sync_scale(int net_id, godot::Vector3 scale) {
+        #if defined(VSDK_Client)
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) {
+            mgr->buffer_scale((uint32_t)net_id, scale);
+            return;
+        }
+        auto* node = entity->get_sync_node();
+        if (!node) return;
+        node->set_scale(scale);
+        godot::UtilityFunctions::print("_sync_scale: net_id=", net_id, " scale=", scale);
+        #else
+        // Server: client-authority peer may push scale; relay to everyone else.
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+        auto tree = godot::Object::cast_to<godot::SceneTree>(
+            godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        if (sender != 0 && sender != entity->get_sync_authority()) {
+            godot::UtilityFunctions::push_warning(
+                "_sync_scale: rejected — sender ", sender,
+                " is not authority for net_id=", net_id);
+            return;
+        }
+        // Apply on server so late-join dumps see the current scale.
+        if (auto* node = entity->get_sync_node())
+            node->set_scale(scale);
+        auto* net_node = mgr->get_node();
+        if (net_node)
+            net_node->rpc("_sync_scale", net_id, scale);
         #endif
     }
 

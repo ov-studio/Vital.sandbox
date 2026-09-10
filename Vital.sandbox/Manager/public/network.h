@@ -74,6 +74,8 @@ namespace Vital::Manager {
             // must be applied regardless of sync authority — that's the whole point.
             std::unordered_map<uint32_t, std::pair<godot::Vector3, godot::Vector3>> pending_force_transform_syncs;
             std::mutex pending_force_transform_mutex;
+            std::unordered_map<uint32_t, godot::Vector3> pending_scale_syncs;
+            std::mutex pending_scale_mutex;
 
             // Same problem for _reparent_entity RPCs — parent may not be in
             // sync_id_map yet when the RPC arrives. Stores (child_net_id → parent_net_id).
@@ -138,6 +140,18 @@ namespace Vital::Manager {
                 out_pos = it->second.first;
                 out_rot = it->second.second;
                 pending_force_transform_syncs.erase(it);
+                return true;
+            }
+            void buffer_scale(uint32_t net_id, godot::Vector3 scale) {
+                std::lock_guard<std::mutex> lock(pending_scale_mutex);
+                pending_scale_syncs[net_id] = scale;
+            }
+            bool take_pending_scale(uint32_t net_id, godot::Vector3& out_scale) {
+                std::lock_guard<std::mutex> lock(pending_scale_mutex);
+                auto it = pending_scale_syncs.find(net_id);
+                if (it == pending_scale_syncs.end()) return false;
+                out_scale = it->second;
+                pending_scale_syncs.erase(it);
                 return true;
             }
             #endif

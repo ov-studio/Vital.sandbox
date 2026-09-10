@@ -264,6 +264,26 @@ namespace Vital::Manager {
                 godot::UtilityFunctions::print("replay _force_transform: net_id=", nid, " pos=", pos);
             }
         }
+
+        // 5. Pending scale (_sync_scale arrived before the entity existed).
+        {
+            godot::Vector3 scale;
+            bool found = false;
+            {
+                std::lock_guard<std::mutex> lock(pending_scale_mutex);
+                auto it = pending_scale_syncs.find(nid);
+                if (it != pending_scale_syncs.end()) {
+                    scale = it->second;
+                    pending_scale_syncs.erase(it);
+                    found = true;
+                }
+            }
+            if (found) {
+                auto* node = entity->get_sync_node();
+                if (node) node->set_scale(scale);
+                godot::UtilityFunctions::print("replay _sync_scale: net_id=", nid, " scale=", scale);
+            }
+        }
     }
     #endif
 
@@ -1128,6 +1148,16 @@ namespace Vital::Manager {
                 if (parent_net_id == 0) continue;  // parented to Core, no replay needed
                 node->rpc_id(id, "_reparent_entity",
                     (int)e->get_net_id(), (int)parent_net_id);
+            }
+        }
+
+        // 2.6. Current scale (not in pos/rot delta stream).
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* e : sync_models) {
+                auto* n = e->get_sync_node();
+                if (!n) continue;
+                node->rpc_id(id, "_sync_scale", (int)e->get_net_id(), n->get_scale());
             }
         }
 
