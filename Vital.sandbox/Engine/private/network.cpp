@@ -402,8 +402,7 @@ namespace Vital::Engine {
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
             // Entity not registered yet — buffer and replay from replay_pending_syncs().
-            std::lock_guard<std::mutex> lock(mgr->pending_force_transform_mutex);
-            mgr->pending_force_transform_syncs[(uint32_t)net_id] = { pos, rot };
+            mgr->buffer_force_transform((uint32_t)net_id, pos, rot);
             return;
         }
 

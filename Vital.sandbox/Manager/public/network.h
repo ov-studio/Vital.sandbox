@@ -121,6 +121,10 @@ namespace Vital::Manager {
                 std::lock_guard<std::mutex> lock(pending_reparent_mutex);
                 pending_reparent_syncs[child_net_id] = parent_net_id;
             }
+            void buffer_force_transform(uint32_t net_id, godot::Vector3 pos, godot::Vector3 rot) {
+                std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
+                pending_force_transform_syncs[net_id] = { pos, rot };
+            }
             #endif
 
 
