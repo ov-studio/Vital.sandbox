@@ -866,15 +866,29 @@ namespace Vital::Engine {
         if (net_id == 0) return;
 
         #if !defined(VSDK_Client)
+        // Server: genuine broadcast to every connected client — same
+        // pattern as broadcast_sync()/_wake_sync.
         auto* net_node = Manager::Network::get_singleton()->get_node();
-        #else
-        auto* net_mgr = Manager::Network::get_singleton();
-        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        auto* net_node = net_mgr->get_node();
-        #endif
         if (!net_node) return;
         net_node->rpc("_sync_anim_layer", (int)net_id, layer, mode,
             Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        #else
+        // Client: only the peer holding sync authority over this model may
+        // send its own animation state — and it must go to the server via
+        // rpc_id(1, ...), never a bare rpc() broadcast. A client's only
+        // transport connection is to the server; Godot's high-level
+        // MultiplayerAPI does not implicitly resolve a client's broadcast
+        // rpc() the way send_sync_to_server()/_sync_client rely on an
+        // explicit rpc_id(1, ...) target — see that pair for the proven
+        // pattern this mirrors. The server then relays it on to every
+        // other client (see Network::_sync_anim_layer's server branch).
+        auto* net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        auto* net_node = net_mgr->get_node();
+        if (!net_node) return;
+        net_node->rpc_id(1, "_sync_anim_layer", (int)net_id, layer, mode,
+            Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        #endif
     }
 
     bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
