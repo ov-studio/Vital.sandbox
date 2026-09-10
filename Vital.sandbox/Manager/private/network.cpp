@@ -150,7 +150,7 @@ namespace Vital::Manager {
 
         // 1. Transform
         {
-            std::tuple<godot::Vector3, godot::Vector3, godot::Vector3> state;
+            std::tuple<godot::Vector3, godot::Vector3, godot::Vector3, godot::Vector3> state;
             bool found = false;
             {
                 std::lock_guard<std::mutex> lock(pending_transform_mutex);
@@ -165,17 +165,11 @@ namespace Vital::Manager {
                 godot::Vector3 pos = std::get<0>(state);
                 godot::Vector3 rot = std::get<1>(state);
                 godot::Vector3 vel = std::get<2>(state);
-                // Seed the decode baseline so the first live delta packet decodes
-                // correctly. Do NOT call apply_sync here — that would push a
-                // snapshot and set interp_ready=true with only one entry, causing
-                // the body to hang at this position until a second snapshot arrives
-                // (visible as other clients appearing below/wrong until they move).
-                // Instead set the node transform directly and leave interp_ready=false
-                // so the first real _sync_entities packet triggers the clean
-                // !interp_ready snap path and starts interpolation properly.
+                godot::Vector3 scale = std::get<3>(state);
                 entity->delta_last_pos = pos;
                 entity->delta_last_rot = rot;
                 entity->delta_last_vel = vel;
+                entity->delta_last_scale = scale;
                 auto* node = entity->get_sync_node();
                 if (node && node->is_inside_tree()) {
                     if (entity->get_sync_parent_net_id() != 0)
@@ -183,6 +177,7 @@ namespace Vital::Manager {
                     else
                         node->set_global_position(pos);
                     node->set_rotation_degrees(rot);
+                    node->set_scale(scale);
                 }
             }
         }
@@ -231,20 +226,20 @@ namespace Vital::Manager {
         //    NO authority check — the whole point of _force_transform is to override
         //    the owning client's position regardless of who holds sync authority.
         {
-            std::pair<godot::Vector3, godot::Vector3> ft;
+            godot::Vector3 pos, rot, scale = godot::Vector3(1,1,1);
             bool found = false;
             {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
                 auto it = pending_force_transform_syncs.find(nid);
                 if (it != pending_force_transform_syncs.end()) {
-                    ft = it->second;
+                    pos = std::get<0>(it->second);
+                    rot = std::get<1>(it->second);
+                    scale = std::get<2>(it->second);
                     pending_force_transform_syncs.erase(it);
                     found = true;
                 }
             }
             if (found) {
-                godot::Vector3 pos = ft.first;
-                godot::Vector3 rot = ft.second;
                 auto* node = entity->get_sync_node();
                 if (node && node->is_inside_tree()) {
                     if (entity->get_sync_parent_net_id() != 0)
@@ -262,26 +257,6 @@ namespace Vital::Manager {
                 entity->sync_sleeping  = false;
                 entity->sync_accum     = 0.0f;
                 godot::UtilityFunctions::print("replay _force_transform: net_id=", nid, " pos=", pos);
-            }
-        }
-
-        // 5. Pending scale (_sync_scale arrived before the entity existed).
-        {
-            godot::Vector3 scale;
-            bool found = false;
-            {
-                std::lock_guard<std::mutex> lock(pending_scale_mutex);
-                auto it = pending_scale_syncs.find(nid);
-                if (it != pending_scale_syncs.end()) {
-                    scale = it->second;
-                    pending_scale_syncs.erase(it);
-                    found = true;
-                }
-            }
-            if (found) {
-                auto* node = entity->get_sync_node();
-                if (node) node->set_scale(scale);
-                godot::UtilityFunctions::print("replay _sync_scale: net_id=", nid, " scale=", scale);
             }
         }
     }
@@ -443,9 +418,9 @@ namespace Vital::Manager {
         pending_shape_syncs[net_id] = { shape_type, params };
     }
 
-    void Network::defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel) {
+    void Network::defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel, const godot::Vector3& scale) {
         std::lock_guard<std::mutex> lock(pending_transform_mutex);
-        pending_transform_syncs[net_id] = { pos, rot, vel };
+        pending_transform_syncs[net_id] = { pos, rot, vel, scale };
     }
 
     // Received via the "_sync_config" RPC, sent by the server the moment we connect.
@@ -605,7 +580,7 @@ namespace Vital::Manager {
         int end    = 8 + (int)payload_bytes;
         while (offset < end) {
             uint32_t net_id = 0;
-            godot::Vector3 pos, rot, vel;
+            godot::Vector3 pos, rot, vel, scale;
 
             auto it_model = sync_id_map.end();
             // Peek net_id to find model before decoding (need delta_last_* from model).
@@ -615,7 +590,7 @@ namespace Vital::Manager {
 
             Engine::ISyncable* model = (it_model != sync_id_map.end()) ? it_model->second : nullptr;
             int consumed;
-            if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+            if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel, scale);
             else {
                 // Unknown model — most likely still mid-registration: its
                 // _spawn_entity RPC landed this same batch of incoming RPCs, but
@@ -629,10 +604,10 @@ namespace Vital::Manager {
                 // entry in a state dump can silently vanish if it beats
                 // registration, leaving the body at whatever transform
                 // _spawn_entity defaulted it to until it happens to move.
-                godot::Vector3 dp, dr, dv;
-                consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
+                godot::Vector3 dp, dr, dv, ds = godot::Vector3(1,1,1);
+                consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
                 #if defined(VSDK_Client)
-                if (consumed >= 0) defer_transform_sync(net_id, pos, rot, vel);
+                if (consumed >= 0) defer_transform_sync(net_id, pos, rot, vel, scale);
                 #endif
             }
             if (consumed < 0) break;
@@ -640,7 +615,7 @@ namespace Vital::Manager {
 
             if (!model) continue;
             if (model->get_sync_authority() == my_id) continue;
-            model->apply_sync(pos, rot, vel);
+            model->apply_sync(pos, rot, vel, scale);
         }
     }
 
@@ -681,15 +656,15 @@ namespace Vital::Manager {
                 Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
                 int consumed;
-                if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel);
+                if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel, scale);
                 else {
-                    godot::Vector3 dp, dr, dv;
-                    consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, dp, dr, dv);
+                    godot::Vector3 dp, dr, dv, ds = godot::Vector3(1,1,1);
+                    consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
                 }
                 if (consumed < 0) break;
 
                 if (model && model->get_sync_authority() == sender_id) {
-                    model->apply_sync(pos, rot, vel);
+                    model->apply_sync(pos, rot, vel, scale);
                     // Copy variable-length entry verbatim into relay.
                     for (int b = 0; b < consumed; b++) relay[relay_cursor + b] = data[offset + b];
                     relay_cursor += consumed;
@@ -970,15 +945,16 @@ namespace Vital::Manager {
         for (auto* model : snapshot) {
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
+            godot::Vector3 scale = model->get_sync_scale();
             // Always zero velocity in state dump — continuous _sync_entities corrects
             // position within frames. Real velocity causes BUFFER_DELAY extrapolation error.
             godot::Vector3 vel;
             // Temp zeroed state — guarantees full packet (all bits set).
-            godot::Vector3 zero_p, zero_r, zero_v;
+            godot::Vector3 zero_p, zero_r, zero_v, zero_s;
             int written = Engine::ISyncable::encode_delta(
                 buf, cursor,
-                model->get_net_id(), pos, rot, vel,
-                zero_p, zero_r, zero_v);
+                model->get_net_id(), pos, rot, vel, scale,
+                zero_p, zero_r, zero_v, zero_s);
             cursor += written;
         }
         buf.resize(cursor);
@@ -1151,16 +1127,6 @@ namespace Vital::Manager {
             }
         }
 
-        // 2.6. Current scale (not in pos/rot delta stream).
-        if (node) {
-            std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* e : sync_models) {
-                auto* n = e->get_sync_node();
-                if (!n) continue;
-                node->rpc_id(id, "_sync_scale", (int)e->get_net_id(), n->get_scale());
-            }
-        }
-
         // 2.7. Replay current animation-layer state so late-joiners see
         //      everyone's current walk/run/aim pose immediately instead of
         //      idle/T-pose until the owning peer's next animation change.
@@ -1328,7 +1294,7 @@ namespace Vital::Manager {
                     godot::Vector3 pos = std::get<0>(to_apply[i].second);
                     godot::Vector3 rot = std::get<1>(to_apply[i].second);
                     godot::Vector3 vel = std::get<2>(to_apply[i].second);
-                    entity->apply_sync(pos, rot, vel);
+                    entity->apply_sync(pos, rot, vel, scale);
                     // apply_sync only moves the node — it never touches
                     // delta_last_*, which is this client's own decode baseline
                     // for *future* incoming packets. Without seeding it here,
@@ -1444,7 +1410,10 @@ namespace Vital::Manager {
 
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f || (cur_rot - model->sync_last_rot).length() > 0.001f;
+                godot::Vector3 cur_scale = model->get_sync_scale();
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
+                    || (cur_rot - model->sync_last_rot).length() > 0.001f
+                    || (cur_scale - model->sync_last_scale).length() > 0.001f;
 
                 if (!moved) {
                     if (model->sync_sleeping) continue;
@@ -1467,12 +1436,13 @@ namespace Vital::Manager {
                 model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
+                model->sync_last_scale = cur_scale;
                 model->sync_last_vel = cur_vel;
 
                 int written = Engine::ISyncable::encode_delta(
                     sync_batch_buf, cursor,
-                    model->get_net_id(), cur_pos, cur_rot, cur_vel,
-                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
+                    model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale,
+                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
                 cursor += written;
             }
 
@@ -1510,7 +1480,10 @@ namespace Vital::Manager {
 
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f || (cur_rot - model->sync_last_rot).length() > 0.001f;
+                godot::Vector3 cur_scale = model->get_sync_scale();
+                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
+                    || (cur_rot - model->sync_last_rot).length() > 0.001f
+                    || (cur_scale - model->sync_last_scale).length() > 0.001f;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;
@@ -1526,12 +1499,13 @@ namespace Vital::Manager {
                 model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
+                model->sync_last_scale = cur_scale;
                 model->sync_last_vel = cur_vel;
 
                 int written = Engine::ISyncable::encode_delta(
                     sync_batch_buf, cursor,
-                    model->get_net_id(), cur_pos, cur_rot, cur_vel,
-                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel);
+                    model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale,
+                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
                 cursor += written;
             }
 

@@ -30,7 +30,7 @@ namespace Vital::Engine {
         friend class Model;
         public:
             // Delta compression constants //
-            static constexpr int   SYNC_PACKET_MAX     = 42;     // max bytes per delta entry
+            static constexpr int   SYNC_PACKET_MAX     = 54;     // max bytes per delta entry (pos+rot+vel+scale)
             static constexpr float DELTA_POS_THRESHOLD = 0.001f; // metres
             static constexpr float DELTA_ROT_THRESHOLD = 0.05f;  // degrees
             static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
@@ -86,6 +86,10 @@ namespace Vital::Engine {
                 static constexpr uint16_t MASK_VX = 1 << 6;
                 static constexpr uint16_t MASK_VY = 1 << 7;
                 static constexpr uint16_t MASK_VZ = 1 << 8;
+                static constexpr uint16_t MASK_SX = 1 << 9;
+                static constexpr uint16_t MASK_SY = 1 << 10;
+                static constexpr uint16_t MASK_SZ = 1 << 11;
+                static constexpr float DELTA_SCALE_THRESHOLD = 0.001f;
 
                 // Helpers //
                 static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
@@ -94,8 +98,8 @@ namespace Vital::Engine {
                 static float read_f32(const godot::PackedByteArray& buffer, int offset);
                 static uint16_t read_u16(const godot::PackedByteArray& buffer, int offset);
                 static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset);
-                static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-                static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
+                static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
+                static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
             };
         protected:
             inline static uint32_t next_net_id = 1;
@@ -107,6 +111,7 @@ namespace Vital::Engine {
             godot::Vector3 sync_last_pos;
             godot::Vector3 sync_last_rot;
             godot::Vector3 sync_last_vel;
+            godot::Vector3 sync_last_scale = godot::Vector3(1, 1, 1);
 
             // When non-zero, this entity is parented under another synced entity.
             // All transforms sent and received are LOCAL (relative to parent) rather
@@ -138,6 +143,7 @@ namespace Vital::Engine {
             godot::Vector3 delta_last_pos;
             godot::Vector3 delta_last_rot;
             godot::Vector3 delta_last_vel;
+            godot::Vector3 delta_last_scale = godot::Vector3(1, 1, 1);
 
 
             // Instantiators //
@@ -172,9 +178,9 @@ namespace Vital::Engine {
                 return Internal::read_u32(buffer, offset);
             }
 
-            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel);
-            int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel);
+            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
+            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
+            int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale);
             virtual SyncType get_sync_type() const = 0;
             virtual bool is_sync_active() const = 0;
             void set_sync_authority(int peer_id) {
@@ -196,7 +202,8 @@ namespace Vital::Engine {
             virtual int get_sync_authority() const { return sync_authority; }
             virtual godot::Vector3 get_sync_position() const = 0;
             virtual godot::Vector3 get_sync_rotation() const = 0;
-            virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) = 0;
+            virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) = 0;
+            virtual godot::Vector3 get_sync_scale() const = 0;
             virtual void on_sync_process(double delta) = 0;
             virtual void reset_sync_state();
 
@@ -232,6 +239,7 @@ namespace Vital::Engine {
             struct PendingForceTransform {
                 godot::Vector3 pos;
                 godot::Vector3 rot;
+                godot::Vector3 scale = godot::Vector3(1, 1, 1);
             };
             std::optional<PendingForceTransform> pending_force_transform;
 

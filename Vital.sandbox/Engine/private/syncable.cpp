@@ -57,7 +57,7 @@ namespace Vital::Engine {
              | ((uint8_t)buffer[offset+3] << 24);
     }
 
-    int ISyncable::Internal::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::Internal::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
         uint16_t mask = 0;
         if (std::abs(pos.x - last_pos.x) > DELTA_POS_THRESHOLD) mask |= MASK_PX;
         if (std::abs(pos.y - last_pos.y) > DELTA_POS_THRESHOLD) mask |= MASK_PY;
@@ -68,6 +68,9 @@ namespace Vital::Engine {
         if (std::abs(vel.x - last_vel.x) > DELTA_VEL_THRESHOLD) mask |= MASK_VX;
         if (std::abs(vel.y - last_vel.y) > DELTA_VEL_THRESHOLD) mask |= MASK_VY;
         if (std::abs(vel.z - last_vel.z) > DELTA_VEL_THRESHOLD) mask |= MASK_VZ;
+        if (std::abs(scale.x - last_scale.x) > DELTA_SCALE_THRESHOLD) mask |= MASK_SX;
+        if (std::abs(scale.y - last_scale.y) > DELTA_SCALE_THRESHOLD) mask |= MASK_SY;
+        if (std::abs(scale.z - last_scale.z) > DELTA_SCALE_THRESHOLD) mask |= MASK_SZ;
 
         write_u32(buffer, offset, id);
         write_u16(buffer, offset + 4, mask);
@@ -88,10 +91,13 @@ namespace Vital::Engine {
         maybe_write(mask & MASK_VX, vel.x, last_vel.x);
         maybe_write(mask & MASK_VY, vel.y, last_vel.y);
         maybe_write(mask & MASK_VZ, vel.z, last_vel.z);
+        maybe_write(mask & MASK_SX, scale.x, last_scale.x);
+        maybe_write(mask & MASK_SY, scale.y, last_scale.y);
+        maybe_write(mask & MASK_SZ, scale.z, last_scale.z);
         return cursor - offset;
     }
 
-    int ISyncable::Internal::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
+    int ISyncable::Internal::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
         if (offset + 6 > buf_size) return -1;
 
         out_id = read_u32(buffer, offset);
@@ -100,6 +106,7 @@ namespace Vital::Engine {
         out_pos = last_pos;
         out_rot = last_rot;
         out_vel = last_vel;
+        out_scale = last_scale;
 
         auto maybe_read = [&](bool bit, float& out, float& last) -> bool {
             if (!bit) return true;
@@ -119,22 +126,25 @@ namespace Vital::Engine {
         if (!maybe_read(mask & MASK_VX, out_vel.x, last_vel.x)) return -1;
         if (!maybe_read(mask & MASK_VY, out_vel.y, last_vel.y)) return -1;
         if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
+        if (!maybe_read(mask & MASK_SX, out_scale.x, last_scale.x)) return -1;
+        if (!maybe_read(mask & MASK_SY, out_scale.y, last_scale.y)) return -1;
+        if (!maybe_read(mask & MASK_SZ, out_scale.z, last_scale.z)) return -1;
         return cursor - offset;
     }
 }
 
 namespace Vital::Engine {
     // Misc //
-    int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return Internal::encode_delta(buffer, offset, id, pos, rot, vel, last_pos, last_rot, last_vel);
+    int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
+        return Internal::encode_delta(buffer, offset, id, pos, rot, vel, scale, last_pos, last_rot, last_vel, last_scale);
     }
 
-    int ISyncable::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel) {
-        return Internal::decode_delta(buffer, offset, buf_size, out_id, out_pos, out_rot, out_vel, last_pos, last_rot, last_vel);
+    int ISyncable::decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
+        return Internal::decode_delta(buffer, offset, buf_size, out_id, out_pos, out_rot, out_vel, out_scale, last_pos, last_rot, last_vel, last_scale);
     }
 
-    int ISyncable::parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel) {
-        return Internal::decode_delta(buffer, offset, (int)buffer.size(), out_id, out_pos, out_rot, out_vel, delta_last_pos, delta_last_rot, delta_last_vel);
+    int ISyncable::parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale) {
+        return Internal::decode_delta(buffer, offset, (int)buffer.size(), out_id, out_pos, out_rot, out_vel, out_scale, delta_last_pos, delta_last_rot, delta_last_vel, delta_last_scale);
     }
 
     void ISyncable::reset_sync_state() {
@@ -164,54 +174,44 @@ namespace Vital::Engine {
             net_node->rpc("_force_transform",
                 (int)net_id,
                 pending_force_transform->pos,
-                pending_force_transform->rot);
+                pending_force_transform->rot,
+                pending_force_transform->scale);
         pending_force_transform.reset();
     }
 
     void ISyncable::force_transform_broadcast() {
         godot::Vector3 cur_pos = get_sync_position();
         godot::Vector3 cur_rot = get_sync_rotation();
+        godot::Vector3 cur_scale = get_sync_scale();
 
         if (net_id == 0) {
-            // Not yet registered — stash for flush_pending_force_transform(),
-            // which the deferred registration lambda calls after _spawn_entity.
-            // The unreliable broadcast is skipped (no net_id to encode), but
-            // _spawn_entity already carries get_sync_position()/get_sync_rotation()
-            // fresh, so all non-owning clients get the correct position via that.
-            pending_force_transform = PendingForceTransform{ cur_pos, cur_rot };
+            pending_force_transform = PendingForceTransform{ cur_pos, cur_rot, cur_scale };
             return;
         }
 
-        godot::Vector3 cur_vel = godot::Vector3(); // standstill after a teleport
+        godot::Vector3 cur_vel = godot::Vector3();
 
-        // Reseed the baseline so the comparison inside sync_tick sees no
-        // delta on the next tick (entity appears still from here).
-        // delta_last_* are the running state for ISyncable's encode_delta;
-        // reset them too so the first incremental packet from this new origin
-        // is encoded correctly (no stale previous-position residual).
         sync_last_pos  = cur_pos;
         sync_last_rot  = cur_rot;
         sync_last_vel  = cur_vel;
+        sync_last_scale = cur_scale;
         delta_last_pos = cur_pos;
         delta_last_rot = cur_rot;
         delta_last_vel = godot::Vector3();
+        delta_last_scale = cur_scale;
         sync_sleeping  = false;
         sync_accum     = 0.0f;
 
-        // Build a minimal single-entity VSST batch and fire it.
         godot::PackedByteArray buf;
         buf.resize(8 + SYNC_PACKET_MAX);
 
-        // Scratch accumulators for encode_delta (start zeroed so it
-        // treats this as the first packet from a fresh baseline).
-        godot::Vector3 enc_pos{}, enc_rot{}, enc_vel{};
+        godot::Vector3 enc_pos{}, enc_rot{}, enc_vel{}, enc_scale{};
         int written = encode_delta(buf, 8, net_id,
-            cur_pos, cur_rot, cur_vel,
-            enc_pos, enc_rot, enc_vel);
+            cur_pos, cur_rot, cur_vel, cur_scale,
+            enc_pos, enc_rot, enc_vel, enc_scale);
         if (written <= 0) return;
 
         buf.resize(8 + written);
-        // Header: magic + payload length
         auto wu32 = [&](int off, uint32_t v) {
             buf[off]   =  v        & 0xFF;
             buf[off+1] = (v >>  8) & 0xFF;
@@ -223,18 +223,11 @@ namespace Vital::Engine {
 
         Manager::Network::get_singleton()->broadcast_sync(buf);
 
-        // Reliable force to ALL peers (not only the authority).
-        // Unreliable VSST can be dropped; existing clients watching a
-        // mid-session character spawn need the parented local offset
-        // (e.g. model under capsule) or they keep the mesh at the wrong place
-        // while the body looks correct.  Authority peer also needs it so its
-        // next _sync_client does not snap back.
-        // Skip server-authority (1): server already owns the transform stream.
         if (sync_authority > 1) {
             auto* net_node = Manager::Network::get_singleton()->get_node();
             if (net_node)
                 net_node->rpc("_force_transform",
-                    (int)net_id, cur_pos, cur_rot);
+                    (int)net_id, cur_pos, cur_rot, cur_scale);
         }
     }
     #endif

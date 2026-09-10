@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 
 
@@ -135,25 +134,14 @@ namespace Vital::Sandbox::API {
                     auto scale = vm -> get_vector3(2);
                     self -> get_node() -> set_scale(scale);
                     #if !defined(VSDK_Client)
-                    // Scale is not in the continuous pos/rot delta stream — always
-                    // broadcast reliably so every peer (including server-authority
-                    // balls and late joiners via dump) gets the change.
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node())) {
-                        if (sync->get_net_id() != 0) {
-                            if (auto* net_node = Vital::Manager::Network::get_singleton() -> get_node())
-                                net_node->rpc("_sync_scale", (int)sync->get_net_id(), scale);
-                        }
-                    }
-                    #else
-                    // Owning client may change scale locally — upload so server relays.
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node())) {
-                        if (sync->get_net_id() != 0
-                            && sync->get_sync_authority() == Vital::Manager::Network::get_singleton()->get_peer_id()) {
-                            if (auto* net_node = Vital::Manager::Network::get_singleton() -> get_node())
-                                net_node->rpc_id(1, "_sync_scale", (int)sync->get_net_id(), scale);
-                        }
-                    }
+                    // Same as set_position/set_rotation: peer-auth needs immediate
+                    // force (includes scale in transform stream). Server-auth is
+                    // picked up by the next sync_tick sample of get_sync_scale().
+                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
+                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
                     #endif
+                    // Client-authority: local set is enough — next _sync_client
+                    // upload samples get_sync_scale() and relays to others.
                     vm -> push_value(true);
                     return 1;
                 });
@@ -322,7 +310,6 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        // TODO: Improve
         // node_type is accepted for call-site consistency with methods<> but
         // parenting behaviour is identical regardless of node type, so it is
         // intentionally unused inside the body.

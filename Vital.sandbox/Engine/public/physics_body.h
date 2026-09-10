@@ -81,24 +81,22 @@ namespace Vital::Engine {
                     ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees()
                     : godot::Vector3();
             }
+            godot::Vector3 get_sync_scale() const override {
+                return const_cast<Physics_Body*>(this)->Base::is_inside_tree()
+                    ? const_cast<Physics_Body*>(this)->Base::get_scale()
+                    : godot::Vector3(1, 1, 1);
+            }
 
-            void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) override {
+            void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override {
                 if (!Base::is_inside_tree()) return;
                 auto net = Manager::Network::get_singleton();
-                if (net && net -> get_peer_id() == sync_authority) return;
-                if (!interp_ready) {
-                    // Parented: incoming pos/rot are local-space — write back as local.
-                    if (sync_parent_net_id != 0) {
-                        Base::set_position(pos);
-                    } else {
-                        Base::set_global_position(pos);
-                    }
-                    Base::set_rotation_degrees(rot);
-                }
+                if (net && net->get_peer_id() == sync_authority) return;
                 sync_push_snapshot(pos, rot, vel);
+                Base::set_scale(scale);
                 sync_last_pos = pos;
                 sync_last_rot = rot;
                 sync_last_vel = vel;
+                sync_last_scale = scale;
                 sync_sleeping = false;
             }
 

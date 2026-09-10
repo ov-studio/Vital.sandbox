@@ -54,7 +54,6 @@ namespace Vital::Engine {
         rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
         rpc_config("_force_transform", reliable);
-        rpc_config("_sync_scale", reliable);
         rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;
@@ -404,14 +403,14 @@ namespace Vital::Engine {
     // origin instead of snapping the entity back to wherever it was before.
     // The server also calls broadcast_sync() separately for all OTHER clients,
     // so this RPC only needs to handle the owning peer's side.
-    void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot) {
+    void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale) {
         #if defined(VSDK_Client)
         auto* mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
             // Entity not registered yet — buffer and replay from replay_pending_syncs().
-            mgr->buffer_force_transform((uint32_t)net_id, pos, rot);
+            mgr->buffer_force_transform((uint32_t)net_id, pos, rot, scale);
             return;
         }
 
@@ -421,7 +420,7 @@ namespace Vital::Engine {
         // Buffer and let replay / post-reparent force apply it in the correct
         // parent-relative space after reparent zeros local position.
         if (entity->get_sync_parent_net_id() == 0 && mgr->has_pending_reparent((uint32_t)net_id)) {
-            mgr->buffer_force_transform((uint32_t)net_id, pos, rot);
+            mgr->buffer_force_transform((uint32_t)net_id, pos, rot, scale);
             godot::UtilityFunctions::print(
                 "_force_transform: buffering until reparent net_id=", net_id, " pos=", pos);
             return;
@@ -438,6 +437,7 @@ namespace Vital::Engine {
             node->set_global_position(pos);
             node->set_rotation_degrees(rot);
         }
+        node->set_scale(scale);
 
         // Reseed baselines so this client's next _sync_client packet starts
         // from the new position.  Without this the client's upload would carry
@@ -452,46 +452,6 @@ namespace Vital::Engine {
         entity->sync_sleeping  = false;
         entity->sync_accum     = 0.0f;
         godot::UtilityFunctions::print("_force_transform: net_id=", net_id, " pos=", pos);
-        #endif
-    }
-
-    // _sync_scale: reliable scale replication (set_scale is not in the pos/rot
-    // delta stream). Server broadcasts; clients apply. Buffered if the entity
-    // has not been registered yet (same race as _force_transform).
-    void Network::_sync_scale(int net_id, godot::Vector3 scale) {
-        #if defined(VSDK_Client)
-        auto* mgr = Manager::Network::get_singleton();
-        if (!mgr) return;
-        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
-        if (!entity) {
-            mgr->buffer_scale((uint32_t)net_id, scale);
-            return;
-        }
-        auto* node = entity->get_sync_node();
-        if (!node) return;
-        node->set_scale(scale);
-        godot::UtilityFunctions::print("_sync_scale: net_id=", net_id, " scale=", scale);
-        #else
-        // Server: client-authority peer may push scale; relay to everyone else.
-        auto* mgr = Manager::Network::get_singleton();
-        if (!mgr) return;
-        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
-        if (!entity) return;
-        auto tree = godot::Object::cast_to<godot::SceneTree>(
-            godot::Engine::get_singleton()->get_main_loop());
-        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
-        if (sender != 0 && sender != entity->get_sync_authority()) {
-            godot::UtilityFunctions::push_warning(
-                "_sync_scale: rejected — sender ", sender,
-                " is not authority for net_id=", net_id);
-            return;
-        }
-        // Apply on server so late-join dumps see the current scale.
-        if (auto* node = entity->get_sync_node())
-            node->set_scale(scale);
-        auto* net_node = mgr->get_node();
-        if (net_node)
-            net_node->rpc("_sync_scale", net_id, scale);
         #endif
     }
 
@@ -640,9 +600,11 @@ namespace Vital::Engine {
         // timer" bug.  Helpers only exist on the client build.
         {
             godot::Vector3 fpos, frot;
-            if (mgr->take_pending_force_transform(net_id, fpos, frot)) {
+            godot::Vector3 fscale = godot::Vector3(1,1,1);
+            if (mgr->take_pending_force_transform(net_id, fpos, frot, fscale)) {
                 child_node->set_position(fpos);
                 child_node->set_rotation_degrees(frot);
+                child_node->set_scale(fscale);
                 child_sync->sync_last_pos  = fpos;
                 child_sync->sync_last_rot  = frot;
                 child_sync->delta_last_pos = fpos;

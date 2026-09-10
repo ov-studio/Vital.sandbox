@@ -65,7 +65,7 @@ namespace Vital::Engine {
     // supplies the entity-specific hooks so PhysicsBody (and any future
     // syncable) can reuse the same path with zero copy-paste.
 
-    void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
+    void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) {
         if (!is_inside_tree()) return;
 
         // Authority peer drives its own transform — never overwrite.
@@ -73,11 +73,19 @@ namespace Vital::Engine {
         if (net && net->get_peer_id() == sync_authority) return;
 
         sync_push_snapshot(pos, rot, vel);
+        // Scale snaps (not interpolated) — rare changes, exact value matters.
+        set_scale(scale);
 
         sync_last_pos = pos;
         sync_last_rot = rot;
         sync_last_vel = vel;
+        sync_last_scale = scale;
         sync_sleeping = false;
+    }
+
+    godot::Vector3 Model::get_sync_scale() const {
+        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3(1, 1, 1);
+        return const_cast<Model*>(this)->get_scale();
     }
 
     void Model::_process(double delta) {

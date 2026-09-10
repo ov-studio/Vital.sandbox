@@ -66,16 +66,14 @@ namespace Vital::Manager {
             // Same problem for transform (position/rotation/velocity) packets — the
             // state-dump sends can arrive before poll() drains sync_pending. Keeps
             // only the latest state per net_id; applied and cleared on registration.
-            std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
+            std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
             std::mutex pending_transform_mutex;
 
             // Forced transform overrides (_force_transform RPC) that arrive before
             // the owning entity is registered. Unlike pending_transform_syncs these
             // must be applied regardless of sync authority — that's the whole point.
-            std::unordered_map<uint32_t, std::pair<godot::Vector3, godot::Vector3>> pending_force_transform_syncs;
+            std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_force_transform_syncs;
             std::mutex pending_force_transform_mutex;
-            std::unordered_map<uint32_t, godot::Vector3> pending_scale_syncs;
-            std::mutex pending_scale_mutex;
 
             // Same problem for _reparent_entity RPCs — parent may not be in
             // sync_id_map yet when the RPC arrives. Stores (child_net_id → parent_net_id).
@@ -123,9 +121,9 @@ namespace Vital::Manager {
                 std::lock_guard<std::mutex> lock(pending_reparent_mutex);
                 pending_reparent_syncs[child_net_id] = parent_net_id;
             }
-            void buffer_force_transform(uint32_t net_id, godot::Vector3 pos, godot::Vector3 rot) {
+            void buffer_force_transform(uint32_t net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale = godot::Vector3(1,1,1)) {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
-                pending_force_transform_syncs[net_id] = { pos, rot };
+                pending_force_transform_syncs[net_id] = { pos, rot, scale };
             }
             // True if a _reparent_entity for this child is buffered and not yet applied.
             bool has_pending_reparent(uint32_t child_net_id) {
@@ -133,25 +131,14 @@ namespace Vital::Manager {
                 return pending_reparent_syncs.find(child_net_id) != pending_reparent_syncs.end();
             }
             // Consume a buffered _force_transform for this net_id, if any.
-            bool take_pending_force_transform(uint32_t net_id, godot::Vector3& out_pos, godot::Vector3& out_rot) {
+            bool take_pending_force_transform(uint32_t net_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_scale) {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
                 auto it = pending_force_transform_syncs.find(net_id);
                 if (it == pending_force_transform_syncs.end()) return false;
-                out_pos = it->second.first;
-                out_rot = it->second.second;
+                out_pos = std::get<0>(it->second);
+                out_rot = std::get<1>(it->second);
+                out_scale = std::get<2>(it->second);
                 pending_force_transform_syncs.erase(it);
-                return true;
-            }
-            void buffer_scale(uint32_t net_id, godot::Vector3 scale) {
-                std::lock_guard<std::mutex> lock(pending_scale_mutex);
-                pending_scale_syncs[net_id] = scale;
-            }
-            bool take_pending_scale(uint32_t net_id, godot::Vector3& out_scale) {
-                std::lock_guard<std::mutex> lock(pending_scale_mutex);
-                auto it = pending_scale_syncs.find(net_id);
-                if (it == pending_scale_syncs.end()) return false;
-                out_scale = it->second;
-                pending_scale_syncs.erase(it);
                 return true;
             }
             #endif
@@ -200,7 +187,7 @@ namespace Vital::Manager {
 
             // Buffers a transform sync for a net_id not yet registered; poll() applies
             // it via ISyncable::apply_sync() once it registers. See pending_transform_syncs.
-            void defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel);
+            void defer_transform_sync(uint32_t net_id, const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& vel, const godot::Vector3& scale = godot::Vector3(1,1,1));
 
             // Called from Engine::Network::_sync_rate with the server's real
             // physics_tick_rate/sync_rate — keeps client-side sync_interval and
