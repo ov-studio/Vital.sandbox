@@ -338,6 +338,53 @@ namespace Vital::Engine {
     }
 
 
+    // _sync_anim_layer: replicates Model animation-layer state (see
+    // Model::broadcast_animation_layer). mode: 0=play, 1=stop, 2=set weight,
+    // 3=set speed.
+    //
+    // Server: relays whichever peer currently holds sync authority over the
+    // target model — anyone else's packet for that net_id is dropped as a
+    // spoof attempt — then rebroadcasts reliably to every connected client
+    // (same relay shape as _sync_client uses for client-authoritative
+    // movement). Server build never applies the animation locally; Model
+    // only carries a live AnimationPlayer/AnimationTree on the client.
+    //
+    // Client: applies the animation state to the matching Model directly via
+    // its private apply_*() helpers (Network is a friend of Model) — never
+    // through the public play_animation_layer()/etc, which would re-trigger
+    // another broadcast and echo the packet back onto the network.
+    void Network::_sync_anim_layer(int net_id, int layer, int mode, godot::String name, bool loop, float speed, float weight, float blend_time) {
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        #if !defined(VSDK_Client)
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        if (sender != 0 && sender != entity->get_sync_authority()) {
+            godot::UtilityFunctions::push_warning("_sync_anim_layer: rejected — sender ", sender,
+                " is not the sync authority for net_id=", net_id);
+            return;
+        }
+        auto* node = mgr->get_node();
+        if (node) node->rpc("_sync_anim_layer", net_id, layer, mode, name, loop, speed, weight, blend_time);
+        #else
+        auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+
+        std::string std_name = Tool::to_std_string(name);
+        switch (mode) {
+            case 0: model->apply_play_animation_layer(layer, std_name, loop, speed, weight, blend_time); break;
+            case 1: model->apply_stop_animation_layer(layer, blend_time); break;
+            case 2: model->apply_set_animation_layer_weight(layer, weight, blend_time); break;
+            case 3: model->apply_set_animation_layer_speed(layer, speed); break;
+            default: godot::UtilityFunctions::push_warning("_sync_anim_layer: unknown mode=", mode); break;
+        }
+        #endif
+    }
+
+
     // _sync_shape: called on clients when server assigns/changes a collision shape on a synced body.
     // Finds or creates our Engine::Collision_Shape child on the matching body node and applies the shape.
     // Vehicle wheels are children of their vehicle body and driven by Godot's physics — no sync needed.
