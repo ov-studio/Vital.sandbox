@@ -1013,13 +1013,21 @@ namespace Vital::Manager {
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
             for (auto* e : sync_models) {
+                godot::Vector3 spawn_pos = e->get_sync_position();
+                godot::Vector3 spawn_rot = e->get_sync_rotation();
+                if (auto* n = e->get_sync_node()) {
+                    if (n->is_inside_tree()) {
+                        spawn_pos = n->get_global_position();
+                        spawn_rot = n->get_global_rotation_degrees();
+                    }
+                }
                 node->rpc_id(id, "_spawn_entity",
                     (int)e->get_net_id(),
                     (int)e->get_sync_type(),
                     Tool::to_godot_string(e->get_sync_name()),
                     e->get_sync_authority(),
-                    e->get_sync_position(),
-                    e->get_sync_rotation());
+                    spawn_pos,
+                    spawn_rot);
             }
         }
 
