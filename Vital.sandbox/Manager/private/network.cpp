@@ -1083,6 +1083,30 @@ namespace Vital::Manager {
             }
         }
 
+        // 2.7. Replay current animation-layer state so late-joiners see
+        //      everyone's current walk/run/aim pose immediately instead of
+        //      idle/T-pose until the owning peer's next animation change.
+        //      Sent as an instant snap (blend_time = 0) using each layer's
+        //      own current weight — including layers that have since faded
+        //      back to 0 — so the late-joiner lands in exactly the same
+        //      blended state as everyone else, not just "whatever was last
+        //      played". Mirrors how 2.5b replays wheel config on spawn.
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto* e : sync_models) {
+                auto* model = dynamic_cast<Engine::Model*>(e);
+                if (!model) continue;
+                for (int layer = 0; layer < Engine::Model::ANIM_LAYER_COUNT; layer++) {
+                    auto& state = model->anim_layers[layer];
+                    if (state.current_anim.empty()) continue;
+                    node->rpc_id(id, "_sync_anim_layer",
+                        (int)e->get_net_id(), layer, 0,
+                        Tool::to_godot_string(state.current_anim),
+                        state.loop, state.speed, state.weight_target, 0.0f);
+                }
+            }
+        }
+
         // 3. Send transform state dump (reliable) so all models snap to correct
         //    positions. wake_all_syncables() + _wake_sync below then force a
         //    fresh live packet from every sleeping body within one physics tick,
