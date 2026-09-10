@@ -475,22 +475,28 @@ namespace Vital::Manager {
     void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
 
     void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
-        spawn_queue[name] = { placeholder, authority_peer };
-        log("sbox", fmt::format("queued placeholder spawn -> {}", name));
+        spawn_queue[name].push_back({ placeholder, authority_peer });
+        log("sbox", fmt::format("queued placeholder spawn -> {} (pending {})",
+            name, spawn_queue[name].size()));
     }
 
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
 
-        void* raw = it -> second.placeholder;
-        int authority_peer = it -> second.authority_peer;
+        std::vector<PendingSpawn> pending = std::move(it->second);
         spawn_queue.erase(it);
-        Engine::Core::get_singleton() -> enqueue([this, loaded_name, raw, authority_peer]() {
-            Engine::Model* placeholder = static_cast<Engine::Model*>(raw);
-            if (!godot::ObjectDB::get_instance(placeholder -> get_instance_id())) return;
-            placeholder -> hydrate(authority_peer);
-            log("sbox", fmt::format("flushed spawn queue for '{}'", loaded_name));
+        Engine::Core::get_singleton() -> enqueue([this, loaded_name, pending = std::move(pending)]() mutable {
+            int hydrated = 0;
+            for (auto& entry : pending) {
+                auto* placeholder = static_cast<Engine::Model*>(entry.placeholder);
+                if (!placeholder) continue;
+                if (!godot::ObjectDB::get_instance(placeholder->get_instance_id())) continue;
+                placeholder->hydrate(entry.authority_peer);
+                ++hydrated;
+            }
+            log("sbox", fmt::format("flushed spawn queue for '{}' ({} hydrated)",
+                loaded_name, hydrated));
         });
     }
     #endif

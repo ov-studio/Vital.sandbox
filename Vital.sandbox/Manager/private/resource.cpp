@@ -210,7 +210,17 @@ namespace Vital::Manager {
             rm -> resources.push_back(std::move(manifest));
         }
         rm -> log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
-        return start(name);
+        // TODO: Better solution?
+        // Two-level defer: let the current drain finish (spawn/reparent RPCs +
+        // entity:created Lua), then start on the next drain so compile_string
+        // never runs mid-flood. Required when joining a server that already
+        // has many entities (e.g. 50 balls).
+        Engine::Core::get_singleton() -> enqueue([name]() {
+            Engine::Core::get_singleton() -> enqueue([name]() {
+                Internal::start(name);
+            });
+        });
+        return true;
     }
     #else
     bool Resource::Internal::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
