@@ -69,6 +69,12 @@ namespace Vital::Manager {
             std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
             std::mutex pending_transform_mutex;
 
+            // Forced transform overrides (_force_transform RPC) that arrive before
+            // the owning entity is registered. Unlike pending_transform_syncs these
+            // must be applied regardless of sync authority — that's the whole point.
+            std::unordered_map<uint32_t, std::pair<godot::Vector3, godot::Vector3>> pending_force_transform_syncs;
+            std::mutex pending_force_transform_mutex;
+
             // Same problem for _reparent_entity RPCs — parent may not be in
             // sync_id_map yet when the RPC arrives. Stores (child_net_id → parent_net_id).
             std::unordered_map<uint32_t, uint32_t> pending_reparent_syncs;

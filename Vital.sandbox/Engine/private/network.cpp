@@ -400,7 +400,12 @@ namespace Vital::Engine {
         auto* mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
-        if (!entity) return;
+        if (!entity) {
+            // Entity not registered yet — buffer and replay from replay_pending_syncs().
+            std::lock_guard<std::mutex> lock(mgr->pending_force_transform_mutex);
+            mgr->pending_force_transform_syncs[(uint32_t)net_id] = { pos, rot };
+            return;
+        }
 
         auto* node = entity->get_sync_node();
         if (!node) return;

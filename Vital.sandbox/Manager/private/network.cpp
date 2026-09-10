@@ -224,6 +224,46 @@ namespace Vital::Manager {
             for (size_t i = 0; i < to_apply.size(); ++i)
                 Engine::Network::apply_reparent_entity(to_apply[i].first, to_apply[i].second);
         }
+
+        // 4. Forced transform override (_force_transform RPC that arrived before
+        //    this entity was registered).  Applied AFTER reparent so sync_parent_net_id
+        //    is already set and we write into the correct coordinate space.
+        //    NO authority check — the whole point of _force_transform is to override
+        //    the owning client's position regardless of who holds sync authority.
+        {
+            std::pair<godot::Vector3, godot::Vector3> ft;
+            bool found = false;
+            {
+                std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
+                auto it = pending_force_transform_syncs.find(nid);
+                if (it != pending_force_transform_syncs.end()) {
+                    ft = it->second;
+                    pending_force_transform_syncs.erase(it);
+                    found = true;
+                }
+            }
+            if (found) {
+                godot::Vector3 pos = ft.first;
+                godot::Vector3 rot = ft.second;
+                auto* node = entity->get_sync_node();
+                if (node && node->is_inside_tree()) {
+                    if (entity->get_sync_parent_net_id() != 0)
+                        node->set_position(pos);
+                    else
+                        node->set_global_position(pos);
+                    node->set_rotation_degrees(rot);
+                }
+                entity->sync_last_pos  = pos;
+                entity->sync_last_rot  = rot;
+                entity->sync_last_vel  = godot::Vector3();
+                entity->delta_last_pos = pos;
+                entity->delta_last_rot = rot;
+                entity->delta_last_vel = godot::Vector3();
+                entity->sync_sleeping  = false;
+                entity->sync_accum     = 0.0f;
+                godot::UtilityFunctions::print("replay _force_transform: net_id=", nid, " pos=", pos);
+            }
+        }
     }
     #endif
 
