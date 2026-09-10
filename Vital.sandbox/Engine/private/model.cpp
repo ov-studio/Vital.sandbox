@@ -343,13 +343,20 @@ namespace Vital::Engine {
                     // authority directly onto this object (see Model::set_syncer,
                     // which skips its own broadcast in that case precisely so
                     // this single _spawn_entity RPC is the one source of truth).
+                    // Always send WORLD transform for spawn. get_sync_position()
+                    // is local when parented; clients apply init as global before
+                    // _reparent_entity, which would plant the mesh at the local
+                    // offset in world space (ball meshes stuck at origin while
+                    // colliders sit on the field).
+                    godot::Vector3 spawn_pos = object->get_global_position();
+                    godot::Vector3 spawn_rot = object->get_global_rotation_degrees();
                     net_node->rpc("_spawn_entity",
                         (int)captured_net_id,
                         (int)Engine::ISyncable::SyncType::Model,
                         captured_name,
                         object->get_sync_authority(),
-                        object->get_sync_position(),
-                        object->get_sync_rotation());
+                        spawn_pos,
+                        spawn_rot);
                 }
 
                 // Flush any set_position/set_rotation that was called in the
@@ -807,7 +814,15 @@ namespace Vital::Engine {
             godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
             return false;
         }
-        auto* player = assert_animation_player();
+        // Soft-fail: placeholder models / meshes without an AnimationPlayer must
+        // not throw. Late-join _sync_anim_layer can arrive before hydrate().
+        if (!anim_player) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_play_animation_layer — no AnimationPlayer yet on '",
+                Tool::to_godot_string(model_name), "' (placeholder=", placeholder, ")");
+            return false;
+        }
+        auto* player = anim_player;
         if (!player->has_animation(Tool::to_godot_string(name))) {
             godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name),
                 "' not found in model '", Tool::to_godot_string(model_name), "'");
