@@ -158,8 +158,10 @@ namespace Vital::Engine {
         if (!pending_force_transform.has_value()) return;
         if (sync_authority <= 1) { pending_force_transform.reset(); return; }
         auto* net_node = Manager::Network::get_singleton()->get_node();
+        // Broadcast to all peers so observers of mid-session spawns get the
+        // parented local offset, not only the authority client.
         if (net_node)
-            net_node->rpc_id(sync_authority, "_force_transform",
+            net_node->rpc("_force_transform",
                 (int)net_id,
                 pending_force_transform->pos,
                 pending_force_transform->rot);
@@ -221,18 +223,17 @@ namespace Vital::Engine {
 
         Manager::Network::get_singleton()->broadcast_sync(buf);
 
-        // The unreliable broadcast above reaches every peer EXCEPT the owning
-        // client, whose apply_sync() drops packets for entities it holds
-        // authority over.  Send a reliable targeted RPC directly to that peer
-        // so it also repositions the entity and reseeds its upload baseline —
-        // preventing it from snapping the entity back on the next _sync_client.
-        // Skip for server-authority entities (sync_authority == 1): nobody
-        // needs a special override in that case because the server IS the
-        // authority and already wrote the position above.
+        // Reliable force to ALL peers (not only the authority).
+        // Unreliable VSST can be dropped; existing clients watching a
+        // mid-session character spawn need the parented local offset
+        // (e.g. model under capsule) or they keep the mesh at the wrong place
+        // while the body looks correct.  Authority peer also needs it so its
+        // next _sync_client does not snap back.
+        // Skip server-authority (1): server already owns the transform stream.
         if (sync_authority > 1) {
             auto* net_node = Manager::Network::get_singleton()->get_node();
             if (net_node)
-                net_node->rpc_id(sync_authority, "_force_transform",
+                net_node->rpc("_force_transform",
                     (int)net_id, cur_pos, cur_rot);
         }
     }
