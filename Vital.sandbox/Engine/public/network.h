@@ -41,6 +41,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_index", "key", "value"), &Network::_sync_wheel_config);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_transform", "net_id", "wheel_index", "position", "rotation"), &Network::_sync_wheel_transform);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_anim_layer", "net_id", "layer", "mode", "name", "loop", "speed", "weight", "blend_time"), &Network::_sync_anim_layer);
                 #if defined(VSDK_Client)
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
@@ -72,6 +73,7 @@ namespace Vital::Engine {
             void _spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
             void _sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value);
             void _sync_wheel_transform(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
+            void _sync_anim_layer(int net_id, int layer, int mode, godot::String name, bool loop, float speed, float weight, float blend_time);
             #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
