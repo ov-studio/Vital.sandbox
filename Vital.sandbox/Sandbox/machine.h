@@ -660,13 +660,16 @@ namespace Vital::Sandbox {
             std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
                 Tool::assert_main_thread("Machine::compile_string");
                 if (raw.empty()) return "empty source";
+                const int top = lua_gettop(state);
+                if (top > 0) lua_settop(state, 0);
+                if (!lua_checkstack(state, 16)) return "lua stack overflow";
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
                     std::string err = get_string(-1);
-                    pop(1);
+                    lua_settop(state, 0);
                     return err;
                 }
-                pop(1);
+                lua_settop(state, 0);
                 return "";
             }
         
