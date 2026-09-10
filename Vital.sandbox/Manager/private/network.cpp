@@ -253,10 +253,8 @@ namespace Vital::Manager {
             snapshot = sync_models;
         }
         {
-            // Anything still waiting on its own _spawn_entity RPC to actually
-            // register (see enqueue_syncable_registration/poll()) hasn't made it
-            // into sync_models above yet — without this it would be neither
-            // destroyed here nor ever findable again, an orphaned live Node.
+            // Anything still in sync_pending hasn't been flushed by poll() yet —
+            // include it so no orphaned live nodes are left behind.
             std::lock_guard<std::mutex> lock(sync_pending_mutex);
             snapshot.insert(snapshot.end(), sync_pending.begin(), sync_pending.end());
             sync_pending.clear();
@@ -508,9 +506,9 @@ namespace Vital::Manager {
     //   Low-level Sync Transport        //
     //-----------------------------------//
     //
-    // We bypass Godot's RPC layer for sync packets and talk directly
-    // Sync is routed through Godot's RPC layer (_sync_models / _sync_client / _sync_state)
-    // routed through Godot's RPC layer (avoids scene_cache_interface conflicts).
+    // Sync is routed through Godot's RPC layer (_sync_entities / _sync_client /
+    // _sync_state) to avoid scene_cache_interface conflicts with the normal
+    // MultiplayerAPI path.
 
     bool Network::broadcast_sync(const godot::PackedByteArray& data) {
         #if defined(VSDK_Client)
@@ -532,9 +530,9 @@ namespace Vital::Manager {
         #endif
     }
 
-    // Called by Engine::Network::_sync_models (unreliable) and _sync_state (reliable).
-    // All sync packets now use VSST batch format — no single-model packets.
-    void Network::dispatch_sync_batch(const godot::PackedByteArray& data, bool) {
+    // Called by Engine::Network::_sync_entities (unreliable) and _sync_state (reliable).
+    // All sync packets use VSST batch format — no single-model packets.
+    void Network::dispatch_sync_batch(const godot::PackedByteArray& data) {
         if (data.size() < 8) return;
         if (Engine::ISyncable::read_u32(data, 0) != STATE_DUMP_MAGIC) return;
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 4);
@@ -660,7 +658,6 @@ namespace Vital::Manager {
 
 
     //------------------//
-    //  Client Methods  //    //------------------//
     //  Client Methods  //
     //------------------//
 
@@ -1086,13 +1083,10 @@ namespace Vital::Manager {
             }
         }
 
-        // 3. Send transform state dump (reliable) so models snap to correct positions.
-        send_full_state_to_peer(id);
-
-        // 3.5. Send a second state dump so the late joiner gets a fresh position
-        // update after their spawn RPCs are processed. Sleeping bodies are skipped
-        // by the regular broadcast so without this the late joiner has no follow-up
-        // packet to confirm/correct the initial state dump position.
+        // 3. Send transform state dump (reliable) so all models snap to correct
+        //    positions. wake_all_syncables() + _wake_sync below then force a
+        //    fresh live packet from every sleeping body within one physics tick,
+        //    so no follow-up dump is needed.
         send_full_state_to_peer(id);
 
         // 4. Wake every currently-sleeping syncable so a fresh, authoritative
@@ -1226,12 +1220,12 @@ namespace Vital::Manager {
                         }
                     }
                 }
-                for (auto& [entity, state] : to_apply) {
-                    // Mirror dispatch_sync_batch's own-authority guard — never
-                    // let a buffered server-relayed transform stomp a body we
-                    // ourselves are authoritative over.
+                for (size_t i = 0; i < to_apply.size(); ++i) {
+                    auto* entity = to_apply[i].first;
                     if (entity->get_sync_authority() == my_id) continue;
-                    auto& [pos, rot, vel] = state;
+                    godot::Vector3 pos = std::get<0>(to_apply[i].second);
+                    godot::Vector3 rot = std::get<1>(to_apply[i].second);
+                    godot::Vector3 vel = std::get<2>(to_apply[i].second);
                     entity->apply_sync(pos, rot, vel);
                     // apply_sync only moves the node — it never touches
                     // delta_last_*, which is this client's own decode baseline
@@ -1266,8 +1260,8 @@ namespace Vital::Manager {
                         }
                     }
                 }
-                for (auto& [nid, shape] : to_apply)
-                    Engine::Network::apply_shape(nid, shape.first, shape.second);
+                for (size_t i = 0; i < to_apply.size(); ++i)
+                    Engine::Network::apply_shape(to_apply[i].first, to_apply[i].second.first, to_apply[i].second.second);
             }
 
             // Replay any reparents that arrived before child or parent registered.
@@ -1292,8 +1286,8 @@ namespace Vital::Manager {
                         }
                     }
                 }
-                for (auto& [child_nid, parent_nid] : reparents_to_apply)
-                    Engine::Network::apply_reparent_entity(child_nid, parent_nid);
+                for (size_t i = 0; i < reparents_to_apply.size(); ++i)
+                    Engine::Network::apply_reparent_entity(reparents_to_apply[i].first, reparents_to_apply[i].second);
             }
             #endif
         }
