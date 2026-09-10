@@ -149,6 +149,74 @@ namespace Vital::Engine {
         for (int i = 0; i < JITTER_WINDOW; i++) jitter_intervals[i] = 0.0f;
     }
 
+    #if !defined(VSDK_Client)
+    // STATE_DUMP_MAGIC from network.cpp — duplicated here to avoid a
+    // circular header dependency.  Keep in sync with that value.
+    static constexpr uint32_t FORCE_SYNC_MAGIC = 0x56535354u; // 'VSST'
+
+    void ISyncable::force_transform_broadcast() {
+        if (net_id == 0) return; // unreplicated — nothing to broadcast
+
+        godot::Vector3 cur_pos = get_sync_position();
+        godot::Vector3 cur_rot = get_sync_rotation();
+        godot::Vector3 cur_vel = godot::Vector3(); // standstill after a teleport
+
+        // Reseed the baseline so the comparison inside sync_tick sees no
+        // delta on the next tick (entity appears still from here).
+        // delta_last_* are the running state for ISyncable's encode_delta;
+        // reset them too so the first incremental packet from this new origin
+        // is encoded correctly (no stale previous-position residual).
+        sync_last_pos  = cur_pos;
+        sync_last_rot  = cur_rot;
+        sync_last_vel  = cur_vel;
+        delta_last_pos = cur_pos;
+        delta_last_rot = cur_rot;
+        delta_last_vel = godot::Vector3();
+        sync_sleeping  = false;
+        sync_accum     = 0.0f;
+
+        // Build a minimal single-entity VSST batch and fire it.
+        godot::PackedByteArray buf;
+        buf.resize(8 + SYNC_PACKET_MAX);
+
+        // Scratch accumulators for encode_delta (start zeroed so it
+        // treats this as the first packet from a fresh baseline).
+        godot::Vector3 enc_pos{}, enc_rot{}, enc_vel{};
+        int written = encode_delta(buf, 8, net_id,
+            cur_pos, cur_rot, cur_vel,
+            enc_pos, enc_rot, enc_vel);
+        if (written <= 0) return;
+
+        buf.resize(8 + written);
+        // Header: magic + payload length
+        auto wu32 = [&](int off, uint32_t v) {
+            buf[off]   =  v        & 0xFF;
+            buf[off+1] = (v >>  8) & 0xFF;
+            buf[off+2] = (v >> 16) & 0xFF;
+            buf[off+3] = (v >> 24) & 0xFF;
+        };
+        wu32(0, FORCE_SYNC_MAGIC);
+        wu32(4, (uint32_t)written);
+
+        Manager::Network::get_singleton()->broadcast_sync(buf);
+
+        // The unreliable broadcast above reaches every peer EXCEPT the owning
+        // client, whose apply_sync() drops packets for entities it holds
+        // authority over.  Send a reliable targeted RPC directly to that peer
+        // so it also repositions the entity and reseeds its upload baseline —
+        // preventing it from snapping the entity back on the next _sync_client.
+        // Skip for server-authority entities (sync_authority == 1): nobody
+        // needs a special override in that case because the server IS the
+        // authority and already wrote the position above.
+        if (sync_authority > 1) {
+            auto* net_node = Manager::Network::get_singleton()->get_node();
+            if (net_node)
+                net_node->rpc_id(sync_authority, "_force_transform",
+                    (int)net_id, cur_pos, cur_rot);
+        }
+    }
+    #endif
+
     void ISyncable::sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
         if (!interp_ready) {
             snap_clock = BUFFER_DELAY;

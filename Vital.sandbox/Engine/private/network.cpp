@@ -53,6 +53,7 @@ namespace Vital::Engine {
         rpc_config("_sync_wheel_config", reliable);
         rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
+        rpc_config("_force_transform", reliable);
         rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;
@@ -384,6 +385,50 @@ namespace Vital::Engine {
         #endif
     }
 
+
+    // _force_transform: server → owning peer (reliable, rpc_id).
+    // Applies a server-mandated position/rotation to an entity regardless of
+    // whether the receiving peer holds sync authority over it.  Unlike the
+    // unreliable _sync_entities batch, apply_sync() will NOT drop this on the
+    // authority peer — we write directly to the node and reseed the sync
+    // baseline so the client's next _sync_client upload starts from the new
+    // origin instead of snapping the entity back to wherever it was before.
+    // The server also calls broadcast_sync() separately for all OTHER clients,
+    // so this RPC only needs to handle the owning peer's side.
+    void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot) {
+        #if defined(VSDK_Client)
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        auto* node = entity->get_sync_node();
+        if (!node) return;
+
+        // Parent-relative or global depending on sync coordinate space.
+        if (entity->get_sync_parent_net_id() != 0) {
+            node->set_position(pos);
+            node->set_rotation_degrees(rot);
+        } else {
+            node->set_global_position(pos);
+            node->set_rotation_degrees(rot);
+        }
+
+        // Reseed baselines so this client's next _sync_client packet starts
+        // from the new position.  Without this the client's upload would carry
+        // a delta relative to the OLD origin, and the server would relay that
+        // bad delta to every other peer — undoing the correction we just made.
+        entity->sync_last_pos  = pos;
+        entity->sync_last_rot  = rot;
+        entity->sync_last_vel  = godot::Vector3();
+        entity->delta_last_pos = pos;
+        entity->delta_last_rot = rot;
+        entity->delta_last_vel = godot::Vector3();
+        entity->sync_sleeping  = false;
+        entity->sync_accum     = 0.0f;
+        godot::UtilityFunctions::print("_force_transform: net_id=", net_id, " pos=", pos);
+        #endif
+    }
 
     // _sync_shape: called on clients when server assigns/changes a collision shape on a synced body.
     // Finds or creates our Engine::Collision_Shape child on the matching body node and applies the shape.

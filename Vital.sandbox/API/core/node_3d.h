@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 
 
 //////////////////////////
@@ -98,6 +99,14 @@ namespace Vital::Sandbox::API {
     
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_position(position);
+                    #if !defined(VSDK_Client)
+                    // Only needed for client-authority syncables: sync_tick skips them
+                    // (authority != 1) so a server-side set_position would never reach
+                    // clients otherwise.  Server-authority entities are broadcast by
+                    // sync_tick normally — no immediate override needed.
+                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
+                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+                    #endif
                     vm -> push_value(true);
                     return 1;
                 });
@@ -108,6 +117,10 @@ namespace Vital::Sandbox::API {
     
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_global_position(position);
+                    #if !defined(VSDK_Client)
+                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
+                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+                    #endif
                     vm -> push_value(true);
                     return 1;
                 });
@@ -130,6 +143,10 @@ namespace Vital::Sandbox::API {
 
                     auto euler_degrees = vm -> get_vector3(2);
                     self -> get_node() -> set_rotation_degrees(euler_degrees);
+                    #if !defined(VSDK_Client)
+                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
+                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+                    #endif
                     vm -> push_value(true);
                     return 1;
                 });
@@ -140,6 +157,10 @@ namespace Vital::Sandbox::API {
 
                     auto euler_degrees = vm -> get_vector3(2);
                     self -> get_node() -> set_global_rotation_degrees(euler_degrees);
+                    #if !defined(VSDK_Client)
+                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
+                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+                    #endif
                     vm -> push_value(true);
                     return 1;
                 });

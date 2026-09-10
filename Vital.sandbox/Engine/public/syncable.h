@@ -211,6 +211,19 @@ namespace Vital::Engine {
             uint32_t get_sync_parent_net_id() const  { return sync_parent_net_id; }
 
             #if !defined(VSDK_Client)
+            // Called after a server-side set_position / set_global_position on an
+            // entity whose sync_authority is a client peer.  The normal sync_tick
+            // loop skips client-authority entities on the server (the client is
+            // supposed to drive them), so a position override written by the server
+            // would never reach other clients through that path.  This method
+            // fires one immediate _sync_entities broadcast for this entity alone,
+            // reseeds sync_last_pos/rot so the client's next upload (which carries
+            // the client's own position) is compared against the new baseline —
+            // preventing the client from immediately "winning" back the old spot.
+            void force_transform_broadcast();
+            #endif
+
+            #if !defined(VSDK_Client)
             // set_parent(parent_node) — reparent this server-authoritative synced
             //   entity under another synced entity (Model, Physics_Body, ...) on
             //   the server scene tree and broadcast _reparent_entity to all
