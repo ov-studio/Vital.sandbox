@@ -319,7 +319,6 @@ namespace Vital::Engine {
             // has run and the node is fully initialised on the server.
             uint32_t captured_net_id = object->net_id;
             godot::String captured_name = Tool::to_godot_string(name);
-            int captured_authority = authority_peer;
             // Same UAF risk as Physics_Body::setup_create() had: this lambda
             // runs on a later drain() of Core's work queue, so a raw `object`
             // capture would be dangling if Model::destroy() runs first.
@@ -327,7 +326,7 @@ namespace Vital::Engine {
             godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
 
             Core::get_singleton()->enqueue([captured_oid, captured_net_id,
-                                            captured_name, captured_authority]() {
+                                            captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                 if (!obj) return; // destroyed before this deferred registration ran
                 auto* object = godot::Object::cast_to<Model>(obj);
@@ -337,11 +336,18 @@ namespace Vital::Engine {
 
                 auto net_node = Manager::Network::get_singleton()->get_node();
                 if (net_node) {
+                    // Read sync_authority fresh here rather than using the
+                    // authority_peer captured at create() time — if set_syncer()
+                    // was called in the same Lua tick as create() (before this
+                    // deferred registration ran), it already wrote the new
+                    // authority directly onto this object (see Model::set_syncer,
+                    // which skips its own broadcast in that case precisely so
+                    // this single _spawn_entity RPC is the one source of truth).
                     net_node->rpc("_spawn_entity",
                         (int)captured_net_id,
                         (int)Engine::ISyncable::SyncType::Model,
                         captured_name,
-                        captured_authority,
+                        object->get_sync_authority(),
                         object->get_sync_position(),
                         object->get_sync_rotation());
                 }
@@ -606,9 +612,24 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("Model net_id=", net_id,
             " set_syncer -> ", sync_authority);
 
-        // Broadcast authority change reliably to all clients so each one
-        // knows whether to run interpolation or raw local physics.
-        // Broadcast authority change to all clients via generic _set_authority RPC.
+        // If this model hasn't been network-registered yet, its _spawn_entity
+        // RPC is still sitting on Core's deferred queue (see Model::create() —
+        // registration is pushed a frame late so clients see _ready() side
+        // effects first). Broadcasting _set_authority right now would race
+        // ahead of that RPC: on every client, Network::_set_authority's
+        // find_syncable(net_id) would find nothing yet (the model doesn't
+        // exist there yet) and silently drop the update — permanently, since
+        // it's never resent. Bail out here instead: sync_authority is already
+        // updated above, and Model::create()'s deferred lambda reads it fresh
+        // (via get_sync_authority()) when it finally sends _spawn_entity, so
+        // that single RPC ends up carrying the correct authority for every
+        // replica. This lets set_syncer() be called safely in the same Lua
+        // tick as create(), with no need to pass authority into create() too.
+        if (!sync_registered) return;
+
+        // Already registered — a genuine authority reassignment (e.g.
+        // possession swap) after the fact. Broadcast reliably to all clients
+        // so each one knows whether to run interpolation or raw local physics.
         auto net_node = Manager::Network::get_singleton()->get_node();
         if (net_node) net_node->rpc("_set_authority", (int)net_id, sync_authority);
     }

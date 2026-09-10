@@ -145,6 +145,18 @@ namespace Vital::Engine {
                 sync_authority = (peer_id <= 1) ? 1 : peer_id;
                 sync_sleeping  = false;
                 reset_sync_state();
+
+                // Same race as Model::set_syncer(): if _spawn_entity hasn't
+                // gone out yet (still queued in setup_create()'s deferred
+                // enqueue), broadcasting _set_authority now would arrive
+                // before clients even have this body — find_syncable() finds
+                // nothing, the update is dropped for good. Bail out here;
+                // setup_create()'s deferred lambda re-reads get_sync_authority()
+                // fresh when it finally sends _spawn_entity, so that single
+                // RPC carries whatever authority set_syncer() last wrote,
+                // even if called in the same tick as create().
+                if (!sync_registered) return;
+
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
             }
@@ -211,7 +223,6 @@ namespace Vital::Engine {
                         net_id = next_net_id++;
                         pending_authority = authority_peer;
                         uint32_t captured_id = net_id;
-                        int captured_auth = authority_peer;
                         godot::String captured_name = godot::String(get_sync_name().c_str());
                         // Captured by instance id, NOT by raw `this`. This lambda runs
                         // on a later drain() of Core's deferred queue — if setup_destroy()
@@ -226,14 +237,18 @@ namespace Vital::Engine {
                         // pointer to freed memory.
                         godot::ObjectID captured_oid = godot::ObjectID(get_instance_id());
                         Core::get_singleton() -> add_child(this);
-                        Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_auth, captured_name]() {
+                        Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {
                             godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                             if (!obj) return; // destroyed before this deferred registration ran
                             auto* self = dynamic_cast<Physics_Body<Base>*>(obj);
                             if (!self) return;
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
-                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, captured_auth, self->get_sync_position(), self->get_sync_rotation());
+                            // Read sync_authority fresh (see set_syncer()'s
+                            // comment) rather than the authority_peer captured
+                            // at setup_create() time, so a same-tick set_syncer()
+                            // call is reflected in this, the only spawn RPC sent.
+                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, self->get_sync_authority(), self->get_sync_position(), self->get_sync_rotation());
                             // Flush any shape that was set before net_id was registered.
                             // broadcast_shape() bails when get_parent_net_id() == 0, which
                             // is always the case when set_shape_* is called in the same
