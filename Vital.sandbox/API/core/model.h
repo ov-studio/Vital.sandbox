@@ -427,49 +427,20 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
-            vm_module::bind_method<Instance>(vm, "play_animation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, loop = true, speed = 1)", true)
-                    .require(2, &Machine::is_string)
-                    .optional(3, &Machine::is_bool)
-                    .optional(4, &Machine::is_number);
-
-                auto name = vm -> get_string(2);
-                auto loop = vm -> is_bool(3) ? vm -> get_bool(3) : true;
-                auto speed = vm -> is_number(4) ? vm -> get_float(4) : 1.0f;
-                vm -> push_value(self -> model -> play_animation(name, loop, speed));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "stop_animation", [](auto vm, auto self, auto& id) -> int {
-                self -> model -> stop_animation();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "pause_animation", [](auto vm, auto self, auto& id) -> int {
-                self -> model -> pause_animation();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "resume_animation", [](auto vm, auto self, auto& id) -> int {
-                self -> model -> resume_animation();
-                vm -> push_value(true);
-                return 1;
-            });
-
             // Layered animation blending — lets several animations run and
             // blend at once (e.g. base locomotion on layer 0, an aim/action
-            // overlay on layer 1+) instead of play_animation() replacing the
-            // single active clip outright.
+            // overlay on layer 1+). Replicated automatically: whichever peer
+            // holds sync authority over this model has its layer state
+            // mirrored to everyone else via the network layer.
             vm_module::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25)", true)
+                vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_string)
                     .optional(4, &Machine::is_bool)
                     .optional(5, &Machine::is_number)
                     .optional(6, &Machine::is_number)
-                    .optional(7, &Machine::is_number);
+                    .optional(7, &Machine::is_number)
+                    .optional(8, &Machine::is_bool);
 
                 auto layer = vm -> get_int(2);
                 auto name = vm -> get_string(3);
@@ -477,43 +448,50 @@ namespace Vital::Sandbox::API {
                 auto speed = vm -> is_number(5) ? vm -> get_float(5) : 1.0f;
                 auto weight = vm -> is_number(6) ? vm -> get_float(6) : 1.0f;
                 auto blend_time = vm -> is_number(7) ? vm -> get_float(7) : 0.25f;
-                vm -> push_value(self -> model -> play_animation_layer(layer, name, loop, speed, weight, blend_time));
+                auto sync = vm -> is_bool(8) ? vm -> get_bool(8) : true;
+                vm -> push_value(self -> model -> play_animation_layer(layer, name, loop, speed, weight, blend_time, sync));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "stop_animation_layer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, blend_time = 0.25)", true)
+                vm_args(vm, id, "(layer, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
-                    .optional(3, &Machine::is_number);
+                    .optional(3, &Machine::is_number)
+                    .optional(4, &Machine::is_bool);
 
                 auto layer = vm -> get_int(2);
                 auto blend_time = vm -> is_number(3) ? vm -> get_float(3) : 0.25f;
-                self -> model -> stop_animation_layer(layer, blend_time);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                self -> model -> stop_animation_layer(layer, blend_time, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, weight, blend_time = 0)", true)
+                vm_args(vm, id, "(layer, weight, blend_time = 0, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
-                    .optional(4, &Machine::is_number);
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_bool);
 
                 auto layer = vm -> get_int(2);
                 auto weight = vm -> get_float(3);
                 auto blend_time = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                vm -> push_value(self -> model -> set_animation_layer_weight(layer, weight, blend_time));
+                auto sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
+                vm -> push_value(self -> model -> set_animation_layer_weight(layer, weight, blend_time, sync));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, speed)", true)
+                vm_args(vm, id, "(layer, speed, sync = true)", true)
                     .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number);
+                    .require(3, &Machine::is_number)
+                    .optional(4, &Machine::is_bool);
 
                 auto layer = vm -> get_int(2);
                 auto speed = vm -> get_float(3);
-                self -> model -> set_animation_layer_speed(layer, speed);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                self -> model -> set_animation_layer_speed(layer, speed, sync);
                 vm -> push_value(true);
                 return 1;
             });

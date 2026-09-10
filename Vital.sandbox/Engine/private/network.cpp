@@ -52,6 +52,7 @@ namespace Vital::Engine {
         rpc_config("_spawn_wheel", reliable);
         rpc_config("_sync_wheel_config", reliable);
         rpc_config("_sync_wheel_transform", reliable);
+        rpc_config("_sync_anim_layer", reliable);
         rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;

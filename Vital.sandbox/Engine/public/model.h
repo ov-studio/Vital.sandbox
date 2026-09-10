@@ -89,6 +89,16 @@ namespace Vital::Engine {
             void build_animation_tree();
             void update_animation_layers(float delta);
 
+            // Pure local application (no network broadcast) — used both by
+            // the public API below and by Network::_sync_anim_layer when
+            // mirroring another peer's animation state. Network is a friend
+            // of this class (see top of file) so it can call these directly.
+            bool apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
+            void apply_stop_animation_layer(int layer, float blend_time);
+            bool apply_set_animation_layer_weight(int layer, float weight, float blend_time);
+            void apply_set_animation_layer_speed(int layer, float speed);
+            void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
+
             // Sync state lives in ISyncable base class.
 
             inline static Models cache_loaded;
@@ -240,16 +250,16 @@ namespace Vital::Engine {
 
 
             // Misc //
-            bool play_animation(const std::string& name, bool loop = true, float speed = 1.0f);
-            void stop_animation();
-            void pause_animation();
-            void resume_animation();
-
-            // Layered blending — several animations can run and blend at
-            // once instead of one clip replacing another. weight/blend_time
-            // are ignored for layer 0 (the always-on base layer).
+            // Legacy single-track play_animation()/stop_animation()/etc. were
+            // removed — everything now goes through layers below (layer 0 is
+            // the always-on base, equivalent to what play_animation() used
+            // to drive). Every call takes a trailing `sync` flag (default
+            // true) — set it false to play/stop/adjust a layer purely on
+            // this peer without broadcasting it to anyone else at all (e.g.
+            // a one-off local hit-reaction or camera-facing detail no other
+            // client needs to see).
             bool play_animation_layer(int layer, const std::string& name, bool loop = true,
-                float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f);
-            void stop_animation_layer(int layer, float blend_time = 0.25f);
+                float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
+            void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
     };
 }

@@ -701,31 +701,6 @@ namespace Vital::Engine {
     //  Misc   //
     //---------//
 
-    bool Model::play_animation(const std::string& name, bool loop, float speed) {
-        if (!anim_player) return false;
-        if (!anim_player->has_animation(Tool::to_godot_string(name))) {
-            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name),
-                "' not found in model '", Tool::to_godot_string(model_name), "'");
-            return false;
-        }
-        godot::Ref<godot::Animation> animation = anim_player->get_animation(Tool::to_godot_string(name));
-        if (animation.is_valid())
-            animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        anim_player->set_speed_scale(speed);
-        anim_player->play(Tool::to_godot_string(name));
-        return true;
-    }
-
-    void Model::stop_animation()   { if (anim_player) anim_player->stop(); }
-    void Model::pause_animation()  { if (anim_player) anim_player->pause(); }
-    void Model::resume_animation() {
-        if (!anim_player) return;
-        auto current = anim_player->get_current_animation();
-        if (current.is_empty()) return;
-        anim_player->play(current);
-    }
-
-
     //--------------------------//
     //  Layered Anim Blending   //
     //--------------------------//
@@ -795,7 +770,11 @@ namespace Vital::Engine {
 
     int Model::get_animation_layer_count() { return ANIM_LAYER_COUNT; }
 
-    bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
+    // --- Pure local application — never broadcasts. Called both by the
+    // public API (which broadcasts on top) and by Network::_sync_anim_layer
+    // when mirroring a remote peer's animation state. ---
+
+    bool Model::apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
         if (layer < 0 || layer >= ANIM_LAYER_COUNT) {
             godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
             return false;
@@ -838,7 +817,7 @@ namespace Vital::Engine {
         return true;
     }
 
-    void Model::stop_animation_layer(int layer, float blend_time) {
+    void Model::apply_stop_animation_layer(int layer, float blend_time) {
         // Layer 0 is the always-on base — "stopping" it doesn't mean
         // anything (use play_animation_layer(0, ...) to switch its clip).
         if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
@@ -852,7 +831,7 @@ namespace Vital::Engine {
         }
     }
 
-    bool Model::set_animation_layer_weight(int layer, float weight, float blend_time) {
+    bool Model::apply_set_animation_layer_weight(int layer, float weight, float blend_time) {
         if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return false;
 
         weight = std::clamp(weight, 0.0f, 1.0f);
@@ -866,10 +845,58 @@ namespace Vital::Engine {
         return true;
     }
 
-    void Model::set_animation_layer_speed(int layer, float speed) {
+    void Model::apply_set_animation_layer_speed(int layer, float speed) {
         if (layer < 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
         anim_layers[layer].speed = speed;
         anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
+    }
+
+    // --- Network broadcast ---
+    //
+    // Server: always allowed to broadcast — it's authoritative by default.
+    // Client: only the peer currently holding sync authority over this model
+    // (see set_syncer()/sync_authority) may broadcast its own animation
+    // state. Everyone else — including other clients rendering this model
+    // in third person — receives and mirrors it via Network::_sync_anim_layer,
+    // never drives it locally. Unreplicated models (net_id == 0, e.g. purely
+    // decorative client-only props) never hit the network at all.
+    //
+    // mode: 0 = play, 1 = stop, 2 = set weight, 3 = set speed.
+    void Model::broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
+        if (net_id == 0) return;
+
+        #if !defined(VSDK_Client)
+        auto* net_node = Manager::Network::get_singleton()->get_node();
+        #else
+        auto* net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        auto* net_node = net_mgr->get_node();
+        #endif
+        if (!net_node) return;
+        net_node->rpc("_sync_anim_layer", (int)net_id, layer, mode,
+            Tool::to_godot_string(name), loop, speed, weight, blend_time);
+    }
+
+    bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
+        if (!apply_play_animation_layer(layer, name, loop, speed, weight, blend_time)) return false;
+        if (sync) broadcast_animation_layer(0, layer, name, loop, speed, weight, blend_time);
+        return true;
+    }
+
+    void Model::stop_animation_layer(int layer, float blend_time, bool sync) {
+        apply_stop_animation_layer(layer, blend_time);
+        if (sync) broadcast_animation_layer(1, layer, "", true, 1.0f, 0.0f, blend_time);
+    }
+
+    bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
+        if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
+        if (sync) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
+        return true;
+    }
+
+    void Model::set_animation_layer_speed(int layer, float speed, bool sync) {
+        apply_set_animation_layer_speed(layer, speed);
+        if (sync) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
     }
 
     float Model::get_animation_layer_weight(int layer) const {
