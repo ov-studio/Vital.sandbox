@@ -214,7 +214,7 @@ namespace Vital::Manager {
 
             // Inbound dispatch — called by Engine::Network RPC handlers.
             // Works on any ISyncable type via the net_id registry.
-            void dispatch_sync_batch(const godot::PackedByteArray& data, bool is_state_dump);
+            void dispatch_sync_batch(const godot::PackedByteArray& data);
             void dispatch_client_sync(const godot::PackedByteArray& data, int sender_id);
 
 
