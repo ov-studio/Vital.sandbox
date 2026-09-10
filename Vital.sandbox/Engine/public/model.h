@@ -245,8 +245,8 @@ namespace Vital::Engine {
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             void set_animation_speed(float speed);
-            void set_animation_layer_speed(int layer, float speed);
-            bool set_animation_layer_weight(int layer, float weight, float blend_time = 0.0f);
+            void set_animation_layer_speed(int layer, float speed, bool sync = true);
+            bool set_animation_layer_weight(int layer, float weight, float blend_time = 0.0f, bool sync = true);
 
 
             // Misc //
