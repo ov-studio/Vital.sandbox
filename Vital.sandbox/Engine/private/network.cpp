@@ -70,11 +70,11 @@ namespace Vital::Engine {
     }
     
     void Network::_sync_entities(godot::PackedByteArray data) {
-        Manager::Network::get_singleton() -> dispatch_sync_batch(data, false);
+        Manager::Network::get_singleton() -> dispatch_sync_batch(data);
     }
 
     void Network::_sync_state(godot::PackedByteArray data) {
-        Manager::Network::get_singleton() -> dispatch_sync_batch(data, true);
+        Manager::Network::get_singleton() -> dispatch_sync_batch(data);
     }
 
     void Network::_sync_client(godot::PackedByteArray data) {
@@ -140,7 +140,7 @@ namespace Vital::Engine {
             case ST::PhysicsBody: {
                 std::string sub = Tool::to_std_string(name);
                 Engine::ISyncable* entity = nullptr;
-                Engine::PhysicsType sub_type = Engine::PhysicsType::Rigid;  // TODO: empty no init maybe?
+                Engine::PhysicsType sub_type = Engine::PhysicsType::Rigid;
 
                 if (sub == "rigid_body") {
                     sub_type = Engine::PhysicsType::Rigid;
