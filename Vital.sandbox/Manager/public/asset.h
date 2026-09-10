@@ -50,7 +50,7 @@ namespace Vital::Manager {
             };
 
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
-            std::unordered_map<std::string, PendingSpawn> spawn_queue;
+            std::unordered_map<std::string, std::vector<PendingSpawn>> spawn_queue;
             std::unordered_map<std::string, int> group_pending_counts;
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
