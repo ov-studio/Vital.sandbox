@@ -153,7 +153,7 @@ void vsdk_initialize() {
             auto nm = Vital::Manager::Network::get_singleton();
             #if defined(VSDK_Client)
                 // TODO: 7777?
-                nm -> connect_to_server("127.0.0.1", 7777, true);
+                //nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
                 if (!nm -> host(g_server_config)) return;
