@@ -215,22 +215,11 @@ namespace Vital::Manager {
         // entity:created Lua), then start on the next drain so compile_string
         // never runs mid-flood. Required when joining a server that already
         // has many entities (e.g. 50 balls).
-        //
-        // NOTE: we only trigger the deferred start here if assets are already
-        // ready at registration time. If assets are still downloading, `start`
-        // would just fail with "already pending" and nothing would retry it —
-        // the later `asset:group_ready` event is what starts it instead. This
-        // also covers the reverse race, where assets finish downloading before
-        // this resource finishes registering: `asset:group_ready` bails out
-        // early in that case (resource not loaded yet), so we have to check
-        // again here, after registration, whether assets are already ready.
-        if (!Internal::is_pending(name)) {
+        Engine::Core::get_singleton() -> enqueue([name]() {
             Engine::Core::get_singleton() -> enqueue([name]() {
-                Engine::Core::get_singleton() -> enqueue([name]() {
-                    Internal::start(name);
-                });
+                Internal::start(name);
             });
-        }
+        });
         return true;
     }
     #else
