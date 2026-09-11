@@ -458,7 +458,11 @@ namespace Vital::Manager {
         }
         group_pending_counts.erase(group);
         group_generations[group]++;
+        // Drop stale placeholder spawns for this resource so a rapid restart
+        // does not try to hydrate destroyed nodes or block fresh ones.
+        clear_spawn_queue_prefix(":" + group + "/");
         if (flagged > 0) log("sbox", fmt::format("cancelled group `{}` — {} download(s) stopped", group, flagged));
+        else log("sbox", fmt::format("cancelled group `{}` — spawn queue cleared", group));
     }
 
     void Asset::cancel_all() {
@@ -478,6 +482,10 @@ namespace Vital::Manager {
         spawn_queue[name].push_back({ placeholder, authority_peer });
         log("sbox", fmt::format("queued placeholder spawn -> {} (pending {})",
             name, spawn_queue[name].size()));
+        // Asset already in cache (common on resource restart) — hydrate now
+        // instead of waiting for a load that will never re-fire flush.
+        if (Engine::Model::is_model_loaded(name))
+            flush_spawn_queue(name);
     }
 
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
@@ -498,6 +506,27 @@ namespace Vital::Manager {
             log("sbox", fmt::format("flushed spawn queue for '{}' ({} hydrated)",
                 loaded_name, hydrated));
         });
+    }
+
+    void Asset::clear_spawn_queue(const std::string& loaded_name) {
+        spawn_queue.erase(loaded_name);
+    }
+
+    void Asset::clear_spawn_queue_prefix(const std::string& prefix) {
+        for (auto it = spawn_queue.begin(); it != spawn_queue.end(); ) {
+            if (it->first.rfind(prefix, 0) == 0) it = spawn_queue.erase(it);
+            else ++it;
+        }
+    }
+
+    void Asset::flush_ready_spawns() {
+        std::vector<std::string> ready;
+        for (const auto& [name, _] : spawn_queue) {
+            if (Engine::Model::is_model_loaded(name)) ready.push_back(name);
+        }
+        for (const auto& name : ready) flush_spawn_queue(name);
+        if (!ready.empty())
+            log("sbox", fmt::format("flush_ready_spawns — {} model name(s)", ready.size()));
     }
     #endif
 }

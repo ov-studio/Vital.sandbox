@@ -113,6 +113,11 @@ namespace Vital::Manager {
             // TODO: REMOVE IT? or move under Model?
             void queue_spawn(const std::string& name, void* placeholder, int authority_peer = 1);
             void flush_spawn_queue(const std::string& loaded_name);
+            // Drop pending placeholders (e.g. resource stop / unload).
+            void clear_spawn_queue(const std::string& loaded_name);
+            void clear_spawn_queue_prefix(const std::string& prefix);
+            // Hydrate every queued name that is already in Model::cache_loaded.
+            void flush_ready_spawns();
             #endif
     };
 }

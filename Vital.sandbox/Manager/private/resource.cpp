@@ -143,7 +143,8 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            const_cast<Manifest*>(resource) -> models = Engine::Model::filter_resource_models(name, resource -> files);
+            const_cast<Manifest*>(resource) -> models =
+                Engine::Model::filter_resource_models(name, resource -> files);
         }
         #endif
         if (resource -> models.empty()) return;
@@ -348,7 +349,15 @@ namespace Vital::Manager {
         packet.object["event"] = Tool::StackValue(event);
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            auto packed = Internal::pack_manifest(*manifest);
+            // Snapshot + ensure models[] matches current files on disk at the
+            // moment we pack. load_models() fills this earlier, but deferred
+            // broadcasts / peer sync must not ship models=[] when files still
+            // list GLBs (root cause of client "0 model(s)" after restart).
+            Manifest snap = *manifest;
+            if (event == "resource:started") {
+                snap.models = Engine::Model::filter_resource_models(name, snap.files);
+            }
+            auto packed = Internal::pack_manifest(snap);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
             packet.object["models"] = std::move(packed.object["models"]);

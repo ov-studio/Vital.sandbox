@@ -445,7 +445,12 @@ namespace Vital::Engine {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string mn       = fmt::format(":{}/{}", resource, file);
             const std::string lp       = fmt::format("resources/{}/{}", resource, file);
-            if (is_model_loaded(mn)) continue;
+            if (is_model_loaded(mn)) {
+                #if defined(VSDK_Client)
+                Manager::Asset::get_singleton()->flush_spawn_queue(mn);
+                #endif
+                continue;
+            }
             if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, lp)) continue;
             try { load(mn, lp); loaded.push_back(mn); }
             catch (...) { failed.push_back(file); }
@@ -460,6 +465,9 @@ namespace Vital::Engine {
             for (const auto& n : failed) report += fmt::format("> `{}`\n", n);
             rm->log("error", report);
         }
+        #if defined(VSDK_Client)
+        Manager::Asset::get_singleton()->flush_ready_spawns();
+        #endif
     }
 
     void Model::unload_resource_models(const std::string& resource) {
@@ -469,7 +477,15 @@ namespace Vital::Engine {
         for (const auto& [name, _] : cache_loaded) {
             if (name.rfind(prefix, 0) == 0) to_unload.push_back(name);
         }
-        for (const auto& name : to_unload) { try { unload(name); } catch (...) {} }
+        for (const auto& name : to_unload) {
+            try { unload(name); } catch (...) {}
+            #if defined(VSDK_Client)
+            Manager::Asset::get_singleton()->clear_spawn_queue(name);
+            #endif
+        }
+        #if defined(VSDK_Client)
+        Manager::Asset::get_singleton()->clear_spawn_queue_prefix(prefix);
+        #endif
         if (!to_unload.empty()) rm->log("sbox",
             fmt::format("resource `{}` unloaded {} model asset(s)", resource, to_unload.size()));
     }
@@ -789,7 +805,8 @@ namespace Vital::Engine {
         // Always (re)build so capacity matches anim_layers.size().
         {
             // Inline rebuild without early-out when anim_tree already exists.
-            if (!anim_player) return false;
+            // Placeholder: grow layer state; tree builds after hydrate.
+            if (!anim_player) return true;
             auto* player = anim_player;
             if (!anim_tree) {
                 anim_tree = memnew(godot::AnimationTree);
