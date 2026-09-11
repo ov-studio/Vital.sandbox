@@ -729,6 +729,7 @@ namespace Vital::Engine {
                 ));
                 return true;
             }
+            if (cmd == "quit") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #endif
             return false;
         };
