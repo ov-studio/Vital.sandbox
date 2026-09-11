@@ -46,6 +46,22 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, and spaces
 - **Physics debugger**: Per-shape and global collision wireframe visualizer, with color-coded local vs. replicated shapes
 
+## Structure
+
+- **`Vital.sandbox/`** — C++ GDExtension core
+  - **`API/`** — Lua-facing bindings, grouped by system: `core`, `gfx`, `light`, `physics`, `utility`
+  - **`Bootstrap/`** — build-time dependency scripts (Godot, vendors, Discord, etc.)
+  - **`Config/`** — compile-time server configuration headers
+  - **`Engine/`** — engine-side implementations backing every API type
+  - **`Manager/`** — high-level managers: sandbox lifecycle, asset delivery, networking, masterlist, Discord, kit
+  - **`Sandbox/`** — Lua VM: machine, mixin, runtime instance types
+  - **`Tool/`** — internal C++ utilities (logging, threading, crypto, HTTP, file, timers, etc.)
+  - **`Vital/`** — entrypoint, precompiled header, and top-level includes
+- **`Vital.client/`** — Godot client project (loads the GDExtension, ships as the player binary)
+- **`Vital.server/`** — Godot server project with `config.yaml` (network, sync, masterlist, bootstrap)
+- **`Vital.benchmark/`** — self-contained benchmark project; runs `benchmark.lua` and exports `benchmark.json`
+- **`build.py`** — cross-platform build script
+
 ## Privacy Policy
 
 - Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes.
