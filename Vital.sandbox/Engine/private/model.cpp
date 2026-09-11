@@ -242,8 +242,10 @@ namespace Vital::Engine {
     }
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("model '{}' is already loaded", name));
+        // Idempotent: rapid restart may call load again before unload ran, or
+        // after a partial stop. Throwing here was unnecessary and raced with
+        // concurrent hydrate/unload paths.
+        if (is_model_loaded(name)) return true;
 
         godot::Ref<godot::PackedScene> scene;
         switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
@@ -273,8 +275,9 @@ namespace Vital::Engine {
 
     bool Model::unload(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("model '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) return false;
+        // Drop cache entry only. Live instances keep their own node trees;
+        // pending hydrates must be cancelled via Asset::spawn_generation first.
         cache_loaded.erase(it);
         return true;
     }
@@ -396,7 +399,7 @@ namespace Vital::Engine {
     void Model::hydrate(int authority_peer) {
         if (!placeholder) return;
         auto it = cache_loaded.find(model_name);
-        if (it == cache_loaded.end()) {
+        if (it == cache_loaded.end() || it->second.is_null()) {
             godot::UtilityFunctions::push_warning("Model::hydrate — model not in cache: ",
                 Tool::to_godot_string(model_name));
             return;

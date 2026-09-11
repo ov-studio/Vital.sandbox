@@ -51,6 +51,9 @@ namespace Vital::Manager {
 
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::unordered_map<std::string, std::vector<PendingSpawn>> spawn_queue;
+            // Bumped when a resource stops / queue is cleared so deferred
+            // flush_spawn_queue jobs from a previous generation are no-ops.
+            uint32_t spawn_generation = 0;
             std::unordered_map<std::string, int> group_pending_counts;
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;

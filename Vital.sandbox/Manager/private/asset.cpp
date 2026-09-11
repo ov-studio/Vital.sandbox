@@ -494,7 +494,14 @@ namespace Vital::Manager {
 
         std::vector<PendingSpawn> pending = std::move(it->second);
         spawn_queue.erase(it);
-        Engine::Core::get_singleton() -> enqueue([this, loaded_name, pending = std::move(pending)]() mutable {
+        const uint32_t gen = spawn_generation;
+        Engine::Core::get_singleton() -> enqueue([this, loaded_name, gen, pending = std::move(pending)]() mutable {
+            // Resource stopped/restarted since this flush was scheduled —
+            // cache may already be unloaded; skip to avoid UAF / heap corruption.
+            if (gen != spawn_generation) {
+                log("sbox", fmt::format("flush spawn queue for '{}' skipped — stale generation", loaded_name));
+                return;
+            }
             int hydrated = 0;
             for (auto& entry : pending) {
                 auto* placeholder = static_cast<Engine::Model*>(entry.placeholder);
@@ -510,13 +517,18 @@ namespace Vital::Manager {
 
     void Asset::clear_spawn_queue(const std::string& loaded_name) {
         spawn_queue.erase(loaded_name);
+        ++spawn_generation;
     }
 
     void Asset::clear_spawn_queue_prefix(const std::string& prefix) {
+        bool any = false;
         for (auto it = spawn_queue.begin(); it != spawn_queue.end(); ) {
-            if (it->first.rfind(prefix, 0) == 0) it = spawn_queue.erase(it);
+            if (it->first.rfind(prefix, 0) == 0) { it = spawn_queue.erase(it); any = true; }
             else ++it;
         }
+        // Always bump so deferred flushes from the previous resource life are dropped
+        // even if the queue was already empty.
+        ++spawn_generation;
     }
 
     void Asset::flush_ready_spawns() {

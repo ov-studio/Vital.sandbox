@@ -170,14 +170,19 @@ namespace Vital::Manager {
         Internal::load_models(name);
         Internal::execute_scripts(name, sources);
         #if !defined(VSDK_Client)
+            // Pack under the mutex after load_models() so models[] cannot race
+            // with stop/restart. Skip if already stopped before this deferred job.
             Engine::Core::get_singleton() -> enqueue([name]() {
-                const Manifest* resource;
+                Tool::Stack packet;
                 {
                     auto rm = Resource::get_singleton();
                     std::lock_guard<std::mutex> lock(rm -> mutex);
-                    resource = Internal::get_resource(name);
+                    if (!Internal::is_running(name)) return;
+                    const Manifest* resource = Internal::get_resource(name);
+                    if (!resource) return;
+                    packet = Internal::build_packet("resource:started", name, resource);
                 }
-                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:started", name, resource));
+                Manager::Network::get_singleton() -> broadcast(std::move(packet));
                 Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
             });
         #else
@@ -349,15 +354,9 @@ namespace Vital::Manager {
         packet.object["event"] = Tool::StackValue(event);
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            // Snapshot + ensure models[] matches current files on disk at the
-            // moment we pack. load_models() fills this earlier, but deferred
-            // broadcasts / peer sync must not ship models=[] when files still
-            // list GLBs (root cause of client "0 model(s)" after restart).
-            Manifest snap = *manifest;
-            if (event == "resource:started") {
-                snap.models = Engine::Model::filter_resource_models(name, snap.files);
-            }
-            auto packed = Internal::pack_manifest(snap);
+            // Caller must hold the resource mutex (or otherwise guarantee the
+            // Manifest is stable). models[] is filled once by load_models().
+            auto packed = Internal::pack_manifest(*manifest);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
             packet.object["models"] = std::move(packed.object["models"]);
