@@ -32,6 +32,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime 
 
 - **UI primitives**: Canvas, SVG, image, font, and texture APIs
 - **Crypto**: Built-in cryptographic utilities
+- **Rendering**: Control scenes, shaders, rendertargets, and draw calls directly from script
 - **Networking**: Built-in async networking primitives for multiplayer-ready games
 - **Threading**: True multi-threading support with promise-based coordination
 - **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua
@@ -40,7 +41,6 @@ Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime 
 - **Webview**: Embedded webview rendering (client-side)
 - **Audio**: 2D and 3D audio sources with effect bus support
 - **Discord**: Native Discord integration (client-side)
-- **Rendering**: Control scenes, shaders, rendertargets, and draw calls directly from script
 - **GFX pipeline**: Full environment control — fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, and more
 - **Lighting**: Directional, point, spot, and area lights with full scripting control
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, and spaces
