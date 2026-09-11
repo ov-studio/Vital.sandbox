@@ -1140,7 +1140,7 @@ namespace Vital::Manager {
             for (auto* e : sync_models) {
                 auto* model = dynamic_cast<Engine::Model*>(e);
                 if (!model) continue;
-                for (int layer = 0; layer < Engine::Model::ANIM_LAYER_COUNT; layer++) {
+                for (int layer = 0; layer < model->get_animation_layer_count(); layer++) {
                     auto& state = model->anim_layers[layer];
                     if (state.current_anim.empty()) continue;
                     node->rpc_id(id, "_sync_anim_layer",
