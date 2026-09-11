@@ -970,6 +970,9 @@ namespace Vital::Engine {
     void Model::apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
         // Layer 0 is the base chain — no Blend2 node (no filter target).
         if (layer < 1 || layer >= ANIM_LAYER_COUNT) return;
+        // Ensure tree + skeleton discovery exist before resolving filter paths.
+        if (!anim_player) return;
+        if (!skeleton) find_node(this, skeleton);
         if (!anim_tree || blend_tree.is_null()) build_animation_tree();
         if (blend_tree.is_null()) return;
 
@@ -977,17 +980,39 @@ namespace Vital::Engine {
         auto* blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
         if (!blend) return;
 
-        if (!enabled || bone_paths.empty()) {
-            blend->set_filter_enabled(false);
-            return;
+        // Reset so previous filter paths do not stick around.
+        blend->set_filter_enabled(false);
+        if (!enabled || bone_paths.empty()) return;
+
+        // Godot AnimationMixer filter paths are relative to the player root and
+        // for bones are almost always "NodePathToSkeleton:BoneName". Passing only
+        // "DEF-hand.L" matches nothing → overlay contributes zero (invisible wave).
+        godot::String skel_rel;
+        if (skeleton && anim_player) {
+            godot::NodePath p = anim_player->get_path_to(skeleton);
+            skel_rel = godot::String(p);
+            if (skel_rel.begins_with("./")) skel_rel = skel_rel.substr(2);
         }
 
         blend->set_filter_enabled(true);
-        // FILTER_BLEND: filtered bones take the overlay; others keep the base.
-        // Godot applies the filter paths relative to the AnimationMixer root.
-        for (const auto& path : bone_paths) {
-            blend->set_filter_path(godot::NodePath(Tool::to_godot_string(path)), true);
+        for (const auto& raw : bone_paths) {
+            godot::String bone = Tool::to_godot_string(raw);
+            // Already a full filter path (contains ':') — use as-is.
+            if (bone.contains(":")) {
+                blend->set_filter_path(godot::NodePath(bone), true);
+                continue;
+            }
+            // Bone name only — prefix with skeleton path from the AnimationPlayer.
+            if (!skel_rel.is_empty()) {
+                blend->set_filter_path(godot::NodePath(skel_rel + ":" + bone), true);
+            }
+            // Also register bare name as fallback (some GLBs author tracks that way).
+            blend->set_filter_path(godot::NodePath(bone), true);
         }
+
+        godot::UtilityFunctions::print(
+            "Model::set_animation_layer_filter layer=", layer,
+            " skeleton_path='", skel_rel, "' bones=", (int)bone_paths.size());
     }
 
     bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
