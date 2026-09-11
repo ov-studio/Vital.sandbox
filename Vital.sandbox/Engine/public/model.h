@@ -48,7 +48,7 @@ namespace Vital::Engine {
 
             // Soft upper bound so a bad script cannot allocate unbounded blend trees.
             // Within this range, layer count grows on demand (no fixed max of 4).
-            static constexpr int ANIM_LAYER_SOFT_MAX = 256;
+            static constexpr int ANIM_LAYER_SOFT_MAX = 16;
 
             inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
@@ -85,6 +85,9 @@ namespace Vital::Engine {
                 // One-shot: when loop is false, auto-stop after clip length/speed.
                 bool  one_shot = false;
                 float one_shot_remaining = 0.0f;
+                // Bone filter (synced). Empty + filter_enabled=false => full body.
+                bool filter_enabled = false;
+                std::vector<std::string> filter_bones;
             };
             // Starts empty; ensure_animation_layer() grows it and rebuilds the tree.
             std::vector<AnimLayerState> anim_layers;
@@ -108,6 +111,7 @@ namespace Vital::Engine {
             // base/lower-layer pose — so a wave/reload can leave the legs walking.
             void apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
             void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
+            void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
 
             // Sync state lives in ISyncable base class.
 
@@ -275,6 +279,8 @@ namespace Vital::Engine {
             // Restrict overlay layer (1..) to specific bones. Paths are AnimationMixer
             // filter paths, typically "Skeleton3D:BoneName" or just "BoneName" depending
             // on the GLB. Pass enabled=false to clear (full-body blend again).
-            bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {});
+            // `sync` (default true): broadcast like play_animation_layer. Server
+            // always relays; client only if it holds this model's sync authority.
+            bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {}, bool sync = true);
     };
 }

@@ -53,6 +53,7 @@ namespace Vital::Engine {
         rpc_config("_sync_wheel_config", reliable);
         rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
+        rpc_config("_sync_anim_layer_filter", reliable);
         rpc_config("_force_transform", reliable);
         rpc_config("_wake_sync", reliable);
 
@@ -403,6 +404,42 @@ namespace Vital::Engine {
     // origin instead of snapping the entity back to wherever it was before.
     // The server also calls broadcast_sync() separately for all OTHER clients,
     // so this RPC only needs to handle the owning peer's side.
+    void Network::_sync_anim_layer_filter(int net_id, int layer, bool enabled, godot::PackedStringArray bones) {
+        auto* mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        #if !defined(VSDK_Client)
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        if (sender != 0 && sender != entity->get_sync_authority()) {
+            godot::UtilityFunctions::push_warning("_sync_anim_layer_filter: rejected — sender ", sender,
+                " is not the sync authority for net_id=", net_id);
+            return;
+        }
+        // Persist on server model state if present (for late-join dump).
+        if (auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity))) {
+            std::vector<std::string> paths;
+            paths.reserve(bones.size());
+            for (int i = 0; i < bones.size(); ++i)
+                paths.push_back(Tool::to_std_string(bones[i]));
+            model->apply_set_animation_layer_filter(layer, enabled, paths);
+        }
+        auto* node = mgr->get_node();
+        if (node) node->rpc("_sync_anim_layer_filter", net_id, layer, enabled, bones);
+        #else
+        auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+        std::vector<std::string> paths;
+        paths.reserve(bones.size());
+        for (int i = 0; i < bones.size(); ++i)
+            paths.push_back(Tool::to_std_string(bones[i]));
+        model->apply_set_animation_layer_filter(layer, enabled, paths);
+        #endif
+    }
+
+
     void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale) {
         #if defined(VSDK_Client)
         auto* mgr = Manager::Network::get_singleton();

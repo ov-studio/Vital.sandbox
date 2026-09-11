@@ -835,6 +835,11 @@ namespace Vital::Engine {
                 anim_layers[0].weight_target = 1.0f;
             }
             anim_tree->set_active(true);
+            // Re-apply stored bone filters (tree nodes were recreated).
+            for (int i = 1; i < count; i++) {
+                if (anim_layers[i].filter_enabled)
+                    apply_set_animation_layer_filter(i, true, anim_layers[i].filter_bones);
+            }
         }
         return true;
     }
@@ -1035,6 +1040,10 @@ namespace Vital::Engine {
         // Layer 0 is the base chain — no Blend2 node (no filter target).
         if (layer < 1) return;
         if (!ensure_animation_layer(layer)) return;
+        // Persist for rebuild + late-join dump (even if tree not ready yet).
+        anim_layers[layer].filter_enabled = enabled && !bone_paths.empty();
+        anim_layers[layer].filter_bones = enabled ? bone_paths : std::vector<std::string>{};
+
         // Ensure tree + skeleton discovery exist before resolving filter paths.
         if (!anim_player) return;
         if (!skeleton) find_node(this, skeleton);
@@ -1089,11 +1098,31 @@ namespace Vital::Engine {
             " skeleton_path='", skel_rel, "' bones=", (int)bone_paths.size());
     }
 
-    bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+    bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths, bool sync) {
         if (layer < 1) return false;
         if (!ensure_animation_layer(layer)) return false;
         apply_set_animation_layer_filter(layer, enabled, bone_paths);
+        if (sync) broadcast_animation_layer_filter(layer, enabled, bone_paths);
         return true;
+    }
+
+    void Model::broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        if (net_id == 0) return;
+
+        godot::PackedStringArray bones;
+        for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
+
+        #if !defined(VSDK_Client)
+        auto* net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node)
+            net_node->rpc("_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        #else
+        auto* net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        auto* net_node = net_mgr->get_node();
+        if (!net_node) return;
+        net_node->rpc_id(1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        #endif
     }
 
     bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {

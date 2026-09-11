@@ -1148,6 +1148,16 @@ namespace Vital::Manager {
                         Tool::to_godot_string(state.current_anim),
                         state.loop, state.speed, state.weight_target, 0.0f);
                 }
+                // Bone filters (not part of play packet).
+                for (int layer = 1; layer < model->get_animation_layer_count(); layer++) {
+                    auto& state = model->anim_layers[layer];
+                    if (!state.filter_enabled) continue;
+                    godot::PackedStringArray bones;
+                    for (const auto& b : state.filter_bones)
+                        bones.push_back(Tool::to_godot_string(b));
+                    node->rpc_id(id, "_sync_anim_layer_filter",
+                        (int)e->get_net_id(), layer, true, bones);
+                }
             }
         }
 
