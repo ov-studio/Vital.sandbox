@@ -650,7 +650,7 @@ namespace Vital::Manager {
             while (offset < end) {
                 if (offset + 4 > end) break;
                 uint32_t net_id = Engine::ISyncable::read_u32(data, offset);
-                godot::Vector3 pos, rot, vel;
+                godot::Vector3 pos, rot, vel, scale;
 
                 auto it = sync_id_map.find(net_id);
                 Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
@@ -1276,7 +1276,7 @@ namespace Vital::Manager {
             // Replay any transform syncs that arrived before these bodies registered.
             if (!incoming.empty()) {
                 int my_id = get_peer_id();
-                std::vector<std::pair<Engine::ISyncable*, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>>> to_apply;
+                std::vector<std::pair<Engine::ISyncable*, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3, godot::Vector3>>> to_apply;
                 {
                     std::lock_guard<std::mutex> lock(pending_transform_mutex);
                     for (auto* entity : incoming) {
@@ -1294,6 +1294,7 @@ namespace Vital::Manager {
                     godot::Vector3 pos = std::get<0>(to_apply[i].second);
                     godot::Vector3 rot = std::get<1>(to_apply[i].second);
                     godot::Vector3 vel = std::get<2>(to_apply[i].second);
+                    godot::Vector3 scale = std::get<3>(to_apply[i].second);
                     entity->apply_sync(pos, rot, vel, scale);
                     // apply_sync only moves the node — it never touches
                     // delta_last_*, which is this client's own decode baseline
@@ -1311,6 +1312,7 @@ namespace Vital::Manager {
                     entity->delta_last_pos = pos;
                     entity->delta_last_rot = rot;
                     entity->delta_last_vel = vel;
+                    entity->delta_last_scale = scale;
                 }
             }
 
