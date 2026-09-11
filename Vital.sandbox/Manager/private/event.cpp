@@ -30,6 +30,7 @@
 static Vital::Config::Server g_server_config;
 #endif
 
+// TODO: Move to core.cpp and wire based on core:free and make core:free mb when shutting down b4 timer? since calling instantly doesnt give enough time leaves things dirty
 void shutdown() {
     #if !defined(VSDK_Client)
     Vital::Manager::Masterlist::get_singleton() -> stop();

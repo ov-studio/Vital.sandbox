@@ -89,7 +89,6 @@ namespace Vital::Engine {
         }
     }
 
-    // TODO: Improve
     // Runs once per fixed physics tick — the same clock that actually moves
     // RigidBody3D/CharacterBody3D transforms (set_physics_ticks_per_second()
     // in Network::host()). Sampling and broadcasting authoritative sync
@@ -212,6 +211,8 @@ namespace Vital::Engine {
         Tool::print("sbox", "Core: shutting down...");
         #if defined(VSDK_Client)
         Manager::Network::get_singleton() -> disconnect_from_server();
+        #else
+        Manager::Network::get_singleton() -> close();
         #endif
         Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
