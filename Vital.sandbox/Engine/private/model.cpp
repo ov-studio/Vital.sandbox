@@ -989,7 +989,16 @@ namespace Vital::Engine {
         // "DEF-hand.L" matches nothing → overlay contributes zero (invisible wave).
         godot::String skel_rel;
         if (skeleton && anim_player) {
-            godot::NodePath p = anim_player->get_path_to(skeleton);
+            // Track/filter paths are resolved relative to the AnimationPlayer's
+            // root_node (defaults to "..", i.e. its parent) — NOT relative to
+            // the AnimationPlayer node itself. Using get_path_to() from the
+            // player directly produces a path one level off (e.g. "../Rig/..."
+            // instead of "Rig/..."), which never matches any real track path,
+            // so the filter silently matches nothing and the whole overlay
+            // layer contributes zero (no wave at all).
+            godot::Node* root = anim_player->get_node_or_null(anim_player->get_root_node());
+            if (!root) root = anim_player->get_parent();
+            godot::NodePath p = root->get_path_to(skeleton);
             skel_rel = godot::String(p);
             if (skel_rel.begins_with("./")) skel_rel = skel_rel.substr(2);
         }
