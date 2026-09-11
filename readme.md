@@ -28,7 +28,8 @@
 
 ## Built-in Features
 
-Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime that touches every system in the engine and actively expanding — [Roadmap](https://vital-sandbox.com/roadmap).
+Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime that touches every system in the engine and actively expanding.<br/>
+Checkout our comprehensive [Roadmap](https://vital-sandbox.com/roadmap).
 
 - **UI primitives**: Canvas, SVG, image, font, and texture APIs
 - **Crypto**: Built-in cryptographic utilities
