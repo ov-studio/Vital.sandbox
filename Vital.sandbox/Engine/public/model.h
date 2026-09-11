@@ -46,7 +46,9 @@ namespace Vital::Engine {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
 
-            static constexpr int ANIM_LAYER_COUNT = 4;
+            // Soft upper bound so a bad script cannot allocate unbounded blend trees.
+            // Within this range, layer count grows on demand (no fixed max of 4).
+            static constexpr int ANIM_LAYER_SOFT_MAX = 256;
 
             inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
@@ -67,12 +69,9 @@ namespace Vital::Engine {
             // as before (AnimationTree, once active, takes over playback
             // from the raw AnimationPlayer per Godot's own docs).
             //
-            // Layer 0 is the always-on base layer (e.g. locomotion). Layers
-            // 1..ANIM_LAYER_COUNT-1 are overlay layers stacked on top of it
-            // and of each other, each with its own independently tweened
-            // weight (e.g. an aim-offset layer, a flinch layer, an upper
-            // body action layer) so several animations can play and blend
-            // simultaneously instead of one clip replacing another outright.
+            // Layer 0 is the always-on base layer (e.g. locomotion). Overlay
+            // layers 1..N stack on top with independent weights. Capacity grows
+            // dynamically the first time a higher index is used (up to SOFT_MAX).
             godot::AnimationTree* anim_tree = nullptr;
             godot::Ref<godot::AnimationNodeBlendTree> blend_tree;
 
@@ -87,8 +86,12 @@ namespace Vital::Engine {
                 bool  one_shot = false;
                 float one_shot_remaining = 0.0f;
             };
-            std::array<AnimLayerState, 4> anim_layers{};
+            // Starts empty; ensure_animation_layer() grows it and rebuilds the tree.
+            std::vector<AnimLayerState> anim_layers;
 
+            // Grow anim_layers to include `layer` (0-based) and rebuild the blend
+            // tree if the capacity increased. Returns false if layer is invalid.
+            bool ensure_animation_layer(int layer);
             void build_animation_tree();
             void update_animation_layers(float delta);
 
@@ -225,7 +228,7 @@ namespace Vital::Engine {
             godot::Vector3 get_bone_position(const std::string& bone);
             std::string get_current_animation();
             float get_animation_speed();
-            static int get_animation_layer_count();
+            int get_animation_layer_count() const;
             float get_animation_layer_weight(int layer) const;
             float get_animation_layer_speed(int layer) const;
             std::string get_current_animation_layer(int layer) const;

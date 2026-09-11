@@ -759,47 +759,94 @@ namespace Vital::Engine {
     // blend_N (AnimationNodeBlend2) fades that layer's contribution in/out
     // over layer weight, tweened smoothly in update_animation_layers().
     // Layer 0 is the base and always contributes at full weight.
+    bool Model::ensure_animation_layer(int layer) {
+        if (layer < 0 || layer >= ANIM_LAYER_SOFT_MAX) {
+            godot::UtilityFunctions::push_warning(
+                "Model::ensure_animation_layer — invalid layer index: ", layer,
+                " (soft max ", ANIM_LAYER_SOFT_MAX, ")");
+            return false;
+        }
+        if ((int)anim_layers.size() > layer) return true;
+
+        const int old_count = (int)anim_layers.size();
+        anim_layers.resize(layer + 1);
+        // Layer 0 defaults to full weight once it exists.
+        if (old_count == 0 && !anim_layers.empty()) {
+            anim_layers[0].weight = 1.0f;
+            anim_layers[0].weight_target = 1.0f;
+        }
+        // Tree must be rebuilt so new blend_N / anim_N nodes exist.
+        if (anim_tree) {
+            // Force rebuild: drop the old graph root and reconstruct for new size.
+            blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
+            anim_tree->set_tree_root(blend_tree);
+            // Mark tree inactive so build path can fill nodes; we'll reactivate.
+            anim_tree->set_active(false);
+            // Clear anim_tree pointer trick won't work — call internal rebuild.
+            // build_animation_tree assumes "if (anim_tree) return" — temporarily
+            // use a dedicated rebuild path below by zeroing the early-out.
+        }
+        // Always (re)build so capacity matches anim_layers.size().
+        {
+            // Inline rebuild without early-out when anim_tree already exists.
+            if (!anim_player) return false;
+            auto* player = anim_player;
+            if (!anim_tree) {
+                anim_tree = memnew(godot::AnimationTree);
+                anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
+                add_child(anim_tree);
+                anim_tree->set_animation_player(anim_tree->get_path_to(player));
+            }
+            blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
+            anim_tree->set_tree_root(blend_tree);
+
+            const int count = (int)anim_layers.size();
+            for (int i = 0; i < count; i++) {
+                godot::Ref<godot::AnimationNodeAnimation> anim_node(memnew(godot::AnimationNodeAnimation));
+                godot::Ref<godot::AnimationNodeTimeScale> scale_node(memnew(godot::AnimationNodeTimeScale));
+                godot::String anim_name  = Tool::to_godot_string(fmt::format("anim_{}", i));
+                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+                blend_tree->add_node(anim_name, anim_node);
+                blend_tree->add_node(scale_name, scale_node);
+                blend_tree->connect_node(scale_name, 0, anim_name);
+                // Restore assigned clip if any.
+                if (!anim_layers[i].current_anim.empty())
+                    anim_node->set_animation(Tool::to_godot_string(anim_layers[i].current_anim));
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", i)),
+                    anim_layers[i].speed > 0.0f ? anim_layers[i].speed : 1.0f);
+            }
+
+            godot::String chain = Tool::to_godot_string("scale_0");
+            for (int i = 1; i < count; i++) {
+                godot::Ref<godot::AnimationNodeBlend2> blend_node(memnew(godot::AnimationNodeBlend2));
+                godot::String blend_name = Tool::to_godot_string(fmt::format("blend_{}", i));
+                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+                blend_tree->add_node(blend_name, blend_node);
+                blend_tree->connect_node(blend_name, 0, chain);
+                blend_tree->connect_node(blend_name, 1, scale_name);
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)),
+                    anim_layers[i].weight);
+                chain = blend_name;
+            }
+            blend_tree->connect_node(Tool::to_godot_string("output"), 0, chain);
+
+            if (!anim_layers.empty()) {
+                anim_layers[0].weight = 1.0f;
+                anim_layers[0].weight_target = 1.0f;
+            }
+            anim_tree->set_active(true);
+        }
+        return true;
+    }
+
     void Model::build_animation_tree() {
-        if (anim_tree) return;
-        auto* player = assert_animation_player();
-
-        anim_tree = memnew(godot::AnimationTree);
-        anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
-        add_child(anim_tree);
-        anim_tree->set_animation_player(anim_tree->get_path_to(player));
-
-        blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
-        anim_tree->set_tree_root(blend_tree);
-
-        for (int i = 0; i < ANIM_LAYER_COUNT; i++) {
-            godot::Ref<godot::AnimationNodeAnimation> anim_node(memnew(godot::AnimationNodeAnimation));
-            godot::Ref<godot::AnimationNodeTimeScale> scale_node(memnew(godot::AnimationNodeTimeScale));
-            godot::String anim_name  = Tool::to_godot_string(fmt::format("anim_{}", i));
-            godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
-            blend_tree->add_node(anim_name, anim_node);
-            blend_tree->add_node(scale_name, scale_node);
-            blend_tree->connect_node(scale_name, 0, anim_name);
-        }
-
-        godot::String chain = Tool::to_godot_string("scale_0");
-        for (int i = 1; i < ANIM_LAYER_COUNT; i++) {
-            godot::Ref<godot::AnimationNodeBlend2> blend_node(memnew(godot::AnimationNodeBlend2));
-            godot::String blend_name = Tool::to_godot_string(fmt::format("blend_{}", i));
-            godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
-            blend_tree->add_node(blend_name, blend_node);
-            blend_tree->connect_node(blend_name, 0, chain);
-            blend_tree->connect_node(blend_name, 1, scale_name);
-            chain = blend_name;
-        }
-        blend_tree->connect_node(Tool::to_godot_string("output"), 0, chain);
-
-        anim_layers[0].weight = 1.0f;
-        anim_layers[0].weight_target = 1.0f;
-        anim_tree->set_active(true);
+        // Ensure at least the base layer exists, then let ensure_ build the graph.
+        if (anim_layers.empty()) anim_layers.resize(1);
+        ensure_animation_layer(0);
     }
 
     void Model::update_animation_layers(float delta) {
-        for (int i = 1; i < ANIM_LAYER_COUNT; i++) {
+        for (int i = 1; i < (int)anim_layers.size(); i++) {
             auto& layer = anim_layers[i];
 
             // One-shot: when loop=false, auto-fade the layer after the clip ends
@@ -808,8 +855,6 @@ namespace Vital::Engine {
                 layer.one_shot_remaining -= delta;
                 if (layer.one_shot_remaining <= 0.0f) {
                     layer.one_shot = false;
-                    // Local stop only — every peer runs the same timer from the
-                    // same play packet, so no extra network needed.
                     apply_stop_animation_layer(i, 0.25f);
                     layer.current_anim.clear();
                 }
@@ -821,18 +866,19 @@ namespace Vital::Engine {
             if (layer.weight < layer.weight_target) layer.weight = std::min(layer.weight_target, layer.weight + step);
             else layer.weight = std::max(layer.weight_target, layer.weight - step);
 
-            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), layer.weight);
+            if (anim_tree)
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), layer.weight);
         }
     }
 
-    int Model::get_animation_layer_count() { return ANIM_LAYER_COUNT; }
+    int Model::get_animation_layer_count() const { return (int)anim_layers.size(); }
 
     // --- Pure local application — never broadcasts. Called both by the
     // public API (which broadcasts on top) and by Network::_sync_anim_layer
     // when mirroring a remote peer's animation state. ---
 
     bool Model::apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT) {
+        if (!ensure_animation_layer(layer)) {
             godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
             return false;
         }
@@ -912,7 +958,7 @@ namespace Vital::Engine {
     void Model::apply_stop_animation_layer(int layer, float blend_time) {
         // Layer 0 is the always-on base — "stopping" it doesn't mean
         // anything (use play_animation_layer(0, ...) to switch its clip).
-        if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
+        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return;
 
         auto& state = anim_layers[layer];
         state.one_shot = false;
@@ -926,7 +972,7 @@ namespace Vital::Engine {
     }
 
     bool Model::apply_set_animation_layer_weight(int layer, float weight, float blend_time) {
-        if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return false;
+        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return false;
 
         weight = std::clamp(weight, 0.0f, 1.0f);
         auto& state = anim_layers[layer];
@@ -940,7 +986,7 @@ namespace Vital::Engine {
     }
 
     void Model::apply_set_animation_layer_speed(int layer, float speed) {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
+        if (layer < 0 || layer >= (int)anim_layers.size() || !anim_tree) return;
         anim_layers[layer].speed = speed;
         anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
     }
@@ -987,7 +1033,8 @@ namespace Vital::Engine {
 
     void Model::apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
         // Layer 0 is the base chain — no Blend2 node (no filter target).
-        if (layer < 1 || layer >= ANIM_LAYER_COUNT) return;
+        if (layer < 1) return;
+        if (!ensure_animation_layer(layer)) return;
         // Ensure tree + skeleton discovery exist before resolving filter paths.
         if (!anim_player) return;
         if (!skeleton) find_node(this, skeleton);
@@ -1043,7 +1090,8 @@ namespace Vital::Engine {
     }
 
     bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
-        if (layer < 1 || layer >= ANIM_LAYER_COUNT) return false;
+        if (layer < 1) return false;
+        if (!ensure_animation_layer(layer)) return false;
         apply_set_animation_layer_filter(layer, enabled, bone_paths);
         return true;
     }
@@ -1071,22 +1119,22 @@ namespace Vital::Engine {
     }
 
     float Model::get_animation_layer_weight(int layer) const {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return 0.0f;
+        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
         return anim_layers[layer].weight_target;
     }
 
     float Model::get_animation_layer_speed(int layer) const {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return 0.0f;
+        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
         return anim_layers[layer].speed;
     }
 
     std::string Model::get_current_animation_layer(int layer) const {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return "";
+        if (layer < 0 || layer >= (int)anim_layers.size()) return "";
         return anim_layers[layer].current_anim;
     }
 
     bool Model::is_animation_layer_playing(int layer) const {
-        if (layer < 0 || layer >= ANIM_LAYER_COUNT) return false;
+        if (layer < 0 || layer >= (int)anim_layers.size()) return false;
         if (anim_layers[layer].current_anim.empty()) return false;
         return layer == 0 || anim_layers[layer].weight_target > 0.0f;
     }

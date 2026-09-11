@@ -551,7 +551,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_animation_layer_count", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(base_class::get_animation_layer_count());
+                vm -> push_value(self -> model -> get_animation_layer_count());
                 return 1;
             });
         }
