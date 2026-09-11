@@ -116,6 +116,9 @@ namespace Vital::Engine {
             // Sync state lives in ISyncable base class.
 
             inline static Models cache_loaded;
+            // SHA-256 of source file at load time — used to invalidate
+            // same-path updates without wiping the whole resource cache.
+            inline static std::unordered_map<std::string, std::string> cache_hashes;
 
 
             // Helpers //
@@ -193,6 +196,9 @@ namespace Vital::Engine {
 
             static std::vector<std::string> filter_resource_models(const std::string& resource, const std::vector<std::string>& files);
             static void load_resource_models(const std::string& resource, const std::vector<std::string>& files);
+            // Keep cache warm across restarts, but drop entries no longer listed
+            // (and load any new ones). Safe for production resource updates.
+            static void sync_resource_models(const std::string& resource, const std::vector<std::string>& files);
             static void unload_resource_models(const std::string& resource);
 
 

@@ -238,13 +238,26 @@ namespace Vital::Engine {
     //------------------//
 
     bool Model::load(const std::string& name, const std::string& path) {
-        return load_from_buffer(name, Tool::File::read_binary(Tool::get_directory(), path));
+        const std::string file_hash = Tool::File::hash(Tool::get_directory(), path);
+        // Same path, new bytes: drop old PackedScene so generate_scene runs again.
+        if (is_model_loaded(name)) {
+            auto hit = cache_hashes.find(name);
+            if (hit != cache_hashes.end() && hit->second == file_hash)
+                return true;
+            unload(name);
+        }
+        if (!load_from_buffer(name, Tool::File::read_binary(Tool::get_directory(), path)))
+            return false;
+        cache_hashes[name] = file_hash;
+        return true;
     }
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        // Idempotent: rapid restart may call load again before unload ran, or
-        // after a partial stop. Throwing here was unnecessary and raced with
-        // concurrent hydrate/unload paths.
+        // Serialize imports: concurrent/rapid restart must not interleave
+        // GLTFDocument work (GPU/driver heap corruption in generate_scene).
+        static std::mutex load_mutex;
+        std::lock_guard<std::mutex> load_lock(load_mutex);
+
         if (is_model_loaded(name)) return true;
 
         godot::Ref<godot::PackedScene> scene;
@@ -257,8 +270,15 @@ namespace Vital::Engine {
                 godot::Node* root = document->generate_scene(state);
                 if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate scene");
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene->pack(root);
+                if (scene->pack(root) != godot::OK) {
+                    memdelete(root);
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to pack model scene");
+                }
                 memdelete(root);
+                // Drop GLTF objects before releasing lock so the next import
+                // does not overlap document/state teardown.
+                document.unref();
+                state.unref();
                 break;
             }
             default: break;
@@ -279,6 +299,7 @@ namespace Vital::Engine {
         // Drop cache entry only. Live instances keep their own node trees;
         // pending hydrates must be cancelled via Asset::spawn_generation first.
         cache_loaded.erase(it);
+        cache_hashes.erase(name);
         return true;
     }
 
@@ -448,14 +469,17 @@ namespace Vital::Engine {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string mn       = fmt::format(":{}/{}", resource, file);
             const std::string lp       = fmt::format("resources/{}/{}", resource, file);
-            if (is_model_loaded(mn)) {
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, lp)) continue;
+            try {
+                const bool was_loaded = is_model_loaded(mn);
+                const std::string before = was_loaded ? cache_hashes[mn] : "";
+                load(mn, lp); // no-op if same hash; re-imports if bytes changed
+                if (!was_loaded || cache_hashes[mn] != before)
+                    loaded.push_back(mn);
                 #if defined(VSDK_Client)
                 Manager::Asset::get_singleton()->flush_spawn_queue(mn);
                 #endif
-                continue;
             }
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, lp)) continue;
-            try { load(mn, lp); loaded.push_back(mn); }
             catch (...) { failed.push_back(file); }
         }
         if (!loaded.empty()) {
@@ -471,6 +495,36 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         Manager::Asset::get_singleton()->flush_ready_spawns();
         #endif
+    }
+
+    void Model::sync_resource_models(const std::string& resource, const std::vector<std::string>& files) {
+        // 1) Prune cache entries for this resource that are no longer in the
+        //    authoritative file/model list (removed on server / updated meta).
+        const std::string prefix = fmt::format(":{}/", resource);
+        std::unordered_set<std::string> keep;
+        keep.reserve(files.size());
+        for (const auto& file : files) {
+            if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
+            keep.insert(fmt::format(":{}/{}", resource, file));
+        }
+        std::vector<std::string> to_unload;
+        for (const auto& [name, _] : cache_loaded) {
+            if (name.rfind(prefix, 0) != 0) continue;
+            if (!keep.count(name)) to_unload.push_back(name);
+        }
+        for (const auto& name : to_unload) {
+            unload(name);
+            #if defined(VSDK_Client)
+            Manager::Asset::get_singleton()->clear_spawn_queue(name);
+            #endif
+        }
+        if (!to_unload.empty()) {
+            auto rm = Vital::Manager::Resource::get_singleton();
+            rm->log("sbox", fmt::format("resource `{}` pruned {} stale model asset(s) from cache",
+                resource, to_unload.size()));
+        }
+        // 2) Load anything missing (already-cached names are skipped inside).
+        load_resource_models(resource, files);
     }
 
     void Model::unload_resource_models(const std::string& resource) {

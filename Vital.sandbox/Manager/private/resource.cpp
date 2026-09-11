@@ -23,7 +23,54 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
+
 namespace Vital::Manager {
+
+    // Client lifecycle tokens: each stop bumps the generation for that resource
+    // so deferred start jobs from an older resource:started packet are ignored
+    // when a newer stop/restart has already begun (production safe rapid restart).
+    namespace {
+        std::mutex lifecycle_mutex;
+        std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
+        #if !defined(VSDK_Client)
+        std::unordered_set<std::string> resource_restarting; // server: restart in flight
+        std::unordered_set<std::string> resource_restart_pending; // coalesce spam into one follow-up
+        #endif
+
+        uint32_t lifecycle_bump(const std::string& name) {
+            std::lock_guard<std::mutex> lock(lifecycle_mutex);
+            return ++resource_lifecycle_gen[name];
+        }
+        uint32_t lifecycle_get(const std::string& name) {
+            std::lock_guard<std::mutex> lock(lifecycle_mutex);
+            auto it = resource_lifecycle_gen.find(name);
+            return it == resource_lifecycle_gen.end() ? 0u : it->second;
+        }
+
+        #if !defined(VSDK_Client)
+        // Finish a restart cycle; if console/API spammed restart while busy,
+        // run exactly one more restart with the latest intent.
+        // Internal::restart exists only on the server build.
+        void finish_restart_cycle(const std::string& name) {
+            bool again = false;
+            {
+                std::lock_guard<std::mutex> lock(lifecycle_mutex);
+                resource_restarting.erase(name);
+                if (resource_restart_pending.count(name)) {
+                    resource_restart_pending.erase(name);
+                    again = true;
+                }
+            }
+            if (again) {
+                Resource::get_singleton()->log("sbox",
+                    fmt::format("resource `{}` applying coalesced restart", name));
+                // Public API — Internal is private to Resource.
+                Resource::get_singleton()->restart(name);
+            }
+        }
+        #endif
+    }
+
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
         return fmt::format("@{}/{}", resource, src);
@@ -148,7 +195,7 @@ namespace Vital::Manager {
         }
         #endif
         if (resource -> models.empty()) return;
-        Engine::Model::load_resource_models(name, resource -> models);
+        Engine::Model::sync_resource_models(name, resource -> models);
     }
 
     void Resource::Internal::execute_resource(std::string name) {
@@ -231,8 +278,14 @@ namespace Vital::Manager {
         // early in that case (resource not loaded yet), so we have to check
         // again here, after registration, whether assets are already ready.
         if (!Internal::is_pending(name)) {
-            Engine::Core::get_singleton() -> enqueue([name]() {
-                Engine::Core::get_singleton() -> enqueue([name]() {
+            const uint32_t gen = lifecycle_get(name);
+            Engine::Core::get_singleton() -> enqueue([name, gen]() {
+                Engine::Core::get_singleton() -> enqueue([name, gen]() {
+                    if (lifecycle_get(name) != gen) {
+                        Resource::get_singleton() -> log("sbox",
+                            fmt::format("resource `{}` deferred start skipped — newer stop/restart", name));
+                        return;
+                    }
                     Internal::start(name);
                 });
             });
@@ -498,13 +551,24 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             #if defined(VSDK_Client)
-                if (!Internal::is_running(name) && !Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
+                // Bump before teardown so any deferred start from a previous
+                // resource:started packet becomes stale and will no-op.
+                lifecycle_bump(name);
+                // Idempotent: rapid restart / duplicate resource:stopped packets
+                // often arrive after the first stop already cleared running+pending.
+                if (!Internal::is_running(name) && !Internal::is_pending(name)) {
+                    rm -> log("sbox", fmt::format("resource `{}` stop ignored — already stopped", name));
+                    return true;
+                }
                 if (Internal::is_pending(name)) {
                     am -> cancel_group(name);
                     rm -> log("sbox", fmt::format("resource `{}` download cancelled", name));
                 }
             #else
-                if (!Internal::is_running(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
+                if (!Internal::is_running(name)) {
+                    rm -> log("sbox", fmt::format("resource `{}` stop ignored — already stopped", name));
+                    return true;
+                }
                 am -> unregister_group(name);
             #endif
             was_running = Internal::is_running(name);
@@ -520,7 +584,18 @@ namespace Vital::Manager {
         }
         if (was_running) {
             vm -> clear_environment_id(name);
-            Engine::Model::unload_resource_models(name);
+            // Do NOT unload PackedScene cache on every stop/restart.
+            // Re-running GLTFDocument::generate_scene while the renderer still
+            // holds meshes from destroyed instances races the GPU heap and
+            // crashes clients (load_from_buffer / generate_scene). Entities are
+            // destroyed via network; spawn queues are cleared; GLBs stay warm.
+            // load_resource_models() is idempotent when already cached.
+            #if defined(VSDK_Client)
+            Manager::Asset::get_singleton()->clear_spawn_queue_prefix(":" + name + "/");
+            #else
+            // Server: same policy — keep cache across restarts for stability.
+            // Use Model::unload_resource_models only on full resource removal if needed later.
+            #endif
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 
@@ -679,8 +754,29 @@ namespace Vital::Manager {
             }
             rm -> log("sbox", report);
         }
+        {
+            std::lock_guard<std::mutex> lock(lifecycle_mutex);
+            if (resource_restarting.count(name)) {
+                // Spam restart from console/API: keep one pending, drop the rest.
+                resource_restart_pending.insert(name);
+                rm -> log("sbox", fmt::format(
+                    "resource `{}` restart coalesced — already in progress", name));
+                return true;
+            }
+            resource_restarting.insert(name);
+        }
+
         stop(name);
-        Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
+        // Multi-frame defer: clients must process resource:stopped + destroys
+        // before resource:started / new spawns. Extra frames absorb network lag.
+        Engine::Core::get_singleton() -> enqueue([name]() {
+            Engine::Core::get_singleton() -> enqueue([name]() {
+                Engine::Core::get_singleton() -> enqueue([name]() {
+                    Internal::start(name);
+                    finish_restart_cycle(name);
+                });
+            });
+        });
         return true;
     }
 
