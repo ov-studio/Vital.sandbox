@@ -209,6 +209,9 @@ namespace Vital::Engine {
 
     void Core::shutdown() {
         Tool::print("sbox", "Core: shutting down...");
+        #if defined(VSDK_Client)
+        Manager::Network::get_singleton() -> disconnect_from_server();
+        #endif
         Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
             Tool::print("sbox", "Core: shut down successfully!");
