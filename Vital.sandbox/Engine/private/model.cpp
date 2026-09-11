@@ -856,9 +856,27 @@ namespace Vital::Engine {
         if (animation.is_valid())
             animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
 
-        auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(
-            blend_tree->get_node(Tool::to_godot_string(fmt::format("anim_{}", layer))).ptr());
-        if (anim_node) anim_node->set_animation(Tool::to_godot_string(name));
+        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
+        bool is_one_shot_retrigger = !loop && layer > 0;
+        if (is_one_shot_retrigger) {
+            // AnimationNodeAnimation keeps its own internal playback clock
+            // tied to its position in the tree — re-assigning the same clip
+            // name via set_animation() does NOT rewind it. Once a one-shot
+            // (e.g. "wave") reaches its end it just freezes on the last
+            // frame forever, so pressing Q again did nothing visible even
+            // though play_animation_layer() was firing correctly. Recreating
+            // the node gives it a fresh playback state every time it's
+            // (re)triggered, so it always restarts from frame 0.
+            blend_tree->remove_node(anim_key);
+            godot::Ref<godot::AnimationNodeAnimation> fresh_node(memnew(godot::AnimationNodeAnimation));
+            fresh_node->set_animation(Tool::to_godot_string(name));
+            blend_tree->add_node(anim_key, fresh_node);
+            blend_tree->connect_node(Tool::to_godot_string(fmt::format("scale_{}", layer)), 0, anim_key);
+        } else {
+            auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(
+                blend_tree->get_node(anim_key).ptr());
+            if (anim_node) anim_node->set_animation(Tool::to_godot_string(name));
+        }
         anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
 
         auto& state = anim_layers[layer];
