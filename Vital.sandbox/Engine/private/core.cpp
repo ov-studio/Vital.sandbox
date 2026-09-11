@@ -89,6 +89,7 @@ namespace Vital::Engine {
         }
     }
 
+    // TODO: Improve
     // Runs once per fixed physics tick — the same clock that actually moves
     // RigidBody3D/CharacterBody3D transforms (set_physics_ticks_per_second()
     // in Network::host()). Sampling and broadcasting authoritative sync
