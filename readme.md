@@ -17,7 +17,7 @@
 ##
 
 **Vital.sandbox** is an open-source, high-performance sandbox built on Godot and powered by C++17 and Lua.
-<br/>Full control over rendering, networking, threading, and assets - one seamless workflow
+<br/>Full control over rendering, networking, threading, and assets — one seamless workflow.
 
 ## Getting Started
 
@@ -26,19 +26,26 @@
 - **Vendors**: View all third-party dependencies and licenses in [Vendor](https://github.com/ov-studio/Vital.sandbox/blob/main/vendor.md).
 - **Community**: Got questions or want to connect? Join us on [Discord](http://discord.vital-sandbox.com).
 
-
 ## Built-in Features
 
 Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime that touches every system in the engine:
 
-- **Rendering**: Control scenes, shaders, and draw calls directly from script
+- **UI primitives**: Canvas, SVG, image, font, and texture APIs
+- **Crypto**: Built-in cryptographic utilities
 - **Networking**: Built-in async networking primitives for multiplayer-ready games
 - **Threading**: True multi-threading support with promise-based coordination
 - **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua
 - **Event system**: Heartbeats, listeners, and reactive patterns that scale cleanly
+- **Database**: Async database access with query support (server-side)
+- **Webview**: Embedded webview rendering (client-side)
+- **Audio**: 2D and 3D audio sources with effect bus support
+- **Discord**: Native Discord integration (client-side)
+- **Rendering**: Control scenes, shaders, rendertargets, and draw calls directly from script
+- **GFX pipeline**: Full environment control — fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, and more
+- **Lighting**: Directional, point, spot, and area lights with full scripting control
+- **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, and spaces
 
-
-## Privacy policy
+## Privacy Policy
 
 - Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes.
 - No personal data is collected, stored or shared with any third party.
