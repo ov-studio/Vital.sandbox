@@ -44,6 +44,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **GFX pipeline**: Full environment control — fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, and more
 - **Lighting**: Directional, point, spot, and area lights with full scripting control
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, and spaces
+- **Physics debugger**: Per-shape and global collision wireframe visualizer, with color-coded local vs. replicated shapes
 
 ## Privacy Policy
 
