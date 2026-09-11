@@ -83,6 +83,9 @@ namespace Vital::Engine {
                 float weight = 0.0f;
                 float weight_target = 0.0f;
                 float weight_rate = 0.0f; // units/sec applied while tweening
+                // One-shot: when loop is false, auto-stop after clip length/speed.
+                bool  one_shot = false;
+                float one_shot_remaining = 0.0f;
             };
             std::array<AnimLayerState, 4> anim_layers{};
 
@@ -97,6 +100,10 @@ namespace Vital::Engine {
             void apply_stop_animation_layer(int layer, float blend_time);
             bool apply_set_animation_layer_weight(int layer, float weight, float blend_time);
             void apply_set_animation_layer_speed(int layer, float speed);
+            // Bone filter on overlay blend nodes (layer >= 1). When enabled, only
+            // listed bone tracks from this layer are blended; the rest keep the
+            // base/lower-layer pose — so a wave/reload can leave the legs walking.
+            void apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
             void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
 
             // Sync state lives in ISyncable base class.
@@ -262,5 +269,9 @@ namespace Vital::Engine {
             bool play_animation_layer(int layer, const std::string& name, bool loop = true,
                 float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
             void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
+            // Restrict overlay layer (1..) to specific bones. Paths are AnimationMixer
+            // filter paths, typically "Skeleton3D:BoneName" or just "BoneName" depending
+            // on the GLB. Pass enabled=false to clear (full-body blend again).
+            bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {});
     };
 }

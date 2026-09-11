@@ -496,6 +496,28 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
+                // (layer, enabled [, bone_paths table of strings])
+                vm_args(vm, id, "(layer, enabled, bone_paths?)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_bool);
+
+                int layer = vm -> get_int(2);
+                bool enabled = vm -> get_bool(3);
+                std::vector<std::string> bones;
+                if (vm -> get_count() >= 4 && vm -> is_table(4)) {
+                    int n = vm -> get_length(4);
+                    bones.reserve(n);
+                    for (int i = 1; i <= n; ++i) {
+                        vm -> get_table_field(i, 4);
+                        if (vm -> is_string(-1)) bones.push_back(vm -> get_string(-1));
+                        vm -> pop(1);
+                    }
+                }
+                vm -> push_value(self -> model -> set_animation_layer_filter(layer, enabled, bones));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer)", true)
                     .require(2, &Machine::is_number);

@@ -801,6 +801,20 @@ namespace Vital::Engine {
     void Model::update_animation_layers(float delta) {
         for (int i = 1; i < ANIM_LAYER_COUNT; i++) {
             auto& layer = anim_layers[i];
+
+            // One-shot: when loop=false, auto-fade the layer after the clip ends
+            // so Lua does not have to call stop_animation_layer manually.
+            if (layer.one_shot && !layer.current_anim.empty() && layer.weight_target > 0.0f) {
+                layer.one_shot_remaining -= delta;
+                if (layer.one_shot_remaining <= 0.0f) {
+                    layer.one_shot = false;
+                    // Local stop only — every peer runs the same timer from the
+                    // same play packet, so no extra network needed.
+                    apply_stop_animation_layer(i, 0.25f);
+                    layer.current_anim.clear();
+                }
+            }
+
             if (layer.weight == layer.weight_target) continue;
 
             float step = layer.weight_rate * delta;
@@ -851,6 +865,15 @@ namespace Vital::Engine {
         state.current_anim = name;
         state.speed = speed;
         state.loop = loop;
+        if (!loop && layer > 0 && animation.is_valid()) {
+            float len = animation->get_length();
+            float spd = speed > 0.0001f ? speed : 1.0f;
+            state.one_shot = true;
+            state.one_shot_remaining = len / spd;
+        } else {
+            state.one_shot = false;
+            state.one_shot_remaining = 0.0f;
+        }
 
         if (layer == 0) {
             // Base layer always contributes fully — nothing to tween.
@@ -874,6 +897,8 @@ namespace Vital::Engine {
         if (layer <= 0 || layer >= ANIM_LAYER_COUNT || !anim_tree) return;
 
         auto& state = anim_layers[layer];
+        state.one_shot = false;
+        state.one_shot_remaining = 0.0f;
         state.weight_target = 0.0f;
         state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
         if (blend_time <= 0.0001f) {
@@ -940,6 +965,35 @@ namespace Vital::Engine {
         net_node->rpc_id(1, "_sync_anim_layer", (int)net_id, layer, mode,
             Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #endif
+    }
+
+    void Model::apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        // Layer 0 is the base chain — no Blend2 node (no filter target).
+        if (layer < 1 || layer >= ANIM_LAYER_COUNT) return;
+        if (!anim_tree || blend_tree.is_null()) build_animation_tree();
+        if (blend_tree.is_null()) return;
+
+        auto node = blend_tree->get_node(Tool::to_godot_string(fmt::format("blend_{}", layer)));
+        auto* blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
+        if (!blend) return;
+
+        if (!enabled || bone_paths.empty()) {
+            blend->set_filter_enabled(false);
+            return;
+        }
+
+        blend->set_filter_enabled(true);
+        // FILTER_BLEND: filtered bones take the overlay; others keep the base.
+        // Godot applies the filter paths relative to the AnimationMixer root.
+        for (const auto& path : bone_paths) {
+            blend->set_filter_path(godot::NodePath(Tool::to_godot_string(path)), true);
+        }
+    }
+
+    bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        if (layer < 1 || layer >= ANIM_LAYER_COUNT) return false;
+        apply_set_animation_layer_filter(layer, enabled, bone_paths);
+        return true;
     }
 
     bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
