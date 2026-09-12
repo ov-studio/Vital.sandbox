@@ -126,8 +126,7 @@ namespace Vital::Sandbox::API {
                 if (required) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — 'options.peer' is required for remote {} on server", caller, caller));
                 return;
             }
-            if (!Manager::Network::get_singleton() -> get_connected_peers().count(peer_id))
-                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — peer '{}' is not connected", caller, peer_id));
+            if (!Manager::Network::get_singleton() -> get_connected_peers().count(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — peer '{}' is not connected", caller, peer_id));
         }
         #endif
 
@@ -493,7 +492,7 @@ namespace Vital::Sandbox::API {
                 if (queued.empty()) return;
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
-                
+
                 for (auto& packet : queued) {
                     dispatch_remote(vm, packet);
                 }
