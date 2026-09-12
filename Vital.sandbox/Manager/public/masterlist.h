@@ -12,10 +12,9 @@
 // Imports //
 //////////////
 
-// TODO: Improve
 #pragma once
-#include <Vital.sandbox/Engine/public/core.h>
 #if !defined(VSDK_Client)
+#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Config/server.h>
 
 

@@ -12,13 +12,12 @@
 // Imports //
 //////////////
 
-// TODO: Improve
 #pragma once
-#include <Vital.sandbox/Manager/public/masterlist.h>
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/kit.h>
+#include <Vital.sandbox/Manager/public/masterlist.h>
 #include <Vital.sandbox/Tool/http.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
