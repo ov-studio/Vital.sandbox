@@ -111,6 +111,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Timer>(),
             vm_module::make_api<Promise>(),
             vm_module::make_api<Thread>(),
+            vm_module::make_api<Easing>(),
             vm_module::make_api<File>(),
             vm_module::make_api<HTTP>(),
             vm_module::make_api<Crypto>(),
