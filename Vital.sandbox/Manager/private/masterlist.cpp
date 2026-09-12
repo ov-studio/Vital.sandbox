@@ -29,7 +29,7 @@
 /////////////////////////////////
 
 namespace Vital::Manager {
-    // Internal //
+    // Helpers //
     void Masterlist::send_heartbeat() const {
         if (!server_config) return;
         auto nm = Network::get_singleton();
@@ -72,11 +72,11 @@ namespace Vital::Manager {
 
     // Managers //
     bool Masterlist::is_active() const {
-        return active;
+        return state;
     }
 
     void Masterlist::start(const Config::Server& config) {
-        if (active) return;
+        if (state) return;
         if (!config.get_masterlist_enabled()) return;
         if (config.get_masterlist_token().empty()) {
             log("warn", "masterlist enabled but token missing in config.yaml — skipping");
@@ -84,7 +84,7 @@ namespace Vital::Manager {
         }
 
         server_config = &config;
-        active = true;
+        state = true;
         send_heartbeat();
         auto interval = Manager::Kit::fetch_json_value("config/masterlist", "interval").as<int32_t>();
         if (interval <= 0) interval = 300;
@@ -95,7 +95,7 @@ namespace Vital::Manager {
     }
 
     void Masterlist::stop() {
-        if (!active) return;
+        if (!state) return;
         if (heartbeat_timer) {
             heartbeat_timer -> stop();
             heartbeat_timer = nullptr;
@@ -108,7 +108,7 @@ namespace Vital::Manager {
             }
         }
         send_offline();
-        active = false;
+        state = false;
         server_config = nullptr;
     }
 
@@ -117,19 +117,19 @@ namespace Vital::Manager {
     }
 
     void Masterlist::refresh() {
-        if (!active) return;
+        if (!state) return;
         std::lock_guard<std::mutex> lock(debounce_mutex);
         if (debounce_timer) return;
 
-        auto debounce_s = Manager::Kit::fetch_json_value("config/masterlist", "debounce").as<int32_t>();
-        if (debounce_s <= 0) debounce_s = 5;
+        auto interval = Manager::Kit::fetch_json_value("config/masterlist", "debounce").as<int32_t>();
+        if (interval <= 0) interval = 5;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() {
                 send_heartbeat();
                 std::lock_guard<std::mutex> inner_lock(debounce_mutex);
                 debounce_timer = nullptr;
             });
-        }, debounce_s * 1000, 1);
+        }, interval * 1000, 1);
     }
 }
 #endif
