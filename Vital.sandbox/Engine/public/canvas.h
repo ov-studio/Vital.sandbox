@@ -53,7 +53,7 @@ namespace Vital::Engine {
 
 
             // Helpers //
-            static std::pair<Draw_Pool*, godot::RID> target();
+            static std::pair<Draw_Pool*, godot::RID> get_target();
             static void notify_drawn();
         public:
             // Hooks //

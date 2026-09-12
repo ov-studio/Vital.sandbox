@@ -65,6 +65,20 @@ namespace Vital::Engine {
     }
 
 
+    // Helpers //
+    std::pair<Canvas::Draw_Pool*, godot::RID> Canvas::get_target() {
+        auto rt = Engine::Rendertarget::get_active();
+        if (rt) return {&rt -> get_pool(), rt -> get_canvas_item()};
+        auto self = Canvas::get_singleton();
+        return {&self -> pool, self -> get_canvas_item()};
+    }
+
+    void Canvas::notify_drawn() {
+        auto rt = Engine::Rendertarget::get_active();
+        if (rt) rt -> notify_drawn();
+    }
+
+
     // Hooks //
     void Canvas::_ready() {
         set_as_top_level(true);
@@ -96,20 +110,6 @@ namespace Vital::Engine {
     // Managers //
     void Canvas::init() {
         Engine::Core::get_singleton() -> add_child(singleton);
-    }
-
-
-    // Helpers //
-    std::pair<Canvas::Draw_Pool*, godot::RID> Canvas::target() {
-        auto rt = Engine::Rendertarget::get_active();
-        if (rt) return {&rt -> get_pool(), rt -> get_canvas_item()};
-        auto self = Canvas::get_singleton();
-        return {&self -> pool, self -> get_canvas_item()};
-    }
-
-    void Canvas::notify_drawn() {
-        auto rt = Engine::Rendertarget::get_active();
-        if (rt) rt -> notify_drawn();
     }
 
 
@@ -150,7 +150,7 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (points.size() < 2) return;
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D());
@@ -214,7 +214,7 @@ namespace Vital::Engine {
             stroke_points[local_points.size()] = stroke_points[0];
         }
 
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + local_pivot));
@@ -239,7 +239,7 @@ namespace Vital::Engine {
         godot::Vector2 pivot
     ) {
         auto piv = size*0.5f + pivot;
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
@@ -275,7 +275,7 @@ namespace Vital::Engine {
         float rotation,
         godot::Vector2 pivot
     ) {
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + pivot));
@@ -362,7 +362,7 @@ namespace Vital::Engine {
     ) {
         if (!texture.is_valid()) return;
         auto piv = size*0.5f + pivot;
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
@@ -381,7 +381,7 @@ namespace Vital::Engine {
         if (!material.is_valid()) return;
         material -> set_shader_parameter("modulate", godot::Variant(color));
         auto piv = size*0.5f + pivot;
-        auto [pool, parent] = target();
+        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_material(item, material -> get_rid());
@@ -443,7 +443,7 @@ namespace Vital::Engine {
         godot::Vector2 piv = rect.size*0.5f + pivot;
         piv.y -= font_ascent;
 
-        auto [pool, item_parent] = target();
+        auto [pool, item_parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(item_parent);
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), rect.position + piv));
