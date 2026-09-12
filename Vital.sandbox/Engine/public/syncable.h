@@ -47,7 +47,7 @@ namespace Vital::Engine {
                 Model = 0,
                 PhysicsBody = 1
             };
-            
+
             struct SyncConfig {
                 int rate = SYNC_RATE;
                 float buffer_delay_max = BUFFER_DELAY_MAX;
@@ -71,6 +71,7 @@ namespace Vital::Engine {
                 static constexpr uint16_t MASK_SZ = 1 << 11;
                 static constexpr float DELTA_SCALE_THRESHOLD = 0.001f;
 
+                
                 // Helpers //
                 static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
                 static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
