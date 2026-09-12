@@ -156,34 +156,4 @@ void vsdk_initialize() {
         #endif
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
-
-
-
-    Vital::Tool::Event::bind("entity:created", [](Vital::Tool::Stack arguments) {        
-        if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
-            Vital::Tool::print("sbox", "created a model");
-        }
-        #if defined(VSDK_Client)
-        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
-            Vital::Tool::print("sbox", "created a webview");
-        }
-        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Font::Instance>()) {
-            Vital::Tool::print("sbox", "created a font");
-        }
-        #endif
-    });
-
-    Vital::Tool::Event::bind("entity:destroyed", [](Vital::Tool::Stack arguments) {        
-        if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
-            Vital::Tool::print("sbox", "destroyed a model");
-        }
-        #if defined(VSDK_Client)
-        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
-            Vital::Tool::print("sbox", "destroyed a webview");
-        }
-        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Font::Instance>()) {
-            Vital::Tool::print("sbox", "destroyed a font");
-        }
-        #endif
-    });
 }
