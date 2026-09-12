@@ -87,7 +87,6 @@ namespace Vital::Engine {
             // (Model::set_parent, the generic Node_3D::set_parent binding,
             // future entity types, ...) gets the same guarantee for free
             // instead of hand-rolling its own defer/retry logic.
-            void when_parent_ready(godot::Node3D* node, godot::Node* target, std::function<void(godot::Node3D*, godot::Node*)> fn);
             void execute_when_ready(godot::Node3D* node, godot::Node* target, std::function<void(godot::Node3D*, godot::Node*)> fn);
             void drain();
             void teardown();
