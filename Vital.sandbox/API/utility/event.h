@@ -697,17 +697,22 @@ namespace Vital::Sandbox::API {
             // call stack still holds the same exec_ref values. Freeing them now
             // would cause lua_rawgeti to read freed registry slots (the crash).
             // Defer deletion to the next engine tick via the work queue instead.
-            if (dispatch_depth > 0) {
-                Machine::enqueue([refs_to_delete]() {
-                    if (!Manager::Sandbox::has_singleton()) return;
-                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-                    if (!vm) return;
-                    for (int ref : refs_to_delete) vm -> del_raw_reference(ref);
-                });
-            }
-            else {
+            // Helper lambda that retries deletion next drain if still dispatching.
+            // Defined as a shared_ptr<function> so it can re-enqueue itself.
+            auto do_delete = std::make_shared<std::function<void()>>();
+            *do_delete = [refs_to_delete, do_delete]() {
+                if (!Manager::Sandbox::has_singleton()) return;
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+                if (dispatch_depth > 0) {
+                    // Still inside a fire_all — defer one more drain tick.
+                    auto fn = do_delete;
+                    Machine::enqueue([fn]() { (*fn)(); });
+                    return;
+                }
                 for (int ref : refs_to_delete) vm -> del_raw_reference(ref);
-            }
+            };
+            (*do_delete)();
         }
     };
 }
