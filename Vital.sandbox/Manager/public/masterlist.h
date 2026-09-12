@@ -25,9 +25,6 @@
 
 // TOOD: Improve
 namespace Vital::Manager {
-    // Reports this server's presence + live stats to the Vital.site
-    // masterlist API on an interval, so it shows up in the public server
-    // browser. Server-only -- does nothing on the client build.
     class Masterlist : public godot::Node, public Tool::Base<Masterlist> {
         friend class Tool::Base<Masterlist>;
         public:
@@ -52,13 +49,11 @@ namespace Vital::Manager {
             static int get_debounce_seconds();
         public:
             // Managers //
+            bool is_active() const;
             void start(const Config::Server& config);
             void stop();
             void teardown();
             void refresh();
-
-            // State //
-            bool is_active() const;
     };
 }
 #endif
