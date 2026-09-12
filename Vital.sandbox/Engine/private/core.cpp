@@ -196,7 +196,7 @@ namespace Vital::Engine {
         }
         for (auto& exec : local) exec();
     }
-
+    
     void Core::teardown() {
         Manager::Resource::get_singleton() -> stop_all();
         #if !defined(VSDK_Client)
@@ -206,7 +206,6 @@ namespace Vital::Engine {
         Manager::Asset::free_singleton();
         Engine::Model::teardown_spawner();
         #if defined(VSDK_Client)
-        http_server.stop();
         free_environment();
         #endif
         Tool::Event::emit("core:teardown");
