@@ -533,8 +533,7 @@ namespace Vital::Manager {
             if (Engine::Model::is_model_loaded(name)) ready.push_back(name);
         }
         for (const auto& name : ready) flush_spawn_queue(name);
-        if (!ready.empty())
-            log("sbox", fmt::format("flush_ready_spawns — {} model name(s)", ready.size()));
+        if (!ready.empty()) log("sbox", fmt::format("flush_ready_spawns — {} model name(s)", ready.size()));
     }
     #endif
 }
