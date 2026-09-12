@@ -13,11 +13,11 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Engine/public/network.h>
-#include <Vital.sandbox/Engine/public/syncable.h>
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
 #endif
+#include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 
 
 //////////////////////////////
