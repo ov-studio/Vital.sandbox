@@ -516,18 +516,17 @@ namespace Vital::Manager {
     }
 
     void Asset::clear_spawn_queue(const std::string& loaded_name) {
+        // Only drop this name — do not bump spawn_generation (that would cancel
+        // deferred hydrates for every other model still in flight).
         spawn_queue.erase(loaded_name);
-        ++spawn_generation;
     }
 
     void Asset::clear_spawn_queue_prefix(const std::string& prefix) {
-        bool any = false;
         for (auto it = spawn_queue.begin(); it != spawn_queue.end(); ) {
-            if (it->first.rfind(prefix, 0) == 0) { it = spawn_queue.erase(it); any = true; }
+            if (it->first.rfind(prefix, 0) == 0) it = spawn_queue.erase(it);
             else ++it;
         }
-        // Always bump so deferred flushes from the previous resource life are dropped
-        // even if the queue was already empty.
+        // Resource stop/restart: invalidate all deferred flushes from this life.
         ++spawn_generation;
     }
 
