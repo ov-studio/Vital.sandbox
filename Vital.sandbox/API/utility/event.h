@@ -194,9 +194,9 @@ namespace Vital::Sandbox::API {
                 }
             }
             if (timed_out.empty()) return;
-            
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
+
             for (auto& promise : timed_out) {
                 if (API::Promise::is_pending(promise)) API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
             }
@@ -687,6 +687,7 @@ namespace Vital::Sandbox::API {
                 if (!Manager::Sandbox::has_singleton()) return;
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
+
                 if (dispatch_depth > 0) {
                     auto fn = do_delete;
                     Machine::enqueue([fn]() { (*fn)(); });
