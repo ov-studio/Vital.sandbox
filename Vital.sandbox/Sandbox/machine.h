@@ -48,7 +48,6 @@ namespace Vital::Sandbox {
                 "load",
                 "loadfile"
             };
-
         private:
             bool virtualized = false;
             vm_state* state = nullptr;
@@ -99,8 +98,6 @@ namespace Vital::Sandbox {
                         delete child;
                     }
                     children.clear();
-                    env_pre_cleaners.clear();
-                    env_cleaners.clear();
                     lua_close(state);
                 }
                 else if (parent) {
