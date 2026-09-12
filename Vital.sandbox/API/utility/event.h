@@ -493,6 +493,7 @@ namespace Vital::Sandbox::API {
                 if (queued.empty()) return;
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
+                
                 for (auto& packet : queued) {
                     dispatch_remote(vm, packet);
                 }
