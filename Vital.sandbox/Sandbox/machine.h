@@ -638,6 +638,10 @@ namespace Vital::Sandbox {
 
             bool call(int arguments, int returns = LUA_MULTRET, bool protected_call = true) {
                 Tool::assert_main_thread("Machine::call");
+                if (!lua_checkstack(state, 16)) { 
+                    Tool::print(std::string(Tool::Log::error::label), "lua stack overflow in Machine::call"); 
+                    return false; 
+                }
                 bool result = pcall(arguments, returns);
                 if (!result) {
                     if (protected_call) {
