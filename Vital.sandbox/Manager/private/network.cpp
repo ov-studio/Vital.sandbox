@@ -1427,14 +1427,26 @@ namespace Vital::Manager {
                     || (cur_rot - model->sync_last_rot).length() > 0.001f
                     || (cur_scale - model->sync_last_scale).length() > 0.001f;
 
+                // Mirrors the forced send on the *sleep* transition below: force
+                // one on the *wake* transition too. Without this, sync_accum sat
+                // frozen at 0 for the entire sleep duration (we `continue`d before
+                // ever reaching the increment), so the first moving tick has to
+                // accumulate a full sync_interval's worth of ticks before the
+                // throttle check below lets a packet out — by which point the
+                // body has already covered a visible distance server-side, and
+                // that whole chunk of movement lands in a single delta packet.
+                // Sending immediately on wake keeps that first packet small and
+                // close to real time instead of one delayed, oversized jump.
+                bool was_sleeping = model->sync_sleeping;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;
                 }
                 else model->sync_sleeping = false;
+                bool woke_up = was_sleeping && !model->sync_sleeping;
 
                 model->sync_accum += static_cast<float>(delta);
-                if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
+                if (model->sync_accum < sync_interval && !model->sync_sleeping && !woke_up) continue;
 
                 // Divide by the real accumulated time (sync_accum), not the
                 // fixed sync_interval constant — sync_accum can legitimately
@@ -1496,14 +1508,20 @@ namespace Vital::Manager {
                 bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
                     || (cur_rot - model->sync_last_rot).length() > 0.001f
                     || (cur_scale - model->sync_last_scale).length() > 0.001f;
+                // See the server branch above: force a send on the wake
+                // transition too, not just the sleep transition, so the first
+                // post-sleep packet goes out immediately instead of after a
+                // full throttled sync_interval of already-happened movement.
+                bool was_sleeping = model->sync_sleeping;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
                     model->sync_sleeping = true;
                 }
                 else model->sync_sleeping = false;
+                bool woke_up = was_sleeping && !model->sync_sleeping;
 
                 model->sync_accum += static_cast<float>(delta);
-                if (model->sync_accum < sync_interval && !model->sync_sleeping) continue;
+                if (model->sync_accum < sync_interval && !model->sync_sleeping && !woke_up) continue;
 
                 // See the server branch above for why this divides by the
                 // real accumulated time instead of the fixed sync_interval.

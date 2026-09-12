@@ -134,6 +134,12 @@ namespace Vital::Engine {
 }
 
 namespace Vital::Engine {
+    // Any arrival gap larger than this is treated as a sleep/wake (or
+    // reconnect) resync rather than real network jitter — see the comment
+    // in sync_push_snapshot(). Comfortably above BUFFER_DELAY_MAX (0.30s
+    // default ceiling) so it never fires on ordinary jitter, however bad.
+    static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;
+
     // Misc //
     int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
         return Internal::encode_delta(buffer, offset, id, pos, rot, vel, scale, last_pos, last_rot, last_vel, last_scale);
@@ -240,6 +246,41 @@ namespace Vital::Engine {
         }
         else {
             float interval = snap_clock - jitter_last_arrival;
+
+            // A syncable that goes to sleep (sender stops transmitting while
+            // stationary — see Network::sync_tick) can leave an arbitrarily
+            // long silent gap before the next packet arrives on wake. Two
+            // things go wrong if that gap is fed through the normal path
+            // below: (1) it swamps the jitter EMA/stddev with one huge
+            // sample, spiking adaptive_delay for several packets afterward,
+            // and (2) render_time has kept advancing the whole time
+            // (snap_clock ticks every frame in interp_process regardless of
+            // whether packets arrive), so this new snapshot ends up
+            // bracketed against a stale pre-sleep snapshot across that
+            // entire silent span — interp_process either extrapolates
+            // across it or, if the position moved enough meanwhile, treats
+            // it as a teleport. Both read as a snap/stutter right as
+            // movement resumes. A gap this large only happens on sleep/
+            // wake (or a reconnect); treat it as a resync — reseed exactly
+            // like the very first packet — instead of reconciling it with
+            // what came before.
+            if (interval > RESYNC_GAP_THRESHOLD) {
+                snap_count = 0;
+                snap_head  = 0;
+                jitter_idx = 0;
+                jitter_count = 0;
+                adaptive_delay = BUFFER_DELAY;
+                snap_clock = BUFFER_DELAY;
+                jitter_last_arrival = snap_clock;
+                Snapshot& slot = snap_buf[snap_head];
+                slot.pos = pos;
+                slot.rot = rot;
+                slot.vel = vel;
+                slot.time = snap_clock - adaptive_delay;
+                snap_head = (snap_head + 1) % SNAPSHOT_COUNT;
+                snap_count = 1;
+                return;
+            }
             if (interval > 0.0f) {
                 jitter_intervals[jitter_idx] = interval;
                 jitter_idx = (jitter_idx + 1) % JITTER_WINDOW;
