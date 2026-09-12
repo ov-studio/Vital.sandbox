@@ -194,6 +194,7 @@ namespace Vital::Sandbox::API {
                 }
             }
             if (timed_out.empty()) return;
+            
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
             for (auto& promise : timed_out) {
