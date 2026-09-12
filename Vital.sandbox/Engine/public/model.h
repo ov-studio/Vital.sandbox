@@ -21,7 +21,7 @@
 // Vital: Engine: Model //
 ///////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 namespace Vital::Manager { class Network; }
 
 namespace Vital::Engine {

@@ -24,7 +24,7 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 
 namespace Vital::Engine { class ISyncable; }
 

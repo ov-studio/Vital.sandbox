@@ -29,7 +29,7 @@
 // Vital: Manager: Masterlist //
 /////////////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 namespace Vital::Manager {
     // Internal //
     void Masterlist::send_heartbeat() const {
@@ -85,6 +85,10 @@ namespace Vital::Manager {
 
 
     // Managers //
+    bool Masterlist::is_active() const {
+        return active;
+    }
+    
     void Masterlist::start(const Config::Server& config) {
         if (active) return;
         if (!config.get_masterlist_enabled()) return;
@@ -138,12 +142,6 @@ namespace Vital::Manager {
 
     void Masterlist::teardown() {
         stop();
-    }
-
-
-    // State //
-    bool Masterlist::is_active() const {
-        return active;
     }
 }
 #endif

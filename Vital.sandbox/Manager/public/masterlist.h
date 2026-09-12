@@ -23,7 +23,7 @@
 // Vital: Manager: Masterlist //
 /////////////////////////////////
 
-// TOOD: Improve
+// TODO: Improve
 namespace Vital::Manager {
     class Masterlist : public godot::Node, public Tool::Base<Masterlist> {
         friend class Tool::Base<Masterlist>;
