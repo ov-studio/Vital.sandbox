@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool);
             
-                const std::string category = vm -> get_string(1);
+                auto category = vm -> get_string(1);
                 bool streamed = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 vm -> create_table();
                 int count = 0;
@@ -118,12 +118,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // TODO: Verify if it works?
             API::bind(vm, base_scope, "get_entity_by_net_id", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(net_id)")
                     .require(1, &Machine::is_number);
 
-                int raw_net_id = vm -> get_int(1);
+                auto raw_net_id = vm -> get_int(1);
                 uint32_t net_id = raw_net_id > 0 ? (uint32_t)raw_net_id : 0;
                 Vital::Engine::ISyncable* syncable = (net_id != 0 && Manager::Network::has_singleton()) ? Manager::Network::get_singleton() -> find_syncable(net_id) : nullptr;
                 godot::Node3D* node = syncable ? dynamic_cast<godot::Node3D*>(syncable) : nullptr;
