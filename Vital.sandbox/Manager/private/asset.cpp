@@ -43,9 +43,6 @@ namespace Vital::Manager {
 
     Asset::~Asset() {
         clear();
-        #if !defined(VSDK_Client)
-        stop_http_server();
-        #endif
     }
 
 
