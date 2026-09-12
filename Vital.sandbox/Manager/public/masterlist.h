@@ -28,11 +28,11 @@ namespace Vital::Manager {
         public:
             static constexpr const char* Name = "Masterlist.manager";
         private:
-            const Config::Server* server_config = nullptr;
-            Tool::Timer* timer = nullptr;
             bool active = false;
-            std::mutex debounce_mutex;
+            const Config::Server* server_config = nullptr;
+            Tool::Timer* heartbeat_timer = nullptr;
             Tool::Timer* debounce_timer = nullptr;
+            std::mutex debounce_mutex;
 
 
             // Instantiators //
@@ -43,8 +43,6 @@ namespace Vital::Manager {
             // Helpers //
             void send_heartbeat() const;
             void send_offline() const;
-            static int get_interval_seconds();
-            static int get_debounce_seconds();
         public:
             // Managers //
             bool is_active() const;
