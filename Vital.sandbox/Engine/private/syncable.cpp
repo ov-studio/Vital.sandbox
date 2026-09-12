@@ -395,7 +395,7 @@ namespace Vital::Engine {
         godot::Node3D* self_node = get_sync_node();
         if (!self_node) return;
 
-        core->when_parent_ready(self_node, parent_node,
+        core->execute_when_ready(self_node, parent_node,
             [](godot::Node3D* self_n, godot::Node* parent) {
                 if (auto* syncable = dynamic_cast<ISyncable*>(self_n))
                     syncable->apply_parent(parent);

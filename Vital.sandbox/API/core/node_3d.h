@@ -338,13 +338,13 @@ namespace Vital::Sandbox::API {
         //      the binding simply does not exist in the client VM for server-owned
         //      models; any attempt produces a nil-method error naturally.
 
-        // Thin wrapper around Core::when_parent_ready() for the raw (non-Model)
+        // Thin wrapper around Core::execute_when_ready() for the raw (non-Model)
         // reparent calls below — physics bodies today, any future node type
         // that funnels through this generic binding. The actual defer/retry
         // logic lives once, in Engine::Core, shared with Model::set_parent().
         static void reparent_safe(Vital::Engine::Core* core, godot::Node3D* node, godot::Node* target) {
             if (!core || !node) return;
-            core -> when_parent_ready(node, target, [](godot::Node3D* n, godot::Node* t) {
+            core -> execute_when_ready(node, target, [](godot::Node3D* n, godot::Node* t) {
                 if (n -> get_parent() != t) n -> reparent(t, true);
             });
         }

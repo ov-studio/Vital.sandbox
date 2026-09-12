@@ -163,8 +163,7 @@ namespace Vital::Engine {
     }
     #endif
 
-    // TODO: Improve
-    void Core::when_parent_ready(godot::Node3D* node, godot::Node* target,
+    void Core::execute_when_ready(godot::Node3D* node, godot::Node* target,
                                   std::function<void(godot::Node3D*, godot::Node*)> fn) {
         if (!node) return;
         if (node -> is_inside_tree() && (!target || target -> is_inside_tree())) {
@@ -184,7 +183,7 @@ namespace Vital::Engine {
             // tick) — re-enter through the same guard rather than assuming
             // one deferral is always enough.
             auto* core = Core::get_singleton();
-            if (core) core -> when_parent_ready(n, t, fn);
+            if (core) core -> execute_when_ready(n, t, fn);
         });
     }
 

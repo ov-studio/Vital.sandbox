@@ -167,7 +167,7 @@ namespace Vital::Engine {
             #if !defined(VSDK_Client)
             // Actual reparent + sync-baseline-reset + _reparent_entity broadcast,
             // factored out of set_parent() so it can be handed to
-            // Core::when_parent_ready() as a plain callback and only ever run
+            // Core::execute_when_ready() as a plain callback and only ever run
             // once both this entity and the requested parent are confirmed to
             // be inside the scene tree. `parent_node` is nullable (detach).
             void apply_parent(godot::Node* parent_node);
