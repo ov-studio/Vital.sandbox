@@ -437,6 +437,10 @@ namespace Vital::Engine {
         add_child(instance);
         find_node(this, skeleton);
         find_node(this, anim_player);
+        // Build blend tree if layer state was grown from late-join anim RPCs
+        // while we were still a placeholder.
+        if (anim_player && (!anim_tree || blend_tree.is_null()) && !anim_layers.empty())
+            ensure_animation_layer(std::max(0, (int)anim_layers.size() - 1));
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
@@ -839,31 +843,27 @@ namespace Vital::Engine {
                 " (soft max ", ANIM_LAYER_SOFT_MAX, ")");
             return false;
         }
-        if ((int)anim_layers.size() > layer) return true;
+        const bool need_grow = (int)anim_layers.size() <= layer;
+        if (need_grow) {
+            const int old_count = (int)anim_layers.size();
+            anim_layers.resize(layer + 1);
+            // Layer 0 defaults to full weight once it exists.
+            if (old_count == 0 && !anim_layers.empty()) {
+                anim_layers[0].weight = 1.0f;
+                anim_layers[0].weight_target = 1.0f;
+            }
+        }
+        // Placeholder / pre-hydrate: layer slots may grow, tree builds later.
+        if (!anim_player) return true;
 
-        const int old_count = (int)anim_layers.size();
-        anim_layers.resize(layer + 1);
-        // Layer 0 defaults to full weight once it exists.
-        if (old_count == 0 && !anim_layers.empty()) {
-            anim_layers[0].weight = 1.0f;
-            anim_layers[0].weight_target = 1.0f;
-        }
-        // Tree must be rebuilt so new blend_N / anim_N nodes exist.
-        if (anim_tree) {
-            // Force rebuild: drop the old graph root and reconstruct for new size.
-            blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
-            anim_tree->set_tree_root(blend_tree);
-            // Mark tree inactive so build path can fill nodes; we'll reactivate.
-            anim_tree->set_active(false);
-            // Clear anim_tree pointer trick won't work — call internal rebuild.
-            // build_animation_tree assumes "if (anim_tree) return" — temporarily
-            // use a dedicated rebuild path below by zeroing the early-out.
-        }
-        // Always (re)build so capacity matches anim_layers.size().
+        // Late-join path: layer state was sized while placeholder (anim_player
+        // null), then hydrate set anim_player. Previous code returned early
+        // because size > layer and never built anim_tree/blend_tree → null
+        // deref in apply_play_animation_layer (second client crash).
+        if (!need_grow && anim_tree && blend_tree.is_valid()) return true;
+
+        // (Re)build graph when grown or tree missing after hydrate.
         {
-            // Inline rebuild without early-out when anim_tree already exists.
-            // Placeholder: grow layer state; tree builds after hydrate.
-            if (!anim_player) return true;
             auto* player = anim_player;
             if (!anim_tree) {
                 anim_tree = memnew(godot::AnimationTree);
@@ -976,6 +976,12 @@ namespace Vital::Engine {
             return false;
         }
         build_animation_tree();
+        if (!anim_tree || blend_tree.is_null()) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_play_animation_layer — anim tree not ready on '",
+                Tool::to_godot_string(model_name), "'");
+            return false;
+        }
 
         godot::Ref<godot::Animation> animation = player->get_animation(Tool::to_godot_string(name));
         if (animation.is_valid())
