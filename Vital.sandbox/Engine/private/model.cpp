@@ -886,8 +886,21 @@ namespace Vital::Engine {
                 // Restore assigned clip if any.
                 if (!anim_layers[i].current_anim.empty())
                     anim_node->set_animation(Tool::to_godot_string(anim_layers[i].current_anim));
-                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", i)),
-                    anim_layers[i].speed > 0.0f ? anim_layers[i].speed : 1.0f);
+
+                // Restore direction + magnitude. A negative stored speed used
+                // to get silently reset to 1.0 (forward) here whenever the
+                // tree was rebuilt (e.g. the first time a higher layer index
+                // came into use) — a layer that was mid-reverse would snap
+                // back to forward with no warning. Direction now lives on
+                // play_mode; TimeScale only ever gets a non-negative
+                // magnitude, defaulting a truly-unset (zero) speed to 1.0.
+                float restored_speed = anim_layers[i].speed;
+                float restored_mag = restored_speed < 0.0f ? -restored_speed : restored_speed;
+                if (restored_mag < 0.0001f) restored_mag = 1.0f;
+                anim_node->set_play_mode(restored_speed < 0.0f
+                    ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD
+                    : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", i)), restored_mag);
             }
 
             godot::String chain = Tool::to_godot_string("scale_0");
@@ -989,6 +1002,23 @@ namespace Vital::Engine {
 
         godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
         bool is_one_shot_retrigger = !loop && layer > 0;
+
+        // Direction now lives on AnimationNodeAnimation::play_mode rather
+        // than on the sign of the TimeScale scale. PLAY_MODE_BACKWARD walks
+        // the clip from its *end* toward frame 0 as the node's internal
+        // clock advances from 0 — so a reversed one-shot (e.g. "wave" played
+        // back-to-front) starts at the clip's last frame immediately, no
+        // manual seek-to-end required. A negative TimeScale alone can't do
+        // this: a one-shot node's internal position starts at 0, and a
+        // negative delta from there just clamps at 0 and freezes. (Looping
+        // clips don't have this problem since they wrap, but play_mode
+        // handles both cases uniformly.) TimeScale itself always gets a
+        // non-negative magnitude now; play_mode carries the sign.
+        float speed_mag = speed < 0.0f ? -speed : speed;
+        auto play_mode = speed < 0.0f
+            ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD
+            : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD;
+
         if (is_one_shot_retrigger) {
             // AnimationNodeAnimation keeps its own internal playback clock
             // tied to its position in the tree — re-assigning the same clip
@@ -997,18 +1027,23 @@ namespace Vital::Engine {
             // frame forever, so pressing Q again did nothing visible even
             // though play_animation_layer() was firing correctly. Recreating
             // the node gives it a fresh playback state every time it's
-            // (re)triggered, so it always restarts from frame 0.
+            // (re)triggered, so it always restarts from frame 0 (or, in
+            // reverse, from the clip's last frame).
             blend_tree->remove_node(anim_key);
             godot::Ref<godot::AnimationNodeAnimation> fresh_node(memnew(godot::AnimationNodeAnimation));
             fresh_node->set_animation(Tool::to_godot_string(name));
+            fresh_node->set_play_mode(play_mode);
             blend_tree->add_node(anim_key, fresh_node);
             blend_tree->connect_node(Tool::to_godot_string(fmt::format("scale_{}", layer)), 0, anim_key);
         } else {
             auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(
                 blend_tree->get_node(anim_key).ptr());
-            if (anim_node) anim_node->set_animation(Tool::to_godot_string(name));
+            if (anim_node) {
+                anim_node->set_animation(Tool::to_godot_string(name));
+                anim_node->set_play_mode(play_mode);
+            }
         }
-        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
 
         auto& state = anim_layers[layer];
         state.current_anim = name;
@@ -1016,7 +1051,7 @@ namespace Vital::Engine {
         state.loop = loop;
         if (!loop && layer > 0 && animation.is_valid()) {
             float len = animation->get_length();
-            float spd = speed > 0.0001f ? speed : 1.0f;
+            float spd = speed_mag > 0.0001f ? speed_mag : 1.0f;
             state.one_shot = true;
             state.one_shot_remaining = len / spd;
         } else {
@@ -1071,9 +1106,23 @@ namespace Vital::Engine {
     }
 
     void Model::apply_set_animation_layer_speed(int layer, float speed) {
-        if (layer < 0 || layer >= (int)anim_layers.size() || !anim_tree) return;
+        if (layer < 0 || layer >= (int)anim_layers.size() || !anim_tree || blend_tree.is_null()) return;
         anim_layers[layer].speed = speed;
-        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed);
+
+        // Same direction-via-play_mode / magnitude-via-TimeScale split as
+        // apply_play_animation_layer, so flipping speed mid-playback (e.g.
+        // a movement direction change) reverses correctly even for a
+        // one-shot layer, not just a looping one.
+        float speed_mag = speed < 0.0f ? -speed : speed;
+        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
+        auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(
+            blend_tree->get_node(anim_key).ptr());
+        if (anim_node) {
+            anim_node->set_play_mode(speed < 0.0f
+                ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD
+                : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
+        }
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
     }
 
     // --- Network broadcast ---
