@@ -72,6 +72,7 @@ namespace Vital::Sandbox::API {
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
         inline static constexpr int remote_timeout_ms = 30000;
         inline static constexpr int remote_sweep_interval_ms = 5000;
+        inline static int dispatch_depth = 0;
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
         inline static std::unordered_map<uint32_t, PendingRemote> pending_remote;
@@ -81,9 +82,6 @@ namespace Vital::Sandbox::API {
         inline static std::mutex reply_callbacks_mutex;
         inline static std::unordered_map<std::string, std::vector<Tool::Stack>> pending_resource_remote;
         inline static std::mutex pending_resource_remote_mutex;
-        // Guards del_raw_reference calls inside clean() against refs that are
-        // currently live inside a fire_all / fire_one dispatch on the same thread.
-        inline static int dispatch_depth = 0;
 
         static void read_config(Machine* vm, int idx, Handler& handler) {
             if ((vm -> get_count() < idx) || !vm -> is_table(idx)) return;
@@ -286,8 +284,6 @@ namespace Vital::Sandbox::API {
 
         static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false) {
             std::vector<int> exhausted;
-            // Track active dispatch depth so clean() can detect when it must
-            // defer del_raw_reference instead of freeing a ref we still hold.
             ++dispatch_depth;
             for (auto& [ref, handler] : snapshot) {
                 auto promise = fire_one(vm, handler, args_ref, mode);
@@ -416,7 +412,6 @@ namespace Vital::Sandbox::API {
             uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
             auto sid = payload.get("sender_id");
             int reply_peer = (sid && sid -> is<double>()) ? static_cast<int>(sid -> as<double>()) : 0;
-
             std::vector<std::pair<int, Handler>> snapshot;
             {
                 std::lock_guard lock(buffer_mutex);
@@ -430,7 +425,6 @@ namespace Vital::Sandbox::API {
                 if (wants_reply) send_reply(serial, reply_peer);
                 return;
             }
-
             if (!wants_reply) {
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
                 vm -> del_raw_reference(args_ref);
