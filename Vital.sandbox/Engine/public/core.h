@@ -74,7 +74,7 @@ namespace Vital::Engine {
             void enqueue(std::function<void()> exec);
             void execute_when_ready(godot::Node3D* node, godot::Node* target, std::function<void(godot::Node3D*, godot::Node*)> exec);
             #if defined(VSDK_Benchmark)
-            void emit_native_event(const std::string& name, const Tool::Stack& payload);
+            void emit_native(const std::string& name, const Tool::Stack& payload);
             #endif
             void drain();
             void teardown();

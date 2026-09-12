@@ -624,7 +624,7 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 Tool::Stack payload = vm -> collect_args(2);
-                Vital::Engine::Core::get_singleton() -> emit_native_event(name, payload);
+                Vital::Engine::Core::get_singleton() -> emit_native(name, payload);
                 vm -> push_value(true);
                 return 1;
             });

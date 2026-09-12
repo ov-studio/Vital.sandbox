@@ -174,7 +174,7 @@ namespace Vital::Engine {
     }
     
     #if defined(VSDK_Benchmark)
-    void Core::emit_native_event(const std::string& name, const Tool::Stack& payload) {
+    void Core::emit_native(const std::string& name, const Tool::Stack& payload) {
         execute([this, name, payload]() {
             emit_signal("native_event", Tool::to_godot_string(name), payload.to_dict());
         });
