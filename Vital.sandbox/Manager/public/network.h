@@ -26,7 +26,9 @@
 
 // TODO: Improve
 
-namespace Vital::Engine { class ISyncable; }
+namespace Vital::Engine { 
+    class ISyncable; 
+}
 
 namespace Vital::Manager {
     class Network : public godot::Node, public Tool::Base<Network> {
