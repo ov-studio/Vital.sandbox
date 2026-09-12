@@ -208,8 +208,8 @@ namespace Vital::Engine {
     void Core::shutdown() {
         Tool::print("sbox", "Core: shutting down...");
         enqueue([this]() {
-            Tool::print("sbox", "Core: shut down successfully!");
             Engine::Console::get_singleton() -> teardown();
+            Tool::print("sbox", "Core: shut down successfully!");
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
         });
