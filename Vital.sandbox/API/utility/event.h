@@ -25,7 +25,6 @@
 // Vital: API: Event //
 ////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Event : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "event"};
