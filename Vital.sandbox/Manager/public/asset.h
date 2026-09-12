@@ -67,13 +67,13 @@ namespace Vital::Manager {
             std::unordered_map<std::string, AssetEntry> registered_assets;
 
 
-            // Helpers //
-            static std::string hash_file(const std::string& path);
-
-
             // Instantiators //
             Asset();
             ~Asset();
+
+            
+            // Helpers //
+            static std::string hash_file(const std::string& path);
         public:
             // Managers //
             void init();

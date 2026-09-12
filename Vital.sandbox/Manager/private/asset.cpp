@@ -23,15 +23,6 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    // Helpers //
-    std::string Asset::hash_file(const std::string& path) {
-        size_t last_sep = path.find_last_of("/\\");
-        std::string base = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
-        std::string file = (last_sep != std::string::npos) ? path.substr(last_sep + 1) : path;
-        return Tool::File::hash(base, file);
-    }
-
-
     // Instantiators //
     Asset::Asset() {
         #if !defined(VSDK_Client)
@@ -45,6 +36,15 @@ namespace Vital::Manager {
         clear();
     }
 
+
+    // Helpers //
+    std::string Asset::hash_file(const std::string& path) {
+        size_t last_sep = path.find_last_of("/\\");
+        std::string base = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
+        std::string file = (last_sep != std::string::npos) ? path.substr(last_sep + 1) : path;
+        return Tool::File::hash(base, file);
+    }
+    
 
     //----------------//
     //     APIs       //
