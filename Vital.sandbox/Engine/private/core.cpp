@@ -200,10 +200,7 @@ namespace Vital::Engine {
     void Core::teardown() {
         Manager::Resource::get_singleton() -> stop_all();
         #if !defined(VSDK_Client)
-        Manager::Network::get_singleton() -> close();
         Manager::Masterlist::free_singleton();
-        #else
-        Manager::Network::get_singleton() -> disconnect_from_server();
         #endif
         Manager::Network::free_singleton();
         Manager::Asset::free_singleton();
