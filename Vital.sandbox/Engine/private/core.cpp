@@ -198,6 +198,15 @@ namespace Vital::Engine {
     }
 
     void Core::teardown() {
+        Manager::Resource::get_singleton() -> stop_all();
+        #if !defined(VSDK_Client)
+        Manager::Masterlist::get_singleton() -> stop();
+        Manager::Network::get_singleton() -> close();
+        Manager::Masterlist::free_singleton();
+        #else
+        Manager::Network::get_singleton() -> disconnect_from_server();
+        #endif
+        Manager::Network::free_singleton();
         Manager::Asset::free_singleton();
         Engine::Model::teardown_spawner();
         #if defined(VSDK_Client)
@@ -209,17 +218,8 @@ namespace Vital::Engine {
 
     void Core::shutdown() {
         Tool::print("sbox", "Core: shutting down...");
-        #if defined(VSDK_Client)
-        Manager::Network::get_singleton() -> disconnect_from_server();
-        #else
-        Manager::Network::get_singleton() -> close();
-        #endif
-        Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
             Tool::print("sbox", "Core: shut down successfully!");
-            #if !defined(VSDK_Client)
-            Manager::Masterlist::get_singleton() -> stop();
-            #endif
             Engine::Console::get_singleton() -> teardown();
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();

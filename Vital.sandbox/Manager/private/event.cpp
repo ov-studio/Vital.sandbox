@@ -30,20 +30,6 @@
 static Vital::Config::Server g_server_config;
 #endif
 
-// TODO: Move to core.cpp and wire based on core:free and make core:free mb when shutting down b4 timer? since calling instantly doesnt give enough time leaves things dirty
-void shutdown() {
-    #if !defined(VSDK_Client)
-    Vital::Manager::Masterlist::get_singleton() -> stop();
-    Vital::Manager::Masterlist::free_singleton();
-    Vital::Manager::Network::get_singleton() -> close();
-    #endif
-    #if defined(VSDK_Client)
-    Vital::Manager::Network::get_singleton() -> disconnect_from_server();
-    #endif
-    Vital::Manager::Network::free_singleton();
-    Vital::Manager::Asset::free_singleton();
-}
-
 void setup() {
     auto nm = Vital::Manager::Network::get_singleton();
 
@@ -114,7 +100,9 @@ void vsdk_initialize() {
         Vital::Engine::Console::free_singleton();
         Vital::Manager::Sandbox::free_singleton();
         Vital::Manager::Resource::free_singleton();
-        shutdown();
+        // Network/Masterlist/Asset teardown now lives in Core::teardown() itself
+        // (Engine/private/core.cpp), which runs *before* this "core:free" event
+        // even fires — see the comment there for why it moved.
     });
 
 
