@@ -167,7 +167,7 @@ namespace Vital::Manager {
             // (unlike cleanup_remote_bodies(), which deliberately skips locally-
             // authoritative ones on the assumption something else — e.g. the
             // owning resource — handles those). Used for a full session reset
-            // (see Engine::Core::session_end()), where nothing should survive
+            // (see Engine::Core::reset()), where nothing should survive
             // regardless of who owned it: the next server's fresh net_id
             // numbering has no relationship to this session's entities, so a
             // locally-owned leftover would be exactly the kind of duplicate/ghost

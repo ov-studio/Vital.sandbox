@@ -191,32 +191,8 @@ namespace Vital::Engine {
         for (auto& exec : local) exec();
     }
     
-    void Core::teardown() {
-        Manager::Resource::get_singleton() -> stop_all();
-        #if !defined(VSDK_Client)
-        Manager::Masterlist::free_singleton();
-        #endif
-        Manager::Network::free_singleton();
-        Manager::Asset::free_singleton();
-        Engine::Model::teardown_spawner();
-        #if defined(VSDK_Client)
-        free_environment();
-        #endif
-        Tool::Event::emit("core:teardown");
-    }
-
-    void Core::shutdown() {
-        Tool::print("sbox", "Core: shutting down...");
-        enqueue([this]() {
-            Engine::Console::get_singleton() -> teardown();
-            Tool::print("sbox", "Core: shut down successfully!");
-            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-            free_singleton();
-        });
-    }
-
     // TODO: Improve
-    void Core::session_end() {
+    void Core::reset() {
         Tool::print("sbox", "Core: ending session...");
 
         // Stops every running resource. Each one's own Internal::stop() already
@@ -251,7 +227,31 @@ namespace Vital::Engine {
         // registered event handlers, nothing at all surviving from this session.
         enqueue([]() {
             Manager::Sandbox::free_singleton();
-            Tool::Event::emit("core:session:end");
+            Tool::Event::emit("core:reset");
+        });
+    }
+
+    void Core::teardown() {
+        Manager::Resource::get_singleton() -> stop_all();
+        #if !defined(VSDK_Client)
+        Manager::Masterlist::free_singleton();
+        #endif
+        Manager::Network::free_singleton();
+        Manager::Asset::free_singleton();
+        Engine::Model::teardown_spawner();
+        #if defined(VSDK_Client)
+        free_environment();
+        #endif
+        Tool::Event::emit("core:teardown");
+    }
+
+    void Core::shutdown() {
+        Tool::print("sbox", "Core: shutting down...");
+        enqueue([this]() {
+            Engine::Console::get_singleton() -> teardown();
+            Tool::print("sbox", "Core: shut down successfully!");
+            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+            free_singleton();
         });
     }
 
