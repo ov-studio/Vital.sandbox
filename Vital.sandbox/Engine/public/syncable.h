@@ -29,52 +29,32 @@ namespace Vital::Engine {
         friend class Network;
         friend class Model;
         public:
-            // Delta compression constants //
             static constexpr int   SYNC_PACKET_MAX     = 54;     // max bytes per delta entry (pos+rot+vel+scale)
             static constexpr float DELTA_POS_THRESHOLD = 0.001f; // metres
             static constexpr float DELTA_ROT_THRESHOLD = 0.05f;  // degrees
             static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
+            static constexpr int   SYNC_RATE           = 60;     // default sync rate in Hz
+            static constexpr int   SNAPSHOT_COUNT      = 32;     // ~530ms of history at 60Hz — headroom above BUFFER_DELAY_MAX so a big adaptive buffer still has real snapshots behind it.
+            static constexpr float BUFFER_DELAY        = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
+            static constexpr float SNAP_THRESHOLD      = 5.0f;   // units — teleport if gap exceeds this
+            static constexpr float VEL_THRESHOLD       = 0.05f;  // units/sec — "moving" cutoff
+            static constexpr float BUFFER_DELAY_MIN    = 0.033f; // floor — keeps real bracketing snapshot; must stay >= interp_step (1/sync_rate) or the renderer falls into the extrapolation branch on every tick.
+            static constexpr float BUFFER_DELAY_MAX    = 0.30f;  // default ceiling (300ms) — overridable
+            static constexpr float JITTER_MARGIN       = 1.5f;   // default stddev multiplier — overridable
+            static constexpr int   JITTER_WINDOW       = 16;     // more samples for stable estimate
 
-            // Snapshot buffer constants //
-            static constexpr int   SYNC_RATE        = 60;    // default sync rate in Hz
-            static constexpr int   SNAPSHOT_COUNT   = 32;    // ~530ms of history at 60Hz —
-                                                              // headroom above BUFFER_DELAY_MAX
-                                                              // so a big adaptive buffer still
-                                                              // has real snapshots behind it.
-
-            // Compile-time defaults — the adaptive system converges away from these
-            // within ~5 packets (0.2 EMA). Server operators override the three
-            // tuneable values below via config.yaml (sync section); see Config::Server.
-            static constexpr float BUFFER_DELAY     = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
-            static constexpr float SNAP_THRESHOLD   = 5.0f;   // units — teleport if gap exceeds this
-            static constexpr float VEL_THRESHOLD    = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float BUFFER_DELAY_MIN = 0.033f; // floor — keeps real bracketing snapshot;
-                                                               // must stay >= interp_step (1/sync_rate)
-                                                               // or the renderer falls into the
-                                                               // extrapolation branch on every tick.
-            static constexpr float BUFFER_DELAY_MAX = 0.30f;  // default ceiling (300ms) — overridable
-            static constexpr float JITTER_MARGIN    = 1.5f;   // default stddev multiplier — overridable
-            static constexpr int   JITTER_WINDOW    = 16;     // more samples for stable estimate
-
-            struct SyncConfig {
-                int   rate             = SYNC_RATE;
-                float buffer_delay_max = BUFFER_DELAY_MAX;
-                float jitter_margin    = JITTER_MARGIN;
-                float snap_threshold   = SNAP_THRESHOLD;
-            };
-            // Written directly by Manager::Network on host()/connect (avoids a circular
-            // include between Engine/syncable.cpp and Manager/network.h). Defaults to
-            // the compile-time values above, so it's always safe to read.
-            static inline SyncConfig sync_config;
-
-
-            // Type //
-            // Identifies the concrete type for spawn/destroy RPCs so the
-            // network layer can instantiate the right class on receivers.
             enum class SyncType : uint8_t {
-                Model       = 0,
+                Model = 0,
                 PhysicsBody = 1
             };
+            
+            struct SyncConfig {
+                int rate = SYNC_RATE;
+                float buffer_delay_max = BUFFER_DELAY_MAX;
+                float jitter_margin = JITTER_MARGIN;
+                float snap_threshold= SNAP_THRESHOLD;
+            };
+            static inline SyncConfig sync_config;
         private:
             struct Internal {
                 static constexpr uint16_t MASK_PX = 1 << 0;
