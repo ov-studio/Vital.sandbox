@@ -88,7 +88,7 @@ namespace Vital::Manager {
     bool Masterlist::is_active() const {
         return active;
     }
-    
+
     void Masterlist::start(const Config::Server& config) {
         if (active) return;
         if (!config.get_masterlist_enabled()) return;
@@ -105,21 +105,6 @@ namespace Vital::Manager {
             Engine::Core::get_singleton() -> execute([this]() { send_heartbeat(); });
         }, interval_s * 1000, 0);
         log("sbox", fmt::format("reporting to masterlist every {}s", interval_s));
-    }
-
-    void Masterlist::refresh() {
-        if (!active) return;
-        std::lock_guard<std::mutex> lock(debounce_mutex);
-        if (debounce_timer) return;
-
-        const int debounce_ms = get_debounce_seconds() * 1000;
-        debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
-            Engine::Core::get_singleton() -> execute([this]() {
-                send_heartbeat();
-                std::lock_guard<std::mutex> inner_lock(debounce_mutex);
-                debounce_timer = nullptr;
-            });
-        }, debounce_ms, 1);
     }
 
     void Masterlist::stop() {
@@ -142,6 +127,21 @@ namespace Vital::Manager {
 
     void Masterlist::teardown() {
         stop();
+    }
+
+    void Masterlist::refresh() {
+        if (!active) return;
+        std::lock_guard<std::mutex> lock(debounce_mutex);
+        if (debounce_timer) return;
+
+        const int debounce_ms = get_debounce_seconds() * 1000;
+        debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
+            Engine::Core::get_singleton() -> execute([this]() {
+                send_heartbeat();
+                std::lock_guard<std::mutex> inner_lock(debounce_mutex);
+                debounce_timer = nullptr;
+            });
+        }, debounce_ms, 1);
     }
 }
 #endif
