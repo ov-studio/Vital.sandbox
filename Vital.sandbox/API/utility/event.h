@@ -81,6 +81,9 @@ namespace Vital::Sandbox::API {
         inline static std::mutex reply_callbacks_mutex;
         inline static std::unordered_map<std::string, std::vector<Tool::Stack>> pending_resource_remote;
         inline static std::mutex pending_resource_remote_mutex;
+        // Guards del_raw_reference calls inside clean() against refs that are
+        // currently live inside a fire_all / fire_one dispatch on the same thread.
+        inline static int dispatch_depth = 0;
 
         static void read_config(Machine* vm, int idx, Handler& handler) {
             if ((vm -> get_count() < idx) || !vm -> is_table(idx)) return;
@@ -283,12 +286,16 @@ namespace Vital::Sandbox::API {
 
         static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false) {
             std::vector<int> exhausted;
+            // Track active dispatch depth so clean() can detect when it must
+            // defer del_raw_reference instead of freeing a ref we still hold.
+            ++dispatch_depth;
             for (auto& [ref, handler] : snapshot) {
                 auto promise = fire_one(vm, handler, args_ref, mode);
                 if (promise && promises) promises -> push_back(promise);
                 if (handler.subscription_limit > 0) bump_subscription(name, ref, exhausted);
                 if (mode == FireMode::EmitCallback && !collect_all) break;
             }
+            --dispatch_depth;
             sweep_exhausted(vm, name, exhausted);
         }
 
@@ -658,21 +665,48 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
+            // Guard: the Sandbox singleton may have been freed during session_end
+            // (client disconnect) before env cleaners run for the last resources.
+            if (!Manager::Sandbox::has_singleton()) return;
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            std::lock_guard lock(buffer_mutex);
-            for (auto eit = buffer.begin(); eit != buffer.end(); ) {
-                auto& vec = eit -> second.handlers;
-                for (auto vit = vec.begin(); vit != vec.end(); ) {
-                    if (vit -> second.env == env) {
-                        vm -> del_raw_reference(vit -> second.exec_ref);
-                        vit = vec.erase(vit);
+            // Collect refs to delete and handlers to erase without holding
+            // buffer_mutex across del_raw_reference, which could re-enter or
+            // race with an active fire_all snapshot on this same thread.
+            std::vector<int> refs_to_delete;
+            {
+                std::lock_guard lock(buffer_mutex);
+                for (auto eit = buffer.begin(); eit != buffer.end(); ) {
+                    auto& vec = eit -> second.handlers;
+                    for (auto vit = vec.begin(); vit != vec.end(); ) {
+                        if (vit -> second.env == env) {
+                            refs_to_delete.push_back(vit -> second.exec_ref);
+                            vit = vec.erase(vit);
+                        }
+                        else ++vit;
                     }
-                    else ++vit;
+                    if (vec.empty()) eit = buffer.erase(eit);
+                    else ++eit;
                 }
-                if (vec.empty()) eit = buffer.erase(eit);
-                else ++eit;
+            }
+
+            if (refs_to_delete.empty()) return;
+
+            // If we are inside an active fire_all dispatch, the snapshot on the
+            // call stack still holds the same exec_ref values. Freeing them now
+            // would cause lua_rawgeti to read freed registry slots (the crash).
+            // Defer deletion to the next engine tick via the work queue instead.
+            if (dispatch_depth > 0) {
+                Machine::enqueue([refs_to_delete]() {
+                    if (!Manager::Sandbox::has_singleton()) return;
+                    auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    for (int ref : refs_to_delete) vm -> del_raw_reference(ref);
+                });
+            }
+            else {
+                for (int ref : refs_to_delete) vm -> del_raw_reference(ref);
             }
         }
     };
