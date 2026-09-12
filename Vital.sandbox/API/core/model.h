@@ -72,16 +72,34 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm);
 
-            base_class::on_spawned_callback = [vm](base_class* spawned, bool remote) {
+            base_class::on_spawned_callback = [](base_class* spawned, bool remote) {
+                if (!spawned) return;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, instance] : registry.buffer) {
                         if (instance -> model == spawned) return;
                     }
                 }
-                auto instance = Instance::init(nullptr, remote);
-                instance -> model = spawned;
-                instance -> store();
+                // Defer Lua registry + entity:created out of the network RPC stack.
+                // Rapid resource restart floods _spawn_entity while scripts start/stop;
+                // synchronous store() → signal → Lua pcall re-enters a dirty VM and
+                // corrupts the Lua heap (luaM_free / growstack crashes).
+                const godot::ObjectID oid(spawned -> get_instance_id());
+                Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
+                    godot::Object* obj = godot::ObjectDB::get_instance(oid);
+                    if (!obj) return;
+                    auto* model = godot::Object::cast_to<base_class>(obj);
+                    if (!model) return;
+                    {
+                        std::lock_guard<std::mutex> lock(registry.mutex);
+                        for (auto& [id, instance] : registry.buffer) {
+                            if (instance -> model == model) return;
+                        }
+                    }
+                    auto instance = Instance::init(nullptr, remote);
+                    instance -> model = model;
+                    instance -> store();
+                });
             };
 
             base_class::on_destroyed_callback = [](base_class* dying) {
