@@ -163,10 +163,6 @@ namespace Vital::Tool {
             return array.empty() && object.empty();
         }
 
-        bool is_packet(const std::string& type) const {
-            return object.count("event") && object.at("event").as<std::string>() == type;
-        }
-        
         bool has(const std::string& key) const {
             return object.find(key) != object.end();
         }
@@ -187,14 +183,20 @@ namespace Vital::Tool {
         }
 
 
-        // Converters //
+        // Packet //
+        bool is_packet(const std::string& type) const {
+            return object.count("packet") && object.at("packet").as<std::string>() == type;
+        }
+
         static Stack make_packet(const std::string& type, std::vector<StackValue> args = {}) {
             Stack packet;
-            packet.object["event"] = StackValue(type);
+            packet.object["packet"] = StackValue(type);
             for (auto& a : args) packet.array.push_back(std::move(a));
             return packet;
         }
-        
+
+
+        // Converters //
         godot::Dictionary to_dict() const {
             godot::Dictionary dict;
             godot::Array arr;
