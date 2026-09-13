@@ -234,14 +234,12 @@ namespace Vital::Manager {
             });
         #else
             Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
-            {
-                // TODO: Maybe a helper class packet.cpp/h or something similar to split network into better structured fragments or maybe a member function etc inside Network idk and making it easier to emit events
-                Tool::Stack notify;
-                notify.object["event"] = Tool::StackValue(std::string("system"));
-                notify.array.push_back(Tool::StackValue(std::string("resource:ready")));
-                notify.array.push_back(Tool::StackValue(name));
-                Manager::Network::get_singleton() -> send_to_server(notify);
-            }
+            Manager::Network::get_singleton() -> send_to_server(
+                Tool::Stack::make_packet("system", { 
+                    Tool::StackValue(std::string("resource:ready")), 
+                    Tool::StackValue(name) 
+                })
+            );
         #endif
     }
 
@@ -403,8 +401,7 @@ namespace Vital::Manager {
     }
 
     Tool::Stack Resource::Internal::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) {
-        Tool::Stack packet;
-        packet.object["event"] = Tool::StackValue(event);
+        Tool::Stack packet = Tool::Stack::make_packet(event);
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
             // Caller must hold the resource mutex (or otherwise guarantee the
@@ -839,10 +836,9 @@ namespace Vital::Manager {
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
-                if (!arguments.object.count("event") || !arguments.object.count("name")) return;
-                const std::string event = arguments.object.at("event").as<std::string>();
+                if (!arguments.has("name")) return;
                 const std::string name = arguments.object.at("name").as<std::string>();
-                if (event == "resource:started") {
+                if (arguments.is_packet("resource:started")) {
                     auto rm = Resource::get_singleton();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
@@ -857,7 +853,7 @@ namespace Vital::Manager {
                     }
                     if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() { Internal::register_resource(name, scripts, files, models, dependencies); });
                 }
-                else if (event == "resource:stopped") {
+                else if (arguments.is_packet("resource:stopped")) {
                     auto rm = Resource::get_singleton();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });

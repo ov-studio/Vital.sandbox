@@ -57,9 +57,7 @@ namespace Vital::Manager {
         
         #if defined(VSDK_Client)
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
-                if (!arguments.object.count("event")) return;
-                const std::string event = arguments.object.at("event").as<std::string>();
-                if (event != "asset:manifest") return;
+                if (!arguments.is_packet("asset:manifest")) return;
                 receive_manifest(arguments);
             });
         #endif
@@ -244,8 +242,7 @@ namespace Vital::Manager {
     
         if (registered_assets.empty()) return;
         for (int pid : all_peers) {
-            Tool::Stack msg;
-            msg.object["event"] = Tool::StackValue(std::string("asset:manifest"));
+            Tool::Stack msg = Tool::Stack::make_packet("asset:manifest");
             msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
             msg.object["http_port"] = Tool::StackValue((int32_t)http_server.get_port());
             int i = 0;

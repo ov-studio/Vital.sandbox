@@ -509,7 +509,7 @@ namespace Vital::Manager {
         // after connected_to_server fires (via poll()'s pending_handshake path).
         // We defer network:peer:join until this ping arrives so Lua scripts never see
         // a peer that isn't ready to receive resource and sync data yet.
-        if (stack.object.count("event") && stack.object.at("event").as<std::string>() == "system") {
+        if (stack.is_packet("system")) {
             if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
@@ -1261,10 +1261,9 @@ namespace Vital::Manager {
         if (pending_handshake && is_connected()) {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-            Tool::Stack msg;
-            msg.array.push_back(Tool::StackValue(std::string("ping")));
-            msg.object["event"] = Tool::StackValue(std::string("system"));
-            send_to_server(msg);
+            send_to_server(Tool::Stack::make_packet("system", { 
+                Tool::StackValue(std::string("ping")) 
+            }));
         }
         #endif
 
