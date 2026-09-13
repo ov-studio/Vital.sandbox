@@ -86,6 +86,7 @@ namespace Vital::Engine {
             inline static uint32_t next_net_id = 1;
             int sync_authority = 1; // 1 = server, N = client N
             uint32_t net_id = 0;
+            uint32_t sync_parent_net_id = 0;
             bool sync_registered = false;
             bool sync_sleeping = false;
             float sync_accum = 0.0f;
@@ -93,15 +94,6 @@ namespace Vital::Engine {
             godot::Vector3 sync_last_rot;
             godot::Vector3 sync_last_vel;
             godot::Vector3 sync_last_scale = godot::Vector3(1, 1, 1);
-
-            // When non-zero, this entity is parented under another synced entity.
-            // All transforms sent and received are LOCAL (relative to parent) rather
-            // than global.  The child goes to sleep on its own when its local offset
-            // is stable — even if the parent is carrying it around — so we never pay
-            // for positions that haven't changed in the parent's frame.
-            // Set by Model::set_parent() on the server and by _reparent_entity on
-            // clients.  Reset to 0 on detach.
-            uint32_t sync_parent_net_id = 0;
 
             struct Snapshot {
                 godot::Vector3 pos;
