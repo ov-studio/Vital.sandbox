@@ -43,180 +43,100 @@ namespace Vital::Sandbox::API {
     struct Physics_Body_Spawn : vm_module {
         inline static const std::vector<std::string> base_scope = {};
 
+        // -----------------------------------------------------------------------
+        // spawn_body<API_Type, Engine_Type>
+        //
+        // Defers the Lua Instance::store() / entity:created signal out of the
+        // _spawn_entity RPC handler to avoid nesting a Lua pcall inside network
+        // RPC handling (which corrupts the VM heap under rapid resource restart).
+        //
+        // Idempotent: bails early if an Instance already owns this engine node
+        // (prevents double-registration on the same object).
+        // -----------------------------------------------------------------------
+        template<typename API_Type, typename Engine_Type>
+        static void spawn_body(godot::ObjectID oid, bool remote) {
+            Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
+                godot::Object* obj = godot::ObjectDB::get_instance(oid);
+                if (!obj) return;
+                auto* typed = godot::Object::cast_to<Engine_Type>(obj);
+                if (!typed) return;
+                {
+                    std::lock_guard<std::mutex> lock(API_Type::registry.mutex);
+                    for (auto& [id, inst] : API_Type::registry.buffer)
+                        if (inst->body == typed) return;
+                }
+                auto instance = API_Type::Instance::init(nullptr, remote);
+                instance->body = typed;
+                instance->store(false);
+            });
+        }
+
+        // -----------------------------------------------------------------------
+        // destroy_body<API_Type, Engine_Type>
+        //
+        // Walks the registry under its lock, finds every Instance whose body
+        // pointer matches the dying engine node, erases it (emitting
+        // entity:destroyed), then schedules a Core::execute() to null the pointer
+        // and release Lua references off the physics thread.
+        // -----------------------------------------------------------------------
+        template<typename API_Type, typename Engine_Type>
+        static void destroy_body(Vital::Engine::ISyncable* entity) {
+            auto* typed = static_cast<Engine_Type*>(entity);
+            std::lock_guard<std::mutex> lock(API_Type::registry.mutex);
+            for (auto it = API_Type::registry.buffer.begin(); it != API_Type::registry.buffer.end();) {
+                auto& instance = it->second;
+                if (instance->body != typed) { ++it; continue; }
+                ++it;
+                API_Type::Instance::erase_unlocked(instance);
+                Vital::Engine::Core::get_singleton()->execute([instance]() {
+                    instance->body = nullptr;
+                    API_Type::Instance::release(instance);
+                });
+            }
+        }
+
         static void bind(Machine* vm) {
             Vital::Engine::on_spawned_callback = [](Vital::Engine::ISyncable* entity, Vital::Engine::PhysicsType sub_type, bool remote) {
                 if (!entity) return;
-                // Defer Lua Instance::store / entity:created out of _spawn_entity.
-                // Synchronous store during rapid resource restart nests Lua pcall
-                // inside network RPC handling and corrupts the VM heap.
-                godot::ObjectID oid;
+                // Capture by ObjectID — raw `this` would be dangling if the body is
+                // queue_free()'d before the deferred enqueue drains.
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
-                        oid = godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()); break;
+                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(
+                            godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()), remote);
+                        break;
                     case Vital::Engine::PhysicsType::Static:
-                        oid = godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity)->get_instance_id()); break;
+                        spawn_body<Static_Body, Vital::Engine::Static_Body>(
+                            godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity)->get_instance_id()), remote);
+                        break;
                     case Vital::Engine::PhysicsType::Character:
-                        oid = godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity)->get_instance_id()); break;
+                        spawn_body<Character_Body, Vital::Engine::Character_Body>(
+                            godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity)->get_instance_id()), remote);
+                        break;
                     case Vital::Engine::PhysicsType::Animatable:
-                        oid = godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity)->get_instance_id()); break;
+                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(
+                            godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity)->get_instance_id()), remote);
+                        break;
                     case Vital::Engine::PhysicsType::Vehicle:
-                        oid = godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity)->get_instance_id()); break;
-                    default: return;
+                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(
+                            godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity)->get_instance_id()), remote);
+                        break;
+                    default: break;
                 }
-                Vital::Engine::Core::get_singleton()->enqueue([oid, sub_type, remote]() {
-                    godot::Object* obj = godot::ObjectDB::get_instance(oid);
-                    if (!obj) return;
-                    switch (sub_type) {
-                        case Vital::Engine::PhysicsType::Rigid: {
-                            auto* typed = godot::Object::cast_to<Vital::Engine::Rigid_Body>(obj);
-                            if (!typed) return;
-                            {
-                                std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
-                                for (auto& [id, inst] : Rigid_Body::registry.buffer)
-                                    if (inst->body == typed) return;
-                            }
-                            auto instance = Rigid_Body::Instance::init(nullptr, remote);
-                            instance->body = typed;
-                            instance->store(false);
-                            break;
-                        }
-                        case Vital::Engine::PhysicsType::Static: {
-                            auto* typed = godot::Object::cast_to<Vital::Engine::Static_Body>(obj);
-                            if (!typed) return;
-                            {
-                                std::lock_guard<std::mutex> lock(Static_Body::registry.mutex);
-                                for (auto& [id, inst] : Static_Body::registry.buffer)
-                                    if (inst->body == typed) return;
-                            }
-                            auto instance = Static_Body::Instance::init(nullptr, remote);
-                            instance->body = typed;
-                            instance->store(false);
-                            break;
-                        }
-                        case Vital::Engine::PhysicsType::Character: {
-                            auto* typed = godot::Object::cast_to<Vital::Engine::Character_Body>(obj);
-                            if (!typed) return;
-                            {
-                                std::lock_guard<std::mutex> lock(Character_Body::registry.mutex);
-                                for (auto& [id, inst] : Character_Body::registry.buffer)
-                                    if (inst->body == typed) return;
-                            }
-                            auto instance = Character_Body::Instance::init(nullptr, remote);
-                            instance->body = typed;
-                            instance->store(false);
-                            break;
-                        }
-                        case Vital::Engine::PhysicsType::Animatable: {
-                            auto* typed = godot::Object::cast_to<Vital::Engine::Animatable_Body>(obj);
-                            if (!typed) return;
-                            {
-                                std::lock_guard<std::mutex> lock(Animatable_Body::registry.mutex);
-                                for (auto& [id, inst] : Animatable_Body::registry.buffer)
-                                    if (inst->body == typed) return;
-                            }
-                            auto instance = Animatable_Body::Instance::init(nullptr, remote);
-                            instance->body = typed;
-                            instance->store(false);
-                            break;
-                        }
-                        case Vital::Engine::PhysicsType::Vehicle: {
-                            auto* typed = godot::Object::cast_to<Vital::Engine::Vehicle_Body>(obj);
-                            if (!typed) return;
-                            {
-                                std::lock_guard<std::mutex> lock(Vehicle_Body::registry.mutex);
-                                for (auto& [id, inst] : Vehicle_Body::registry.buffer)
-                                    if (inst->body == typed) return;
-                            }
-                            auto instance = Vehicle_Body::Instance::init(nullptr, remote);
-                            instance->body = typed;
-                            instance->store(false);
-                            break;
-                        }
-                        default: break;
-                    }
-                });
             };
 
-            Vital::Engine::on_destroyed_callback = [](
-                Vital::Engine::ISyncable* entity,
-                Vital::Engine::PhysicsType sub_type)
-            {
+            Vital::Engine::on_destroyed_callback = [](Vital::Engine::ISyncable* entity, Vital::Engine::PhysicsType sub_type) {
                 switch (sub_type) {
-                    case Vital::Engine::PhysicsType::Rigid: {
-                        auto* typed = static_cast<Vital::Engine::Rigid_Body*>(entity);
-                        std::lock_guard<std::mutex> lock(Rigid_Body::registry.mutex);
-                        for (auto it = Rigid_Body::registry.buffer.begin(); it != Rigid_Body::registry.buffer.end();) {
-                            auto& instance = it->second;
-                            if (instance->body != typed) { ++it; continue; }
-                            ++it;
-                            Rigid_Body::Instance::erase_unlocked(instance);
-                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                                instance->body = nullptr;
-                                Rigid_Body::Instance::release(instance);
-                            });
-                        }
-                        break;
-                    }
-                    case Vital::Engine::PhysicsType::Static: {
-                        auto* typed = static_cast<Vital::Engine::Static_Body*>(entity);
-                        std::lock_guard<std::mutex> lock(Static_Body::registry.mutex);
-                        for (auto it = Static_Body::registry.buffer.begin(); it != Static_Body::registry.buffer.end();) {
-                            auto& instance = it->second;
-                            if (instance->body != typed) { ++it; continue; }
-                            ++it;
-                            Static_Body::Instance::erase_unlocked(instance);
-                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                                instance->body = nullptr;
-                                Static_Body::Instance::release(instance);
-                            });
-                        }
-                        break;
-                    }
-                    case Vital::Engine::PhysicsType::Character: {
-                        auto* typed = static_cast<Vital::Engine::Character_Body*>(entity);
-                        std::lock_guard<std::mutex> lock(Character_Body::registry.mutex);
-                        for (auto it = Character_Body::registry.buffer.begin(); it != Character_Body::registry.buffer.end();) {
-                            auto& instance = it->second;
-                            if (instance->body != typed) { ++it; continue; }
-                            ++it;
-                            Character_Body::Instance::erase_unlocked(instance);
-                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                                instance->body = nullptr;
-                                Character_Body::Instance::release(instance);
-                            });
-                        }
-                        break;
-                    }
-                    case Vital::Engine::PhysicsType::Animatable: {
-                        auto* typed = static_cast<Vital::Engine::Animatable_Body*>(entity);
-                        std::lock_guard<std::mutex> lock(Animatable_Body::registry.mutex);
-                        for (auto it = Animatable_Body::registry.buffer.begin(); it != Animatable_Body::registry.buffer.end();) {
-                            auto& instance = it->second;
-                            if (instance->body != typed) { ++it; continue; }
-                            ++it;
-                            Animatable_Body::Instance::erase_unlocked(instance);
-                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                                instance->body = nullptr;
-                                Animatable_Body::Instance::release(instance);
-                            });
-                        }
-                        break;
-                    }
-                    case Vital::Engine::PhysicsType::Vehicle: {
-                        auto* typed = static_cast<Vital::Engine::Vehicle_Body*>(entity);
-                        std::lock_guard<std::mutex> lock(Vehicle_Body::registry.mutex);
-                        for (auto it = Vehicle_Body::registry.buffer.begin(); it != Vehicle_Body::registry.buffer.end();) {
-                            auto& instance = it->second;
-                            if (instance->body != typed) { ++it; continue; }
-                            ++it;
-                            Vehicle_Body::Instance::erase_unlocked(instance);
-                            Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                                instance->body = nullptr;
-                                Vehicle_Body::Instance::release(instance);
-                            });
-                        }
-                        break;
-                    }
+                    case Vital::Engine::PhysicsType::Rigid:
+                        destroy_body<Rigid_Body, Vital::Engine::Rigid_Body>(entity); break;
+                    case Vital::Engine::PhysicsType::Static:
+                        destroy_body<Static_Body, Vital::Engine::Static_Body>(entity); break;
+                    case Vital::Engine::PhysicsType::Character:
+                        destroy_body<Character_Body, Vital::Engine::Character_Body>(entity); break;
+                    case Vital::Engine::PhysicsType::Animatable:
+                        destroy_body<Animatable_Body, Vital::Engine::Animatable_Body>(entity); break;
+                    case Vital::Engine::PhysicsType::Vehicle:
+                        destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); break;
                 }
             };
 

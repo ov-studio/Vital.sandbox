@@ -39,30 +39,11 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, base_class::DampMode>> damp_mode_registry = {
             { "COMBINE", base_class::DAMP_MODE_COMBINE },
-            { "REPLACE", base_class::DAMP_MODE_REPLACE }
+            { "REPLACE",  base_class::DAMP_MODE_REPLACE }
         };
 
-        struct Instance : vm_instance<Instance> {
+        struct Instance : Physics_Body_Instance<Instance, base_class> {
             using Owner = Rigid_Body;
-            base_class* body = nullptr;
-
-            auto get_node() {
-                return body;
-            }
-
-            bool is_alive() const {
-                return body ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
-            }
         };
         inline static vm_registry<Instance> registry;
 

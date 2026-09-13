@@ -38,27 +38,8 @@ namespace Vital::Sandbox::API {
             { "DO_NOTHING",           base_class::PLATFORM_ON_LEAVE_DO_NOTHING           }
         };
 
-        struct Instance : vm_instance<Instance> {
+        struct Instance : Physics_Body_Instance<Instance, base_class> {
             using Owner = Character_Body;
-            base_class* body = nullptr;
-
-            auto get_node() {
-                return body;
-            }
-
-            bool is_alive() const {
-                return body ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
-            }
         };
         inline static vm_registry<Instance> registry;
 

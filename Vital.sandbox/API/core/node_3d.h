@@ -21,6 +21,7 @@
 // Vital: API: Node 3D //
 //////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox {
     struct vm_instance_base;
     extern std::unordered_map<void*, vm_instance_base*> vm_node_registry;
@@ -34,6 +35,29 @@ namespace Vital::Sandbox::API {
             Audio,
             Spatial
         };
+
+        // -----------------------------------------------------------------------
+        // maybe_force_broadcast
+        //
+        // When a server-side Lua script calls set_position / set_rotation /
+        // set_scale on a client-authority entity (sync_authority > 1), the
+        // normal sync_tick path skips the entity (authority != 1), so the
+        // change would never reach clients. Calling force_transform_broadcast()
+        // pushes an immediate _force_transform RPC so the authoritative peer
+        // picks up the override.
+        //
+        // Server-authority entities (sync_authority == 1) are broadcast by the
+        // regular sync_tick sample — no immediate override needed.
+        //
+        // Compiled away entirely in client builds: the dynamic_cast is a no-op
+        // on the client and the function body reduces to nothing.
+        // -----------------------------------------------------------------------
+        static void maybe_force_broadcast(godot::Node3D* node) {
+            #if !defined(VSDK_Client)
+            if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(node))
+                if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+            #endif
+        }
 
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
@@ -99,14 +123,7 @@ namespace Vital::Sandbox::API {
     
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_position(position);
-                    #if !defined(VSDK_Client)
-                    // Only needed for client-authority syncables: sync_tick skips them
-                    // (authority != 1) so a server-side set_position would never reach
-                    // clients otherwise.  Server-authority entities are broadcast by
-                    // sync_tick normally — no immediate override needed.
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
-                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
-                    #endif
+                    maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
@@ -117,10 +134,7 @@ namespace Vital::Sandbox::API {
     
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_global_position(position);
-                    #if !defined(VSDK_Client)
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
-                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
-                    #endif
+                    maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
@@ -133,15 +147,7 @@ namespace Vital::Sandbox::API {
 
                     auto scale = vm -> get_vector3(2);
                     self -> get_node() -> set_scale(scale);
-                    #if !defined(VSDK_Client)
-                    // Same as set_position/set_rotation: peer-auth needs immediate
-                    // force (includes scale in transform stream). Server-auth is
-                    // picked up by the next sync_tick sample of get_sync_scale().
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
-                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
-                    #endif
-                    // Client-authority: local set is enough — next _sync_client
-                    // upload samples get_sync_scale() and relays to others.
+                    maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
@@ -152,10 +158,7 @@ namespace Vital::Sandbox::API {
 
                     auto euler_degrees = vm -> get_vector3(2);
                     self -> get_node() -> set_rotation_degrees(euler_degrees);
-                    #if !defined(VSDK_Client)
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
-                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
-                    #endif
+                    maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
@@ -166,10 +169,7 @@ namespace Vital::Sandbox::API {
 
                     auto euler_degrees = vm -> get_vector3(2);
                     self -> get_node() -> set_global_rotation_degrees(euler_degrees);
-                    #if !defined(VSDK_Client)
-                    if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(self -> get_node()))
-                        if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
-                    #endif
+                    maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });

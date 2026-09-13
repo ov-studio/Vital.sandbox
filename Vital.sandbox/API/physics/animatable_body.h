@@ -27,27 +27,8 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"physics", "animatable"};
         using base_class = Vital::Engine::Animatable_Body;
 
-        struct Instance : vm_instance<Instance> {
+        struct Instance : Physics_Body_Instance<Instance, base_class> {
             using Owner = Animatable_Body;
-            base_class* body = nullptr;
-
-            auto get_node() {
-                return body;
-            }
-
-            bool is_alive() const {
-                return body ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
-            }
         };
         inline static vm_registry<Instance> registry;
 

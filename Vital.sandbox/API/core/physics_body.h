@@ -26,6 +26,40 @@
 
 // TODO: Improve
 namespace Vital::Sandbox::API {
+
+    // ---------------------------------------------------------------------------
+    // Physics_Body_Instance<Derived, BaseClass>
+    //
+    // CRTP helper that every physics body Instance inherits instead of repeating
+    // the same body pointer, get_node(), is_alive() and clean() in each file.
+    // The only thing each concrete body adds on top is `using Owner = <Type>;`
+    // (required by vm_instance machinery) plus any extra fields (e.g. the
+    // pending-broadcast buffers in Vehicle_Wheel::Instance).
+    //
+    // Usage:
+    //   struct Instance : Physics_Body_Instance<Instance, Rigid_Body::base_class> {
+    //       using Owner = Rigid_Body;
+    //   };
+    // ---------------------------------------------------------------------------
+    template<typename Derived, typename BaseClass>
+    struct Physics_Body_Instance : vm_instance<Derived> {
+        BaseClass* body = nullptr;
+
+        auto get_node() { return body; }
+
+        bool is_alive() const { return body != nullptr; }
+
+        void clean() {
+            auto instance = this->shared_from_this();
+            if (!instance->erase()) return;
+            if (instance->body) {
+                instance->body->destroy();
+                instance->body = nullptr;
+            }
+            instance->release();
+        }
+    };
+
     struct Physics_Body {
         enum class Type {
             Rigid,
