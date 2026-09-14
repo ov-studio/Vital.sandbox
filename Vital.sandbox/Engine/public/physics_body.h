@@ -61,20 +61,16 @@ namespace Vital::Engine {
                 return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() && net_id != 0;
             }
 
-            // When parented to another synced entity, return local-space position
-            // so the packet only carries the child's offset from the parent, not
-            // full world coordinates — mirrors Model::get_sync_position().
             godot::Vector3 get_sync_position() const override {
                 if (!const_cast<Physics_Body*>(this)->Base::is_inside_tree()) return godot::Vector3();
                 if (sync_parent_net_id != 0) return const_cast<Physics_Body*>(this)->Base::get_position();
                 return const_cast<Physics_Body*>(this)->Base::get_global_position();
             }
 
-            // get_rotation_degrees() is always local in Godot — consistent whether
-            // parented or not, same reasoning as Model::get_sync_rotation().
             godot::Vector3 get_sync_rotation() const override {
                 return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees() : godot::Vector3();
             }
+
             godot::Vector3 get_sync_scale() const override {
                 return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_scale() : godot::Vector3(1, 1, 1);
             }
@@ -98,12 +94,8 @@ namespace Vital::Engine {
                 if (net && net -> get_peer_id() == sync_authority) return;
                 godot::Vector3 out_pos, out_rot;
                 interp_process(delta, out_pos, out_rot);
-                // Parented: snapshot values are local-space — write back as local.
-                if (sync_parent_net_id != 0) {
-                    Base::set_position(out_pos);
-                } else {
-                    Base::set_global_position(out_pos);
-                }
+                if (sync_parent_net_id != 0) Base::set_position(out_pos);
+                else Base::set_global_position(out_pos);
                 Base::set_rotation_degrees(out_rot);
             }
 
@@ -146,7 +138,6 @@ namespace Vital::Engine {
                 // RPC carries whatever authority set_syncer() last wrote,
                 // even if called in the same tick as create().
                 if (!sync_registered) return;
-
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
             }
@@ -161,10 +152,7 @@ namespace Vital::Engine {
                 if (!pending_shape_broadcast.has_value()) return;
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) {
-                    net_node -> rpc("_sync_shape",
-                        (int)net_id,
-                        godot::String(pending_shape_broadcast->type.c_str()),
-                        pending_shape_broadcast->params);
+                    net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast->type.c_str()), pending_shape_broadcast->params);
                 }
                 pending_shape_broadcast.reset();
             }
@@ -174,8 +162,8 @@ namespace Vital::Engine {
             // after set_shape_sphere before the flush simply overwrites it,
             // which matches what would happen if the calls ran post-registration.
             struct PendingShape {
-                std::string   type;
-                godot::Array  params;
+                std::string type;
+                godot::Array params;
             };
             std::optional<PendingShape> pending_shape_broadcast;
             #endif
