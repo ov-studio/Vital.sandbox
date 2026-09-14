@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
         // destroy_body<API_Type, Engine_Type>
         //
         // Walks the registry under its lock, finds every Instance whose body
-        // pointer matches the dying engine node, erases it (emitting
+        // pointer matches the engine entity, erases it (emitting
         // entity:destroyed), then schedules a Core::execute() to null the pointer
         // and release Lua references off the physics thread.
         // -----------------------------------------------------------------------
