@@ -89,9 +89,9 @@ namespace Vital::Sandbox::API {
                 if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
             }
-            
+
             #if !defined(VSDK_Client)
-            void flush_pending_broadcasts() {
+            void flush_broadcasts() {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0 || !body) return;
                 auto* net = Manager::Network::get_singleton() -> get_node();
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
                 for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
                     if (!inst || !inst -> body) continue;
                     if (inst -> body -> get_parent() != entity) continue;
-                    inst -> flush_pending_broadcasts();
+                    inst -> flush_broadcasts();
                 }
             });
             #endif
