@@ -59,11 +59,11 @@ namespace Vital::Manager {
 
             struct Internal {
                 private:
-                    static std::mutex lifecycle_mutex;
-                    static std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
+                    inline static std::mutex lifecycle_mutex;
+                    inline static std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
                     #if !defined(VSDK_Client)
-                    static std::unordered_set<std::string> resource_restarting;
-                    static std::unordered_set<std::string> resource_restart_pending;
+                    inline static std::unordered_set<std::string> resource_restarting;
+                    inline static std::unordered_set<std::string> resource_restart_pending;
                     #endif
                 public:
                     // Helpers //
