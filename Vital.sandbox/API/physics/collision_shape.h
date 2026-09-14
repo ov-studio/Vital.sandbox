@@ -99,7 +99,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // Resolves any of the physics body/area API types to their underlying Node3D owner. //
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
             if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
             if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
@@ -123,9 +122,6 @@ namespace Vital::Sandbox::API {
                 if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
-                {
-                    std::lock_guard<std::mutex> lock(registry.mutex);
-                    for (auto& [id, inst] : registry.buffer)
                         if (inst->body == entity) return;
                 }
                 const godot::ObjectID oid(entity->get_instance_id());
