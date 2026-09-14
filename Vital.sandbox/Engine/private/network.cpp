@@ -553,9 +553,7 @@ namespace Vital::Engine {
             s -> set_length((float)params[0]);
             col -> assign_shape(s);
         }
-        else {
-            godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
-        }
+        else godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
         #endif
     }
 
