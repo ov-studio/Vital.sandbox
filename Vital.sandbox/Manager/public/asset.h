@@ -28,7 +28,7 @@ namespace Vital::Manager {
         public:
             static constexpr const char* Name = "Asset.manager";
         private:
-            struct Asset {
+            struct AssetEntry {
                 std::string hash;
                 std::string group = "";
             };
@@ -64,7 +64,7 @@ namespace Vital::Manager {
             Tool::HTTP::Server http_server;
             std::unordered_set<int> pending_manifest_peers;
             #endif
-            std::unordered_map<std::string, Asset> registered_assets;
+            std::unordered_map<std::string, AssetEntry> registered_assets;
 
 
             // Instantiators //
