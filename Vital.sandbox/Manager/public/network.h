@@ -46,59 +46,34 @@ namespace Vital::Manager {
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
 
-            // Live Model registry — poll() drives sync_tick() through this instead of scanning the scene tree.
             std::vector<Engine::ISyncable*> sync_models;
             std::mutex sync_models_mutex;
-
-            // net_id -> ISyncable* map, kept for O(1) dispatch lookups.
             std::unordered_map<uint32_t, Engine::ISyncable*> sync_id_map;
-
-            // Pending registrations — posted here by enqueue_syncable_registration(),
-            // drained into sync_models by poll() instead of an O(N) child-scan.
             std::vector<Engine::ISyncable*> sync_pending;
             std::mutex sync_pending_mutex;
 
             #if defined(VSDK_Client)
-            // Shape syncs (_sync_shape RPC) that arrive before their body finishes
-            // local registration. Buffered by net_id, replayed by poll() once that
-            // net_id shows up in sync_pending.
             std::unordered_map<uint32_t, std::pair<godot::String, godot::Array>> pending_shape_syncs;
             std::mutex pending_shape_mutex;
-
-            // Same problem for transform (position/rotation/velocity) packets — the
-            // state-dump sends can arrive before poll() drains sync_pending. Keeps
-            // only the latest state per net_id; applied and cleared on registration.
             std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3, godot::Vector3>> pending_transform_syncs;
             std::mutex pending_transform_mutex;
-
-            // Forced transform overrides (_force_transform RPC) that arrive before
-            // the owning entity is registered. Unlike pending_transform_syncs these
-            // must be applied regardless of sync authority — that's the whole point.
             std::unordered_map<uint32_t, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3>> pending_force_transform_syncs;
             std::mutex pending_force_transform_mutex;
-
-            // Same problem for _reparent_entity RPCs — parent may not be in
-            // sync_id_map yet when the RPC arrives. Stores (child_net_id → parent_net_id).
             std::unordered_map<uint32_t, uint32_t> pending_reparent_syncs;
             std::mutex pending_reparent_mutex;
             #endif
-
-            // Per-frame dirty batch buffer reused across frames (avoids realloc).
             godot::PackedByteArray sync_batch_buf;
 
-            // Sync interval in seconds, set from config on host()/apply_sync_config(),
-            // read each poll(). Configurable via network.sync_rate in config.yaml.
             float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::Config{}.rate);
-
             #if defined(VSDK_Client)
-            bool auto_reconnect    = false;
+            bool auto_reconnect = false;
             bool pending_handshake = false;
             std::string reconnect_ip;
-            int   reconnect_port     = 0;
-            int   reconnect_attempts = 0;
-            int   reconnect_max      = 5;
-            float reconnect_delay    = 3.0f;
-            float reconnect_timer    = 0.0f;
+            int reconnect_port = 0;
+            int reconnect_attempts = 0;
+            int reconnect_max = 5;
+            float reconnect_delay = 3.0f;
+            float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
             const Config::Server* server_config = nullptr;
@@ -110,29 +85,26 @@ namespace Vital::Manager {
             void destroy();
             void wire_signals();
             void unwire_signals();
-
-
-
         public:
             Network() = default;
             ~Network() = default;
 
             #if defined(VSDK_Client)
-            // Buffer a _reparent_entity for replay once child/parent register.
             void buffer_reparent(uint32_t child_net_id, uint32_t parent_net_id) {
                 std::lock_guard<std::mutex> lock(pending_reparent_mutex);
                 pending_reparent_syncs[child_net_id] = parent_net_id;
             }
+
             void buffer_force_transform(uint32_t net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale = godot::Vector3(1,1,1)) {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
                 pending_force_transform_syncs[net_id] = { pos, rot, scale };
             }
-            // True if a _reparent_entity for this child is buffered and not yet applied.
+
             bool has_pending_reparent(uint32_t child_net_id) {
                 std::lock_guard<std::mutex> lock(pending_reparent_mutex);
                 return pending_reparent_syncs.find(child_net_id) != pending_reparent_syncs.end();
             }
-            // Consume a buffered _force_transform for this net_id, if any.
+
             bool take_pending_force_transform(uint32_t net_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_scale) {
                 std::lock_guard<std::mutex> lock(pending_force_transform_mutex);
                 auto it = pending_force_transform_syncs.find(net_id);
@@ -257,19 +229,6 @@ namespace Vital::Manager {
             Engine::Network* get_node() const { return node; }
 
             void poll(double delta = 0.0);
-
-            // Fixed-timestep counterpart to poll() — called once per physics
-            // tick from Core::_physics_process. Owns the actual "sample this
-            // peer's authoritative transforms / decide who's moved / encode
-            // + broadcast or relay a sync packet" work, which poll() used to
-            // do from the variable render tick. Splitting it out means every
-            // sample lines up with a real simulation step instead of an
-            // arbitrary render frame — see the .cpp for the full story on why
-            // that mismatch was producing visible jitter/overshoot on
-            // interpolated remote bodies. poll() keeps everything else
-            // (reconnect/handshake, pending-registration flush, buffered
-            // shape/transform/reparent replay) on the render tick, since
-            // those are about responsiveness, not physics timing.
             void sync_tick(double delta);
     };
 }
