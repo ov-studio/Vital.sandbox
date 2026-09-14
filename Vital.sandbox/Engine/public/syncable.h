@@ -45,9 +45,9 @@ namespace Vital::Engine {
             static constexpr float JITTER_MARGIN       = 1.5f;   // default stddev multiplier — overridable
             static constexpr int   JITTER_WINDOW       = 16;     // more samples for stable estimate
 
-            enum class SyncType : uint8_t {
-                Model = 0,
-                PhysicsBody = 1
+            enum class SyncType {
+                Model,
+                PhysicsBody
             };
 
             struct SyncConfig {
