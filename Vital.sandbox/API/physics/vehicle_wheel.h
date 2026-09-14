@@ -66,28 +66,6 @@ namespace Vital::Sandbox::API {
                 instance -> release();
             }
 
-            #if !defined(VSDK_Client)
-            void flush_pending_broadcasts() {
-                uint32_t nid = get_parent_net_id();
-                if (nid == 0 || !body) return;
-                auto* net = Manager::Network::get_singleton() -> get_node();
-                if (!net) return;
-
-                if (pending_spawn) {
-                    net -> rpc("_spawn_wheel", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
-                    pending_spawn = false;
-                }
-                for (auto& [key, value] : pending_configs) {
-                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key.c_str()), value);
-                }
-                pending_configs.clear();
-                if (pending_transform) {
-                    net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
-                    pending_transform = false;
-                }
-            }
-            #endif
-
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
@@ -111,6 +89,28 @@ namespace Vital::Sandbox::API {
                 if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
             }
+            
+            #if !defined(VSDK_Client)
+            void flush_pending_broadcasts() {
+                uint32_t nid = get_parent_net_id();
+                if (nid == 0 || !body) return;
+                auto* net = Manager::Network::get_singleton() -> get_node();
+                if (!net) return;
+
+                if (pending_spawn) {
+                    net -> rpc("_spawn_wheel", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
+                    pending_spawn = false;
+                }
+                for (auto& [key, value] : pending_configs) {
+                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key.c_str()), value);
+                }
+                pending_configs.clear();
+                if (pending_transform) {
+                    net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
+                    pending_transform = false;
+                }
+            }
+            #endif
         };
         inline static vm_registry<Instance> registry;
 
