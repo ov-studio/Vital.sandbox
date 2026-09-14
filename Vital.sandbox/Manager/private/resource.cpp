@@ -211,6 +211,7 @@ namespace Vital::Manager {
             rm -> resources.push_back(std::move(manifest));
         }
         rm -> log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
+
         if (!Internal::is_pending(name)) {
             const uint32_t gen = Internal::lifecycle_get(name);
             Engine::Core::get_singleton() -> enqueue([name, gen]() {
@@ -512,11 +513,7 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             #if defined(VSDK_Client)
-                // Bump before teardown so any deferred start from a previous
-                // resource:started packet becomes stale and will no-op.
                 Internal::lifecycle_bump(name);
-                // Idempotent: rapid restart / duplicate resource:stopped packets
-                // often arrive after the first stop already cleared running+pending.
                 if (!Internal::is_running(name) && !Internal::is_pending(name)) {
                     rm -> log("sbox", fmt::format("resource `{}` stop ignored — already stopped", name));
                     return true;
@@ -532,6 +529,7 @@ namespace Vital::Manager {
                 }
                 am -> unregister_group(name);
             #endif
+
             was_running = Internal::is_running(name);
             if (was_running) {
                 rm -> running.erase(name);
@@ -543,17 +541,13 @@ namespace Vital::Manager {
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             #endif
         }
+
         if (was_running) {
             vm -> clear_environment_id(name);
-            // Do NOT unload PackedScene cache on every stop/restart.
-            // Re-running GLTFDocument::generate_scene while the renderer still
-            // holds meshes from destroyed instances races the GPU heap and
-            // crashes clients (load_from_buffer / generate_scene). Entities are
-            // destroyed via network; spawn queues are cleared; GLBs stay warm.
-            // load_resource_models() is idempotent when already cached.
             #if defined(VSDK_Client)
             Manager::Asset::get_singleton()->clear_spawn_queue_prefix(":" + name + "/");
             #else
+            // TOOD: ?
             // Server: same policy — keep cache across restarts for stability.
             // Use Model::unload_resource_models only on full resource removal if needed later.
             #endif
@@ -718,18 +712,14 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(lifecycle_mutex);
             if (resource_restarting.count(name)) {
-                // Spam restart from console/API: keep one pending, drop the rest.
                 resource_restart_pending.insert(name);
-                rm -> log("sbox", fmt::format(
-                    "resource `{}` restart coalesced — already in progress", name));
+                rm -> log("sbox", fmt::format("resource `{}` restart coalesced — already in progress", name));
                 return true;
             }
             resource_restarting.insert(name);
         }
 
         stop(name);
-        // Multi-frame defer: clients must process resource:stopped + destroys
-        // before resource:started / new spawns. Extra frames absorb network lag.
         Engine::Core::get_singleton() -> enqueue([name]() {
             Engine::Core::get_singleton() -> enqueue([name]() {
                 Engine::Core::get_singleton() -> enqueue([name]() {
