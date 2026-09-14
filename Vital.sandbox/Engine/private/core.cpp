@@ -59,7 +59,7 @@ namespace Vital::Engine {
                     Tool::Event::emit("core:ready");
                     set_process(true);
                     set_physics_process(true);
-                    #if !defined(VSDK_Client)
+                    #if defined(VSDK_Client)
                     set_process_unhandled_input(true);
                     #endif
                 });
