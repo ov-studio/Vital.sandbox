@@ -31,19 +31,20 @@ namespace Vital::Engine {
         friend class Network;
         friend class Model;
         public:
-            static constexpr int   SYNC_PACKET_MAX     = 54;     // max bytes per delta entry (pos+rot+vel+scale)
-            static constexpr float DELTA_POS_THRESHOLD = 0.001f; // metres
-            static constexpr float DELTA_ROT_THRESHOLD = 0.05f;  // degrees
-            static constexpr float DELTA_VEL_THRESHOLD = 0.01f;  // units/sec
-            static constexpr int   SYNC_RATE           = 60;     // default sync rate in Hz
-            static constexpr int   SNAPSHOT_COUNT      = 32;     // ~530ms of history at 60Hz — headroom above BUFFER_DELAY_MAX so a big adaptive buffer still has real snapshots behind it.
-            static constexpr float BUFFER_DELAY        = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
-            static constexpr float SNAP_THRESHOLD      = 5.0f;   // units — teleport if gap exceeds this
-            static constexpr float VEL_THRESHOLD       = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float BUFFER_DELAY_MIN    = 0.033f; // floor — keeps real bracketing snapshot; must stay >= interp_step (1/sync_rate) or the renderer falls into the extrapolation branch on every tick.
-            static constexpr float BUFFER_DELAY_MAX    = 0.30f;  // default ceiling (300ms) — overridable
-            static constexpr float JITTER_MARGIN       = 1.5f;   // default stddev multiplier — overridable
-            static constexpr int   JITTER_WINDOW       = 16;     // more samples for stable estimate
+            static constexpr int   SYNC_PACKET_MAX      = 54;     // max bytes per delta entry (pos+rot+vel+scale)
+            static constexpr float DELTA_POS_THRESHOLD  = 0.001f; // metres
+            static constexpr float DELTA_ROT_THRESHOLD  = 0.05f;  // degrees
+            static constexpr float DELTA_VEL_THRESHOLD  = 0.01f;  // units/sec
+            static constexpr int   SYNC_RATE            = 60;     // default sync rate in Hz
+            static constexpr int   SNAPSHOT_COUNT       = 32;     // ~530ms of history at 60Hz — headroom above BUFFER_DELAY_MAX so a big adaptive buffer still has real snapshots behind it.
+            static constexpr float BUFFER_DELAY         = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
+            static constexpr float SNAP_THRESHOLD       = 5.0f;   // units — teleport if gap exceeds this
+            static constexpr float VEL_THRESHOLD        = 0.05f;  // units/sec — "moving" cutoff
+            static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;
+            static constexpr float BUFFER_DELAY_MIN     = 0.033f; // floor — keeps real bracketing snapshot; must stay >= interp_step (1/sync_rate) or the renderer falls into the extrapolation branch on every tick.
+            static constexpr float BUFFER_DELAY_MAX     = 0.30f;  // default ceiling (300ms) — overridable
+            static constexpr float JITTER_MARGIN        = 1.5f;   // default stddev multiplier — overridable
+            static constexpr int   JITTER_WINDOW        = 16;     // more samples for stable estimate
 
             struct Config {
                 int rate = SYNC_RATE;
