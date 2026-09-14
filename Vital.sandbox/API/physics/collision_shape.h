@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             // Engine::Collision_Shape::get_parent_net_id() — no duplicate cast here.
             void broadcast_shape(const char* shape_type, godot::Array params) {
                 #if !defined(VSDK_Client)
-                uint32_t nid = body ? body->get_parent_net_id() : 0;
+                uint32_t nid = body ? body -> get_parent_net_id() : 0;
                 if (nid == 0) {
                     // net_id not registered yet — this happens when set_shape_* is
                     // called in the same Lua tick as create(), before setup_create()'s
@@ -122,16 +122,16 @@ namespace Vital::Sandbox::API {
                 bool remote = args.array[1].as<bool>();
                 if (Instance::find_by_ptr(entity)) return;
 
-                const godot::ObjectID oid(entity->get_instance_id());
-                Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
+                const godot::ObjectID oid(entity -> get_instance_id());
+                Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
                     auto* shape = godot::Object::cast_to<base_class>(obj);
                     if (!shape) return;
                     if (Instance::find_by_ptr(shape)) return;
                     auto instance = Instance::init(nullptr, remote);
-                    instance->body = shape;
-                    instance->store(false);
+                    instance -> body = shape;
+                    instance -> store(false);
                 });
             });
 
@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
                 
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
                 Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
-                    instance->body = nullptr;
+                    instance -> body = nullptr;
                 });
             });
         }
@@ -161,6 +161,11 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::is_debug_all());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "set_debug_all", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(1, &Machine::is_bool);
@@ -168,11 +173,6 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(1);
                 base_class::set_debug_all(state);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::is_debug_all());
                 return 1;
             });
             #endif
@@ -223,7 +223,13 @@ namespace Vital::Sandbox::API {
                 shape -> set_size(size);
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(size.x); p.push_back(size.y); p.push_back(size.z); self -> broadcast_shape("box", p); }
+                { 
+                    godot::Array p; 
+                    p.push_back(size.x); 
+                    p.push_back(size.y); 
+                    p.push_back(size.z); 
+                    self -> broadcast_shape("box", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -239,7 +245,11 @@ namespace Vital::Sandbox::API {
                 shape -> set_radius(radius);
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(radius); self -> broadcast_shape("sphere", p); }
+                { 
+                    godot::Array p; 
+                    p.push_back(radius); 
+                    self -> broadcast_shape("sphere", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -258,7 +268,11 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(height);
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("capsule", p); }
+                { 
+                    godot::Array p; p.push_back(radius); 
+                    p.push_back(height); 
+                    self -> broadcast_shape("capsule", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -277,7 +291,12 @@ namespace Vital::Sandbox::API {
                 shape -> set_height(height);
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(radius); p.push_back(height); self -> broadcast_shape("cylinder", p); }
+                { 
+                    godot::Array p; 
+                    p.push_back(radius); 
+                    p.push_back(height); 
+                    self -> broadcast_shape("cylinder", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -295,7 +314,14 @@ namespace Vital::Sandbox::API {
                 shape -> set_plane(godot::Plane(normal, distance));
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(normal.x); p.push_back(normal.y); p.push_back(normal.z); p.push_back(distance); self -> broadcast_shape("world_boundary", p); }
+                { 
+                    godot::Array p; 
+                    p.push_back(normal.x); 
+                    p.push_back(normal.y); 
+                    p.push_back(normal.z); 
+                    p.push_back(distance); 
+                    self -> broadcast_shape("world_boundary", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
@@ -311,7 +337,11 @@ namespace Vital::Sandbox::API {
                 shape -> set_length(length);
                 self -> body -> assign_shape(shape);
                 #if !defined(VSDK_Client)
-                { godot::Array p; p.push_back(length); self -> broadcast_shape("separation_ray", p); }
+                { 
+                    godot::Array p; 
+                    p.push_back(length); 
+                    self -> broadcast_shape("separation_ray", p); 
+                }
                 #endif
                 vm -> push_value(true);
                 return 1;
