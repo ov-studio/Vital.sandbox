@@ -22,11 +22,11 @@
 ///////////////////////////
 
 // TODO: Improve
-namespace Vital::Manager { class Network; }
+namespace Vital::Manager { 
+    class Network;
+}
 
 namespace Vital::Engine {
-    class Model;
-
     class Model : public godot::Node3D, public ISyncable {
         GDCLASS(Model, godot::Node3D)
         friend class Network;
