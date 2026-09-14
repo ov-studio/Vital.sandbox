@@ -36,14 +36,11 @@ namespace Vital::Engine {
             #if defined(VSDK_Client)
             godot::Ref<godot::Shape3D> current_shape;
             godot::MeshInstance3D* debug_mesh = nullptr;
-            // Every live client-side Collision_Shape registers itself here on
-            // construction and removes itself on destruction. set_debug_all()
-            // walks this directly — no dependency on the Lua vm_registry, so
-            // it works identically for Lua-created AND network-replicated
-            // shapes, and can't race against Lua Instance hydration.
             inline static std::unordered_set<Collision_Shape*> live_instances;
             inline static std::mutex live_instances_mutex;
 
+            
+            // Helpers //
             static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
             #endif
         public:
