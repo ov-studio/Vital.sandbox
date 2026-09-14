@@ -74,6 +74,7 @@ namespace Vital::Engine {
         return get_parent_net_id() > 0;
     }
 
+    #if defined(VSDK_Client)
     bool Collision_Shape::is_debug_visible() const {
         #if defined(VSDK_Client)
         return debug_mesh && debug_mesh -> is_visible();
@@ -85,6 +86,7 @@ namespace Vital::Engine {
     bool Collision_Shape::is_debug_all() const {
         return debug_all;
     }
+    #endif
 
 
     // Getters //

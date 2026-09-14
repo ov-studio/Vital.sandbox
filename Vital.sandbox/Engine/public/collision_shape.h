@@ -61,8 +61,8 @@ namespace Vital::Engine {
 
             // Checkers //
             bool is_replicated() const;
-            bool is_debug_visible() const;
             #if defined(VSDK_Client)
+            bool is_debug_visible() const;
             static bool is_debug_all();
             #endif
 
