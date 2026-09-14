@@ -25,14 +25,6 @@
 
 
 namespace Vital::Manager {
-    std::mutex Resource::Internal::lifecycle_mutex;
-    std::unordered_map<std::string, uint32_t> Resource::Internal::resource_lifecycle_gen;
-    #if !defined(VSDK_Client)
-    std::unordered_set<std::string> Resource::Internal::resource_restarting;
-    std::unordered_set<std::string> Resource::Internal::resource_restart_pending;
-    #endif
-
-
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
         return fmt::format("@{}/{}", resource, src);
