@@ -26,7 +26,7 @@ namespace Vital::Engine {
     Collision_Shape::Collision_Shape() {
         #if defined(VSDK_Client)
         {
-            std::lock_guard<std::mutex> lock(live_instances_mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             live_instances.insert(this);
         }
         if (debug_all) set_debug_visible(true);
@@ -35,7 +35,7 @@ namespace Vital::Engine {
 
     Collision_Shape::~Collision_Shape() {
         #if defined(VSDK_Client)
-        std::lock_guard<std::mutex> lock(live_instances_mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         live_instances.erase(this);
         #endif
     }
@@ -111,7 +111,7 @@ namespace Vital::Engine {
     void Collision_Shape::set_debug_all(bool state) {
         #if defined(VSDK_Client)
         debug_all = state;
-        std::lock_guard<std::mutex> lock(live_instances_mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         for (auto* shape : live_instances) shape -> set_debug_visible(state);
         #else
         (void)state;

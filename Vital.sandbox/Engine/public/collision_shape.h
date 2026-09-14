@@ -28,7 +28,7 @@ namespace Vital::Engine {
         private:
             #if defined(VSDK_Client)
             inline static bool debug_all  = false;
-            inline static std::mutex live_instances_mutex;
+            inline static std::mutex mutex;
             inline static std::unordered_set<Collision_Shape*> live_instances;
             inline static godot::Color local_debug_color = godot::Color(0, 1, 0);
             inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
@@ -66,7 +66,7 @@ namespace Vital::Engine {
             static bool is_debug_all() { return debug_all; }
             #endif
 
-            
+
             // Getters //
             uint32_t get_parent_net_id() const;
 
