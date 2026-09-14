@@ -38,84 +38,87 @@ namespace Vital::Sandbox::API {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
             API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
 
-            vm_module::bind_method<Instance>(vm, "get_collision_layer", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> get_node() -> get_collision_layer()));
-                return 1;
-            });
+            {
+                vm_module::bind_method<Instance>(vm, "get_collision_layer", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(static_cast<int>(self -> get_node() -> get_collision_layer()));
+                    return 1;
+                });
 
-            vm_module::bind_method<Instance>(vm, "get_collision_mask", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> get_node() -> get_collision_mask()));
-                return 1;
-            });
+                vm_module::bind_method<Instance>(vm, "get_collision_mask", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(static_cast<int>(self -> get_node() -> get_collision_mask()));
+                    return 1;
+                });
 
-            vm_module::bind_method<Instance>(vm, "get_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer_number)", true)
-                    .require(2, &Machine::is_number);
+                vm_module::bind_method<Instance>(vm, "get_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(layer_number)", true)
+                        .require(2, &Machine::is_number);
 
-                auto layer_number = vm -> get_int(2);
-                vm -> push_value(self -> get_node() -> get_collision_layer_value(layer_number));
-                return 1;
-            });
+                    auto layer_number = vm -> get_int(2);
+                    vm -> push_value(self -> get_node() -> get_collision_layer_value(layer_number));
+                    return 1;
+                });
 
-            vm_module::bind_method<Instance>(vm, "get_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer_number)", true)
-                    .require(2, &Machine::is_number);
+                vm_module::bind_method<Instance>(vm, "get_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(layer_number)", true)
+                        .require(2, &Machine::is_number);
 
-                auto layer_number = vm -> get_int(2);
-                vm -> push_value(self -> get_node() -> get_collision_mask_value(layer_number));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_collision_layer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer)", true)
-                    .require(2, &Machine::is_number);
-
-                auto layer = vm -> get_int(2);
-                self -> get_node() -> set_collision_layer(layer);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_collision_mask", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mask)", true)
-                    .require(2, &Machine::is_number);
-
-                auto mask = vm -> get_int(2);
-                self -> get_node() -> set_collision_mask(mask);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer_number, value)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_bool);
-
-                auto layer_number = vm -> get_int(2);
-                auto value = vm -> get_bool(3);
-                self -> get_node() -> set_collision_layer_value(layer_number, value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer_number, value)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_bool);
-
-                auto layer_number = vm -> get_int(2);
-                auto value = vm -> get_bool(3);
-                self -> get_node() -> set_collision_mask_value(layer_number, value);
-                vm -> push_value(true);
-                return 1;
-            });
-
+                    auto layer_number = vm -> get_int(2);
+                    vm -> push_value(self -> get_node() -> get_collision_mask_value(layer_number));
+                    return 1;
+                });
+            }
             if constexpr (object_type == Type::Body) {
                 vm_module::bind_method<Instance>(vm, "get_collision_priority", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> get_node() -> get_collision_priority());
                     return 1;
                 });
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "set_collision_layer", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(layer)", true)
+                        .require(2, &Machine::is_number);
 
+                    auto layer = vm -> get_int(2);
+                    self -> get_node() -> set_collision_layer(layer);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_collision_mask", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(mask)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto mask = vm -> get_int(2);
+                    self -> get_node() -> set_collision_mask(mask);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(layer_number, value)", true)
+                        .require(2, &Machine::is_number)
+                        .require(3, &Machine::is_bool);
+
+                    auto layer_number = vm -> get_int(2);
+                    auto value = vm -> get_bool(3);
+                    self -> get_node() -> set_collision_layer_value(layer_number, value);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(layer_number, value)", true)
+                        .require(2, &Machine::is_number)
+                        .require(3, &Machine::is_bool);
+
+                    auto layer_number = vm -> get_int(2);
+                    auto value = vm -> get_bool(3);
+                    self -> get_node() -> set_collision_mask_value(layer_number, value);
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
+            if constexpr (object_type == Type::Body) {
                 vm_module::bind_method<Instance>(vm, "set_collision_priority", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(priority)", true)
                         .require(2, &Machine::is_number);
