@@ -166,8 +166,6 @@ namespace Vital::Engine {
         if (!pending_force_transform.has_value()) return;
         if (sync_authority <= 1) { pending_force_transform.reset(); return; }
         auto* net_node = Manager::Network::get_singleton() -> get_node();
-        // Broadcast to all peers so observers of mid-session spawns get the
-        // parented local offset, not only the authority client.
         if (net_node) net_node -> rpc("_force_transform", (int)net_id, pending_force_transform -> pos, pending_force_transform -> rot, pending_force_transform -> scale);
         pending_force_transform.reset();
     }
@@ -176,14 +174,12 @@ namespace Vital::Engine {
         godot::Vector3 cur_pos = get_sync_position();
         godot::Vector3 cur_rot = get_sync_rotation();
         godot::Vector3 cur_scale = get_sync_scale();
-
         if (net_id == 0) {
             pending_force_transform = PendingForceTransform{ cur_pos, cur_rot, cur_scale };
             return;
         }
 
         godot::Vector3 cur_vel = godot::Vector3();
-
         sync_last_pos  = cur_pos;
         sync_last_rot  = cur_rot;
         sync_last_vel  = cur_vel;
@@ -197,13 +193,9 @@ namespace Vital::Engine {
 
         godot::PackedByteArray buf;
         buf.resize(8 + SYNC_PACKET_MAX);
-
         godot::Vector3 enc_pos{}, enc_rot{}, enc_vel{}, enc_scale{};
-        int written = encode_delta(buf, 8, net_id,
-            cur_pos, cur_rot, cur_vel, cur_scale,
-            enc_pos, enc_rot, enc_vel, enc_scale);
+        int written = encode_delta(buf, 8, net_id, cur_pos, cur_rot, cur_vel, cur_scale, enc_pos, enc_rot, enc_vel, enc_scale);
         if (written <= 0) return;
-
         buf.resize(8 + written);
         auto wu32 = [&](int off, uint32_t v) {
             buf[off]   =  v        & 0xFF;
@@ -215,7 +207,6 @@ namespace Vital::Engine {
         wu32(4, (uint32_t)written);
 
         Manager::Network::get_singleton() -> broadcast_sync(buf);
-
         if (sync_authority > 1) {
             auto* net_node = Manager::Network::get_singleton() -> get_node();
             if (net_node) net_node -> rpc("_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
@@ -231,24 +222,6 @@ namespace Vital::Engine {
         }
         else {
             float interval = snap_clock - jitter_last_arrival;
-
-            // A syncable that goes to sleep (sender stops transmitting while
-            // stationary — see Network::sync_tick) can leave an arbitrarily
-            // long silent gap before the next packet arrives on wake. Two
-            // things go wrong if that gap is fed through the normal path
-            // below: (1) it swamps the jitter EMA/stddev with one huge
-            // sample, spiking adaptive_delay for several packets afterward,
-            // and (2) render_time has kept advancing the whole time
-            // (snap_clock ticks every frame in interp_process regardless of
-            // whether packets arrive), so this new snapshot ends up
-            // bracketed against a stale pre-sleep snapshot across that
-            // entire silent span — interp_process either extrapolates
-            // across it or, if the position moved enough meanwhile, treats
-            // it as a teleport. Both read as a snap/stutter right as
-            // movement resumes. A gap this large only happens on sleep/
-            // wake (or a reconnect); treat it as a resync — reseed exactly
-            // like the very first packet — instead of reconciling it with
-            // what came before.
             if (interval > RESYNC_GAP_THRESHOLD) {
                 snap_count = 0;
                 snap_head  = 0;
@@ -279,19 +252,7 @@ namespace Vital::Engine {
                     variance += d * d;
                 }
                 float stddev = (jitter_count > 1) ? std::sqrt(variance / (float)(jitter_count - 1)) : 0.0f;
-                // Target: one interp_step (one packet interval) + jitter headroom.
-                // Clamp to [BUFFER_DELAY_MIN, BUFFER_DELAY_MAX] so we always keep at
-                // least ~2 packet intervals of buffer ahead of the render clock, even
-                // on a near-zero-jitter connection. A 1-packet floor (interp_step)
-                // sounds tighter/more responsive, but it means the renderer is
-                // constantly running out of a real "after" snapshot and falling into
-                // interp_process's velocity-based extrapolation branch — which looks
-                // fine for constant-velocity motion but visibly overshoots then snaps
-                // back on every direction change, since it assumes velocity stays
-                // constant. Keeping a real bracketing snapshot on hand avoids that.
                 float target = std::clamp(interp_step + sync_config.jitter_margin * stddev, BUFFER_DELAY_MIN, sync_config.buffer_delay_max);
-                // Faster EMA: 0.8 old + 0.2 new — responds to network changes in ~5 packets
-                // instead of the old 0.95/0.05 which took ~20 packets to converge.
                 adaptive_delay = adaptive_delay * 0.8f + target * 0.2f;
             }
             jitter_last_arrival = snap_clock;
@@ -328,22 +289,8 @@ namespace Vital::Engine {
         }
         if (!after) {
             if (before -> vel.length() > VEL_THRESHOLD) {
-                // Cap extrapolation to 1 interp step (was 2). We only reach this
-                // branch on a genuine buffer underrun — the "after" snapshot we
-                // normally keep buffered hasn't arrived yet — and a hard
-                // direction reversal is the worst case for it: the real velocity
-                // has already flipped but we're still projecting forward on the
-                // old one. Halving the cap halves how far/long that guess can be
-                // wrong before the next real snapshot corrects it.
                 float cap = interp_step;
                 float extra = std::min(render_time - before -> time, cap);
-                // Ease the extrapolated contribution toward zero across the
-                // window instead of holding it at full velocity throughout —
-                // bounds worst-case overshoot on a reversal without needing to
-                // predict the reversal (which is impossible from position/
-                // velocity alone). Full weight at the start (t=0, where we're
-                // most likely still correct), tapering to half weight by the
-                // time we hit the cap.
                 float t = cap > 0.0f ? std::clamp(extra / cap, 0.0f, 1.0f) : 0.0f;
                 float ease = 1.0f - t * 0.5f;
                 out_pos = before -> pos + before -> vel * extra * ease;
@@ -362,7 +309,6 @@ namespace Vital::Engine {
         } 
         else {
             out_pos = before -> pos.lerp(after -> pos, t);
-            // Slerp via quaternion to avoid Euler gimbal/wrap issues (e.g. 359->1 deg).
             static constexpr float DEG2RAD = 3.14159265358979323846f / 180.0f;
             static constexpr float RAD2DEG = 180.0f / 3.14159265358979323846f;
             godot::Quaternion q_before = godot::Basis::from_euler(before -> rot * DEG2RAD).get_quaternion();
@@ -399,31 +345,12 @@ namespace Vital::Engine {
             }
         }
         if (self_node -> get_parent() != target) self_node -> reparent(target, true);
-
-        // Switch sync space to local (or back to global when detaching).
-        // Re-seed delta baselines from the new coordinate space so the very next
-        // encode_delta produces a clean full packet rather than a stale diff.
         sync_parent_net_id = parent_net_id;
-        sync_last_pos      = get_sync_position();  // now returns local if parented
-        sync_last_rot      = get_sync_rotation();
-        sync_last_vel      = godot::Vector3();
-        sync_sleeping      = false;
+        sync_last_pos = get_sync_position(); 
+        sync_last_rot = get_sync_rotation();
+        sync_last_vel = godot::Vector3();
+        sync_sleeping = false;
 
-        // Defer the _reparent_entity RPC to the next enqueue flush so it always
-        // arrives on clients AFTER the _spawn_entity RPCs for both this entity
-        // and its parent — which are themselves enqueued from Model::create /
-        // Physics_Body::setup_create.  Firing it inline here would race those
-        // and the client would silently drop the reparent (find_syncable returns
-        // null because the entity isn't registered yet).
-        //
-        // After the reparent RPC we also force-broadcast the current local
-        // transform.  set_position/set_rotation called in the same Lua tick as
-        // set_parent() fire _force_transform immediately (before this enqueue
-        // drains).  On the owning client that force arrives first; then
-        // apply_reparent_entity zeros local position.  A second force sent
-        // *after* the reparent RPC re-applies the intended local offset once
-        // the client is already parented, so the authority peer no longer
-        // needs a util.timer workaround.
         uint32_t captured_net_id    = net_id;
         uint32_t captured_parent_id = parent_net_id;
         godot::ObjectID captured_oid = godot::ObjectID(self_node -> get_instance_id());
@@ -431,10 +358,6 @@ namespace Vital::Engine {
             auto* net_node = Manager::Network::get_singleton() -> get_node();
             if (net_node) net_node -> rpc("_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
             godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
-
-            // Re-apply local transform after clients have processed reparent.
-            // Read live position/rotation so any set_position that ran after
-            // set_parent() in the same Lua tick is reflected.
             auto* node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;
             auto* syncable = dynamic_cast<ISyncable*>(node);
