@@ -20,7 +20,6 @@
 // Vital: Engine: Vehicle_Wheel //
 ///////////////////////////////////
 
-// TODO: Improve?
 namespace Vital::Engine {
     class Vehicle_Wheel : public godot::VehicleWheel3D {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
@@ -43,10 +42,10 @@ namespace Vital::Engine {
 
 
             // Getters //
-            int get_wheel_index() const { return wheel_index; }
+            int get_wheel_index() const;
 
 
             // Setters //
-            void set_wheel_index(int index) { wheel_index = index; }
+            void set_wheel_index(int index);
     };
 }
