@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto resource = vm -> get_string(1);
-                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
+                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("resource '{}' is not running", resource));
                 const auto names = list_exports(resource);
                 vm -> create_table();
                 for (int i = 0; i < static_cast<int>(names.size()); ++i) {
@@ -103,10 +103,10 @@ namespace Vital::Sandbox::API {
 
                 auto resource = vm -> get_string(1);
                 auto name = vm -> get_string(2);
-                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("export.call — resource '{}' is not running", resource));
+                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("resource '{}' is not running", resource));
                 int nargs = vm -> get_count() - 2;
                 int results = 0;
-                if (!dispatch_export(vm, resource, name, nargs, results)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("export.call — resource '{}' has no export '{}'", resource, name)); // TODO: APPLY BASE NAME USING FMT
+                if (!dispatch_export(vm, resource, name, nargs, results)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("resource '{}' has no export '{}'", resource, name));
                 return results;
             });
         }
