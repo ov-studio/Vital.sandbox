@@ -98,12 +98,11 @@ namespace Vital::Sandbox::API {
 
             Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
+                if (!args.array[2].is_ptr<API::Promise::Instance>()) return;
+
                 int thread_id = args.array[0].as<int32_t>();
                 bool resolved = args.array[1].as<bool>();
-                // TODO: Use is_ptr checck and then unconditionally invoke this
                 auto promise = args.array[2].as_ptr<API::Promise::Instance>();
-                if (!promise) return;
-
                 if (thread_id == -1) {
                     Machine::enqueue([promise]() {
                         Tool::Event::emit("promise:reply", Tool::Stack({
