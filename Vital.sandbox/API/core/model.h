@@ -88,12 +88,7 @@ namespace Vital::Sandbox::API {
                 if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
-                {
-                    std::lock_guard<std::mutex> lock(registry.mutex);
-                    for (auto& [id, instance] : registry.buffer) {
-                        if (instance -> model == entity) return;
-                    }
-                }
+                if (Instance::find_by_ptr(entity)) return;
                 // Defer Lua registry + entity:created out of the network RPC stack.
                 const godot::ObjectID oid(entity -> get_instance_id());
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
@@ -101,12 +96,7 @@ namespace Vital::Sandbox::API {
                     if (!obj) return;
                     auto* model = godot::Object::cast_to<base_class>(obj);
                     if (!model) return;
-                    {
-                        std::lock_guard<std::mutex> lock(registry.mutex);
-                        for (auto& [id, instance] : registry.buffer) {
-                            if (instance -> model == model) return;
-                        }
-                    }
+                    if (Instance::find_by_ptr(model)) return;
                     auto instance = Instance::init(nullptr, remote);
                     instance -> model = model;
                     instance -> store();
@@ -118,18 +108,9 @@ namespace Vital::Sandbox::API {
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
                 if (!entity) return;
-                std::lock_guard<std::mutex> lock(registry.mutex);
-                for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
-                    auto& instance = it -> second;
-                    if (instance -> model != entity) { ++it; continue; }
-                    ++it;
-                    Instance::erase_unlocked(instance);
-                    // Defer release so it runs after any deferred entity:destroyed.
-                    Vital::Engine::Core::get_singleton() -> execute([instance]() {
-                        instance -> model = nullptr;
-                        Instance::release(instance);
-                    });
-                }
+                Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
+                    instance -> model = nullptr;
+                });
             });
         }
 
