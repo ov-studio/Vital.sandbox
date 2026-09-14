@@ -121,6 +121,22 @@ namespace Vital::Sandbox {
                 }
                 return nullptr;
             }
+            
+            template<typename T = Derived, typename = typename T::Owner::base_class>
+            static void destroy_by_ptr(typename T::Owner::base_class* ptr, std::function<void(std::shared_ptr<Derived>)> on_release = nullptr) {
+                if (!ptr) return;
+                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                for (auto it = Derived::Owner::registry.buffer.begin(); it != Derived::Owner::registry.buffer.end();) {
+                    auto& instance = it -> second;
+                    if (instance -> get_node() != ptr) { ++it; continue; }
+                    ++it;
+                    erase_unlocked(instance);
+                    Vital::Engine::Core::get_singleton() -> execute([instance, on_release]() {
+                        if (on_release) on_release(instance);
+                        release(instance);
+                    });
+                }
+            }
 
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
