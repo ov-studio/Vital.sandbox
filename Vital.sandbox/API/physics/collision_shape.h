@@ -113,17 +113,12 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Collision_Shape>(vm);
 
             // Bound once for the process, not per-VM — see the equivalent comment
-            // in API::Model::bind(). Listens on the same shared "entity:spawned" /
-            // "entity:unspawned" channel every entity kind emits on, type-checking
-            // the EntityKind slot and ignoring anything that isn't CollisionShape.
-            // Lives here rather than in Physics_Body_Lifecycle because shape
-            // spawn/destroy never actually depended on the physics body types —
-            // it only ever touched its own registry.
+            // in API::Model::bind(). Uses as_ptr<base_class>() to distinguish
+            // CollisionShape payloads from other entity types on the same channel.
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                if (args.array.size() < 4) return;
-                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::CollisionShape) return;
-                auto* node = args.array[0].as<base_class*>();
+                if (args.array.size() < 2) return;
+                auto* node = args.array[0].as_ptr<base_class>();
                 if (!node) return;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
@@ -149,9 +144,8 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::event_id destroyed_binding = 0;
             if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                if (args.array.size() < 3) return;
-                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::CollisionShape) return;
-                auto* node = args.array[0].as<base_class*>();
+                if (args.array.size() < 1) return;
+                auto* node = args.array[0].as_ptr<base_class>();
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it->second;

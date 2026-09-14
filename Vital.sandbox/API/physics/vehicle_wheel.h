@@ -182,15 +182,13 @@ namespace Vital::Sandbox::API {
 
                 // Wire destroy hook once — static id guards against rebinding a
                 // second handler on every create() call (Tool::Event::bind is
-                // additive, unlike the old raw std::function assignment). Shared
-                // "entity:spawned"/"entity:unspawned" channel — type-checks
-                // EntityKind and ignores anything that isn't VehicleWheel.
+                // additive, unlike the old raw std::function assignment).
+                // Uses as_ptr<Vehicle_Wheel>() to filter non-wheel payloads.
                 static Tool::Event::event_id destroyed_binding = 0;
                 if (!destroyed_binding) {
                     destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                        if (args.array.size() < 3) return;
-                        if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::VehicleWheel) return;
-                        auto* node = args.array[0].as<Vital::Engine::Vehicle_Wheel*>();
+                        if (args.array.size() < 1) return;
+                        auto* node = args.array[0].as_ptr<Vital::Engine::Vehicle_Wheel>();
                         std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
                         for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
                             auto& inst = it->second;

@@ -40,9 +40,7 @@ namespace Vital::Engine {
     }
 
     void Collision_Shape::_notification(int what) {
-        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({
-            this, (int32_t)Vital::Engine::EntityKind::CollisionShape, (int32_t)0
-        }));
+        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
     }
 
 

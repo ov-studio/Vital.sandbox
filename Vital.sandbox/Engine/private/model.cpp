@@ -51,9 +51,7 @@ namespace Vital::Engine {
             // even if _ready() didn't (deferred registration pattern).
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
-            Tool::Event::emit("entity:unspawned", Tool::Stack({
-                this, (int32_t)Vital::Engine::EntityKind::Model, (int32_t)0
-            }));
+            Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
         }
     }
 
@@ -400,9 +398,7 @@ namespace Vital::Engine {
                 // owning peer so it applies the override and reseeds its baseline.
                 object->flush_pending_force_transform();
 
-                Tool::Event::emit("entity:spawned", Tool::Stack({
-                    object, (int32_t)Vital::Engine::EntityKind::Model, (int32_t)0, false
-                }));
+                Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
             });
 
             return object;
@@ -454,9 +450,7 @@ namespace Vital::Engine {
             Manager::Network::get_singleton()->enqueue_syncable_registration(this);
         }
         set_visible(true);
-        Tool::Event::emit("entity:spawned", Tool::Stack({
-            this, (int32_t)Vital::Engine::EntityKind::Model, (int32_t)0, true
-        }));
+        Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
     }
     #endif

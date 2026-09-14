@@ -87,21 +87,19 @@ namespace Vital::Sandbox::API {
             // per-type registries — so there's no stale-closure reason to
             // unbind/rebind on every resource restart.
             //
-            // "entity:spawned" / "entity:unspawned" are shared across every
-            // entity kind (Model, PhysicsBody, CollisionShape, VehicleWheel) —
-            // these handlers type-check the EntityKind slot and ignore anything
-            // that isn't PhysicsBody. Collision_Shape and Vehicle_Wheel wire
-            // their own kind-checked handlers on the same channel in their own
-            // bind() — see API::Collision_Shape::bind() and API::Vehicle_Wheel::
-            // bind() — since neither actually depends on the body types below.
+            // "entity:spawned" / "entity:unspawned" — PhysicsBody emits
+            // {ISyncable*, sub_type, remote}; the ISyncable* cast distinguishes
+            // these from other entity payloads (non-physics pointers return nullptr).
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                if (args.array.size() < 4) return;
-                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::PhysicsBody) return;
+                if (args.array.size() < 3) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
-                auto sub_type = (Vital::Engine::PhysicsType)args.array[2].as<int32_t>();
-                bool remote = args.array[3].as<bool>();
                 if (!entity) return;
+                // PhysicsBody emits {ISyncable*, sub_type, remote} — type-check via
+                // dynamic_cast in the switch below; non-physics payloads carry a
+                // non-ISyncable* pointer so the cast above returns nullptr and we bail.
+                auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
+                bool remote = args.array[2].as<bool>();
                 // Capture by ObjectID — raw `this` would be dangling if the body is
                 // queue_free()'d before the deferred enqueue drains.
                 switch (sub_type) {
@@ -126,10 +124,10 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::event_id destroyed_binding = 0;
             if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                if (args.array.size() < 3) return;
-                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::PhysicsBody) return;
+                if (args.array.size() < 2) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
-                auto sub_type = (Vital::Engine::PhysicsType)args.array[2].as<int32_t>();
+                if (!entity) return;
+                auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
                         destroy_body<Rigid_Body, Vital::Engine::Rigid_Body>(entity); break;

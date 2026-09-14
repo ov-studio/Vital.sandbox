@@ -144,9 +144,7 @@ namespace Vital::Engine {
                     object->delta_last_rot = init_rot;
                 }
                 net_mgr -> replay_pending_syncs(object);
-                Tool::Event::emit("entity:spawned", Tool::Stack({
-                    object, (int32_t)Vital::Engine::EntityKind::Model, (int32_t)0, true
-                }));
+                Tool::Event::emit("entity:spawned", Tool::Stack({object, true}));
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
@@ -213,11 +211,9 @@ namespace Vital::Engine {
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
-                    // Notify Lua so it can hydrate collision shapes / wheels on
-                    // this remote body — shares the same "entity:spawned" channel
-                    // every entity kind emits on (see EntityKind in core.h).
+                    // Notify Lua so it can hydrate collision shapes / wheels on this remote body.
                     Tool::Event::emit("entity:spawned", Tool::Stack({
-                        entity, (int32_t)Vital::Engine::EntityKind::PhysicsBody, (int32_t)sub_type, true
+                        entity, (int32_t)sub_type, true
                     }));
                 }
                 break;
@@ -532,9 +528,7 @@ namespace Vital::Engine {
         if (!col) {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
-            Tool::Event::emit("entity:spawned", Tool::Stack({
-                col, (int32_t)Vital::Engine::EntityKind::CollisionShape, (int32_t)0, true
-            }));
+            Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
         }
 
         // FIXED: now routes through Collision_Shape::assign_shape(), which sets
