@@ -35,12 +35,7 @@ namespace Vital::Sandbox::API {
                 if (!obj) return;
                 auto* typed = godot::Object::cast_to<Engine_Type>(obj);
                 if (!typed) return;
-                {
-                    std::lock_guard<std::mutex> lock(API_Type::registry.mutex);
-                    for (auto& [id, inst] : API_Type::registry.buffer) {
-                        if (inst->body == typed) return;
-                    }
-                }
+                if (API_Type::Instance::find_by_ptr(typed)) return;
                 auto instance = API_Type::Instance::init(nullptr, remote);
                 instance->body = typed;
                 instance->store(false);
