@@ -24,21 +24,10 @@
 // Vital: API: Physics_Body_Lifecycle //
 /////////////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Physics_Body_Lifecycle : vm_module {
         inline static const std::vector<std::string> base_scope = {};
 
-        // -----------------------------------------------------------------------
-        // spawn_body<API_Type, Engine_Type>
-        //
-        // Defers the Lua Instance::store() / entity:created signal out of the
-        // _spawn_entity RPC handler to avoid nesting a Lua pcall inside network
-        // RPC handling (which corrupts the VM heap under rapid resource restart).
-        //
-        // Idempotent: bails early if an Instance already owns this engine node
-        // (prevents double-registration on the same object).
-        // -----------------------------------------------------------------------
         template<typename API_Type, typename Engine_Type>
         static void spawn_body(godot::ObjectID oid, bool remote) {
             Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
@@ -48,8 +37,9 @@ namespace Vital::Sandbox::API {
                 if (!typed) return;
                 {
                     std::lock_guard<std::mutex> lock(API_Type::registry.mutex);
-                    for (auto& [id, inst] : API_Type::registry.buffer)
+                    for (auto& [id, inst] : API_Type::registry.buffer) {
                         if (inst->body == typed) return;
+                    }
                 }
                 auto instance = API_Type::Instance::init(nullptr, remote);
                 instance->body = typed;
@@ -57,14 +47,6 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        // -----------------------------------------------------------------------
-        // destroy_body<API_Type, Engine_Type>
-        //
-        // Walks the registry under its lock, finds every Instance whose body
-        // pointer matches the engine entity, erases it (emitting
-        // entity:destroyed), then schedules a Core::execute() to null the pointer
-        // and release Lua references off the physics thread.
-        // -----------------------------------------------------------------------
         template<typename API_Type, typename Engine_Type>
         static void destroy_body(Vital::Engine::ISyncable* entity) {
             auto* typed = static_cast<Engine_Type*>(entity);
@@ -87,8 +69,6 @@ namespace Vital::Sandbox::API {
             if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
             if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
 
-            // PhysicsBody emits {ISyncable*, sub_type, remote}; type-check via
-            // ISyncable* so Model/CollisionShape payloads are ignored.
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
