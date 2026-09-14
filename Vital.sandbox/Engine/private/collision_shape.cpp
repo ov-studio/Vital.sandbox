@@ -40,7 +40,7 @@ namespace Vital::Engine {
     }
 
     void Collision_Shape::_notification(int what) {
-        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:collision_shape:destroyed", Tool::Stack({ this }));
+        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:collision_shape:destroyed", Tool::Stack({this}));
     }
 
 

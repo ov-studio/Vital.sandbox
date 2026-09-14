@@ -51,7 +51,7 @@ namespace Vital::Engine {
             // even if _ready() didn't (deferred registration pattern).
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
-            Tool::Event::emit("entity:model:destroyed", Tool::Stack({ this }));
+            Tool::Event::emit("entity:model:destroyed", Tool::Stack({this}));
         }
     }
 
