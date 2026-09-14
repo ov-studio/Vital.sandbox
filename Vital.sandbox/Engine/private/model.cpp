@@ -399,6 +399,7 @@ namespace Vital::Engine {
                 object->flush_pending_force_transform();
 
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
+                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
             });
 
             return object;
@@ -451,6 +452,7 @@ namespace Vital::Engine {
         }
         set_visible(true);
         Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
+        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
     }
     #endif

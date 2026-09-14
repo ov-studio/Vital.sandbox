@@ -145,6 +145,7 @@ namespace Vital::Engine {
                 }
                 net_mgr -> replay_pending_syncs(object);
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, true}));
+                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
@@ -215,6 +216,9 @@ namespace Vital::Engine {
                     Tool::Event::emit("entity:spawned", Tool::Stack({
                         entity, (int32_t)sub_type, true
                     }));
+                    if (auto* node = entity->get_sync_node()) {
+                        Tool::Event::emit("entity:ready", Tool::Stack({node}));
+                    }
                 }
                 break;
             }

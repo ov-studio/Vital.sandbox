@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
             // All three categories can be set before the parent vehicle body's
             // net_id is registered (i.e. in the same Lua tick as vehicle body
             // create()).  We stash them here and flush from
-            // "entity:vehicle_wheel:ready" fires once the deferred enqueue drains.
+            // "entity:ready" fires once the deferred enqueue drains.
             //
             // pending_spawn   — whether _spawn_wheel still needs to be sent.
             // pending_configs — queue of (key, value) pairs for _sync_wheel_config.
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             bool pending_transform = false;
 
             // Flush all buffered RPCs now that net_id is live.
-            // Called from the "entity:vehicle_wheel:ready" handler, which fires from
+            // Called from the shared "entity:ready" handler, which fires from
             // Physics_Body::setup_create()'s deferred enqueue after _spawn_entity.
             void flush_pending_broadcasts() {
                 uint32_t nid = get_parent_net_id();
@@ -157,10 +157,10 @@ namespace Vital::Sandbox::API {
                 instance -> body = base_class::create(owner -> get_node());
 
                 // Assign sequential wheel index (count existing Vehicle_Wheel children).
-                auto* vnode = owner->get_node();
+                auto* entity = owner->get_node();
                 int idx_count = 0;
-                for (int i = 0; i < vnode->get_child_count(); i++) {
-                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(vnode->get_child(i))) idx_count++;
+                for (int i = 0; i < entity->get_child_count(); i++) {
+                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity->get_child(i))) idx_count++;
                 }
                 // The newly added wheel is already a child, so subtract 1
                 instance->body->wheel_index = idx_count - 1;
@@ -169,7 +169,7 @@ namespace Vital::Sandbox::API {
                 // If the parent vehicle body's net_id isn't registered yet (because
                 // setup_create()'s enqueue hasn't drained — the common case when the
                 // wheel is created in the same Lua tick as the vehicle body), buffer
-                // the spawn RPC and let "entity:vehicle_wheel:ready" flush it later.
+                // the spawn RPC and let "entity:ready" flush it later.
                 #if !defined(VSDK_Client)
                 uint32_t nid = instance->get_parent_net_id();
                 if (nid != 0) {
@@ -183,16 +183,19 @@ namespace Vital::Sandbox::API {
                 // Wire destroy hook once — static id guards against rebinding a
                 // second handler on every create() call (Tool::Event::bind is
                 // additive, unlike the old raw std::function assignment).
-                // Uses as_raw_ptr<Vehicle_Wheel>() to filter non-wheel payloads.
+                // Uses as_ptr<Vehicle_Wheel>() to filter non-wheel payloads.
                 static Tool::Event::event_id destroyed_binding = 0;
                 if (!destroyed_binding) {
                     destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                         if (args.array.size() < 1) return;
-                        auto node = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
+                        // Raw Vehicle_Wheel* payloads only — ignore PhysicsBody/Model shapes.
+                        if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
+                        auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
+                        if (!entity) return;
                         std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
                         for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
                             auto& inst = it->second;
-                            if (inst->body != node) { ++it; continue; }
+                            if (inst->body != entity) { ++it; continue; }
                             ++it;
                             Vehicle_Wheel::Instance::erase_unlocked(inst);
                             Vital::Engine::Core::get_singleton()->execute([inst]() {
@@ -203,23 +206,25 @@ namespace Vital::Sandbox::API {
                     });
                 }
 
-                // Wire the vehicle-ready hook once (idempotent — bound once for the
-                // process; the handler captures nothing VM-specific).
+                // Shared "entity:ready" hook (idempotent — bound once for the process;
+                // the handler captures nothing VM-specific). Any entity can emit this
+                // once it is fully registered; we only act when the payload is the
+                // parent vehicle Node3D of one of our wheels.
                 // Physics_Body::setup_create()'s deferred enqueue emits this after
-                // _spawn_entity fires, passing the vehicle body Node3D. We walk its
-                // VehicleWheel3D children, look each one up in our Instance registry,
-                // and flush any buffered spawn/config/transform RPCs.
+                // _spawn_entity fires. We flush any buffered spawn/config/transform RPCs
+                // for wheels parented to that entity.
                 #if !defined(VSDK_Client)
                 static Tool::Event::event_id ready_binding = 0;
                 if (!ready_binding) {
-                    ready_binding = Tool::Event::bind("entity:vehicle_wheel:ready", [](Tool::Stack args) {
+                    ready_binding = Tool::Event::bind("entity:ready", [](Tool::Stack args) {
                         if (args.array.size() < 1) return;
-                        auto* vnode = args.array[0].as<godot::Node3D*>();
+                        auto* entity = args.array[0].as<godot::Node3D*>();
+                        if (!entity) return;
                         std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
                         for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
                             if (!inst || !inst->body) continue;
-                            // Only flush wheels whose parent is this vehicle node.
-                            if (inst->body->get_parent() != vnode) continue;
+                            // Only flush wheels whose parent is this entity.
+                            if (inst->body->get_parent() != entity) continue;
                             inst->flush_pending_broadcasts();
                         }
                     });

@@ -250,15 +250,12 @@ namespace Vital::Engine {
                             // Flush any set_position/set_rotation called before net_id
                             // was registered — sends _force_transform to the owning peer.
                             self -> flush_pending_force_transform();
-                            // For VehicleBody3D: flush any wheel RPCs (_spawn_wheel,
-                            // _sync_wheel_config, _sync_wheel_transform) that were buffered
-                            // because the vehicle body wasn't registered yet when wheels were
-                            // created or configured in the same Lua tick as the vehicle body.
-                            if constexpr (std::is_base_of_v<godot::VehicleBody3D, Base>) {
-                                Tool::Event::emit("entity:vehicle_wheel:ready", Tool::Stack({
-                                    static_cast<godot::Node3D*>(self)
-                                }));
-                            }
+                            // Shared ready signal: entity is registered, spawn RPC sent,
+                            // pending shape/transform flushed. Listeners (e.g. vehicle
+                            // wheels buffering _spawn_wheel / config RPCs until parent
+                            // net_id is live) type-check the payload and act only on
+                            // entities they own.
+                            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self)}));
                         });
                     }
                     else Core::get_singleton() -> add_child(this);
