@@ -250,11 +250,13 @@ namespace Vital::Engine {
                             // Flush any set_position/set_rotation called before net_id
                             // was registered — sends _force_transform to the owning peer.
                             self -> flush_pending_force_transform();
+                            // Local server spawn: same shape as remote _spawn_entity so
+                            // Physics_Body_Lifecycle binders see every body. spawn_body<>
+                            // is idempotent — Lua create() already store()'d an Instance.
+                            Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self->get_physics_type(), false}));
                             // Shared ready signal: entity is registered, spawn RPC sent,
-                            // pending shape/transform flushed. Listeners (e.g. vehicle
-                            // wheels buffering _spawn_wheel / config RPCs until parent
-                            // net_id is live) type-check the payload and act only on
-                            // entities they own.
+                            // pending shape/transform flushed. Listeners type-check the
+                            // Node3D* payload and act only on entities they own.
                             Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self)}));
                         });
                     }
