@@ -58,9 +58,6 @@ namespace Vital::Manager {
             #endif
 
             struct Internal {
-                // Client lifecycle tokens: each stop bumps the generation for that
-                // resource so deferred start jobs from an older resource:started
-                // packet are ignored when a newer stop/restart has already begun.
                 private:
                     static std::mutex lifecycle_mutex;
                     static std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
@@ -69,56 +66,56 @@ namespace Vital::Manager {
                     static std::unordered_set<std::string> resource_restart_pending;
                     #endif
                 public:
-                // Helpers //
-                static std::string chunk_name(const std::string& resource, const std::string& src);
-                static Tool::Stack pack_manifest(const Manifest& manifest);
-                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies);
-                static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
-                static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
-                static void load_models(const std::string& name);
-                static void execute_resource(std::string name);
-                #if defined(VSDK_Client)
-                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies);
-                #else
-                static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
-                static bool reload_manifest(const std::string& name, std::vector<std::string>& errors);
-                static bool resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack);
-                static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
-                #endif
+                    // Helpers //
+                    static std::string chunk_name(const std::string& resource, const std::string& src);
+                    static Tool::Stack pack_manifest(const Manifest& manifest);
+                    static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies);
+                    static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+                    static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+                    static void load_models(const std::string& name);
+                    static void execute_resource(std::string name);
+                    #if defined(VSDK_Client)
+                    static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies);
+                    #else
+                    static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+                    static bool reload_manifest(const std::string& name, std::vector<std::string>& errors);
+                    static bool resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack);
+                    static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
+                    #endif
 
 
-                // Lifecycle //
-                static uint32_t lifecycle_get(const std::string& name);
-                static uint32_t lifecycle_bump(const std::string& name);
-                #if !defined(VSDK_Client)
-                static void finish_restart_cycle(const std::string& name);
-                #endif
+                    // Lifecycle //
+                    static uint32_t lifecycle_get(const std::string& name);
+                    static uint32_t lifecycle_bump(const std::string& name);
+                    #if !defined(VSDK_Client)
+                    static void finish_restart_cycle(const std::string& name);
+                    #endif
 
 
-                // Checkers //
-                static bool is_loaded(const std::string& name);
-                static bool is_running(const std::string& name);
-                #if defined(VSDK_Client)
-                static bool is_pending(const std::string& name);
-                #endif
+                    // Checkers //
+                    static bool is_loaded(const std::string& name);
+                    static bool is_running(const std::string& name);
+                    #if defined(VSDK_Client)
+                    static bool is_pending(const std::string& name);
+                    #endif
 
 
-                // Getters //
-                static const Manifest* get_resource(const std::string& name);
-                static std::vector<const Manifest*> get_all_resources();
-                static std::vector<const Manifest*> get_resources(State type);
+                    // Getters //
+                    static const Manifest* get_resource(const std::string& name);
+                    static std::vector<const Manifest*> get_all_resources();
+                    static std::vector<const Manifest*> get_resources(State type);
 
 
-                // Misc //
-                static bool start(std::string name);
-                static bool stop(std::string name);
-                static void stop_all();
-                #if !defined(VSDK_Client)
-                static void scan();
-                static bool restart(std::string name);
-                static void start_all();
-                static void restart_all();
-                #endif
+                    // Misc //
+                    static bool start(std::string name);
+                    static bool stop(std::string name);
+                    static void stop_all();
+                    #if !defined(VSDK_Client)
+                    static void scan();
+                    static bool restart(std::string name);
+                    static void start_all();
+                    static void restart_all();
+                    #endif
             };
 
 
