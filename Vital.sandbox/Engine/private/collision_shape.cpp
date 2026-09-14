@@ -70,14 +70,7 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
-    uint32_t Collision_Shape::get_parent_net_id() const {
-        auto* parent = const_cast<Collision_Shape*>(this) -> get_parent();
-        if (!parent) return 0;
-        auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-        return syncable ? syncable -> get_net_id() : 0;
-    }
-
+    // Checkers //
     bool Collision_Shape::is_replicated() const {
         return get_parent_net_id() > 0;
     }
@@ -119,19 +112,8 @@ namespace Vital::Engine {
     }
 
 
-    // Managers (client debug) //
+    // Helpers //
     #if defined(VSDK_Client)
-    void Collision_Shape::refresh_debug_mesh() {
-        if (!debug_mesh || !current_shape.is_valid()) return;
-        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
-        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape, color));
-    }
-
-    // Wireframe geometry builders — one closed ring/line-set per shape type,
-    // assembled into a PRIMITIVE_LINES mesh. Moved here (unchanged) from
-    // API::Collision_Shape so the engine layer is self-contained and no
-    // longer needs the API layer to hand it shape data after the fact.
-    // TODO: Make internal like resource etc
     namespace {
         void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24) {
             // plane: 0 = XZ (horizontal ring), 1 = XY (vertical ring), 2 = YZ (vertical ring) //
@@ -224,7 +206,6 @@ namespace Vital::Engine {
             arrays.resize(godot::Mesh::ARRAY_MAX);
             arrays[godot::Mesh::ARRAY_VERTEX] = points;
             mesh -> add_surface_from_arrays(godot::Mesh::PRIMITIVE_LINES, arrays);
-
             godot::Ref<godot::StandardMaterial3D> material;
             material.instantiate();
             material -> set_shading_mode(godot::StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -232,6 +213,12 @@ namespace Vital::Engine {
             mesh -> surface_set_material(0, material);
         }
         return mesh;
+    }
+    
+    void Collision_Shape::refresh_debug_mesh() {
+        if (!debug_mesh || !current_shape.is_valid()) return;
+        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
+        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape, color));
     }
     #endif
 }
