@@ -172,7 +172,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::default_debug_enabled);
+                vm -> push_value(base_class::is_debug_all());
                 return 1;
             });
             #endif
