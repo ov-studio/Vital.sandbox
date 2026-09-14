@@ -36,26 +36,11 @@ namespace Vital::Sandbox::API {
             Spatial
         };
 
-        // -----------------------------------------------------------------------
-        // maybe_force_broadcast
-        //
-        // When a server-side Lua script calls set_position / set_rotation /
-        // set_scale on a client-authority entity (sync_authority > 1), the
-        // normal sync_tick path skips the entity (authority != 1), so the
-        // change would never reach clients. Calling force_transform_broadcast()
-        // pushes an immediate _force_transform RPC so the authoritative peer
-        // picks up the override.
-        //
-        // Server-authority entities (sync_authority == 1) are broadcast by the
-        // regular sync_tick sample — no immediate override needed.
-        //
-        // Compiled away entirely in client builds: the dynamic_cast is a no-op
-        // on the client and the function body reduces to nothing.
-        // -----------------------------------------------------------------------
         static void maybe_force_broadcast(godot::Node3D* node) {
             #if !defined(VSDK_Client)
-            if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(node))
+            if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
                 if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+            }
             #endif
         }
 
@@ -74,7 +59,6 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> get_node() -> is_visible_in_tree());
                     return 1;
                 });
-
             }
             {
                 vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
@@ -138,7 +122,6 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
-    
             }
             if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
                 vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
