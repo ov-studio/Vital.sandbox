@@ -160,8 +160,6 @@ namespace Vital::Engine {
     }
 
     #if !defined(VSDK_Client)
-    static constexpr uint32_t FORCE_SYNC_MAGIC = 0x56535354u; // 'VSST'
-
     void ISyncable::flush_pending_force_transform() {
         if (!pending_force_transform.has_value()) return;
         if (sync_authority <= 1) { pending_force_transform.reset(); return; }
@@ -203,7 +201,7 @@ namespace Vital::Engine {
             buf[off+2] = (v >> 16) & 0xFF;
             buf[off+3] = (v >> 24) & 0xFF;
         };
-        wu32(0, FORCE_SYNC_MAGIC);
+        wu32(0, Internal::FORCE_SYNC_MAGIC);
         wu32(4, (uint32_t)written);
 
         Manager::Network::get_singleton() -> broadcast_sync(buf);
