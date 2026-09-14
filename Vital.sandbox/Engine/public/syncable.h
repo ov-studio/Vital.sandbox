@@ -107,11 +107,6 @@ namespace Vital::Engine {
             bool sync_registered = false;
             bool sync_sleeping = false;
             float sync_accum = 0.0f;
-            godot::Vector3 sync_last_pos;
-            godot::Vector3 sync_last_rot;
-            godot::Vector3 sync_last_vel;
-            godot::Vector3 sync_last_scale = godot::Vector3(1, 1, 1);
-            Snapshot snap_buf[SNAPSHOT_COUNT];
             int snap_head = 0;
             int snap_count = 0;
             float snap_clock = 0.0f;
@@ -126,6 +121,11 @@ namespace Vital::Engine {
             godot::Vector3 delta_last_rot;
             godot::Vector3 delta_last_vel;
             godot::Vector3 delta_last_scale = godot::Vector3(1, 1, 1);
+            godot::Vector3 sync_last_pos;
+            godot::Vector3 sync_last_rot;
+            godot::Vector3 sync_last_vel;
+            godot::Vector3 sync_last_scale = godot::Vector3(1, 1, 1);
+            Snapshot snap_buf[SNAPSHOT_COUNT];
             #if !defined(VSDK_Client)
             std::optional<PendingForceTransform> pending_force_transform;
             #endif
