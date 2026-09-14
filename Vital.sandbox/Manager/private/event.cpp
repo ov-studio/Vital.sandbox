@@ -143,9 +143,10 @@ void vsdk_initialize() {
                 // TODO: 7777?
                 //nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
-                g_server_config.load();
-                if (!nm -> host(g_server_config)) return;
-                Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
+                auto& server_config = Vital::Engine::Core::get_singleton() -> get_server_config();
+                server_config.load();
+                if (!nm -> host(server_config)) return;
+                Vital::Manager::Asset::get_singleton() -> set_http_port(server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
         }
