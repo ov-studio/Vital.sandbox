@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.sandbox/Vital/config.h>
 #include <Vital.sandbox/Vital/engine.h>
 #include <Vital.sandbox/Vital/manager.h>
 
