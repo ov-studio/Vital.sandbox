@@ -73,20 +73,20 @@ namespace Vital::Sandbox::API {
                 shape -> set_size(size);
                 return shape;
             }
-            if (type == "sphere") {
+            else if (type == "sphere") {
                 godot::Ref<godot::SphereShape3D> shape;
                 shape.instantiate();
                 shape -> set_radius(read_float("radius", 0.5f));
                 return shape;
             }
-            if (type == "capsule") {
+            else if (type == "capsule") {
                 godot::Ref<godot::CapsuleShape3D> shape;
                 shape.instantiate();
                 shape -> set_radius(read_float("radius", 0.4f));
                 shape -> set_height(read_float("height", 1.8f));
                 return shape;
             }
-            if (type == "cylinder") {
+            else if (type == "cylinder") {
                 godot::Ref<godot::CylinderShape3D> shape;
                 shape.instantiate();
                 shape -> set_radius(read_float("radius", 0.4f));
@@ -123,7 +123,6 @@ namespace Vital::Sandbox::API {
                 auto from = vm -> get_vector3(1);
                 auto to = vm -> get_vector3(2);
                 auto has_options = vm -> is_table(3);
-
                 uint32_t mask = 0xFFFFFFFF;
                 bool collide_bodies = true, collide_areas = false, hit_from_inside = false, hit_back_faces = true;
                 godot::TypedArray<godot::RID> exclude;
@@ -164,15 +163,16 @@ namespace Vital::Sandbox::API {
                 params -> set_hit_back_faces(hit_back_faces);
 
                 auto result = space_state -> intersect_ray(params);
-                if (result.is_empty()) { vm -> push_value(false); return 1; }
-
-                vm -> create_table();
-                vm -> push_value(static_cast<godot::Vector3>(result["position"]));
-                vm -> set_table_field("position", -2);
-                vm -> push_value(static_cast<godot::Vector3>(result["normal"]));
-                vm -> set_table_field("normal", -2);
-                Space::push_collider(vm, result);
-                vm -> set_table_field("collider", -2);
+                if (result.is_empty()) vm -> push_value(false);
+                else {
+                    vm -> create_table();
+                    vm -> push_value(static_cast<godot::Vector3>(result["position"]));
+                    vm -> set_table_field("position", -2);
+                    vm -> push_value(static_cast<godot::Vector3>(result["normal"]));
+                    vm -> set_table_field("normal", -2);
+                    Space::push_collider(vm, result);
+                    vm -> set_table_field("collider", -2);
+                }
                 return 1;
             });
 
@@ -183,12 +183,10 @@ namespace Vital::Sandbox::API {
 
                 auto point = vm -> get_vector3(1);
                 auto has_options = vm -> is_table(2);
-
                 uint32_t mask = 0xFFFFFFFF;
                 int max_results = 32;
                 bool collide_bodies = true, collide_areas = false;
                 godot::TypedArray<godot::RID> exclude;
-
                 if (has_options) {
                     vm -> get_table_field("mask", 2);
                     if (vm -> is_number(-1)) mask = static_cast<uint32_t>(vm -> get_int(-1));
@@ -243,7 +241,6 @@ namespace Vital::Sandbox::API {
                 auto shape = Space::build_shape(vm, 1);
                 auto position = vm -> get_vector3(2);
                 auto has_options = vm -> is_table(3);
-
                 uint32_t mask = 0xFFFFFFFF;
                 int max_results = 32;
                 float margin = 0.04f;
@@ -316,7 +313,6 @@ namespace Vital::Sandbox::API {
                 auto position = vm -> get_vector3(2);
                 auto motion = vm -> get_vector3(3);
                 auto has_options = vm -> is_table(4);
-
                 uint32_t mask = 0xFFFFFFFF;
                 bool collide_bodies = true, collide_areas = false;
                 godot::TypedArray<godot::RID> exclude;
