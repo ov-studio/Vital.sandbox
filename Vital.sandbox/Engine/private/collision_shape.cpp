@@ -49,6 +49,10 @@ namespace Vital::Engine {
         auto body = memnew(Collision_Shape);
         if (owner) owner -> add_child(body);
         else Engine::Core::get_singleton() -> add_child(body);
+        // Same pipeline as Model / PhysicsBody: spawned (API binders hydrate
+        // Lua Instances; idempotent if create() already store()'d) then ready.
+        Tool::Event::emit("entity:spawned", Tool::Stack({body, false}));
+        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(body)}));
         return body;
     }
 
