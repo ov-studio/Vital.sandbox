@@ -130,22 +130,8 @@ namespace Vital::Engine {
             // Helpers //
             void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
-
-            // Bridges this mixin interface to the concrete Node3D each synced
-            // type is layered onto — Model IS-A Node3D directly; Physics_Body<Base>
-            // is layered onto a Base that IS-A Node3D (RigidBody3D, StaticBody3D,
-            // CharacterBody3D, ...). set_parent()/apply_parent() below need to
-            // touch the actual scene graph (reparent, is_inside_tree, get_parent)
-            // without knowing the concrete type, hence this hook. Every subclass
-            // implements it as a trivial `return this;`.
             virtual godot::Node3D* get_sync_node() = 0;
-
             #if !defined(VSDK_Client)
-            // Actual reparent + sync-baseline-reset + _reparent_entity broadcast,
-            // factored out of set_parent() so it can be handed to
-            // Core::execute_when_ready() as a plain callback and only ever run
-            // once both this entity and the requested parent are confirmed to
-            // be inside the scene tree. `parent_node` is nullable (detach).
             void apply_parent(godot::Node* parent_node);
             #endif
         public:
@@ -167,13 +153,6 @@ namespace Vital::Engine {
             virtual void destroy_sync() = 0;
             virtual std::string get_sync_name() const { return ""; }
             virtual uint32_t get_net_id() const { return net_id; }
-            // True once this entity has been assigned a server net_id — i.e. it is
-            // actually being network-replicated, as opposed to a client-local-only
-            // instance (net_id == 0). Shared by every ISyncable type (Model,
-            // Physics_Body, ...) so "replicated or not" is defined in exactly one
-            // place. Mirrors Collision_Shape::is_replicated(), which asks the same
-            // question about its *parent* body, since a collision shape is never
-            // itself an ISyncable.
             bool is_replicated() const { return net_id != 0; }
             virtual int get_sync_authority() const { return sync_authority; }
             virtual godot::Vector3 get_sync_position() const = 0;
@@ -182,35 +161,13 @@ namespace Vital::Engine {
             virtual godot::Vector3 get_sync_scale() const = 0;
             virtual void on_sync_process(double delta) = 0;
             virtual void reset_sync_state();
-
-            // Switch sync coordinate space.
-            // id == 0  → detached, global sync.
-            // id != 0  → parented; pos/rot are sent/received in local space.
-            // Shared by every ISyncable type (Model, Physics_Body, …) so
-            // apply_reparent_entity (client) and apply_parent (server) need no
-            // per-type casting — they call this through the ISyncable* directly.
-            // Model and Physics_Body no longer define their own copies.
             void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
             uint32_t get_sync_parent_net_id() const  { return sync_parent_net_id; }
 
             #if !defined(VSDK_Client)
-            // Called after a server-side set_position / set_global_position on an
-            // entity whose sync_authority is a client peer.  The normal sync_tick
-            // loop skips client-authority entities on the server (the client is
-            // supposed to drive them), so a position override written by the server
-            // would never reach other clients through that path.  This method
-            // fires one immediate _sync_entities broadcast for this entity alone,
-            // reseeds sync_last_pos/rot so the client's next upload (which carries
-            // the client's own position) is compared against the new baseline —
-            // preventing the client from immediately "winning" back the old spot.
             void force_transform_broadcast();
             #endif
 
-            // When force_transform_broadcast() is called before net_id is assigned
-            // (i.e. in the same Lua tick as create()), the RPC can't go out yet.
-            // Stash pos/rot here; the deferred registration lambda flushes it after
-            // _spawn_entity is sent — mirrors flush_pending_shape_broadcast() on
-            // Physics_Body and the set_syncer() / pending_authority pattern on Model.
             #if !defined(VSDK_Client)
             struct PendingForceTransform {
                 godot::Vector3 pos;
@@ -219,23 +176,7 @@ namespace Vital::Engine {
             };
             std::optional<PendingForceTransform> pending_force_transform;
 
-            // Called from the deferred registration lambdas in Model::create() and
-            // Physics_Body::setup_create(), after net_id is live and _spawn_entity
-            // has been sent.  Sends _force_transform to the owning peer if a
-            // set_position/set_rotation was called in the same Lua tick as create().
             void flush_pending_force_transform();
-
-            //   entity under another synced entity (Model, Physics_Body, ...) on
-            //   the server scene tree and broadcast _reparent_entity to all
-            //   current clients. Pass nullptr to detach back to Core root
-            //   (sync_parent_net_id == 0). ONLY call from the server VM; the API
-            //   layer enforces this.
-            //   Shared across every ISyncable type — Model, Physics_Body, and
-            //   anything added later — so none of them have to reimplement this
-            //   (or, worse, fall back to a raw, un-synced reparent() that never
-            //   tells clients).
-            // get_parent_net_id() — returns the net_id of the current sync
-            //   parent, or 0 when parented directly to Core.
             void set_parent(godot::Node3D* parent_node);
             uint32_t get_parent_net_id() const;
             #endif
