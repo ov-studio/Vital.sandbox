@@ -39,9 +39,11 @@ namespace Vital::Engine {
             struct Internal {
                 #if defined(VSDK_Client)
                 private:
+                    // Helpers //
                     static void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24);
                     static void add_half_ring(godot::PackedVector3Array& points, float radius, float center_y, int plane, bool upper, int segments = 12);
                 public:
+                    // Helpers //
                     static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
                 #endif
             };

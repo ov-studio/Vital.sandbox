@@ -22,6 +22,7 @@
 
 #if defined(VSDK_Client)
 namespace Vital::Engine {
+    // Helpers //
     void Collision_Shape::Internal::add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments) {
         for (int i = 0; i < segments; i++) {
             float a0 = (float)i / segments * 6.28318530717958647692f;
