@@ -85,15 +85,15 @@ namespace Vital::Sandbox::API {
                 if (!net) return;
 
                 if (pending_spawn) {
-                    net->rpc("_spawn_wheel", (int)nid, body->get_wheel_index(), body->get_position(), body->get_rotation());
+                    net->rpc("_spawn_wheel", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
                     pending_spawn = false;
                 }
                 for (auto& [key, value] : pending_configs) {
-                    net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_index(), godot::String(key.c_str()), value);
+                    net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_id(), godot::String(key.c_str()), value);
                 }
                 pending_configs.clear();
                 if (pending_transform) {
-                    net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_index(), body->get_position(), body->get_rotation());
+                    net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
                     pending_transform = false;
                 }
             }
@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                     return;
                 }
                 auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_index(), godot::String(key), value);
+                if (net) net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_id(), godot::String(key), value);
                 #endif
             }
 
@@ -126,7 +126,7 @@ namespace Vital::Sandbox::API {
                     return;
                 }
                 auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_index(), body->get_position(), body->get_rotation());
+                if (net) net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
                 #endif
             }
 
@@ -199,7 +199,7 @@ namespace Vital::Sandbox::API {
                     if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity->get_child(i))) idx_count++;
                 }
                 // The newly added wheel is already a child, so subtract 1
-                instance->body->set_wheel_index(idx_count - 1);
+                instance->body->set_wheel_id(idx_count - 1);
 
                 // Server-side: tell clients to create the matching wheel node.
                 // If the parent vehicle body's net_id isn't registered yet (because
@@ -210,7 +210,7 @@ namespace Vital::Sandbox::API {
                 uint32_t nid = instance->get_parent_net_id();
                 if (nid != 0) {
                     auto* net = Manager::Network::get_singleton()->get_node();
-                    if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->get_wheel_index(), instance->body->get_position(), instance->body->get_rotation());
+                    if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->get_wheel_id(), instance->body->get_position(), instance->body->get_rotation());
                 } else {
                     instance->pending_spawn = true;
                 }

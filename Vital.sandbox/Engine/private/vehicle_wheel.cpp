@@ -43,13 +43,13 @@ namespace Vital::Engine {
 
 
     // Getters //
-    int Vehicle_Wheel::get_wheel_index() const {
-        return wheel_index;
+    int Vehicle_Wheel::get_wheel_id() const {
+        return wheel_id;
     }
 
 
     // Setters //
-    void Vehicle_Wheel::set_wheel_index(int index) {
-        wheel_index = index;
+    void Vehicle_Wheel::set_wheel_id(int index) {
+        wheel_id = index;
     }
 }

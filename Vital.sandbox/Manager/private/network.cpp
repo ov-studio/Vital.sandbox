@@ -1086,10 +1086,10 @@ namespace Vital::Manager {
                     auto* wheel = godot::Object::cast_to<Engine::Vehicle_Wheel>(parent_node->get_child(wi));
                     if (!wheel) continue;
 
-                    node->rpc_id(id, "_spawn_wheel", (int)e->get_net_id(), wheel->get_wheel_index(), wheel->get_position(), wheel->get_rotation());
+                    node->rpc_id(id, "_spawn_wheel", (int)e->get_net_id(), wheel->get_wheel_id(), wheel->get_position(), wheel->get_rotation());
 
                     auto send_cfg = [&](const char* key, godot::Variant val) {
-                        node->rpc_id(id, "_sync_wheel_config", (int)e->get_net_id(), wheel->get_wheel_index(), godot::String(key), val);
+                        node->rpc_id(id, "_sync_wheel_config", (int)e->get_net_id(), wheel->get_wheel_id(), godot::String(key), val);
                     };
                     send_cfg("radius",                 wheel->get_radius());
                     send_cfg("suspension_rest_length", wheel->get_suspension_rest_length());

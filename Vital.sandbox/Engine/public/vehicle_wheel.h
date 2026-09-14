@@ -25,9 +25,9 @@ namespace Vital::Engine {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
         friend class Network;
         private:
-            int wheel_index = -1;
+            int wheel_id = -1;
 
-            
+
             // Instantiators //
             Vehicle_Wheel() = default;
             ~Vehicle_Wheel() override = default;
@@ -43,10 +43,10 @@ namespace Vital::Engine {
 
 
             // Getters //
-            int get_wheel_index() const;
+            int get_wheel_id() const;
 
 
             // Setters //
-            void set_wheel_index(int index);
+            void set_wheel_id(int index);
     };
 }

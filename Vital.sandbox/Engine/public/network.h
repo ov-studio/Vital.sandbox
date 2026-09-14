@@ -38,9 +38,9 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_wake_sync"), &Network::_wake_sync);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 godot::ClassDB::bind_method(godot::D_METHOD("_reparent_entity", "net_id", "parent_net_id"), &Network::_reparent_entity);
-                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_index", "position", "rotation"), &Network::_spawn_wheel);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_index", "key", "value"), &Network::_sync_wheel_config);
-                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_transform", "net_id", "wheel_index", "position", "rotation"), &Network::_sync_wheel_transform);
+                godot::ClassDB::bind_method(godot::D_METHOD("_spawn_wheel", "net_id", "wheel_id", "position", "rotation"), &Network::_spawn_wheel);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_config", "net_id", "wheel_id", "key", "value"), &Network::_sync_wheel_config);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_wheel_transform", "net_id", "wheel_id", "position", "rotation"), &Network::_sync_wheel_transform);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_anim_layer", "net_id", "layer", "mode", "name", "loop", "speed", "weight", "blend_time"), &Network::_sync_anim_layer);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_anim_layer_filter", "net_id", "layer", "enabled", "bones"), &Network::_sync_anim_layer_filter);
                 godot::ClassDB::bind_method(godot::D_METHOD("_force_transform", "net_id", "pos", "rot", "scale"), &Network::_force_transform);
@@ -72,9 +72,9 @@ namespace Vital::Engine {
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             static void apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params);
             static void apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id);
-            void _spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
-            void _sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value);
-            void _sync_wheel_transform(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation);
+            void _spawn_wheel(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation);
+            void _sync_wheel_config(int net_id, int wheel_id, godot::String key, godot::Variant value);
+            void _sync_wheel_transform(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation);
             void _sync_anim_layer(int net_id, int layer, int mode, godot::String name, bool loop, float speed, float weight, float blend_time);
             void _sync_anim_layer_filter(int net_id, int layer, bool enabled, godot::PackedStringArray bones);
             void _force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale = godot::Vector3(1,1,1));

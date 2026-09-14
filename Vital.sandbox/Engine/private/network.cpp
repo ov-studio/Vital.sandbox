@@ -286,38 +286,38 @@ namespace Vital::Engine {
     static Engine::Vehicle_Wheel* find_wheel(godot::Node3D* vehicle, int index) {
         for (int i = 0; i < vehicle->get_child_count(); i++) {
             auto* w = godot::Object::cast_to<Engine::Vehicle_Wheel>(vehicle->get_child(i));
-            if (w && w->get_wheel_index() == index) return w;
+            if (w && w->get_wheel_id() == index) return w;
         }
         return nullptr;
     }
 
     // _spawn_wheel: client creates a VehicleWheel3D child on the matching vehicle body.
     // position/rotation are the wheel's local offset from the body center.
-    void Network::_spawn_wheel(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation) {
+    void Network::_spawn_wheel(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation) {
         #if defined(VSDK_Client)
         auto* vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
 
         // Don't double-create
-        if (find_wheel(vehicle, wheel_index)) return;
+        if (find_wheel(vehicle, wheel_id)) return;
 
         auto* wheel = memnew(Engine::Vehicle_Wheel);
-        wheel->set_wheel_index(wheel_index);
+        wheel->set_wheel_id(wheel_id);
         vehicle->add_child(wheel);
         wheel->set_position(position);
         wheel->set_rotation(rotation);
-        godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_index=", wheel_index);
+        godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_id=", wheel_id);
         #endif
     }
 
     // _sync_wheel_config: client applies a single setup-time property to a wheel.
     // Per-tick inputs (engine_force, brake, steering) are NOT sent — the authority
     // peer runs those locally; the result is captured in the body transform sync.
-    void Network::_sync_wheel_config(int net_id, int wheel_index, godot::String key, godot::Variant value) {
+    void Network::_sync_wheel_config(int net_id, int wheel_id, godot::String key, godot::Variant value) {
         #if defined(VSDK_Client)
         auto* vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
-        auto* wheel = find_wheel(vehicle, wheel_index);
+        auto* wheel = find_wheel(vehicle, wheel_id);
         if (!wheel) return;
 
         std::string k = Tool::to_std_string(key);
@@ -340,11 +340,11 @@ namespace Vital::Engine {
     // _sync_wheel_transform: client applies local position + rotation to a wheel.
     // Used for customization (repositioning, camber, tire size changes etc.).
     // Always local-space — wheels are children of the vehicle body.
-    void Network::_sync_wheel_transform(int net_id, int wheel_index, godot::Vector3 position, godot::Vector3 rotation) {
+    void Network::_sync_wheel_transform(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation) {
         #if defined(VSDK_Client)
         auto* vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
-        auto* wheel = find_wheel(vehicle, wheel_index);
+        auto* wheel = find_wheel(vehicle, wheel_id);
         if (!wheel) return;
         wheel->set_position(position);
         wheel->set_rotation(rotation);
