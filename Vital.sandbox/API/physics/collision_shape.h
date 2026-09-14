@@ -138,9 +138,8 @@ namespace Vital::Sandbox::API {
             destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto* entity = args.array[0].as_raw_ptr<base_class>();
-                if (!entity) return;
                 
+                auto* entity = args.array[0].as_raw_ptr<base_class>();
                 Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
                     instance->body = nullptr;
                 });
