@@ -280,8 +280,7 @@ namespace Vital::Manager {
             Engine::Core::get_singleton() -> enqueue([name, gen]() {
                 Engine::Core::get_singleton() -> enqueue([name, gen]() {
                     if (lifecycle_get(name) != gen) {
-                        Resource::get_singleton() -> log("sbox",
-                            fmt::format("resource `{}` deferred start skipped — newer stop/restart", name));
+                        Resource::get_singleton() -> log("sbox", fmt::format("resource `{}` deferred start skipped — newer stop/restart", name));
                         return;
                     }
                     Internal::start(name);
