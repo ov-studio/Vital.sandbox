@@ -104,6 +104,8 @@ namespace Vital::Engine {
             godot::Vector2 get_resolution();
             std::string get_http_url(const std::string& path = "") const;
             void capture_screenshot(const std::string& base, const std::string& path);
+            #else
+            Config::Server& get_server_config();
             #endif
     };
 }
