@@ -125,8 +125,8 @@ namespace Vital::Sandbox::API {
                 if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
 
                 auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
-                Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> inst) {
-                    inst -> body = nullptr;
+                Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> instance) {
+                    instance -> body = nullptr;
                 });
             });
 
@@ -137,10 +137,10 @@ namespace Vital::Sandbox::API {
                 if (!entity) return;
 
                 std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
-                    if (!inst || !inst -> body) continue;
-                    if (inst -> body -> get_parent() != entity) continue;
-                    inst -> flush_broadcasts();
+                for (auto& [uid, instance] : Vehicle_Wheel::registry.buffer) {
+                    if (!instance || !instance -> body) continue;
+                    if (instance -> body -> get_parent() != entity) continue;
+                    instance -> flush_broadcasts();
                 }
             });
             #endif
