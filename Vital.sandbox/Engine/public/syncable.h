@@ -21,9 +21,12 @@
 ///////////////////////////////
 
 // TODO: Improve
-namespace Vital::Manager { class Network; }
-namespace Vital::Engine { class Network; }
+namespace Vital::Manager { 
+    class Network; 
+}
+
 namespace Vital::Engine {
+    class Network; 
     class ISyncable {
         friend class Manager::Network;
         friend class Network;
@@ -233,7 +236,7 @@ namespace Vital::Engine {
             //   tells clients).
             // get_parent_net_id() — returns the net_id of the current sync
             //   parent, or 0 when parented directly to Core.
-            void     set_parent(godot::Node3D* parent_node);
+            void set_parent(godot::Node3D* parent_node);
             uint32_t get_parent_net_id() const;
             #endif
     };
