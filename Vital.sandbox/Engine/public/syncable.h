@@ -92,6 +92,7 @@ namespace Vital::Engine {
                 static constexpr uint32_t FORCE_SYNC_MAGIC      = 0x56535354u; // 'VSST' — magic prefix that marks a force-transform broadcast packet
                 #endif
 
+                
                 // Helpers //
                 static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
                 static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
