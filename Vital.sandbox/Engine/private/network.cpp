@@ -243,20 +243,13 @@ namespace Vital::Engine {
 
         // Try to apply immediately; if either side isn't registered yet, buffer.
         Engine::ISyncable* child_sync  = mgr->find_syncable((uint32_t)net_id);
-        Engine::ISyncable* parent_sync = (parent_net_id != 0)
-            ? mgr->find_syncable((uint32_t)parent_net_id) : nullptr;
-
-        bool child_ready  = child_sync  != nullptr;
+        Engine::ISyncable* parent_sync = (parent_net_id != 0) ? mgr->find_syncable((uint32_t)parent_net_id) : nullptr;
+        bool child_ready = child_sync  != nullptr;
         bool parent_ready = (parent_net_id == 0) || (parent_sync != nullptr);
-
-        if (child_ready && parent_ready) {
-            apply_reparent_entity((uint32_t)net_id, (uint32_t)parent_net_id);
-        } else {
+        if (child_ready && parent_ready) apply_reparent_entity((uint32_t)net_id, (uint32_t)parent_net_id);
+        else {
             mgr->buffer_reparent((uint32_t)net_id, (uint32_t)parent_net_id);
-            godot::UtilityFunctions::print(
-                "_reparent_entity: buffering net_id=", net_id,
-                " -> parent_net_id=", parent_net_id,
-                " (child_ready=", child_ready, " parent_ready=", parent_ready, ")");
+            godot::UtilityFunctions::print("_reparent_entity: buffering net_id=", net_id, " -> parent_net_id=", parent_net_id, " (child_ready=", child_ready, " parent_ready=", parent_ready, ")");
         }
         #endif
     }
