@@ -35,9 +35,9 @@ namespace Vital::Sandbox::API {
             using Owner = Model;
             base_class* model = nullptr;
 
-            // Exposes the underlying Node3D* so vm_instance<>::get_node_3d() and
-            // Node_3D::parent_methods<> can work with Model instances on both sides.
-            auto get_node() { return model; }
+            auto get_node() { 
+                return model; 
+            }
 
             bool is_alive() const {
                 return model ? true : false;
