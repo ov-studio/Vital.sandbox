@@ -20,12 +20,6 @@
 // Vital: Engine: Core //
 //////////////////////////
 
-#if !defined(VSDK_Client)
-namespace Vital::Config { 
-    class Server; 
-}
-#endif
-
 namespace Vital::Engine {
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)

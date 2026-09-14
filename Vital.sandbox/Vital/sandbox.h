@@ -13,4 +13,5 @@
 //////////////
 
 #pragma once
+#include <Vital.sandbox/Vital/config.h>
 #include <Vital.sandbox/Sandbox/machine.h>
