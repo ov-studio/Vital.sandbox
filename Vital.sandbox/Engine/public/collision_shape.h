@@ -36,17 +36,21 @@ namespace Vital::Engine {
             godot::MeshInstance3D* debug_mesh = nullptr;
             #endif
 
+            struct Internal {
+                #if defined(VSDK_Client)
+                private:
+                    static void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24);
+                    static void add_half_ring(godot::PackedVector3Array& points, float radius, float center_y, int plane, bool upper, int segments = 12);
+                public:
+                    static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
+                #endif
+            };
+
 
             // Instantiators //
             Collision_Shape();
             ~Collision_Shape() override;
             static void _bind_methods() {}
-
-
-            // Helpers //
-            #if defined(VSDK_Client)
-            static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
-            #endif
         public:
             // Hooks //
             void _notification(int what);
