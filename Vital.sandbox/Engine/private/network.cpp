@@ -203,14 +203,8 @@ namespace Vital::Engine {
                     }
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
-
-                    // Notify Lua so it can hydrate collision shapes / wheels on this remote body.
-                    Tool::Event::emit("entity:spawned", Tool::Stack({
-                        entity, (int32_t)sub_type, true
-                    }));
-                    if (auto* node = entity->get_sync_node()) {
-                        Tool::Event::emit("entity:ready", Tool::Stack({node}));
-                    }
+                    Tool::Event::emit("entity:spawned", Tool::Stack({entity, (int32_t)sub_type, true}));
+                    if (auto* node = entity->get_sync_node()) Tool::Event::emit("entity:ready", Tool::Stack({node}));
                 }
                 break;
             }
