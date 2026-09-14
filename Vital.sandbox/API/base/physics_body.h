@@ -16,8 +16,6 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/base/collision_object.h>
 #include <Vital.sandbox/API/base/syncable.h>
-#include <godot_cpp/classes/physics_server3d.hpp>
-#include <godot_cpp/classes/physics_material.hpp>
 
 
 ///////////////////////////////

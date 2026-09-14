@@ -15,7 +15,6 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
-#include <godot_cpp/classes/camera3d.hpp>
 
 
 ////////////////////////////

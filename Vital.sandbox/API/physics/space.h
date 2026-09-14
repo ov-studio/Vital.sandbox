@@ -21,12 +21,6 @@
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/vehicle_body.h>
 #include <Vital.sandbox/API/physics/area.h>
-#include <godot_cpp/classes/physics_direct_space_state3d.hpp>
-#include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
-#include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
-#include <godot_cpp/classes/physics_point_query_parameters3d.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
 
 
 ////////////////////////
