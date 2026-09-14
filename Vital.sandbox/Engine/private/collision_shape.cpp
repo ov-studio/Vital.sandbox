@@ -67,7 +67,6 @@ namespace Vital::Engine {
 
     godot::Ref<godot::ArrayMesh> Collision_Shape::Internal::build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color) {
         godot::PackedVector3Array points;
-
         if (auto box = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
             auto s = box -> get_size() * 0.5f;
             godot::Vector3 corners[8] = {
@@ -75,18 +74,26 @@ namespace Vital::Engine {
                 {-s.x, s.y,-s.z}, { s.x, s.y,-s.z}, { s.x, s.y, s.z}, {-s.x, s.y, s.z}
             };
             int edges[12][2] = {{0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7},{7,4}, {0,4},{1,5},{2,6},{3,7}};
-            for (auto& e : edges) { points.push_back(corners[e[0]]); points.push_back(corners[e[1]]); }
+            for (auto& e : edges) {
+                points.push_back(corners[e[0]]);
+                points.push_back(corners[e[1]]);
+            }
         }
         else if (auto sphere = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
             float r = static_cast<float>(sphere -> get_radius());
-            add_ring(points, r, 0, 0); add_ring(points, r, 0, 1); add_ring(points, r, 0, 2);
+            add_ring(points, r, 0, 0);
+            add_ring(points, r, 0, 1);
+            add_ring(points, r, 0, 2);
         }
         else if (auto capsule = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
             float r      = static_cast<float>(capsule -> get_radius());
             float half_h = std::max<float>(static_cast<float>(capsule -> get_height()) * 0.5f - r, 0.0f);
-            add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
-            add_half_ring(points, r,  half_h, 1, true);  add_half_ring(points, r,  half_h, 2, true);
-            add_half_ring(points, r, -half_h, 1, false); add_half_ring(points, r, -half_h, 2, false);
+            add_ring(points, r,  half_h, 0);
+            add_ring(points, r, -half_h, 0);
+            add_half_ring(points, r,  half_h, 1, true);
+            add_half_ring(points, r,  half_h, 2, true);
+            add_half_ring(points, r, -half_h, 1, false);
+            add_half_ring(points, r, -half_h, 2, false);
             float side_pts[4][2] = {{r,0},{-r,0},{0,r},{0,-r}};
             for (auto& p : side_pts) {
                 points.push_back(godot::Vector3(p[0],  half_h, p[1]));
@@ -96,7 +103,8 @@ namespace Vital::Engine {
         else if (auto cylinder = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
             float r      = static_cast<float>(cylinder -> get_radius());
             float half_h = static_cast<float>(cylinder -> get_height()) * 0.5f;
-            add_ring(points, r, half_h, 0); add_ring(points, r, -half_h, 0);
+            add_ring(points, r,  half_h, 0);
+            add_ring(points, r, -half_h, 0);
             float side_pts[4][2] = {{r,0},{-r,0},{0,r},{0,-r}};
             for (auto& p : side_pts) {
                 points.push_back(godot::Vector3(p[0],  half_h, p[1]));
