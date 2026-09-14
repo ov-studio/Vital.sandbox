@@ -26,28 +26,17 @@
 
 // TODO: Improve
 namespace Vital::Sandbox::API {
-
-    // ---------------------------------------------------------------------------
-    // Physics_Body_Instance<Derived, BaseClass>
-    //
-    // CRTP helper that every physics body Instance inherits instead of repeating
-    // the same body pointer, get_node(), is_alive() and clean() in each file.
-    // The only thing each concrete body adds on top is `using Owner = <Type>;`
-    // (required by vm_instance machinery) plus any extra fields (e.g. the
-    // pending-broadcast buffers in Vehicle_Wheel::Instance).
-    //
-    // Usage:
-    //   struct Instance : Physics_Body_Instance<Instance, Rigid_Body::base_class> {
-    //       using Owner = Rigid_Body;
-    //   };
-    // ---------------------------------------------------------------------------
     template<typename Derived, typename BaseClass>
     struct Physics_Body_Instance : vm_instance<Derived> {
         BaseClass* body = nullptr;
 
-        auto get_node() { return body; }
+        auto get_node() { 
+            return body; 
+        }
 
-        bool is_alive() const { return body != nullptr; }
+        bool is_alive() const { 
+            return body != nullptr; 
+        }
 
         void clean() {
             auto instance = this->shared_from_this();
@@ -85,11 +74,6 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type body_type = Type::Static>
         static void methods(Machine* vm) {
             API::Collision_Object::methods<Instance, Collision_Object::Type::Body>(vm);
-
-            // get_net_id() is shared by every ISyncable-backed type — see
-            // API::Syncable — so Model and every physics body specialization
-            // (Rigid/Static/Character/Animatable/Vehicle) return identical
-            // "net_id, or false if not replicated" results from one place.
             API::Syncable::methods<Instance>(vm);
 
             #if !defined(VSDK_Client)
