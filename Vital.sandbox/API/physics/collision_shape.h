@@ -27,7 +27,6 @@
 // Vital: API: Collision_Shape //
 //////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Collision_Shape : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "collision_shape"};
@@ -45,26 +44,13 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
-            // Server-side: broadcast shape type + params to all clients via RPC.
-            // No-op for local (net_id == 0) bodies. Delegates parent lookup to
-            // Engine::Collision_Shape::get_parent_net_id() — no duplicate cast here.
             void broadcast_shape(const char* shape_type, godot::Array params) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = body ? body -> get_parent_net_id() : 0;
                 if (nid == 0) {
-                    // net_id not registered yet — this happens when set_shape_* is
-                    // called in the same Lua tick as create(), before setup_create()'s
-                    // deferred enqueue has drained. Stash the shape on the parent body;
-                    // Physics_Body::flush_pending_shape_broadcast() will send the RPC
-                    // after _spawn_entity, once net_id is live on the clients.
-                    // Only the last shape set before the flush is kept, matching the
-                    // behaviour you'd get if the calls ran after registration.
                     if (body) {
                         auto* parent = body -> get_parent();
                         if (parent) {
-                            // Dynamic-cast through godot::Object since Physics_Body is a
-                            // template and we have no common non-template base to cast to
-                            // directly. We try each concrete synced body type in turn.
                             using PB_Rigid       = Vital::Engine::Physics_Body<godot::RigidBody3D>;
                             using PB_Static      = Vital::Engine::Physics_Body<godot::StaticBody3D>;
                             using PB_Character   = Vital::Engine::Physics_Body<godot::CharacterBody3D>;
