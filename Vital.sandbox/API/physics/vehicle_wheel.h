@@ -26,8 +26,6 @@
 // Vital: API: Vehicle_Wheel //
 ////////////////////////////////
 
-// TODO: Improve?
-
 namespace Vital::Sandbox::API {
     struct Vehicle_Wheel : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "vehicle_wheel"};
@@ -45,75 +43,52 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
-            // Returns the net_id of the parent vehicle body (0 = local-only / not yet registered).
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
-                auto* parent = body->get_parent();
+                auto* parent = body -> get_parent();
                 if (!parent) return 0;
                 auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable ? syncable->get_net_id() : 0;
+                return syncable ? syncable -> get_net_id() : 0;
             }
 
             #if !defined(VSDK_Client)
-            // ---------------------------------------------------------------
-            // Pending-broadcast buffers
-            //
-            // All three categories can be set before the parent vehicle body's
-            // net_id is registered (i.e. in the same Lua tick as vehicle body
-            // create()).  We stash them here and flush from
-            // "entity:ready" fires once the deferred enqueue drains.
-            //
-            // pending_spawn   — whether _spawn_wheel still needs to be sent.
-            // pending_configs — queue of (key, value) pairs for _sync_wheel_config.
-            // pending_transform — whether _sync_wheel_transform still needs sending
-            //                    (only the final position/rotation matters, so we
-            //                    collapse repeated calls to a single RPC).
-            // ---------------------------------------------------------------
             bool pending_spawn = false;
             std::vector<std::pair<std::string, godot::Variant>> pending_configs;
             bool pending_transform = false;
 
-            // Flush all buffered RPCs now that net_id is live.
-            // Called from the shared "entity:ready" handler, which fires from
-            // Physics_Body::setup_create()'s deferred enqueue after _spawn_entity.
             void flush_pending_broadcasts() {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0 || !body) return;
-                auto* net = Manager::Network::get_singleton()->get_node();
+                auto* net = Manager::Network::get_singleton() -> get_node();
                 if (!net) return;
 
                 if (pending_spawn) {
-                    net->rpc("_spawn_wheel", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
+                    net -> rpc("_spawn_wheel", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                     pending_spawn = false;
                 }
                 for (auto& [key, value] : pending_configs) {
-                    net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_id(), godot::String(key.c_str()), value);
+                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key.c_str()), value);
                 }
                 pending_configs.clear();
                 if (pending_transform) {
-                    net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
+                    net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                     pending_transform = false;
                 }
             }
             #endif
 
-            // Server-side: broadcast a single config property to all clients.
-            // Never call for per-tick inputs (engine_force, brake, steering).
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0) {
-                    // Vehicle body not registered yet — buffer for later flush.
                     pending_configs.emplace_back(key, value);
                     return;
                 }
-                auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_config", (int)nid, body->get_wheel_id(), godot::String(key), value);
+                auto* net = Manager::Network::get_singleton() -> get_node();
+                if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key), value);
                 #endif
             }
 
-            // Server-side: broadcast current local position + rotation to all clients.
-            // Call after any set_position/translate/set_rotation on a wheel.
             void broadcast_transform() {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
@@ -121,8 +96,8 @@ namespace Vital::Sandbox::API {
                     pending_transform = true;
                     return;
                 }
-                auto* net = Manager::Network::get_singleton()->get_node();
-                if (net) net->rpc("_sync_wheel_transform", (int)nid, body->get_wheel_id(), body->get_position(), body->get_rotation());
+                auto* net = Manager::Network::get_singleton() -> get_node();
+                if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
             }
 
@@ -147,10 +122,10 @@ namespace Vital::Sandbox::API {
             destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
+
                 auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
-                if (!entity) return;
                 Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> inst) {
-                    inst->body = nullptr;
+                    inst -> body = nullptr;
                 });
             });
 
@@ -159,11 +134,12 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 1) return;
                 auto* entity = args.array[0].as<godot::Node3D*>();
                 if (!entity) return;
+
                 std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
                 for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
-                    if (!inst || !inst->body) continue;
-                    if (inst->body->get_parent() != entity) continue;
-                    inst->flush_pending_broadcasts();
+                    if (!inst || !inst -> body) continue;
+                    if (inst -> body -> get_parent() != entity) continue;
+                    inst -> flush_pending_broadcasts();
                 }
             });
             #endif
@@ -179,31 +155,20 @@ namespace Vital::Sandbox::API {
                 auto owner = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
                 auto instance = Instance::init(vm);
                 instance -> body = base_class::create(owner -> get_node());
-
-                // Assign sequential wheel index (count existing Vehicle_Wheel children).
-                auto* entity = owner->get_node();
+                auto* entity = owner -> get_node();
                 int idx_count = 0;
-                for (int i = 0; i < entity->get_child_count(); i++) {
-                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity->get_child(i))) idx_count++;
+                for (int i = 0; i < entity -> get_child_count(); i++) {
+                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity -> get_child(i))) idx_count++;
                 }
-                // The newly added wheel is already a child, so subtract 1
-                instance->body->set_wheel_id(idx_count - 1);
-
-                // Server-side: tell clients to create the matching wheel node.
-                // If the parent vehicle body's net_id isn't registered yet (because
-                // setup_create()'s enqueue hasn't drained — the common case when the
-                // wheel is created in the same Lua tick as the vehicle body), buffer
-                // the spawn RPC and let "entity:ready" flush it later.
+                instance -> body -> set_wheel_id(idx_count - 1);
                 #if !defined(VSDK_Client)
-                uint32_t nid = instance->get_parent_net_id();
+                uint32_t nid = instance -> get_parent_net_id();
                 if (nid != 0) {
-                    auto* net = Manager::Network::get_singleton()->get_node();
-                    if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->get_wheel_id(), instance->body->get_position(), instance->body->get_rotation());
-                } else {
-                    instance->pending_spawn = true;
+                    auto* net = Manager::Network::get_singleton() -> get_node();
+                    if (net) net -> rpc("_spawn_wheel", (int)nid, instance -> body -> get_wheel_id(), instance -> body -> get_position(), instance -> body -> get_rotation());
                 }
+                else instance -> pending_spawn = true;
                 #endif
-
                 instance -> store(true);
                 return 1;
             });
@@ -211,18 +176,11 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            // set_parent/get_parent intentionally NOT bound here: a Vehicle_Wheel is
-            // always created attached to its owning vehicle body (Vehicle_Wheel::create()
-            // requires an owner and add_child()s it directly — see "create" above) and
-            // isn't ISyncable itself, so parent_methods' server/client rules (Rule A/B/C)
-            // don't have a net_id to key off for it. Exposing set_parent would let client
-            // Lua silently detach a wheel from a server-owned vehicle with no restriction.
 
-            // Override transform setters to broadcast to clients after applying locally.
-            // set_global_position is intentionally excluded — wheels must use local space.
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
+
                 auto position = vm -> get_vector3(2);
                 self -> body -> set_position(position);
                 self -> broadcast_transform();
@@ -233,6 +191,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_vector3);
+
                 auto offset = vm -> get_vector3(2);
                 self -> body -> translate(offset);
                 self -> broadcast_transform();
@@ -243,6 +202,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_vector3);
+
                 auto offset = vm -> get_vector3(2);
                 self -> body -> translate_object_local(offset);
                 self -> broadcast_transform();
@@ -253,6 +213,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(rotation)", true)
                     .require(2, &Machine::is_vector3);
+
                 auto rotation = vm -> get_vector3(2);
                 self -> body -> set_rotation(rotation);
                 self -> broadcast_transform();
@@ -263,6 +224,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(rotation)", true)
                     .require(2, &Machine::is_vector3);
+
                 auto rotation = vm -> get_vector3(2);
                 self -> body -> set_rotation_degrees(rotation);
                 self -> broadcast_transform();
@@ -492,8 +454,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Per-wheel overrides — VehicleWheel3D exposes its own engine/brake/steering too,
-            // distinct from the whole-chassis values on Vehicle_Body. //
             vm_module::bind_method<Instance>(vm, "set_engine_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_number);
