@@ -26,13 +26,20 @@ namespace Vital::Engine {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
         friend class Network;
         private:
+            int wheel_index = -1;
+
             // Instantiators //
             Vehicle_Wheel() = default;
             ~Vehicle_Wheel() override = default;
             static void _bind_methods() {}
         public:
-            // Index within the parent vehicle — used by RPCs to identify which wheel.
-            int wheel_index = -1;
+            // Hooks //
+            void _notification(int what);
+
+
+            // Managers //
+            static Vehicle_Wheel* create(godot::Node3D* owner);
+            void destroy();
 
 
             // Getters //
