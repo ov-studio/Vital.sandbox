@@ -62,8 +62,7 @@ namespace Vital::Manager {
                 }
             }
             if (again) {
-                Resource::get_singleton()->log("sbox",
-                    fmt::format("resource `{}` applying coalesced restart", name));
+                Resource::get_singleton()->log("sbox", fmt::format("resource `{}` applying coalesced restart", name));
                 // Public API — Internal is private to Resource.
                 Resource::get_singleton()->restart(name);
             }
