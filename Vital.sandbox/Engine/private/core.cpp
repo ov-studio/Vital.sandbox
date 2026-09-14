@@ -102,7 +102,7 @@ namespace Vital::Engine {
     void Core::_physics_process(double delta) {
         if (!is_ready()) return;
         Manager::Network::get_singleton() -> sync_tick(delta);
-        // TODO: wIRE physics_process signal to sanhdbox
+        // TODO: wIRE physics_process signal to sanhdbox using Manager::Sandbox::get_singleton() -> physics_process(delta); maybe??
     }
 
     #if defined(VSDK_Client)
