@@ -23,9 +23,7 @@
 #include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #include <Vital.sandbox/Manager/public/network.h>
-#if !defined(VSDK_Client)
-#include <Vital.sandbox/Config/server.h>
-#endif
+#include <Vital.sandbox/Vital/config.h>
 
 
 //////////////////////////
