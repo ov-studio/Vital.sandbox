@@ -115,26 +115,21 @@ namespace Vital::Sandbox::API {
             if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
 
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                // Shape: {Collision_Shape*, remote:bool}. Idempotent if create() already store()'d.
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
                 if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
-                        if (inst->body == entity) return;
-                }
+                if (Instance::find_by_ptr(entity)) return;
+
                 const godot::ObjectID oid(entity->get_instance_id());
                 Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
                     auto* shape = godot::Object::cast_to<base_class>(obj);
                     if (!shape) return;
-                    {
-                        std::lock_guard<std::mutex> lock(registry.mutex);
-                        for (auto& [id, inst] : registry.buffer)
-                            if (inst->body == shape) return;
-                    }
+                    if (Instance::find_by_ptr(shape)) return;
                     auto instance = Instance::init(nullptr, remote);
                     instance->body = shape;
                     instance->store(false);
@@ -146,17 +141,10 @@ namespace Vital::Sandbox::API {
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
                 if (!entity) return;
-                std::lock_guard<std::mutex> lock(registry.mutex);
-                for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
-                    auto& instance = it->second;
-                    if (instance->body != entity) { ++it; continue; }
-                    ++it;
-                    Instance::erase_unlocked(instance);
-                    Vital::Engine::Core::get_singleton()->execute([instance]() {
-                        instance->body = nullptr;
-                        Instance::release(instance);
-                    });
-                }
+                
+                Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
+                    instance->body = nullptr;
+                });
             });
         }
 
@@ -169,18 +157,12 @@ namespace Vital::Sandbox::API {
 
                 auto owner = resolve_owner(vm, 1);
                 auto instance = Instance::init(vm);
-                // Engine::Collision_Shape::create() now applies the current
-                // default_debug_enabled itself — nothing else to do here.
                 instance -> body = base_class::create(owner);
                 instance -> store(true);
                 return 1;
             });
 
             #if defined(VSDK_Client)
-            // Global toggle: shows/hides wireframes on every collision shape that currently
-            // exists (Lua-created AND network-replicated alike), and sets the default for
-            // any collision shape created afterward. Delegates straight to the engine layer,
-            // which tracks live shapes independently of the Lua registry.
             API::bind(vm, base_scope, "set_debug_all", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(1, &Machine::is_bool);
@@ -200,12 +182,6 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            // set_parent/get_parent intentionally NOT bound here: a Collision_Shape
-            // is always created attached to its owning body (Collision_Shape::create()
-            // add_child()s it directly — see "create" above) and isn't ISyncable itself,
-            // so parent_methods' server/client rules (Rule A/B/C) don't have a net_id
-            // to key off for it. Exposing set_parent would let client Lua silently
-            // detach a shape from a server-owned body with no restriction at all.
 
             vm_module::bind_method<Instance>(vm, "is_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_disabled());
