@@ -37,11 +37,6 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            enum class AuthorityMode { 
-                Server, 
-                Client 
-            };
-
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
