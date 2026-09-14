@@ -131,7 +131,7 @@ namespace Vital::Manager {
 
     // Public entry point — acquires sync_models_mutex then delegates.
     // Safe to call from any thread / Lua callback that does NOT already hold
-    // sync_models_mutex (e.g. _spawn_entity -> on_spawned_callback -> entity:created).
+    // sync_models_mutex (e.g. _spawn_entity -> "entity:model:spawned" -> entity:created).
     void Network::register_syncable(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         register_syncable_locked(entity);
