@@ -515,10 +515,12 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
-                // (layer, enabled [, bone_paths table of strings])
-                vm_args(vm, id, "(layer, enabled, bone_paths?)", true)
+                // (layer, enabled [, bone_paths table of strings] [, sync])
+                vm_args(vm, id, "(layer, enabled, bone_paths, sync = true)", true)
                     .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_bool);
+                    .require(3, &Machine::is_bool)
+                    .optional(4, &Machine::is_table)
+                    .optional(5, &Machine::is_bool);
 
                 int layer = vm -> get_int(2);
                 bool enabled = vm -> get_bool(3);
@@ -532,7 +534,8 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                 }
-                vm -> push_value(self -> model -> set_animation_layer_filter(layer, enabled, bones));
+                bool sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
+                vm -> push_value(self -> model -> set_animation_layer_filter(layer, enabled, bones, sync));
                 return 1;
             });
 
