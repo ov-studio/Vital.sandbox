@@ -25,7 +25,6 @@
 /////////////
 
 #if !defined(VSDK_Client)
-#include <Vital.sandbox/Config/server.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #endif
 
