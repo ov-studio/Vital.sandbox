@@ -43,6 +43,7 @@ namespace Vital::Manager {
             // Managers //
             void drain();
             void process(double delta);
+            void physics_process(double delta);
             #if defined(VSDK_Client)
             void draw(Engine::Canvas* canvas);
             void input(godot::Ref<godot::InputEvent> event);
