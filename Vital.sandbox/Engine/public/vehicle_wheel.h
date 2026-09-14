@@ -27,6 +27,7 @@ namespace Vital::Engine {
         private:
             int wheel_index = -1;
 
+            
             // Instantiators //
             Vehicle_Wheel() = default;
             ~Vehicle_Wheel() override = default;
