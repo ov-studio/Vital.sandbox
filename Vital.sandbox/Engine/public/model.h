@@ -66,15 +66,12 @@ namespace Vital::Engine {
                 bool loop = true;
                 float weight = 0.0f;
                 float weight_target = 0.0f;
-                float weight_rate = 0.0f; // units/sec applied while tweening
-                // One-shot: when loop is false, auto-stop after clip length/speed.
-                bool  one_shot = false;
+                float weight_rate = 0.0f; 
+                bool one_shot = false;
                 float one_shot_remaining = 0.0f;
-                // Bone filter (synced). Empty + filter_enabled=false => full body.
                 bool filter_enabled = false;
                 std::vector<std::string> filter_bones;
             };
-            // Starts empty; ensure_animation_layer() grows it and rebuilds the tree.
             std::vector<AnimLayerState> anim_layers;
 
             // Grow anim_layers to include `layer` (0-based) and rebuild the blend
@@ -99,7 +96,6 @@ namespace Vital::Engine {
             void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
 
             // Sync state lives in ISyncable base class.
-
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
             // same-path updates without wiping the whole resource cache.
