@@ -27,10 +27,10 @@ namespace Vital::Sandbox::API {
         inline static const std::string night_sky_reference = fmt::format("{}:night_sky", vm_module::scope_id(base_scope));
 
         static void init(Machine* vm) {
-            static Tool::Event::event_id binding = 0;
-            if (binding) Tool::Event::unbind("environment:free", binding);
+            static Tool::Event::event_id env_binding = 0;
+            if (env_binding) Tool::Event::unbind("environment:free", env_binding);
 
-            binding = Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+            env_binding = Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
                 vm -> del_reference("sandbox", night_sky_reference);
             });
         }
