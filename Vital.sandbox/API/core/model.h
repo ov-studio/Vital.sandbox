@@ -83,8 +83,9 @@ namespace Vital::Sandbox::API {
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
-                auto* spawned = args.array[0].as_ptr<base_class>();
-                if (!spawned) return;
+                auto spawned_ref = args.array[0].as_ptr<base_class>();
+                if (!spawned_ref) return;
+                auto* spawned = spawned_ref.get();
                 bool remote = args.array[1].as<bool>();
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
@@ -117,8 +118,9 @@ namespace Vital::Sandbox::API {
             static Tool::Event::event_id destroyed_binding = 0;
             if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
-                auto* dying = args.array[0].as_ptr<base_class>();
-                if (!dying) return;
+                auto dying_ref = args.array[0].as_ptr<base_class>();
+                if (!dying_ref) return;
+                auto* dying = dying_ref.get();
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it -> second;

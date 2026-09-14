@@ -188,7 +188,8 @@ namespace Vital::Sandbox::API {
                 if (!destroyed_binding) {
                     destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                         if (args.array.size() < 1) return;
-                        auto* node = args.array[0].as_ptr<Vital::Engine::Vehicle_Wheel>();
+                        auto node_ref = args.array[0].as_ptr<Vital::Engine::Vehicle_Wheel>();
+                        auto* node = node_ref.get();
                         std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
                         for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
                             auto& inst = it->second;
