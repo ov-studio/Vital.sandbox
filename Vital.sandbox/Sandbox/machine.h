@@ -644,23 +644,22 @@ namespace Vital::Sandbox {
                 }
                 bool result = pcall(arguments, returns);
                 if (!result) {
-                    if (!protected_call && throwing) {
-                        const std::string err = get_string(-1);
-                        error_handled = true;
-                        pop(1);
-                        throw vm_error{err, err};
-                    }
-                    else if (protected_call) {
-                        if (!error_handled) Tool::print(std::string(Tool::Log::error::label), get_string(-1));
+                    const std::string err = get_string(-1);
+                    pop(1);
+                    if (protected_call) {
+                        if (!error_handled) Tool::print(std::string(Tool::Log::error::label), err);
                         error_handled = false;
-                        pop(1);
                     }
                     else {
-                        const std::string err = get_string(-1);
-                        pop(1);
-                        log(std::string(Tool::Log::error::label), err, false);
-                        error_handled = true;
-                        lua_error(state);
+                        if (throwing) {
+                            error_handled = true;
+                            throw vm_error{err, err};
+                        }
+                        else {
+                            log(std::string(Tool::Log::error::label), err, false);
+                            error_handled = true;
+                            lua_error(state);
+                        }
                     }
                 }
                 return result;
