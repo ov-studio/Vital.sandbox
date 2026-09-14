@@ -29,7 +29,7 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(live_instances_mutex);
             live_instances.insert(this);
         }
-        if (default_debug_enabled) set_debug_visible(true);
+        if (debug_all) set_debug_visible(true);
         #endif
     }
 
@@ -110,7 +110,7 @@ namespace Vital::Engine {
 
     void Collision_Shape::set_debug_all(bool state) {
         #if defined(VSDK_Client)
-        default_debug_enabled = state;
+        debug_all = state;
         std::lock_guard<std::mutex> lock(live_instances_mutex);
         for (auto* shape : live_instances) shape -> set_debug_visible(state);
         #else
