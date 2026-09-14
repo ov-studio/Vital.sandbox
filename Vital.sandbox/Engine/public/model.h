@@ -46,8 +46,6 @@ namespace Vital::Engine {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
 
-            // Soft upper bound so a bad script cannot allocate unbounded blend trees.
-            // Within this range, layer count grows on demand (no fixed max of 4).
             static constexpr int ANIM_LAYER_SOFT_MAX = 16;
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         private:
