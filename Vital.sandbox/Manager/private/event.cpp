@@ -27,7 +27,6 @@
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
-static Vital::Config::Server g_server_config;
 #endif
 
 void setup() {
@@ -52,7 +51,7 @@ void setup() {
     nm -> set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("network:host", [](Vital::Tool::Stack) {
-        Vital::Manager::Masterlist::get_singleton() -> start(g_server_config);
+        Vital::Manager::Masterlist::get_singleton() -> start(Vital::Engine::Core::get_singleton() -> get_server_config());
     });
     Vital::Tool::Event::bind("network:peer:join", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
