@@ -404,8 +404,7 @@ namespace Vital::Engine {
         if (auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity))) {
             std::vector<std::string> paths;
             paths.reserve(bones.size());
-            for (int i = 0; i < bones.size(); ++i)
-                paths.push_back(Tool::to_std_string(bones[i]));
+            for (int i = 0; i < bones.size(); ++i) paths.push_back(Tool::to_std_string(bones[i]));
             model->apply_set_animation_layer_filter(layer, enabled, paths);
         }
         auto* node = mgr->get_node();
