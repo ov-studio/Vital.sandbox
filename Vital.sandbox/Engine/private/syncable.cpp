@@ -160,8 +160,6 @@ namespace Vital::Engine {
     }
 
     #if !defined(VSDK_Client)
-    // STATE_DUMP_MAGIC from network.cpp — duplicated here to avoid a
-    // circular header dependency.  Keep in sync with that value.
     static constexpr uint32_t FORCE_SYNC_MAGIC = 0x56535354u; // 'VSST'
 
     void ISyncable::flush_pending_force_transform() {
@@ -170,12 +168,7 @@ namespace Vital::Engine {
         auto* net_node = Manager::Network::get_singleton() -> get_node();
         // Broadcast to all peers so observers of mid-session spawns get the
         // parented local offset, not only the authority client.
-        if (net_node)
-            net_node -> rpc("_force_transform",
-                (int)net_id,
-                pending_force_transform -> pos,
-                pending_force_transform -> rot,
-                pending_force_transform -> scale);
+        if (net_node) net_node -> rpc("_force_transform", (int)net_id, pending_force_transform -> pos, pending_force_transform -> rot, pending_force_transform -> scale);
         pending_force_transform.reset();
     }
 
@@ -225,9 +218,7 @@ namespace Vital::Engine {
 
         if (sync_authority > 1) {
             auto* net_node = Manager::Network::get_singleton() -> get_node();
-            if (net_node)
-                net_node -> rpc("_force_transform",
-                    (int)net_id, cur_pos, cur_rot, cur_scale);
+            if (net_node) net_node -> rpc("_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
         }
     }
     #endif
@@ -385,37 +376,29 @@ namespace Vital::Engine {
     void ISyncable::set_parent(godot::Node3D* parent_node) {
         auto core = Engine::Core::get_singleton();
         if (!core) return;
-
         godot::Node3D* self_node = get_sync_node();
         if (!self_node) return;
 
-        core -> execute_when_ready(self_node, parent_node,
-            [](godot::Node3D* self_n, godot::Node* parent) {
-                if (auto* syncable = dynamic_cast<ISyncable*>(self_n))
-                    syncable -> apply_parent(parent);
-            });
+        core -> execute_when_ready(self_node, parent_node, [](godot::Node3D* self_n, godot::Node* parent) {
+            if (auto* syncable = dynamic_cast<ISyncable*>(self_n)) syncable -> apply_parent(parent);
+        });
     }
 
     void ISyncable::apply_parent(godot::Node* parent_node) {
         auto core = Engine::Core::get_singleton();
         if (!core) return;
-
         godot::Node3D* self_node = get_sync_node();
         if (!self_node) return;
 
         uint32_t parent_net_id = 0;
         godot::Node* target     = core;
-
         if (parent_node && parent_node != target) {
             if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
                 parent_net_id = syncable -> get_net_id();
                 target = parent_node;
             }
         }
-
-        if (self_node -> get_parent() != target) {
-            self_node -> reparent(target, true);  // keep_global_transform = true
-        }
+        if (self_node -> get_parent() != target) self_node -> reparent(target, true);
 
         // Switch sync space to local (or back to global when detaching).
         // Re-seed delta baselines from the new coordinate space so the very next
@@ -446,23 +429,17 @@ namespace Vital::Engine {
         godot::ObjectID captured_oid = godot::ObjectID(self_node -> get_instance_id());
         core -> enqueue([captured_net_id, captured_parent_id, captured_oid]() {
             auto* net_node = Manager::Network::get_singleton() -> get_node();
-            if (net_node)
-                net_node -> rpc("_reparent_entity",
-                    (int)captured_net_id, (int)captured_parent_id);
-            godot::UtilityFunctions::print(
-                "ISyncable::apply_parent net_id=", captured_net_id,
-                " -> parent_net_id=", captured_parent_id);
+            if (net_node) net_node -> rpc("_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
+            godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
 
             // Re-apply local transform after clients have processed reparent.
             // Read live position/rotation so any set_position that ran after
             // set_parent() in the same Lua tick is reflected.
-            auto* node = godot::Object::cast_to<godot::Node3D>(
-                godot::ObjectDB::get_instance(captured_oid));
+            auto* node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;
             auto* syncable = dynamic_cast<ISyncable*>(node);
             if (!syncable || syncable -> get_net_id() != captured_net_id) return;
-            if (syncable -> get_sync_authority() > 1)
-                syncable -> force_transform_broadcast();
+            if (syncable -> get_sync_authority() > 1) syncable -> force_transform_broadcast();
         });
     }
 
