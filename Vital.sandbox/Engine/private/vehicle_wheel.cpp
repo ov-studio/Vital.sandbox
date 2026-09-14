@@ -26,6 +26,8 @@ namespace Vital::Engine {
         auto wheel = memnew(Vehicle_Wheel);
         if (owner) owner -> add_child(wheel);
         else Engine::Core::get_singleton() -> add_child(wheel);
+        Tool::Event::emit("entity:spawned", Tool::Stack({wheel, false}));
+        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(wheel)}));
         return wheel;
     }
 
