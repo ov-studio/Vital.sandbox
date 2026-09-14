@@ -39,13 +39,13 @@ namespace Vital::Sandbox::API {
         }
 
         void clean() {
-            auto instance = this->shared_from_this();
-            if (!instance->erase()) return;
-            if (instance->body) {
-                instance->body->destroy();
-                instance->body = nullptr;
+            auto instance = this -> shared_from_this();
+            if (!instance -> erase()) return;
+            if (instance -> body) {
+                instance -> body -> destroy();
+                instance -> body = nullptr;
             }
-            instance->release();
+            instance -> release();
         }
     };
 
@@ -180,7 +180,6 @@ namespace Vital::Sandbox::API {
                     auto bounce = vm -> get_float(3);
                     auto rough = vm -> is_bool(4) ? vm -> get_bool(4) : false;
                     auto absorbent = vm -> is_bool(5) ? vm -> get_bool(5) : false;
-
                     godot::Ref<godot::PhysicsMaterial> material;
                     material.instantiate();
                     material -> set_friction(friction);
