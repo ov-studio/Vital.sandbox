@@ -21,7 +21,7 @@
 
 
 ///////////////////////////
-// Vital: API: Light 3D //
+// Vital: API: Light_3D //
 ///////////////////////////
 
 namespace Vital::Sandbox::API {
