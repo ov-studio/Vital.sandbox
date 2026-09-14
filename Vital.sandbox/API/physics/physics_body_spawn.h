@@ -102,24 +102,19 @@ namespace Vital::Sandbox::API {
                 // queue_free()'d before the deferred enqueue drains.
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
-                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(
-                            godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Static:
-                        spawn_body<Static_Body, Vital::Engine::Static_Body>(
-                            godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Static_Body, Vital::Engine::Static_Body>(godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity)->get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Character:
-                        spawn_body<Character_Body, Vital::Engine::Character_Body>(
-                            godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Character_Body, Vital::Engine::Character_Body>(godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity)->get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Animatable:
-                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(
-                            godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity)->get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Vehicle:
-                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(
-                            godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity)->get_instance_id()), remote);
                         break;
                     default: break;
                 }
