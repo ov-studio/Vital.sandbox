@@ -23,7 +23,6 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
-
 namespace Vital::Manager {
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
@@ -171,8 +170,6 @@ namespace Vital::Manager {
         Internal::load_models(name);
         Internal::execute_scripts(name, sources);
         #if !defined(VSDK_Client)
-            // Pack under the mutex after load_models() so models[] cannot race
-            // with stop/restart. Skip if already stopped before this deferred job.
             Engine::Core::get_singleton() -> enqueue([name]() {
                 Tool::Stack packet;
                 {
@@ -398,7 +395,7 @@ namespace Vital::Manager {
     }
     #endif
 
-    
+
     // Checkers //
     bool Resource::Internal::is_loaded(const std::string& name) {
         auto rm = Resource::get_singleton();
