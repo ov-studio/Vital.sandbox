@@ -119,8 +119,6 @@ namespace Vital::Engine {
             uint32_t get_net_id() const override { return net_id; }
             int get_sync_authority() const override { return sync_authority; }
 
-            // Server-only: assign authority peer for this body.
-            // net_id == 0 means client-local, never synced — set_syncer is no-op.
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id) {
                 if (net_id == 0) return;
@@ -186,22 +184,11 @@ namespace Vital::Engine {
                         pending_authority = authority_peer;
                         uint32_t captured_id = net_id;
                         godot::String captured_name = godot::String(get_sync_name().c_str());
-                        // Captured by instance id, NOT by raw `this`. This lambda runs
-                        // on a later drain() of Core's deferred queue — if setup_destroy()
-                        // (queue_free()) runs on this same body before that drain happens,
-                        // the raw pointer capture would be dangling by the time we get
-                        // here, and enqueue_syncable_registration() would push a freed
-                        // pointer straight into sync_pending (unregister_syncable's
-                        // sync_pending cleanup can't help — this push happens AFTER
-                        // unregister already ran). ObjectDB::get_instance() is godot-cpp's
-                        // safe "is this object still alive" check: it returns nullptr once
-                        // the object is actually freed, instead of returning a stale
-                        // pointer to freed memory.
                         godot::ObjectID captured_oid = godot::ObjectID(get_instance_id());
                         Core::get_singleton() -> add_child(this);
                         Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {
                             godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
-                            if (!obj) return; // destroyed before this deferred registration ran
+                            if (!obj) return;
                             auto* self = dynamic_cast<Physics_Body<Base>*>(obj);
                             if (!self) return;
 
@@ -215,23 +202,11 @@ namespace Vital::Engine {
                         });
                     }
                     else {
-                        // Server body with no network authority peer — still emit
-                        // the shared lifecycle so local-only bodies match everyone else.
                         Core::get_singleton() -> add_child(this);
-                        Tool::Event::emit("entity:spawned", Tool::Stack({
-                            static_cast<ISyncable*>(this),
-                            (int32_t)get_physics_type(),
-                            false
-                        }));
-                        Tool::Event::emit("entity:ready", Tool::Stack({
-                            static_cast<godot::Node3D*>(this)
-                        }));
+                        Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
+                        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
                     }
                 #else
-                    // Client-local body (not replicated via _spawn_entity). Same
-                    // spawned/ready contract as server so binders and scripts see
-                    // a uniform lifecycle. spawn_body<> is idempotent if Lua
-                    // create() already store()'d an Instance.
                     Core::get_singleton() -> add_child(this);
                     Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
                     Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
