@@ -20,6 +20,12 @@
 // Vital: Engine: Core //
 //////////////////////////
 
+#if !defined(VSDK_Client)
+namespace Vital::Config { 
+    class Server; 
+}
+#endif
+
 namespace Vital::Engine {
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)
@@ -35,6 +41,8 @@ namespace Vital::Engine {
             std::vector<std::function<void()>> work_queue;
             #if defined(VSDK_Client)
             Tool::HTTP::Server http_server;
+            #else
+            std::unique_ptr<Config::Server> server_config;
             #endif
         private:
             // Instantiators //
