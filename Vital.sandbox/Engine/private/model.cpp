@@ -386,13 +386,7 @@ namespace Vital::Engine {
                     // colliders sit on the field).
                     godot::Vector3 spawn_pos = object->get_global_position();
                     godot::Vector3 spawn_rot = object->get_global_rotation_degrees();
-                    net_node->rpc("_spawn_entity",
-                        (int)captured_net_id,
-                        (int)Engine::ISyncable::SyncType::Model,
-                        captured_name,
-                        object->get_sync_authority(),
-                        spawn_pos,
-                        spawn_rot);
+                    net_node->rpc("_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
                 }
 
                 // Flush any set_position/set_rotation that was called in the

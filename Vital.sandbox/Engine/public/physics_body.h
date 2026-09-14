@@ -40,8 +40,8 @@ namespace Vital::Engine {
     class Physics_Body : public Base, public ISyncable {
         friend class Manager::Network;
         public:
-            SyncType get_sync_type() const override { 
-                return SyncType::PhysicsBody; 
+            Type get_sync_type() const override { 
+                return Type::PhysicsBody; 
             }
 
             virtual PhysicsType get_physics_type() const = 0;
@@ -227,7 +227,7 @@ namespace Vital::Engine {
                             // comment) rather than the authority_peer captured
                             // at setup_create() time, so a same-tick set_syncer()
                             // call is reflected in this, the only spawn RPC sent.
-                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::SyncType::PhysicsBody, captured_name, self->get_sync_authority(), self->get_sync_position(), self->get_sync_rotation());
+                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self->get_sync_authority(), self->get_sync_position(), self->get_sync_rotation());
                             // Flush any shape that was set before net_id was registered.
                             // broadcast_shape() bails when get_parent_net_id() == 0, which
                             // is always the case when set_shape_* is called in the same

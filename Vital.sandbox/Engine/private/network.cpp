@@ -100,7 +100,7 @@ namespace Vital::Engine {
 
     void Network::_spawn_entity(int net_id, int type_id, godot::String name, int authority, godot::Vector3 init_pos, godot::Vector3 init_rot) {
         #if defined(VSDK_Client)
-        using ST = Engine::ISyncable::SyncType;
+        using ST = Engine::ISyncable::Type;
         switch (static_cast<ST>(type_id)) {
             case ST::Model: {
                 std::string model_name = Tool::to_std_string(name);

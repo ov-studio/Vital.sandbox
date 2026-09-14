@@ -45,18 +45,25 @@ namespace Vital::Engine {
             static constexpr float JITTER_MARGIN       = 1.5f;   // default stddev multiplier — overridable
             static constexpr int   JITTER_WINDOW       = 16;     // more samples for stable estimate
 
-            enum class SyncType {
-                Model,
-                PhysicsBody
-            };
-
-            struct SyncConfig {
+            struct Config {
                 int rate = SYNC_RATE;
                 float buffer_delay_max = BUFFER_DELAY_MAX;
                 float jitter_margin = JITTER_MARGIN;
                 float snap_threshold = SNAP_THRESHOLD;
             };
-            static inline SyncConfig sync_config;
+            static inline Config sync_config;
+
+            enum class Type {
+                Model,
+                PhysicsBody
+            };
+            
+            struct Snapshot {
+                godot::Vector3 pos;
+                godot::Vector3 rot;
+                godot::Vector3 vel;
+                float time = -1.0f;
+            };
 
             #if !defined(VSDK_Client)
             struct PendingForceTransform {
@@ -65,13 +72,6 @@ namespace Vital::Engine {
                 godot::Vector3 scale = godot::Vector3(1, 1, 1);
             };
             #endif
-
-            struct Snapshot {
-                godot::Vector3 pos;
-                godot::Vector3 rot;
-                godot::Vector3 vel;
-                float time = -1.0f;
-            };
         private:
             struct Internal {
                 static constexpr uint16_t MASK_PX = 1 << 0;
@@ -162,7 +162,7 @@ namespace Vital::Engine {
 
 
             // Getters //
-            virtual SyncType get_sync_type() const = 0;
+            virtual Type get_sync_type() const = 0;
             virtual std::string get_sync_name() const { return ""; }
             virtual uint32_t get_net_id() const { return net_id; }
             virtual int get_sync_authority() const { return sync_authority; }

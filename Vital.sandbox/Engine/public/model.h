@@ -196,7 +196,7 @@ namespace Vital::Engine {
 
 
             // ISyncable interface //
-            SyncType       get_sync_type()     const override { return SyncType::Model; }
+            Type       get_sync_type()     const override { return Type::Model; }
             std::string    get_sync_name()     const override { return model_name; }
             bool           is_sync_active()    const override;
             godot::Vector3 get_sync_position() const override;

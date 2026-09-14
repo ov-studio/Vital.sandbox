@@ -88,7 +88,7 @@ namespace Vital::Manager {
 
             // Sync interval in seconds, set from config on host()/apply_sync_config(),
             // read each poll(). Configurable via network.sync_rate in config.yaml.
-            float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::SyncConfig{}.rate);
+            float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::Config{}.rate);
 
             #if defined(VSDK_Client)
             bool auto_reconnect    = false;
@@ -226,7 +226,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             const Config::Server& get_server_config() const;
-            const Engine::ISyncable::SyncConfig& get_sync_config() const { return Engine::ISyncable::sync_config; }
+            const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;
             #endif
 
