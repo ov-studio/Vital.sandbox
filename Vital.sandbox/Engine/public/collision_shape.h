@@ -47,9 +47,7 @@ namespace Vital::Engine {
             #endif
         public:
             #if defined(VSDK_Client)
-            // Debug wireframe colors — green for local shapes, orange for
-            // network-replicated (server-authoritative) shapes.
-            inline static godot::Color local_debug_color      = godot::Color(0, 1, 0);
+            inline static godot::Color local_debug_color = godot::Color(0, 1, 0);
             inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
             inline static bool default_debug_enabled = false;
             #endif
