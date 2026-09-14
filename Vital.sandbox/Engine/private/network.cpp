@@ -631,7 +631,6 @@ namespace Vital::Engine {
             }
         }
         #endif
-
         godot::UtilityFunctions::print("_reparent_entity: net_id=", net_id, " -> parent_net_id=", parent_net_id);
     }
     
