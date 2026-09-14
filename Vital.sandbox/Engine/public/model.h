@@ -57,16 +57,6 @@ namespace Vital::Engine {
             bool placeholder = false;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
-
-            // Layered animation blending — lazily built the first time any
-            // *_animation_layer() call is made, so models that only ever use
-            // the legacy single-track play_animation() keep working exactly
-            // as before (AnimationTree, once active, takes over playback
-            // from the raw AnimationPlayer per Godot's own docs).
-            //
-            // Layer 0 is the always-on base layer (e.g. locomotion). Overlay
-            // layers 1..N stack on top with independent weights. Capacity grows
-            // dynamically the first time a higher index is used (up to SOFT_MAX).
             godot::AnimationTree* anim_tree = nullptr;
             godot::Ref<godot::AnimationNodeBlendTree> blend_tree;
 
