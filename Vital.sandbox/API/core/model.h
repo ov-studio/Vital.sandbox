@@ -72,7 +72,16 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm);
 
-            base_class::on_spawned_callback = [](base_class* spawned, bool remote) {
+            // Bound once for the process, not per-VM: the handler captures nothing
+            // VM-specific (it only touches the static registry), so there's no
+            // stale-closure reason to unbind/rebind on every resource restart —
+            // unlike e.g. Sky_Physical::init()'s "environment:free" handler, which
+            // captures `vm` and genuinely needs a fresh closure each time.
+            static Tool::Event::event_id spawned_binding = 0;
+            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:model:spawned", [](Tool::Stack args) {
+                if (args.array.size() < 2) return;
+                auto* spawned = args.array[0].as<base_class*>();
+                bool remote = args.array[1].as<bool>();
                 if (!spawned) return;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
@@ -100,9 +109,12 @@ namespace Vital::Sandbox::API {
                     instance -> model = model;
                     instance -> store();
                 });
-            };
+            });
 
-            base_class::on_destroyed_callback = [](base_class* dying) {
+            static Tool::Event::event_id destroyed_binding = 0;
+            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:model:destroyed", [](Tool::Stack args) {
+                if (args.array.size() < 1) return;
+                auto* dying = args.array[0].as<base_class*>();
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it -> second;
@@ -121,7 +133,7 @@ namespace Vital::Sandbox::API {
                         Instance::release(instance);
                     });
                 }
-            };
+            });
 
             API::bind(vm, base_scope, "load", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, path)")
