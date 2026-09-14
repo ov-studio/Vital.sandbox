@@ -58,6 +58,17 @@ namespace Vital::Manager {
             #endif
 
             struct Internal {
+                // Client lifecycle tokens: each stop bumps the generation for that
+                // resource so deferred start jobs from an older resource:started
+                // packet are ignored when a newer stop/restart has already begun.
+                private:
+                    static std::mutex lifecycle_mutex;
+                    static std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
+                    #if !defined(VSDK_Client)
+                    static std::unordered_set<std::string> resource_restarting;
+                    static std::unordered_set<std::string> resource_restart_pending;
+                    #endif
+                public:
                 // Helpers //
                 static std::string chunk_name(const std::string& resource, const std::string& src);
                 static Tool::Stack pack_manifest(const Manifest& manifest);
@@ -73,6 +84,14 @@ namespace Vital::Manager {
                 static bool reload_manifest(const std::string& name, std::vector<std::string>& errors);
                 static bool resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack);
                 static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
+                #endif
+
+
+                // Lifecycle //
+                static uint32_t lifecycle_get(const std::string& name);
+                static uint32_t lifecycle_bump(const std::string& name);
+                #if !defined(VSDK_Client)
+                static void finish_restart_cycle(const std::string& name);
                 #endif
 
 
