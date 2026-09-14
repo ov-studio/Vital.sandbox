@@ -178,7 +178,6 @@ namespace Vital::Engine {
                 } 
                 else {
                     godot::UtilityFunctions::push_warning("_spawn_entity [PhysicsBody]: unknown sub-type=", name);
-                    break;
                 }
 
                 if (entity) {
