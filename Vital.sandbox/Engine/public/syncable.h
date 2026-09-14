@@ -126,7 +126,6 @@ namespace Vital::Engine {
             godot::Vector3 delta_last_rot;
             godot::Vector3 delta_last_vel;
             godot::Vector3 delta_last_scale = godot::Vector3(1, 1, 1);
-
             #if !defined(VSDK_Client)
             std::optional<PendingForceTransform> pending_force_transform;
             #endif
