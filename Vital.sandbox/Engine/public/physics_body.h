@@ -36,9 +36,6 @@ namespace Vital::Engine {
         Vehicle,
     };
 
-    inline std::function<void(ISyncable*, PhysicsType, bool)> on_spawned_callback;
-    inline std::function<void(ISyncable*, PhysicsType)> on_destroyed_callback;
-
     template<typename Base>
     class Physics_Body : public Base, public ISyncable {
         friend class Manager::Network;
@@ -69,22 +66,17 @@ namespace Vital::Engine {
             // full world coordinates — mirrors Model::get_sync_position().
             godot::Vector3 get_sync_position() const override {
                 if (!const_cast<Physics_Body*>(this)->Base::is_inside_tree()) return godot::Vector3();
-                if (sync_parent_net_id != 0)
-                    return const_cast<Physics_Body*>(this)->Base::get_position();
+                if (sync_parent_net_id != 0) return const_cast<Physics_Body*>(this)->Base::get_position();
                 return const_cast<Physics_Body*>(this)->Base::get_global_position();
             }
 
             // get_rotation_degrees() is always local in Godot — consistent whether
             // parented or not, same reasoning as Model::get_sync_rotation().
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<Physics_Body*>(this)->Base::is_inside_tree()
-                    ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees()
-                    : godot::Vector3();
+                return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees() : godot::Vector3();
             }
             godot::Vector3 get_sync_scale() const override {
-                return const_cast<Physics_Body*>(this)->Base::is_inside_tree()
-                    ? const_cast<Physics_Body*>(this)->Base::get_scale()
-                    : godot::Vector3(1, 1, 1);
+                return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_scale() : godot::Vector3(1, 1, 1);
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override {
@@ -187,7 +179,6 @@ namespace Vital::Engine {
             };
             std::optional<PendingShape> pending_shape_broadcast;
             #endif
-
         protected:
             int pending_authority = 1;
 
@@ -208,7 +199,9 @@ namespace Vital::Engine {
             }
 
             void _notify_predelete_sync() {
-                if (on_destroyed_callback) on_destroyed_callback(this, get_physics_type());
+                Tool::Event::emit("entity:physics_body:destroyed", Tool::Stack({
+                    static_cast<ISyncable*>(this), (int32_t)get_physics_type()
+                }));
                 Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }
@@ -262,8 +255,9 @@ namespace Vital::Engine {
                             // because the vehicle body wasn't registered yet when wheels were
                             // created or configured in the same Lua tick as the vehicle body.
                             if constexpr (std::is_base_of_v<godot::VehicleBody3D, Base>) {
-                                if (Engine::Vehicle_Wheel::on_vehicle_ready_callback)
-                                    Engine::Vehicle_Wheel::on_vehicle_ready_callback(self);
+                                Tool::Event::emit("entity:vehicle_wheel:ready", Tool::Stack({
+                                    static_cast<godot::Node3D*>(self)
+                                }));
                             }
                         });
                     }
