@@ -44,6 +44,16 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
+            void clean() {
+                auto instance = shared_from_this();
+                if (!instance -> erase()) return;
+                if (instance -> body) {
+                    instance -> body -> destroy();
+                    instance -> body = nullptr;
+                }
+                instance -> release();
+            }
+
             void broadcast_shape(const char* shape_type, godot::Array params) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = body ? body -> get_parent_net_id() : 0;
@@ -71,16 +81,6 @@ namespace Vital::Sandbox::API {
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);
                 #endif
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;
