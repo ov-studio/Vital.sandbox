@@ -40,7 +40,7 @@ namespace Vital::Engine {
             static constexpr float BUFFER_DELAY         = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
             static constexpr float SNAP_THRESHOLD       = 5.0f;   // units — teleport if gap exceeds this
             static constexpr float VEL_THRESHOLD        = 0.05f;  // units/sec — "moving" cutoff
-            static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;
+            static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;   // seconds — inter-packet silence that signals a stream gap; resets buffer and jitter state
             static constexpr float BUFFER_DELAY_MIN     = 0.033f; // floor — keeps real bracketing snapshot; must stay >= interp_step (1/sync_rate) or the renderer falls into the extrapolation branch on every tick.
             static constexpr float BUFFER_DELAY_MAX     = 0.30f;  // default ceiling (300ms) — overridable
             static constexpr float JITTER_MARGIN        = 1.5f;   // default stddev multiplier — overridable
@@ -75,20 +75,22 @@ namespace Vital::Engine {
             #endif
         private:
             struct Internal {
-                static constexpr uint16_t MASK_PX = 1 << 0;
-                static constexpr uint16_t MASK_PY = 1 << 1;
-                static constexpr uint16_t MASK_PZ = 1 << 2;
-                static constexpr uint16_t MASK_RX = 1 << 3;
-                static constexpr uint16_t MASK_RY = 1 << 4;
-                static constexpr uint16_t MASK_RZ = 1 << 5;
-                static constexpr uint16_t MASK_VX = 1 << 6;
-                static constexpr uint16_t MASK_VY = 1 << 7;
-                static constexpr uint16_t MASK_VZ = 1 << 8;
-                static constexpr uint16_t MASK_SX = 1 << 9;
-                static constexpr uint16_t MASK_SY = 1 << 10;
-                static constexpr uint16_t MASK_SZ = 1 << 11;
-                static constexpr float DELTA_SCALE_THRESHOLD = 0.001f;
-
+                static constexpr uint16_t MASK_PX               = 1 << 0;  // position X changed
+                static constexpr uint16_t MASK_PY               = 1 << 1;  // position Y changed
+                static constexpr uint16_t MASK_PZ               = 1 << 2;  // position Z changed
+                static constexpr uint16_t MASK_RX               = 1 << 3;  // rotation X changed
+                static constexpr uint16_t MASK_RY               = 1 << 4;  // rotation Y changed
+                static constexpr uint16_t MASK_RZ               = 1 << 5;  // rotation Z changed
+                static constexpr uint16_t MASK_VX               = 1 << 6;  // velocity X changed
+                static constexpr uint16_t MASK_VY               = 1 << 7;  // velocity Y changed
+                static constexpr uint16_t MASK_VZ               = 1 << 8;  // velocity Z changed
+                static constexpr uint16_t MASK_SX               = 1 << 9;  // scale X changed
+                static constexpr uint16_t MASK_SY               = 1 << 10; // scale Y changed
+                static constexpr uint16_t MASK_SZ               = 1 << 11; // scale Z changed
+                static constexpr float    DELTA_SCALE_THRESHOLD = 0.001f; // units — minimum scale delta to include a component in the packet
+                #if !defined(VSDK_Client)
+                static constexpr uint32_t FORCE_SYNC_MAGIC      = 0x56535354u; // 'VSST' — magic prefix that marks a force-transform broadcast packet
+                #endif
 
                 // Helpers //
                 static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
