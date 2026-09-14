@@ -145,6 +145,45 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static void init(Machine* vm) {
+            static Tool::Event::event_id destroyed_binding = 0;
+            static Tool::Event::event_id ready_binding = 0;
+            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
+            if (ready_binding) Tool::Event::unbind("entity:ready", ready_binding);
+
+            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+                if (args.array.size() < 1) return;
+                if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
+                auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
+                if (!entity) return;
+                std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
+                    auto& inst = it->second;
+                    if (inst->body != entity) { ++it; continue; }
+                    ++it;
+                    Vehicle_Wheel::Instance::erase_unlocked(inst);
+                    Vital::Engine::Core::get_singleton()->execute([inst]() {
+                        const_cast<std::shared_ptr<Vehicle_Wheel::Instance>&>(inst)->body = nullptr;
+                        Vehicle_Wheel::Instance::release(inst);
+                    });
+                }
+            });
+
+            #if !defined(VSDK_Client)
+            ready_binding = Tool::Event::bind("entity:ready", [](Tool::Stack args) {
+                if (args.array.size() < 1) return;
+                auto* entity = args.array[0].as<godot::Node3D*>();
+                if (!entity) return;
+                std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
+                    if (!inst || !inst->body) continue;
+                    if (inst->body->get_parent() != entity) continue;
+                    inst->flush_pending_broadcasts();
+                }
+            });
+            #endif
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);
 
@@ -177,57 +216,6 @@ namespace Vital::Sandbox::API {
                     if (net) net->rpc("_spawn_wheel", (int)nid, instance->body->wheel_index, instance->body->get_position(), instance->body->get_rotation());
                 } else {
                     instance->pending_spawn = true;
-                }
-                #endif
-
-                // Wire destroy hook once — static id guards against rebinding a
-                // second handler on every create() call (Tool::Event::bind is
-                // additive, unlike the old raw std::function assignment).
-                // Uses as_ptr<Vehicle_Wheel>() to filter non-wheel payloads.
-                static Tool::Event::event_id destroyed_binding = 0;
-                if (!destroyed_binding) {
-                    destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                        if (args.array.size() < 1) return;
-                        // Raw Vehicle_Wheel* payloads only — ignore PhysicsBody/Model shapes.
-                        if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
-                        auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
-                        if (!entity) return;
-                        std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                        for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
-                            auto& inst = it->second;
-                            if (inst->body != entity) { ++it; continue; }
-                            ++it;
-                            Vehicle_Wheel::Instance::erase_unlocked(inst);
-                            Vital::Engine::Core::get_singleton()->execute([inst]() {
-                                const_cast<std::shared_ptr<Vehicle_Wheel::Instance>&>(inst)->body = nullptr;
-                                Vehicle_Wheel::Instance::release(inst);
-                            });
-                        }
-                    });
-                }
-
-                // Shared "entity:ready" hook (idempotent — bound once for the process;
-                // the handler captures nothing VM-specific). Any entity can emit this
-                // once it is fully registered; we only act when the payload is the
-                // parent vehicle Node3D of one of our wheels.
-                // Physics_Body::setup_create()'s deferred enqueue emits this after
-                // _spawn_entity fires. We flush any buffered spawn/config/transform RPCs
-                // for wheels parented to that entity.
-                #if !defined(VSDK_Client)
-                static Tool::Event::event_id ready_binding = 0;
-                if (!ready_binding) {
-                    ready_binding = Tool::Event::bind("entity:ready", [](Tool::Stack args) {
-                        if (args.array.size() < 1) return;
-                        auto* entity = args.array[0].as<godot::Node3D*>();
-                        if (!entity) return;
-                        std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                        for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
-                            if (!inst || !inst->body) continue;
-                            // Only flush wheels whose parent is this entity.
-                            if (inst->body->get_parent() != entity) continue;
-                            inst->flush_pending_broadcasts();
-                        }
-                    });
                 }
                 #endif
 

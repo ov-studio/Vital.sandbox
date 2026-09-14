@@ -69,26 +69,19 @@ namespace Vital::Sandbox::API {
         inline static std::mutex scope_mutex;
         inline static std::unordered_map<std::string, std::string> model_scope;
 
-        static void bind(Machine* vm) {
-            vm_module::register_type<Model>(vm);
-
-            // Bound once for the process, not per-VM: the handler captures nothing
-            // VM-specific (it only touches the static registry), so there's no
-            // stale-closure reason to unbind/rebind on every resource restart —
-            // unlike e.g. Sky_Physical::init()'s "environment:free" handler, which
-            // captures `vm` and genuinely needs a fresh closure each time.
-            //
-            // "entity:spawned" / "entity:unspawned" — listener type-checks the
-            // pointer type and ignores payloads that aren't Model instances.
+        static void init(Machine* vm) {
+            // Unbind/rebind on every resource init so a stale handler cannot
+            // outlive a VM restart (same pattern as Sky_Physical::init).
+            // Handlers only touch the static Model registry — no vm capture.
             static Tool::Event::event_id spawned_binding = 0;
-            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                // Emit sites pass raw Model* (stored as void* in StackValue), not
-                // shared_ptr — as_ptr<> always returns nullptr for those payloads.
-                // PhysicsBody also emits on the same channel as
-                // {ISyncable*, sub_type:int, remote:bool}; require the exact Model
-                // shape (raw Model* + bool) so we don't mis-handle physics events
-                // (as_raw_ptr without a type check + .as<bool>() on an int32_t
-                // is what caused the std::bad_variant_access crash).
+            static Tool::Event::event_id destroyed_binding = 0;
+            if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
+            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
+
+            spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+                // Emit sites pass raw Model* (void* in StackValue). PhysicsBody
+                // shares this channel as {ISyncable*, sub_type:int, remote:bool}
+                // — require Model* + bool so those payloads are ignored.
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
@@ -102,9 +95,6 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 // Defer Lua registry + entity:created out of the network RPC stack.
-                // Rapid resource restart floods _spawn_entity while scripts start/stop;
-                // synchronous store() → signal → Lua pcall re-enters a dirty VM and
-                // corrupts the Lua heap (luaM_free / growstack crashes).
                 const godot::ObjectID oid(entity -> get_instance_id());
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
@@ -123,10 +113,7 @@ namespace Vital::Sandbox::API {
                 });
             });
 
-            static Tool::Event::event_id destroyed_binding = 0;
-            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                // Same raw-pointer vs shared_ptr mismatch as entity:spawned.
-                // Model emits {Model*}; PhysicsBody emits {ISyncable*, sub_type}.
+            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
@@ -137,19 +124,17 @@ namespace Vital::Sandbox::API {
                     if (instance -> model != entity) { ++it; continue; }
                     ++it;
                     Instance::erase_unlocked(instance);
-                    // Same reasoning as the physics body destroy callback: release()
-                    // nulls instance->userdata, which push_self() checks. Running it
-                    // synchronously here can beat a deferred entity:destroyed dispatch
-                    // to Lua (NOTIFICATION_PREDELETE — and therefore this callback —
-                    // isn't guaranteed to fire on the main thread, e.g. remote
-                    // _destroy_entity handling). Defer it through the same queue so it
-                    // always runs strictly after that dispatch.
+                    // Defer release so it runs after any deferred entity:destroyed.
                     Vital::Engine::Core::get_singleton() -> execute([instance]() {
                         instance -> model = nullptr;
                         Instance::release(instance);
                     });
                 }
             });
+        }
+
+        static void bind(Machine* vm) {
+            vm_module::register_type<Model>(vm);
 
             API::bind(vm, base_scope, "load", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, path)")

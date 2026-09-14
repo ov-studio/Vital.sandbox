@@ -109,17 +109,14 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        static void bind(Machine* vm) {
-            vm_module::register_type<Collision_Shape>(vm);
-
-            // Bound once for the process, not per-VM — see the equivalent comment
-            // in API::Model::bind(). Emit sites pass raw Collision_Shape* (void* in
-            // StackValue); type-check so Model/PhysicsBody payloads are ignored.
+        static void init(Machine* vm) {
             static Tool::Event::event_id spawned_binding = 0;
-            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                // Shape: {Collision_Shape*, remote:bool}. Idempotent — local
-                // create() may already have store()'d an Instance before this
-                // deferred handler runs.
+            static Tool::Event::event_id destroyed_binding = 0;
+            if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
+            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
+
+            spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+                // Shape: {Collision_Shape*, remote:bool}. Idempotent if create() already store()'d.
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
@@ -148,8 +145,7 @@ namespace Vital::Sandbox::API {
                 });
             });
 
-            static Tool::Event::event_id destroyed_binding = 0;
-            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
@@ -166,6 +162,10 @@ namespace Vital::Sandbox::API {
                     });
                 }
             });
+        }
+
+        static void bind(Machine* vm) {
+            vm_module::register_type<Collision_Shape>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(owner)", true)

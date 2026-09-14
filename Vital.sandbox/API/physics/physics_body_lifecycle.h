@@ -81,27 +81,20 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        static void bind(Machine* vm) {
-            // Bound once for the process, not per-VM: neither handler captures
-            // `vm` or anything else VM-specific, they only touch the static
-            // per-type registries — so there's no stale-closure reason to
-            // unbind/rebind on every resource restart.
-            //
-            // "entity:spawned" / "entity:unspawned" — PhysicsBody emits
-            // {ISyncable*, sub_type, remote}; the ISyncable* cast distinguishes
-            // these from other entity payloads (non-physics pointers return nullptr).
+        static void init(Machine* vm) {
             static Tool::Event::event_id spawned_binding = 0;
-            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+            static Tool::Event::event_id destroyed_binding = 0;
+            if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
+            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
+
+            // PhysicsBody emits {ISyncable*, sub_type, remote}; type-check via
+            // ISyncable* so Model/CollisionShape payloads are ignored.
+            spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
-                // PhysicsBody emits {ISyncable*, sub_type, remote} — type-check via
-                // dynamic_cast in the switch below; non-physics payloads carry a
-                // non-ISyncable* pointer so the cast above returns nullptr and we bail.
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 bool remote = args.array[2].as<bool>();
-                // Capture by ObjectID — raw `this` would be dangling if the body is
-                // queue_free()'d before the deferred enqueue drains.
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
                         spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()), remote);
@@ -122,8 +115,7 @@ namespace Vital::Sandbox::API {
                 }
             });
 
-            static Tool::Event::event_id destroyed_binding = 0;
-            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
@@ -139,9 +131,12 @@ namespace Vital::Sandbox::API {
                         destroy_body<Animatable_Body, Vital::Engine::Animatable_Body>(entity); break;
                     case Vital::Engine::PhysicsType::Vehicle:
                         destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); break;
+                    default: break;
                 }
             });
         }
+
+        static void bind(Machine* vm) {}
 
         static void clean(const std::string&) {}
     };
