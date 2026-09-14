@@ -65,6 +65,13 @@ namespace Vital::Engine {
                 godot::Vector3 scale = godot::Vector3(1, 1, 1);
             };
             #endif
+
+            struct Snapshot {
+                godot::Vector3 pos;
+                godot::Vector3 rot;
+                godot::Vector3 vel;
+                float time = -1.0f;
+            };
         private:
             struct Internal {
                 static constexpr uint16_t MASK_PX = 1 << 0;
@@ -104,14 +111,6 @@ namespace Vital::Engine {
             godot::Vector3 sync_last_rot;
             godot::Vector3 sync_last_vel;
             godot::Vector3 sync_last_scale = godot::Vector3(1, 1, 1);
-
-            struct Snapshot {
-                godot::Vector3 pos;
-                godot::Vector3 rot;
-                godot::Vector3 vel;
-                float time = -1.0f;
-            };
-
             Snapshot snap_buf[SNAPSHOT_COUNT];
             int snap_head = 0;
             int snap_count = 0;
