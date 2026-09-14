@@ -113,19 +113,20 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Collision_Shape>(vm);
 
             // Bound once for the process, not per-VM — see the equivalent comment
-            // in API::Model::bind(). Uses as_ptr<base_class>() to distinguish
-            // CollisionShape payloads from other entity types on the same channel.
+            // in API::Model::bind(). Emit sites pass raw Collision_Shape* (void* in
+            // StackValue); type-check so Model/PhysicsBody payloads are ignored.
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
-                auto node = args.array[0].as_raw_ptr<base_class>();
-                if (!node) return;
+                if (!args.array[0].is_raw_ptr<base_class>()) return;
+                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                if (!entity) return;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, inst] : registry.buffer)
-                        if (inst->body == node) return;
+                        if (inst->body == entity) return;
                 }
-                const godot::ObjectID oid(node->get_instance_id());
+                const godot::ObjectID oid(entity->get_instance_id());
                 Vital::Engine::Core::get_singleton()->enqueue([oid]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
@@ -145,11 +146,13 @@ namespace Vital::Sandbox::API {
             static Tool::Event::event_id destroyed_binding = 0;
             if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
-                auto node = args.array[0].as_raw_ptr<base_class>();
+                if (!args.array[0].is_raw_ptr<base_class>()) return;
+                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                if (!entity) return;
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it->second;
-                    if (instance->body != node) { ++it; continue; }
+                    if (instance->body != entity) { ++it; continue; }
                     ++it;
                     Instance::erase_unlocked(instance);
                     Vital::Engine::Core::get_singleton()->execute([instance]() {
