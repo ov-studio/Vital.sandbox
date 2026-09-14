@@ -43,6 +43,16 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
+            void clean() {
+                auto instance = shared_from_this();
+                if (!instance -> erase()) return;
+                if (instance -> body) {
+                    instance -> body -> destroy();
+                    instance -> body = nullptr;
+                }
+                instance -> release();
+            }
+
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
                 auto* parent = body -> get_parent();
@@ -61,7 +71,6 @@ namespace Vital::Sandbox::API {
                 if (nid == 0 || !body) return;
                 auto* net = Manager::Network::get_singleton() -> get_node();
                 if (!net) return;
-
                 if (pending_spawn) {
                     net -> rpc("_spawn_wheel", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                     pending_spawn = false;
@@ -99,16 +108,6 @@ namespace Vital::Sandbox::API {
                 auto* net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;
