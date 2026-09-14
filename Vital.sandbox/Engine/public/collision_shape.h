@@ -71,8 +71,10 @@ namespace Vital::Engine {
 
 
             // Setters //
+            #if defined(VSDK_Client)
             void set_debug_visible(bool state);
             static void set_debug_all(bool state);
+            #endif
 
 
             // Misc //

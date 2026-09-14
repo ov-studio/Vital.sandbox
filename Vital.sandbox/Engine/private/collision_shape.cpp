@@ -95,8 +95,8 @@ namespace Vital::Engine {
 
 
     // Setters //
+    #if defined(VSDK_Client)
     void Collision_Shape::set_debug_visible(bool state) {
-        #if defined(VSDK_Client)
         if (state) {
             if (!debug_mesh) {
                 debug_mesh = memnew(godot::MeshInstance3D);
@@ -106,9 +106,6 @@ namespace Vital::Engine {
             refresh_debug_mesh();
         }
         else if (debug_mesh) debug_mesh -> set_visible(false);
-        #else
-        (void)state;
-        #endif
     }
 
     void Collision_Shape::set_debug_all(bool state) {
@@ -120,6 +117,7 @@ namespace Vital::Engine {
         (void)state;
         #endif
     }
+    #endif
 
 
     // Helpers //
