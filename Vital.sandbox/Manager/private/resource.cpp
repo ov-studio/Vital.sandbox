@@ -25,50 +25,13 @@
 
 
 namespace Vital::Manager {
-    // Client lifecycle tokens: each stop bumps the generation for that resource
-    // so deferred start jobs from an older resource:started packet are ignored
-    // when a newer stop/restart has already begun (production safe rapid restart).
-    namespace {
-        std::mutex lifecycle_mutex;
-        std::unordered_map<std::string, uint32_t> resource_lifecycle_gen;
-        #if !defined(VSDK_Client)
-        std::unordered_set<std::string> resource_restarting; // server: restart in flight
-        std::unordered_set<std::string> resource_restart_pending; // coalesce spam into one follow-up
-        #endif
+    std::mutex Resource::Internal::lifecycle_mutex;
+    std::unordered_map<std::string, uint32_t> Resource::Internal::resource_lifecycle_gen;
+    #if !defined(VSDK_Client)
+    std::unordered_set<std::string> Resource::Internal::resource_restarting;
+    std::unordered_set<std::string> Resource::Internal::resource_restart_pending;
+    #endif
 
-        uint32_t lifecycle_bump(const std::string& name) {
-            std::lock_guard<std::mutex> lock(lifecycle_mutex);
-            return ++resource_lifecycle_gen[name];
-        }
-        
-        uint32_t lifecycle_get(const std::string& name) {
-            std::lock_guard<std::mutex> lock(lifecycle_mutex);
-            auto it = resource_lifecycle_gen.find(name);
-            return it == resource_lifecycle_gen.end() ? 0u : it->second;
-        }
-
-        #if !defined(VSDK_Client)
-        // Finish a restart cycle; if console/API spammed restart while busy,
-        // run exactly one more restart with the latest intent.
-        // Internal::restart exists only on the server build.
-        void finish_restart_cycle(const std::string& name) {
-            bool again = false;
-            {
-                std::lock_guard<std::mutex> lock(lifecycle_mutex);
-                resource_restarting.erase(name);
-                if (resource_restart_pending.count(name)) {
-                    resource_restart_pending.erase(name);
-                    again = true;
-                }
-            }
-            if (again) {
-                Resource::get_singleton()->log("sbox", fmt::format("resource `{}` applying coalesced restart", name));
-                // Public API — Internal is private to Resource.
-                Resource::get_singleton()->restart(name);
-            }
-        }
-        #endif
-    }
 
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
@@ -275,10 +238,10 @@ namespace Vital::Manager {
         // early in that case (resource not loaded yet), so we have to check
         // again here, after registration, whether assets are already ready.
         if (!Internal::is_pending(name)) {
-            const uint32_t gen = lifecycle_get(name);
+            const uint32_t gen = Internal::lifecycle_get(name);
             Engine::Core::get_singleton() -> enqueue([name, gen]() {
                 Engine::Core::get_singleton() -> enqueue([name, gen]() {
-                    if (lifecycle_get(name) != gen) {
+                    if (Internal::lifecycle_get(name) != gen) {
                         Resource::get_singleton() -> log("sbox", fmt::format("resource `{}` deferred start skipped — newer stop/restart", name));
                         return;
                     }
@@ -413,6 +376,37 @@ namespace Vital::Manager {
     #endif
 
 
+    // Lifecycle //
+    uint32_t Resource::Internal::lifecycle_bump(const std::string& name) {
+        std::lock_guard<std::mutex> lock(lifecycle_mutex);
+        return ++resource_lifecycle_gen[name];
+    }
+
+    uint32_t Resource::Internal::lifecycle_get(const std::string& name) {
+        std::lock_guard<std::mutex> lock(lifecycle_mutex);
+        auto it = resource_lifecycle_gen.find(name);
+        return it == resource_lifecycle_gen.end() ? 0u : it->second;
+    }
+
+    #if !defined(VSDK_Client)
+    void Resource::Internal::finish_restart_cycle(const std::string& name) {
+        bool again = false;
+        {
+            std::lock_guard<std::mutex> lock(lifecycle_mutex);
+            resource_restarting.erase(name);
+            if (resource_restart_pending.count(name)) {
+                resource_restart_pending.erase(name);
+                again = true;
+            }
+        }
+        if (again) {
+            Resource::get_singleton()->log("sbox", fmt::format("resource `{}` applying coalesced restart", name));
+            Resource::get_singleton()->restart(name);
+        }
+    }
+    #endif
+
+    
     // Checkers //
     bool Resource::Internal::is_loaded(const std::string& name) {
         auto rm = Resource::get_singleton();
@@ -546,7 +540,7 @@ namespace Vital::Manager {
             #if defined(VSDK_Client)
                 // Bump before teardown so any deferred start from a previous
                 // resource:started packet becomes stale and will no-op.
-                lifecycle_bump(name);
+                Internal::lifecycle_bump(name);
                 // Idempotent: rapid restart / duplicate resource:stopped packets
                 // often arrive after the first stop already cleared running+pending.
                 if (!Internal::is_running(name) && !Internal::is_pending(name)) {
@@ -766,7 +760,7 @@ namespace Vital::Manager {
             Engine::Core::get_singleton() -> enqueue([name]() {
                 Engine::Core::get_singleton() -> enqueue([name]() {
                     Internal::start(name);
-                    finish_restart_cycle(name);
+                    Internal::finish_restart_cycle(name);
                 });
             });
         });
