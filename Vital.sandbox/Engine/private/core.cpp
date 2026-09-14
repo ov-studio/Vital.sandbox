@@ -305,5 +305,10 @@ namespace Vital::Engine {
         if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to capture screenshot");
         if (image -> save_png(target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("failed to save screenshot"));
     }
+    #else
+    Config::Server& Core::get_server_config() {
+        if (!server_config) server_config = std::make_unique<Config::Server>();
+        return *server_config;
+    }
     #endif
 }
