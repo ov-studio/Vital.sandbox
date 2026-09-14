@@ -20,7 +20,6 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     class Network;
 }
