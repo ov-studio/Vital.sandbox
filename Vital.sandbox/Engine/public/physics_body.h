@@ -253,16 +253,46 @@ namespace Vital::Engine {
                             // Local server spawn: same shape as remote _spawn_entity so
                             // Physics_Body_Lifecycle binders see every body. spawn_body<>
                             // is idempotent — Lua create() already store()'d an Instance.
-                            Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self->get_physics_type(), false}));
+                            Tool::Event::emit("entity:spawned", Tool::Stack({
+                                static_cast<ISyncable*>(self),
+                                (int32_t)self->get_physics_type(),
+                                false
+                            }));
                             // Shared ready signal: entity is registered, spawn RPC sent,
                             // pending shape/transform flushed. Listeners type-check the
                             // Node3D* payload and act only on entities they own.
-                            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self)}));
+                            Tool::Event::emit("entity:ready", Tool::Stack({
+                                static_cast<godot::Node3D*>(self)
+                            }));
                         });
                     }
-                    else Core::get_singleton() -> add_child(this);
+                    else {
+                        // Server body with no network authority peer — still emit
+                        // the shared lifecycle so local-only bodies match everyone else.
+                        Core::get_singleton() -> add_child(this);
+                        Tool::Event::emit("entity:spawned", Tool::Stack({
+                            static_cast<ISyncable*>(this),
+                            (int32_t)get_physics_type(),
+                            false
+                        }));
+                        Tool::Event::emit("entity:ready", Tool::Stack({
+                            static_cast<godot::Node3D*>(this)
+                        }));
+                    }
                 #else
+                    // Client-local body (not replicated via _spawn_entity). Same
+                    // spawned/ready contract as server so binders and scripts see
+                    // a uniform lifecycle. spawn_body<> is idempotent if Lua
+                    // create() already store()'d an Instance.
                     Core::get_singleton() -> add_child(this);
+                    Tool::Event::emit("entity:spawned", Tool::Stack({
+                        static_cast<ISyncable*>(this),
+                        (int32_t)get_physics_type(),
+                        false
+                    }));
+                    Tool::Event::emit("entity:ready", Tool::Stack({
+                        static_cast<godot::Node3D*>(this)
+                    }));
                 #endif
             }
 

@@ -319,6 +319,10 @@ namespace Vital::Engine {
             }
             object->add_child(instance);
             Engine::Core::get_singleton()->add_child(object);
+            // Same lifecycle as server/remote: spawned then ready. Binder is
+            // idempotent if API create() already store()'d the Lua Instance.
+            Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
+            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
             return object;
         #else
             // Server-side: create the model locally, assign net_id before
