@@ -21,12 +21,12 @@
 ///////////////////////////////
 
 // TODO: Improve
-namespace Vital::Manager { 
-    class Network; 
+namespace Vital::Manager {
+    class Network;
 }
 
 namespace Vital::Engine {
-    class Network; 
+    class Network;
     class ISyncable {
         friend class Manager::Network;
         friend class Network;
@@ -55,9 +55,17 @@ namespace Vital::Engine {
                 int rate = SYNC_RATE;
                 float buffer_delay_max = BUFFER_DELAY_MAX;
                 float jitter_margin = JITTER_MARGIN;
-                float snap_threshold= SNAP_THRESHOLD;
+                float snap_threshold = SNAP_THRESHOLD;
             };
             static inline SyncConfig sync_config;
+
+            #if !defined(VSDK_Client)
+            struct PendingForceTransform {
+                godot::Vector3 pos;
+                godot::Vector3 rot;
+                godot::Vector3 scale = godot::Vector3(1, 1, 1);
+            };
+            #endif
         private:
             struct Internal {
                 static constexpr uint16_t MASK_PX = 1 << 0;
@@ -74,7 +82,7 @@ namespace Vital::Engine {
                 static constexpr uint16_t MASK_SZ = 1 << 11;
                 static constexpr float DELTA_SCALE_THRESHOLD = 0.001f;
 
-                
+
                 // Helpers //
                 static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
                 static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
@@ -121,6 +129,10 @@ namespace Vital::Engine {
             godot::Vector3 delta_last_vel;
             godot::Vector3 delta_last_scale = godot::Vector3(1, 1, 1);
 
+            #if !defined(VSDK_Client)
+            std::optional<PendingForceTransform> pending_force_transform;
+            #endif
+
 
             // Instantiators //
             ISyncable() = default;
@@ -135,50 +147,46 @@ namespace Vital::Engine {
             void apply_parent(godot::Node* parent_node);
             #endif
         public:
-            // Misc //
-            static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset) {
-                return Internal::read_u32(buffer, offset);
-            }
-
-            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
-            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
-            int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale);
-            virtual SyncType get_sync_type() const = 0;
-            virtual bool is_sync_active() const = 0;
-            void set_sync_authority(int peer_id) {
-                sync_authority = peer_id;
-                reset_sync_state();
-            }
-
+            // Managers //
             virtual void destroy_sync() = 0;
+            virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) = 0;
+            virtual void on_sync_process(double delta) = 0;
+            virtual void reset_sync_state();
+            #if !defined(VSDK_Client)
+            void force_transform_broadcast();
+            void flush_pending_force_transform();
+            void set_parent(godot::Node3D* parent_node);
+            #endif
+
+
+            // Checkers //
+            virtual bool is_sync_active() const = 0;
+            bool is_replicated() const { return net_id != 0; }
+
+
+            // Getters //
+            virtual SyncType get_sync_type() const = 0;
             virtual std::string get_sync_name() const { return ""; }
             virtual uint32_t get_net_id() const { return net_id; }
-            bool is_replicated() const { return net_id != 0; }
             virtual int get_sync_authority() const { return sync_authority; }
             virtual godot::Vector3 get_sync_position() const = 0;
             virtual godot::Vector3 get_sync_rotation() const = 0;
-            virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) = 0;
             virtual godot::Vector3 get_sync_scale() const = 0;
-            virtual void on_sync_process(double delta) = 0;
-            virtual void reset_sync_state();
-            void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
-            uint32_t get_sync_parent_net_id() const  { return sync_parent_net_id; }
-
+            uint32_t get_sync_parent_net_id() const { return sync_parent_net_id; }
             #if !defined(VSDK_Client)
-            void force_transform_broadcast();
-            #endif
-
-            #if !defined(VSDK_Client)
-            struct PendingForceTransform {
-                godot::Vector3 pos;
-                godot::Vector3 rot;
-                godot::Vector3 scale = godot::Vector3(1, 1, 1);
-            };
-            std::optional<PendingForceTransform> pending_force_transform;
-
-            void flush_pending_force_transform();
-            void set_parent(godot::Node3D* parent_node);
             uint32_t get_parent_net_id() const;
             #endif
+
+
+            // Setters //
+            void set_sync_authority(int peer_id) { sync_authority = peer_id; reset_sync_state(); }
+            void set_sync_parent_net_id(uint32_t id) { sync_parent_net_id = id; }
+
+
+            // Misc //
+            static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset) { return Internal::read_u32(buffer, offset); }
+            static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
+            static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
+            int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale);
     };
 }
