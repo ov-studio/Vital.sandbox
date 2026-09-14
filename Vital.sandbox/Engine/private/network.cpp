@@ -131,7 +131,7 @@ namespace Vital::Engine {
                     // instance was present before add_child (it was).
                 }
                 // Register immediately so get_entity_by_net_id() works inside
-                // the entity:created Lua handler fired by "entity:model:spawned".
+                // the entity:created Lua handler fired by "entity:spawned".
                 // register_syncable() is idempotent, so poll() will skip it.
                 auto* net_mgr = Manager::Network::get_singleton();
                 net_mgr -> register_syncable(object);
@@ -144,7 +144,9 @@ namespace Vital::Engine {
                     object->delta_last_rot = init_rot;
                 }
                 net_mgr -> replay_pending_syncs(object);
-                Tool::Event::emit("entity:model:spawned", Tool::Stack({ object, true }));
+                Tool::Event::emit("entity:spawned", Tool::Stack({
+                    object, (int32_t)Vital::Engine::EntityKind::Model, (int32_t)0, true
+                }));
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
@@ -193,7 +195,7 @@ namespace Vital::Engine {
                     entity -> sync_authority = authority;
                     entity -> reset_sync_state();
                     // Register immediately so get_entity_by_net_id() works inside
-                    // the entity:created Lua handler fired by "entity:physics_body:spawned".
+                    // the entity:created Lua handler fired by "entity:spawned".
                     // register_syncable() is idempotent, so poll() will skip it.
                     auto* net_mgr = Manager::Network::get_singleton();
                     net_mgr -> register_syncable(entity);
@@ -212,9 +214,10 @@ namespace Vital::Engine {
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
 
                     // Notify Lua so it can hydrate collision shapes / wheels on
-                    // this remote body — mirrors "entity:model:spawned".
-                    Tool::Event::emit("entity:physics_body:spawned", Tool::Stack({
-                        entity, (int32_t)sub_type, true
+                    // this remote body — shares the same "entity:spawned" channel
+                    // every entity kind emits on (see EntityKind in core.h).
+                    Tool::Event::emit("entity:spawned", Tool::Stack({
+                        entity, (int32_t)Vital::Engine::EntityKind::PhysicsBody, (int32_t)sub_type, true
                     }));
                 }
                 break;
@@ -529,7 +532,9 @@ namespace Vital::Engine {
         if (!col) {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
-            Tool::Event::emit("entity:collision_shape:spawned", Tool::Stack({ col }));
+            Tool::Event::emit("entity:spawned", Tool::Stack({
+                col, (int32_t)Vital::Engine::EntityKind::CollisionShape, (int32_t)0, true
+            }));
         }
 
         // FIXED: now routes through Collision_Shape::assign_shape(), which sets

@@ -27,6 +27,23 @@ namespace Vital::Config {
 #endif
 
 namespace Vital::Engine {
+    // Discriminates the payload of the shared "entity:spawned" / "entity:unspawned"
+    // Tool::Event channels used by API::Model, API::Physics_Body_Lifecycle,
+    // API::Collision_Shape, and API::Vehicle_Wheel to hand off engine-side spawn/
+    // destroy notifications to their Lua-facing Instance registries. One shared
+    // pair of event names, not one pair per type — each listener type-checks the
+    // kind slot and ignores payloads that aren't its own.
+    //
+    // For PhysicsBody, the payload's sub_type slot carries a Vital::Engine::
+    // PhysicsType (Rigid/Static/Character/Animatable/Vehicle); for every other
+    // kind sub_type is unused (always 0).
+    enum class EntityKind : uint8_t {
+        Model = 0,
+        PhysicsBody = 1,
+        CollisionShape = 2,
+        VehicleWheel = 3
+    };
+
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)
         protected:

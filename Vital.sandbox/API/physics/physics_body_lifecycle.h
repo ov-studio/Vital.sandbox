@@ -18,7 +18,6 @@
 #include <Vital.sandbox/API/physics/character_body.h>
 #include <Vital.sandbox/API/physics/animatable_body.h>
 #include <Vital.sandbox/API/physics/vehicle_body.h>
-#include <Vital.sandbox/API/physics/collision_shape.h>
 
 
 /////////////////////////////////////////
@@ -83,16 +82,25 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            // All four handlers below are bound once for the process, not per-VM:
-            // none of them capture `vm` or anything else VM-specific, they only
-            // touch the static per-type registries — so there's no stale-closure
-            // reason to unbind/rebind on every resource restart.
+            // Bound once for the process, not per-VM: neither handler captures
+            // `vm` or anything else VM-specific, they only touch the static
+            // per-type registries — so there's no stale-closure reason to
+            // unbind/rebind on every resource restart.
+            //
+            // "entity:spawned" / "entity:unspawned" are shared across every
+            // entity kind (Model, PhysicsBody, CollisionShape, VehicleWheel) —
+            // these handlers type-check the EntityKind slot and ignore anything
+            // that isn't PhysicsBody. Collision_Shape and Vehicle_Wheel wire
+            // their own kind-checked handlers on the same channel in their own
+            // bind() — see API::Collision_Shape::bind() and API::Vehicle_Wheel::
+            // bind() — since neither actually depends on the body types below.
             static Tool::Event::event_id spawned_binding = 0;
-            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:physics_body:spawned", [](Tool::Stack args) {
-                if (args.array.size() < 3) return;
+            if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+                if (args.array.size() < 4) return;
+                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::PhysicsBody) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
-                auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
-                bool remote = args.array[2].as<bool>();
+                auto sub_type = (Vital::Engine::PhysicsType)args.array[2].as<int32_t>();
+                bool remote = args.array[3].as<bool>();
                 if (!entity) return;
                 // Capture by ObjectID — raw `this` would be dangling if the body is
                 // queue_free()'d before the deferred enqueue drains.
@@ -117,10 +125,11 @@ namespace Vital::Sandbox::API {
             });
 
             static Tool::Event::event_id destroyed_binding = 0;
-            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:physics_body:destroyed", [](Tool::Stack args) {
-                if (args.array.size() < 2) return;
+            if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+                if (args.array.size() < 3) return;
+                if ((Vital::Engine::EntityKind)args.array[1].as<int32_t>() != Vital::Engine::EntityKind::PhysicsBody) return;
                 auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
-                auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
+                auto sub_type = (Vital::Engine::PhysicsType)args.array[2].as<int32_t>();
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
                         destroy_body<Rigid_Body, Vital::Engine::Rigid_Body>(entity); break;
@@ -132,50 +141,6 @@ namespace Vital::Sandbox::API {
                         destroy_body<Animatable_Body, Vital::Engine::Animatable_Body>(entity); break;
                     case Vital::Engine::PhysicsType::Vehicle:
                         destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); break;
-                }
-            });
-
-            static Tool::Event::event_id shape_spawned_binding = 0;
-            if (!shape_spawned_binding) shape_spawned_binding = Tool::Event::bind("entity:collision_shape:spawned", [](Tool::Stack args) {
-                if (args.array.size() < 1) return;
-                auto* node = args.array[0].as<Vital::Engine::Collision_Shape*>();
-                if (!node) return;
-                {
-                    std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
-                    for (auto& [id, inst] : Collision_Shape::registry.buffer)
-                        if (inst->body == node) return;
-                }
-                const godot::ObjectID oid(node->get_instance_id());
-                Vital::Engine::Core::get_singleton()->enqueue([oid]() {
-                    godot::Object* obj = godot::ObjectDB::get_instance(oid);
-                    if (!obj) return;
-                    auto* shape = godot::Object::cast_to<Vital::Engine::Collision_Shape>(obj);
-                    if (!shape) return;
-                    {
-                        std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
-                        for (auto& [id, inst] : Collision_Shape::registry.buffer)
-                            if (inst->body == shape) return;
-                    }
-                    auto instance = Collision_Shape::Instance::init(nullptr, true);
-                    instance->body = shape;
-                    instance->store(false);
-                });
-            });
-
-            static Tool::Event::event_id shape_destroyed_binding = 0;
-            if (!shape_destroyed_binding) shape_destroyed_binding = Tool::Event::bind("entity:collision_shape:destroyed", [](Tool::Stack args) {
-                if (args.array.size() < 1) return;
-                auto* node = args.array[0].as<Vital::Engine::Collision_Shape*>();
-                std::lock_guard<std::mutex> lock(Collision_Shape::registry.mutex);
-                for (auto it = Collision_Shape::registry.buffer.begin(); it != Collision_Shape::registry.buffer.end();) {
-                    auto& instance = it->second;
-                    if (instance->body != node) { ++it; continue; }
-                    ++it;
-                    Collision_Shape::Instance::erase_unlocked(instance);
-                    Vital::Engine::Core::get_singleton()->execute([instance]() {
-                        instance->body = nullptr;
-                        Collision_Shape::Instance::release(instance);
-                    });
                 }
             });
         }

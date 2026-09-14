@@ -31,7 +31,9 @@ namespace Vital::Engine {
             ~Vehicle_Wheel() override = default;
             static void _bind_methods() {}
             void _notification(int what) {
-                if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:vehicle_wheel:destroyed", Tool::Stack({this}));
+                if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({
+                    this, (int32_t)Vital::Engine::EntityKind::VehicleWheel, (int32_t)0
+                }));
             }
         public:
             // Index within the parent vehicle — used by RPCs to identify which wheel.
