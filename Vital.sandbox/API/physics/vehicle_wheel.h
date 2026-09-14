@@ -50,9 +50,7 @@ namespace Vital::Sandbox::API {
                 if (!body) return 0;
                 auto* parent = body->get_parent();
                 if (!parent) return 0;
-                auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(
-                    godot::Object::cast_to<godot::Object>(parent)
-                );
+                auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
                 return syncable ? syncable->get_net_id() : 0;
             }
 
@@ -120,8 +118,6 @@ namespace Vital::Sandbox::API {
                 #if !defined(VSDK_Client)
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0) {
-                    // Vehicle body not registered yet — mark dirty; flush will send
-                    // the final transform once net_id is live.
                     pending_transform = true;
                     return;
                 }
@@ -153,17 +149,9 @@ namespace Vital::Sandbox::API {
                 if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
                 auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
                 if (!entity) return;
-                std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
-                    auto& inst = it->second;
-                    if (inst->body != entity) { ++it; continue; }
-                    ++it;
-                    Vehicle_Wheel::Instance::erase_unlocked(inst);
-                    Vital::Engine::Core::get_singleton()->execute([inst]() {
-                        const_cast<std::shared_ptr<Vehicle_Wheel::Instance>&>(inst)->body = nullptr;
-                        Vehicle_Wheel::Instance::release(inst);
-                    });
-                }
+                Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> inst) {
+                    inst->body = nullptr;
+                });
             });
 
             #if !defined(VSDK_Client)
