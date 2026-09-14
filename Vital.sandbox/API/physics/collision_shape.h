@@ -117,17 +117,22 @@ namespace Vital::Sandbox::API {
             // StackValue); type-check so Model/PhysicsBody payloads are ignored.
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+                // Shape: {Collision_Shape*, remote:bool}. Idempotent — local
+                // create() may already have store()'d an Instance before this
+                // deferred handler runs.
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
                 if (!entity) return;
+                if (!args.array[1].is<bool>()) return;
+                bool remote = args.array[1].as<bool>();
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, inst] : registry.buffer)
                         if (inst->body == entity) return;
                 }
                 const godot::ObjectID oid(entity->get_instance_id());
-                Vital::Engine::Core::get_singleton()->enqueue([oid]() {
+                Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
                     auto* shape = godot::Object::cast_to<base_class>(obj);
@@ -137,7 +142,7 @@ namespace Vital::Sandbox::API {
                         for (auto& [id, inst] : registry.buffer)
                             if (inst->body == shape) return;
                     }
-                    auto instance = Instance::init(nullptr, true);
+                    auto instance = Instance::init(nullptr, remote);
                     instance->body = shape;
                     instance->store(false);
                 });
