@@ -91,18 +91,10 @@ namespace Vital::Engine {
         }
     }
 
-    // Runs once per fixed physics tick — the same clock that actually moves
-    // RigidBody3D/CharacterBody3D transforms (set_physics_ticks_per_second()
-    // in Network::host()). Sampling and broadcasting authoritative sync
-    // transforms here (instead of from the variable-rate _process above)
-    // means every outgoing snapshot corresponds to exactly one simulation
-    // step: no more repeated samples of a transform that hasn't moved yet,
-    // no more single-frame catch-up spikes once physics finally steps. See
-    // Manager::Network::sync_tick() for the sending logic itself.
     void Core::_physics_process(double delta) {
         if (!is_ready()) return;
+        Manager::Sandbox::get_singleton() -> physics_process(delta);
         Manager::Network::get_singleton() -> sync_tick(delta);
-        // TODO: wIRE physics_process signal to sanhdbox using Manager::Sandbox::get_singleton() -> physics_process(delta); maybe??
     }
 
     #if defined(VSDK_Client)
