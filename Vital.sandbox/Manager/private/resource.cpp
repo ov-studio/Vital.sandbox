@@ -546,10 +546,6 @@ namespace Vital::Manager {
             vm -> clear_environment_id(name);
             #if defined(VSDK_Client)
             Manager::Asset::get_singleton()->clear_spawn_queue_prefix(":" + name + "/");
-            #else
-            // TOOD: ?
-            // Server: same policy — keep cache across restarts for stability.
-            // Use Model::unload_resource_models only on full resource removal if needed later.
             #endif
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
