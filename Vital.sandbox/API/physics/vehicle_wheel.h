@@ -34,6 +34,11 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Vehicle_Wheel;
             base_class* body = nullptr;
+            #if !defined(VSDK_Client)
+            bool pending_spawn = false;
+            bool pending_transform = false;
+            std::vector<std::pair<std::string, godot::Variant>> pending_configs;
+            #endif
 
             auto get_node() {
                 return body;
@@ -41,6 +46,14 @@ namespace Vital::Sandbox::API {
 
             bool is_alive() const {
                 return body ? true : false;
+            }
+
+            uint32_t get_parent_net_id() const {
+                if (!body) return 0;
+                auto* parent = body -> get_parent();
+                if (!parent) return 0;
+                auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
+                return syncable ? syncable -> get_net_id() : 0;
             }
 
             void clean() {
@@ -53,24 +66,13 @@ namespace Vital::Sandbox::API {
                 instance -> release();
             }
 
-            uint32_t get_parent_net_id() const {
-                if (!body) return 0;
-                auto* parent = body -> get_parent();
-                if (!parent) return 0;
-                auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable ? syncable -> get_net_id() : 0;
-            }
-
             #if !defined(VSDK_Client)
-            bool pending_spawn = false;
-            std::vector<std::pair<std::string, godot::Variant>> pending_configs;
-            bool pending_transform = false;
-
             void flush_pending_broadcasts() {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0 || !body) return;
                 auto* net = Manager::Network::get_singleton() -> get_node();
                 if (!net) return;
+
                 if (pending_spawn) {
                     net -> rpc("_spawn_wheel", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                     pending_spawn = false;
