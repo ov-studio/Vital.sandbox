@@ -116,6 +116,16 @@ namespace Vital::Engine {
     #endif
 
 
+    // Misc //
+    #if defined(VSDK_Client)
+    void Collision_Shape::refresh_debug_mesh() {
+        if (!debug_mesh || !current_shape.is_valid()) return;
+        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
+        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape, color));
+    }
+    #endif
+
+    
     // Helpers //
     #if defined(VSDK_Client)
     namespace {
@@ -217,12 +227,6 @@ namespace Vital::Engine {
             mesh -> surface_set_material(0, material);
         }
         return mesh;
-    }
-    
-    void Collision_Shape::refresh_debug_mesh() {
-        if (!debug_mesh || !current_shape.is_valid()) return;
-        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
-        debug_mesh -> set_mesh(build_wireframe_mesh(current_shape, color));
     }
     #endif
 }
