@@ -64,32 +64,23 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // Tracks which resource loaded which model name so we can auto-unload on resource stop.
-        // model_name → resource_env_name
         inline static std::mutex scope_mutex;
         inline static std::unordered_map<std::string, std::string> model_scope;
 
         static void init(Machine* vm) {
-            // Unbind/rebind on every resource init so a stale handler cannot
-            // outlive a VM restart (same pattern as Sky_Physical::init).
-            // Handlers only touch the static Model registry — no vm capture.
             static Tool::Event::event_id spawned_binding = 0;
             static Tool::Event::event_id destroyed_binding = 0;
             if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
             if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
 
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
-                // Emit sites pass raw Model* (void* in StackValue). PhysicsBody
-                // shares this channel as {ISyncable*, sub_type:int, remote:bool}
-                // — require Model* + bool so those payloads are ignored.
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
-                if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 if (Instance::find_by_ptr(entity)) return;
-                // Defer Lua registry + entity:created out of the network RPC stack.
+
                 const godot::ObjectID oid(entity -> get_instance_id());
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
@@ -106,8 +97,8 @@ namespace Vital::Sandbox::API {
             destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
+                
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
-                if (!entity) return;
                 Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
                     instance -> model = nullptr;
                 });
