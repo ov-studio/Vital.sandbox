@@ -625,7 +625,7 @@ namespace Vital::Engine {
         child_sync->delta_last_rot = child_sync->sync_last_rot;
         child_sync->delta_last_vel = godot::Vector3();
 
-#if defined(VSDK_Client)
+        #if defined(VSDK_Client)
         // If a _force_transform was buffered because it arrived before this
         // reparent (or while reparent was still pending), apply it now that
         // we are in the correct parent-relative coordinate space.  Without
@@ -645,11 +645,10 @@ namespace Vital::Engine {
                 child_sync->delta_last_rot = frot;
                 child_sync->sync_sleeping  = false;
                 child_sync->sync_accum     = 0.0f;
-                godot::UtilityFunctions::print(
-                    "_reparent_entity: applied buffered force net_id=", net_id, " pos=", fpos);
+                godot::UtilityFunctions::print("_reparent_entity: applied buffered force net_id=", net_id, " pos=", fpos);
             }
         }
-#endif
+        #endif
 
         godot::UtilityFunctions::print(
             "_reparent_entity: net_id=", net_id,
