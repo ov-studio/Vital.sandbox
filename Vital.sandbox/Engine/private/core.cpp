@@ -36,6 +36,7 @@ namespace Vital::Engine {
         singleton = singleton ? singleton : this;
         set_process(false);
         set_physics_process(false);
+        set_process_unhandled_input(false);
         if (!Tool::is_runtime()) return;
 
         kit_abort.store(false);
