@@ -143,8 +143,7 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            const_cast<Manifest*>(resource) -> models =
-                Engine::Model::filter_resource_models(name, resource -> files);
+            const_cast<Manifest*>(resource) -> models = Engine::Model::filter_resource_models(name, resource -> files);
         }
         #endif
         if (resource -> models.empty()) return;
