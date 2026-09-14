@@ -264,8 +264,7 @@ namespace Vital::Engine {
             // this peer without broadcasting it to anyone else at all (e.g.
             // a one-off local hit-reaction or camera-facing detail no other
             // client needs to see).
-            bool play_animation_layer(int layer, const std::string& name, bool loop = true,
-                float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
+            bool play_animation_layer(int layer, const std::string& name, bool loop = true, float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
             void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
             // Restrict overlay layer (1..) to specific bones. Paths are AnimationMixer
             // filter paths, typically "Skeleton3D:BoneName" or just "BoneName" depending
