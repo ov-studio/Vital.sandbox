@@ -76,11 +76,7 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Client)
     bool Collision_Shape::is_debug_visible() const {
-        #if defined(VSDK_Client)
         return debug_mesh && debug_mesh -> is_visible();
-        #else
-        return false;
-        #endif
     }
 
     bool Collision_Shape::is_debug_all() const {
