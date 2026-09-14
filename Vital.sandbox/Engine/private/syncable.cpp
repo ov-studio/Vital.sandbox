@@ -134,12 +134,6 @@ namespace Vital::Engine {
 }
 
 namespace Vital::Engine {
-    // Any arrival gap larger than this is treated as a sleep/wake (or
-    // reconnect) resync rather than real network jitter — see the comment
-    // in sync_push_snapshot(). Comfortably above BUFFER_DELAY_MAX (0.30s
-    // default ceiling) so it never fires on ordinary jitter, however bad.
-    static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;
-
     // Misc //
     int ISyncable::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
         return Internal::encode_delta(buffer, offset, id, pos, rot, vel, scale, last_pos, last_rot, last_vel, last_scale);
@@ -173,15 +167,15 @@ namespace Vital::Engine {
     void ISyncable::flush_pending_force_transform() {
         if (!pending_force_transform.has_value()) return;
         if (sync_authority <= 1) { pending_force_transform.reset(); return; }
-        auto* net_node = Manager::Network::get_singleton()->get_node();
+        auto* net_node = Manager::Network::get_singleton() -> get_node();
         // Broadcast to all peers so observers of mid-session spawns get the
         // parented local offset, not only the authority client.
         if (net_node)
-            net_node->rpc("_force_transform",
+            net_node -> rpc("_force_transform",
                 (int)net_id,
-                pending_force_transform->pos,
-                pending_force_transform->rot,
-                pending_force_transform->scale);
+                pending_force_transform -> pos,
+                pending_force_transform -> rot,
+                pending_force_transform -> scale);
         pending_force_transform.reset();
     }
 
@@ -227,12 +221,12 @@ namespace Vital::Engine {
         wu32(0, FORCE_SYNC_MAGIC);
         wu32(4, (uint32_t)written);
 
-        Manager::Network::get_singleton()->broadcast_sync(buf);
+        Manager::Network::get_singleton() -> broadcast_sync(buf);
 
         if (sync_authority > 1) {
-            auto* net_node = Manager::Network::get_singleton()->get_node();
+            auto* net_node = Manager::Network::get_singleton() -> get_node();
             if (net_node)
-                net_node->rpc("_force_transform",
+                net_node -> rpc("_force_transform",
                     (int)net_id, cur_pos, cur_rot, cur_scale);
         }
     }
@@ -395,10 +389,10 @@ namespace Vital::Engine {
         godot::Node3D* self_node = get_sync_node();
         if (!self_node) return;
 
-        core->execute_when_ready(self_node, parent_node,
+        core -> execute_when_ready(self_node, parent_node,
             [](godot::Node3D* self_n, godot::Node* parent) {
                 if (auto* syncable = dynamic_cast<ISyncable*>(self_n))
-                    syncable->apply_parent(parent);
+                    syncable -> apply_parent(parent);
             });
     }
 
@@ -414,13 +408,13 @@ namespace Vital::Engine {
 
         if (parent_node && parent_node != target) {
             if (auto* syncable = dynamic_cast<ISyncable*>(parent_node)) {
-                parent_net_id = syncable->get_net_id();
+                parent_net_id = syncable -> get_net_id();
                 target = parent_node;
             }
         }
 
-        if (self_node->get_parent() != target) {
-            self_node->reparent(target, true);  // keep_global_transform = true
+        if (self_node -> get_parent() != target) {
+            self_node -> reparent(target, true);  // keep_global_transform = true
         }
 
         // Switch sync space to local (or back to global when detaching).
@@ -449,11 +443,11 @@ namespace Vital::Engine {
         // needs a util.timer workaround.
         uint32_t captured_net_id    = net_id;
         uint32_t captured_parent_id = parent_net_id;
-        godot::ObjectID captured_oid = godot::ObjectID(self_node->get_instance_id());
-        core->enqueue([captured_net_id, captured_parent_id, captured_oid]() {
-            auto* net_node = Manager::Network::get_singleton()->get_node();
+        godot::ObjectID captured_oid = godot::ObjectID(self_node -> get_instance_id());
+        core -> enqueue([captured_net_id, captured_parent_id, captured_oid]() {
+            auto* net_node = Manager::Network::get_singleton() -> get_node();
             if (net_node)
-                net_node->rpc("_reparent_entity",
+                net_node -> rpc("_reparent_entity",
                     (int)captured_net_id, (int)captured_parent_id);
             godot::UtilityFunctions::print(
                 "ISyncable::apply_parent net_id=", captured_net_id,
@@ -466,17 +460,17 @@ namespace Vital::Engine {
                 godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;
             auto* syncable = dynamic_cast<ISyncable*>(node);
-            if (!syncable || syncable->get_net_id() != captured_net_id) return;
-            if (syncable->get_sync_authority() > 1)
-                syncable->force_transform_broadcast();
+            if (!syncable || syncable -> get_net_id() != captured_net_id) return;
+            if (syncable -> get_sync_authority() > 1)
+                syncable -> force_transform_broadcast();
         });
     }
 
     uint32_t ISyncable::get_parent_net_id() const {
-        auto* self_node = const_cast<ISyncable*>(this)->get_sync_node();
-        if (!self_node || !self_node->is_inside_tree()) return 0;
-        auto* syncable = dynamic_cast<const ISyncable*>(self_node->get_parent());
-        return syncable ? syncable->get_net_id() : 0;
+        auto* self_node = const_cast<ISyncable*>(this) -> get_sync_node();
+        if (!self_node || !self_node -> is_inside_tree()) return 0;
+        auto* syncable = dynamic_cast<const ISyncable*>(self_node -> get_parent());
+        return syncable ? syncable -> get_net_id() : 0;
     }
     #endif
 }
