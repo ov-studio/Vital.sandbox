@@ -414,8 +414,7 @@ namespace Vital::Engine {
         if (!model) return;
         std::vector<std::string> paths;
         paths.reserve(bones.size());
-        for (int i = 0; i < bones.size(); ++i)
-            paths.push_back(Tool::to_std_string(bones[i]));
+        for (int i = 0; i < bones.size(); ++i) paths.push_back(Tool::to_std_string(bones[i]));
         model->apply_set_animation_layer_filter(layer, enabled, paths);
         #endif
     }
