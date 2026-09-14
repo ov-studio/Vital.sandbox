@@ -30,32 +30,25 @@ namespace Vital::Sandbox::API {
 
         template<typename API_Type, typename Engine_Type>
         static void spawn_body(godot::ObjectID oid, bool remote) {
-            Vital::Engine::Core::get_singleton()->enqueue([oid, remote]() {
+            Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(oid);
                 if (!obj) return;
                 auto* typed = godot::Object::cast_to<Engine_Type>(obj);
                 if (!typed) return;
                 if (API_Type::Instance::find_by_ptr(typed)) return;
+
                 auto instance = API_Type::Instance::init(nullptr, remote);
-                instance->body = typed;
-                instance->store(false);
+                instance -> body = typed;
+                instance -> store(false);
             });
         }
 
         template<typename API_Type, typename Engine_Type>
         static void destroy_body(Vital::Engine::ISyncable* entity) {
             auto* typed = static_cast<Engine_Type*>(entity);
-            std::lock_guard<std::mutex> lock(API_Type::registry.mutex);
-            for (auto it = API_Type::registry.buffer.begin(); it != API_Type::registry.buffer.end();) {
-                auto& instance = it->second;
-                if (instance->body != typed) { ++it; continue; }
-                ++it;
-                API_Type::Instance::erase_unlocked(instance);
-                Vital::Engine::Core::get_singleton()->execute([instance]() {
-                    instance->body = nullptr;
-                    API_Type::Instance::release(instance);
-                });
-            }
+            API_Type::Instance::destroy_by_ptr(typed, [](std::shared_ptr<typename API_Type::Instance> instance) {
+                instance -> body = nullptr;
+            });
         }
 
         static void init(Machine* vm) {
@@ -72,19 +65,19 @@ namespace Vital::Sandbox::API {
                 bool remote = args.array[2].as<bool>();
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
-                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity) -> get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Static:
-                        spawn_body<Static_Body, Vital::Engine::Static_Body>(godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Static_Body, Vital::Engine::Static_Body>(godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity) -> get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Character:
-                        spawn_body<Character_Body, Vital::Engine::Character_Body>(godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Character_Body, Vital::Engine::Character_Body>(godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity) -> get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Animatable:
-                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity) -> get_instance_id()), remote);
                         break;
                     case Vital::Engine::PhysicsType::Vehicle:
-                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity)->get_instance_id()), remote);
+                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity) -> get_instance_id()), remote);
                         break;
                     default: break;
                 }
