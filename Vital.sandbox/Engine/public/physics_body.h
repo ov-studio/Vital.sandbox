@@ -285,14 +285,8 @@ namespace Vital::Engine {
                     // a uniform lifecycle. spawn_body<> is idempotent if Lua
                     // create() already store()'d an Instance.
                     Core::get_singleton() -> add_child(this);
-                    Tool::Event::emit("entity:spawned", Tool::Stack({
-                        static_cast<ISyncable*>(this),
-                        (int32_t)get_physics_type(),
-                        false
-                    }));
-                    Tool::Event::emit("entity:ready", Tool::Stack({
-                        static_cast<godot::Node3D*>(this)
-                    }));
+                    Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
+                    Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
                 #endif
             }
 

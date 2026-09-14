@@ -286,7 +286,7 @@ namespace Vital::Engine {
     static Engine::Vehicle_Wheel* find_wheel(godot::Node3D* vehicle, int index) {
         for (int i = 0; i < vehicle->get_child_count(); i++) {
             auto* w = godot::Object::cast_to<Engine::Vehicle_Wheel>(vehicle->get_child(i));
-            if (w && w->wheel_index == index) return w;
+            if (w && w->get_wheel_index() == index) return w;
         }
         return nullptr;
     }
@@ -302,7 +302,7 @@ namespace Vital::Engine {
         if (find_wheel(vehicle, wheel_index)) return;
 
         auto* wheel = memnew(Engine::Vehicle_Wheel);
-        wheel->wheel_index = wheel_index;
+        wheel->set_wheel_index(wheel_index);
         vehicle->add_child(wheel);
         wheel->set_position(position);
         wheel->set_rotation(rotation);

@@ -35,12 +35,11 @@ namespace Vital::Engine {
             int wheel_index = -1;
 
 
-            // Hooks //
-            void _notification(int what);
+            // Getters //
+            int get_wheel_index() const { return wheel_index; }
 
 
-            // Managers //
-            static Vehicle_Wheel* create(godot::Node3D* owner);
-            void destroy();
+            // Setters //
+            void set_wheel_index(int index) { wheel_index = index; }
     };
 }
