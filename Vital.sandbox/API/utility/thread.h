@@ -100,6 +100,7 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 3) return;
                 int thread_id = args.array[0].as<int32_t>();
                 bool resolved = args.array[1].as<bool>();
+                // TODO: Use is_ptr checck and then unconditionally invoke this
                 auto promise = args.array[2].as_ptr<API::Promise::Instance>();
                 if (!promise) return;
 
