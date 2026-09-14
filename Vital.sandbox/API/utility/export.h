@@ -75,9 +75,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
 
-                const std::string name = vm -> get_string(1);
-                const std::string resource = Manager::Resource::get_resource_from_vm(vm);
-                register_export(vm, resource, name, vm -> set_raw_reference(2));
+                auto name = vm -> get_string(1);
+                register_export(vm, Manager::Resource::get_resource_from_vm(vm), name, vm -> set_raw_reference(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -86,7 +85,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(resource)")
                     .require(1, &Machine::is_string);
 
-                const std::string resource = vm -> get_string(1);
+                auto resource = vm -> get_string(1);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
                 const auto names = list_exports(resource);
                 vm -> create_table();
@@ -102,8 +101,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
 
-                const std::string resource = vm -> get_string(1);
-                const std::string name = vm -> get_string(2);
+                auto resource = vm -> get_string(1);
+                auto name = vm -> get_string(2);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("export.call — resource '{}' is not running", resource));
                 int nargs = vm -> get_count() - 2;
                 int results = 0;
