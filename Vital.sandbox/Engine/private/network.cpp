@@ -122,14 +122,6 @@ namespace Vital::Engine {
                     Manager::Asset::get_singleton() -> queue_spawn(model_name, object, authority);
                 }
                 Engine::Core::get_singleton() -> add_child(object);
-                // _ready() finds skeleton/anim_player, but only if not placeholder.
-                // Call again explicitly so a same-frame _sync_anim_layer can see them.
-                if (!object->placeholder) {
-                    // find_node is private — _ready already ran via add_child.
-                    // Re-run the same discovery _ready does by calling hydrate no-op path:
-                    // actually _ready already did find_node. Nothing extra needed if
-                    // instance was present before add_child (it was).
-                }
                 // Register immediately so get_entity_by_net_id() works inside
                 // the entity:created Lua handler fired by "entity:spawned".
                 // register_syncable() is idempotent, so poll() will skip it.
