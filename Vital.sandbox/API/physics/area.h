@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/area.h>
-#include <Vital.sandbox/API/core/collision_object.h>
+#include <Vital.sandbox/API/base/collision_object.h>
 #include <Vital.sandbox/API/physics/rigid_body.h>
 #include <Vital.sandbox/API/physics/static_body.h>
 #include <Vital.sandbox/API/physics/character_body.h>

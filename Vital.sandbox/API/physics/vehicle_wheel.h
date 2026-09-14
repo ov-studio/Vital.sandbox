@@ -17,7 +17,7 @@
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
-#include <Vital.sandbox/API/core/node_3d.h>
+#include <Vital.sandbox/API/base/node_3d.h>
 #include <Vital.sandbox/API/physics/vehicle_body.h>
 #include <Vital.sandbox/API/physics/area.h>
 

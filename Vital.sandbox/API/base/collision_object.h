@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: core: collision_object.h
+     Script: API: base: collision_object.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/API/core/node_3d.h>
+#include <Vital.sandbox/API/base/node_3d.h>
 
 
 ///////////////////////////////////

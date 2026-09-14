@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/static_body.h>
-#include <Vital.sandbox/API/core/physics_body.h>
+#include <Vital.sandbox/API/base/physics_body.h>
 
 
 //////////////////////////////

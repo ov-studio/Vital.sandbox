@@ -16,7 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/spot_light.h>
-#include <Vital.sandbox/API/light/light_3d.h>
+#include <Vital.sandbox/API/base/light_3d.h>
 
 
 /////////////////////////////

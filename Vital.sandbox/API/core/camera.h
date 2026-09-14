@@ -16,7 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/camera.h>
-#include <Vital.sandbox/API/core/node_3d.h>
+#include <Vital.sandbox/API/base/node_3d.h>
 
 
 /////////////////////////

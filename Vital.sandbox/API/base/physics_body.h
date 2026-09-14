@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: core: physics_body.h
+     Script: API: base: physics_body.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -14,8 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/API/core/collision_object.h>
-#include <Vital.sandbox/API/core/syncable.h>
+#include <Vital.sandbox/API/base/collision_object.h>
+#include <Vital.sandbox/API/base/syncable.h>
 #include <godot_cpp/classes/physics_server3d.hpp>
 #include <godot_cpp/classes/physics_material.hpp>
 
