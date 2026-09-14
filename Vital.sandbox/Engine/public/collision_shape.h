@@ -21,7 +21,6 @@
 // Vital: Engine: Collision_Shape //
 /////////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     class Collision_Shape : public godot::CollisionShape3D {
         GDCLASS(Collision_Shape, godot::CollisionShape3D)
@@ -63,10 +62,13 @@ namespace Vital::Engine {
             void assign_shape(godot::Ref<godot::Shape3D> shape);
 
 
-            // Getters //
-            uint32_t get_parent_net_id() const;
+            // Checkers //
             bool is_replicated() const;
             bool is_debug_visible() const;
+
+
+            // Getters //
+            uint32_t get_parent_net_id() const;
 
 
             // Setters //
