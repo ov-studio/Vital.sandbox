@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
             // All three categories can be set before the parent vehicle body's
             // net_id is registered (i.e. in the same Lua tick as vehicle body
             // create()).  We stash them here and flush from
-            // on_vehicle_ready_callback once the deferred enqueue drains.
+            // "entity:vehicle_wheel:ready" fires once the deferred enqueue drains.
             //
             // pending_spawn   — whether _spawn_wheel still needs to be sent.
             // pending_configs — queue of (key, value) pairs for _sync_wheel_config.
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             bool pending_transform = false;
 
             // Flush all buffered RPCs now that net_id is live.
-            // Called from on_vehicle_ready_callback which is invoked by
+            // Called from the "entity:vehicle_wheel:ready" handler, which fires from
             // Physics_Body::setup_create()'s deferred enqueue after _spawn_entity.
             void flush_pending_broadcasts() {
                 uint32_t nid = get_parent_net_id();
@@ -169,7 +169,7 @@ namespace Vital::Sandbox::API {
                 // If the parent vehicle body's net_id isn't registered yet (because
                 // setup_create()'s enqueue hasn't drained — the common case when the
                 // wheel is created in the same Lua tick as the vehicle body), buffer
-                // the spawn RPC and let on_vehicle_ready_callback flush it later.
+                // the spawn RPC and let "entity:vehicle_wheel:ready" flush it later.
                 #if !defined(VSDK_Client)
                 uint32_t nid = instance->get_parent_net_id();
                 if (nid != 0) {
@@ -180,36 +180,49 @@ namespace Vital::Sandbox::API {
                 }
                 #endif
 
-                // Wire destroy callback once (idempotent — same lambda each time).
-                Vital::Engine::Vehicle_Wheel::on_destroyed_callback = [](Vital::Engine::Vehicle_Wheel* node) {
-                    std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                    for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
-                        auto& inst = it->second;
-                        if (inst->body != node) { ++it; continue; }
-                        ++it;
-                        Vehicle_Wheel::Instance::erase_unlocked(inst);
-                        Vital::Engine::Core::get_singleton()->execute([inst]() {
-                            const_cast<std::shared_ptr<Vehicle_Wheel::Instance>&>(inst)->body = nullptr;
-                            Vehicle_Wheel::Instance::release(inst);
-                        });
-                    }
-                };
+                // Wire destroy hook once — static id guards against rebinding a
+                // second handler on every create() call (Tool::Event::bind is
+                // additive, unlike the old raw std::function assignment).
+                static Tool::Event::event_id destroyed_binding = 0;
+                if (!destroyed_binding) {
+                    destroyed_binding = Tool::Event::bind("entity:vehicle_wheel:destroyed", [](Tool::Stack args) {
+                        if (args.array.size() < 1) return;
+                        auto* node = args.array[0].as<Vital::Engine::Vehicle_Wheel*>();
+                        std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                        for (auto it = Vehicle_Wheel::registry.buffer.begin(); it != Vehicle_Wheel::registry.buffer.end();) {
+                            auto& inst = it->second;
+                            if (inst->body != node) { ++it; continue; }
+                            ++it;
+                            Vehicle_Wheel::Instance::erase_unlocked(inst);
+                            Vital::Engine::Core::get_singleton()->execute([inst]() {
+                                const_cast<std::shared_ptr<Vehicle_Wheel::Instance>&>(inst)->body = nullptr;
+                                Vehicle_Wheel::Instance::release(inst);
+                            });
+                        }
+                    });
+                }
 
-                // Wire the vehicle-ready callback once (idempotent).
-                // Physics_Body::setup_create()'s deferred enqueue calls this after
+                // Wire the vehicle-ready hook once (idempotent — bound once for the
+                // process; the handler captures nothing VM-specific).
+                // Physics_Body::setup_create()'s deferred enqueue emits this after
                 // _spawn_entity fires, passing the vehicle body Node3D. We walk its
                 // VehicleWheel3D children, look each one up in our Instance registry,
                 // and flush any buffered spawn/config/transform RPCs.
                 #if !defined(VSDK_Client)
-                Vital::Engine::Vehicle_Wheel::on_vehicle_ready_callback = [](godot::Node3D* vnode) {
-                    std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                    for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
-                        if (!inst || !inst->body) continue;
-                        // Only flush wheels whose parent is this vehicle node.
-                        if (inst->body->get_parent() != vnode) continue;
-                        inst->flush_pending_broadcasts();
-                    }
-                };
+                static Tool::Event::event_id ready_binding = 0;
+                if (!ready_binding) {
+                    ready_binding = Tool::Event::bind("entity:vehicle_wheel:ready", [](Tool::Stack args) {
+                        if (args.array.size() < 1) return;
+                        auto* vnode = args.array[0].as<godot::Node3D*>();
+                        std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                        for (auto& [uid, inst] : Vehicle_Wheel::registry.buffer) {
+                            if (!inst || !inst->body) continue;
+                            // Only flush wheels whose parent is this vehicle node.
+                            if (inst->body->get_parent() != vnode) continue;
+                            inst->flush_pending_broadcasts();
+                        }
+                    });
+                }
                 #endif
 
                 instance -> store(true);
