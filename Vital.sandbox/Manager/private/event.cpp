@@ -16,8 +16,6 @@
 #include <Vital.sandbox/Vital/entrypoint.h>
 // TODO: Improve / Remove later
 #include <Vital.sandbox/API/core/model.h>
-#include <Vital.sandbox/API/core/webview.h>
-#include <Vital.sandbox/API/core/font.h>
 
 
 /////////////
