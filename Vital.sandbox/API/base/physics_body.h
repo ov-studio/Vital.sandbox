@@ -73,98 +73,70 @@ namespace Vital::Sandbox::API {
             API::Collision_Object::methods<Instance, Collision_Object::Type::Body>(vm);
             API::Syncable::methods<Instance>(vm);
 
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> get_node() -> get_sync_authority());
-                return 1;
-            });
-            #endif
-
-            vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> get_node() -> get_gravity());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_axis_lock", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(axis)", true)
-                    .require_enum(2, axis_registry);
-
-                auto axis = static_cast<godot::PhysicsServer3D::BodyAxis>(vm -> get_int(2));
-                vm -> push_value(self -> get_node() -> get_axis_lock(axis));
-                return 1;
-            });
-
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)", true)
-                    .require(2, &Machine::is_number);
-
-                auto peer_id = vm -> get_int(2);
-                self -> get_node() -> set_syncer(peer_id);
-                vm -> push_value(true);
-                return 1;
-            });
-            #endif
-
-            vm_module::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(axis, lock)", true)
-                    .require_enum(2, axis_registry)
-                    .require(3, &Machine::is_bool);
-
-                auto axis = static_cast<godot::PhysicsServer3D::BodyAxis>(vm -> get_int(2));
-                auto lock = vm -> get_bool(3);
-                self -> get_node() -> set_axis_lock(axis, lock);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(body)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
-
-                auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                self -> get_node() -> add_collision_exception_with(instance -> get_node());
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(body)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
-
-                auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                self -> get_node() -> remove_collision_exception_with(instance -> get_node());
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "move_and_collide", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(motion, test_only = false)", true)
-                    .require(2, &Machine::is_vector3)
-                    .optional(3, &Machine::is_bool);
-
-                auto motion = vm -> get_vector3(2);
-                auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                auto collision = self -> get_node() -> move_and_collide(motion, test_only);
-                if (!collision.is_valid()) {
-                    vm -> push_value(false);
+            if constexpr (body_type == Type::Animatable) {
+                vm_module::bind_method<Instance>(vm, "is_sync_to_physics_enabled", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> is_sync_to_physics_enabled());
                     return 1;
-                }
+                });
+            }
+            {
+                #if !defined(VSDK_Client)
+                vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> get_sync_authority());
+                    return 1;
+                });
+                #endif
 
-                vm -> create_table();
-                vm -> push_value(collision -> get_position());
-                vm -> set_table_field("position", -2);
-                vm -> push_value(collision -> get_normal());
-                vm -> set_table_field("normal", -2);
-                vm -> push_value(collision -> get_travel());
-                vm -> set_table_field("travel", -2);
-                vm -> push_value(collision -> get_remainder());
-                vm -> set_table_field("remainder", -2);
-                vm -> push_value(collision -> get_depth());
-                vm -> set_table_field("depth", -2);
-                return 1;
-            });
+                vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> get_gravity());
+                    return 1;
+                });
 
+                vm_module::bind_method<Instance>(vm, "get_axis_lock", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(axis)", true)
+                        .require_enum(2, axis_registry);
+
+                    auto axis = static_cast<godot::PhysicsServer3D::BodyAxis>(vm -> get_int(2));
+                    vm -> push_value(self -> get_node() -> get_axis_lock(axis));
+                    return 1;
+                });
+            }
+            if constexpr (body_type == Type::Static || body_type == Type::Animatable) {
+                vm_module::bind_method<Instance>(vm, "get_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> get_constant_linear_velocity());
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_constant_angular_velocity", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> get_constant_angular_velocity());
+                    return 1;
+                });
+            }
+            {
+                #if !defined(VSDK_Client)
+                vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(peer_id)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto peer_id = vm -> get_int(2);
+                    self -> get_node() -> set_syncer(peer_id);
+                    vm -> push_value(true);
+                    return 1;
+                });
+                #endif
+
+                vm_module::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(axis, lock)", true)
+                        .require_enum(2, axis_registry)
+                        .require(3, &Machine::is_bool);
+
+                    auto axis = static_cast<godot::PhysicsServer3D::BodyAxis>(vm -> get_int(2));
+                    auto lock = vm -> get_bool(3);
+                    self -> get_node() -> set_axis_lock(axis, lock);
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
             if constexpr (body_type == Type::Rigid || body_type == Type::Static || body_type == Type::Animatable) {
                 vm_module::bind_method<Instance>(vm, "set_physics_material", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(friction, bounce, rough = false, absorbent = false)", true)
@@ -188,18 +160,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
-
             if constexpr (body_type == Type::Static || body_type == Type::Animatable) {
-                vm_module::bind_method<Instance>(vm, "get_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> get_constant_linear_velocity());
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "get_constant_angular_velocity", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> get_constant_angular_velocity());
-                    return 1;
-                });
-
                 vm_module::bind_method<Instance>(vm, "set_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(velocity)", true)
                         .require(2, &Machine::is_vector3);
@@ -220,13 +181,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
-
             if constexpr (body_type == Type::Animatable) {
-                vm_module::bind_method<Instance>(vm, "is_sync_to_physics_enabled", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> is_sync_to_physics_enabled());
-                    return 1;
-                });
-
                 vm_module::bind_method<Instance>(vm, "set_sync_to_physics", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(state)", true)
                         .require(2, &Machine::is_bool);
@@ -234,6 +189,54 @@ namespace Vital::Sandbox::API {
                     auto state = vm -> get_bool(2);
                     self -> get_node() -> set_sync_to_physics(state);
                     vm -> push_value(true);
+                    return 1;
+                });
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(body)", true)
+                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
+
+                    auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                    self -> get_node() -> add_collision_exception_with(instance -> get_node());
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(body)", true)
+                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
+
+                    auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                    self -> get_node() -> remove_collision_exception_with(instance -> get_node());
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "move_and_collide", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(motion, test_only = false)", true)
+                        .require(2, &Machine::is_vector3)
+                        .optional(3, &Machine::is_bool);
+
+                    auto motion = vm -> get_vector3(2);
+                    auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
+                    auto collision = self -> get_node() -> move_and_collide(motion, test_only);
+                    if (!collision.is_valid()) {
+                        vm -> push_value(false);
+                        return 1;
+                    }
+
+                    vm -> create_table();
+                    vm -> push_value(collision -> get_position());
+                    vm -> set_table_field("position", -2);
+                    vm -> push_value(collision -> get_normal());
+                    vm -> set_table_field("normal", -2);
+                    vm -> push_value(collision -> get_travel());
+                    vm -> set_table_field("travel", -2);
+                    vm -> push_value(collision -> get_remainder());
+                    vm -> set_table_field("remainder", -2);
+                    vm -> push_value(collision -> get_depth());
+                    vm -> set_table_field("depth", -2);
                     return 1;
                 });
             }
