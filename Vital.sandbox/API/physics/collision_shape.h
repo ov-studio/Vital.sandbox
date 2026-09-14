@@ -118,7 +118,6 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto* entity = args.array[0].as_raw_ptr<base_class>();
-                if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 if (Instance::find_by_ptr(entity)) return;
