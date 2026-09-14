@@ -22,6 +22,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    // Instantiators //
     Collision_Shape::Collision_Shape() {
         #if defined(VSDK_Client)
         {
@@ -39,6 +40,8 @@ namespace Vital::Engine {
         #endif
     }
 
+
+    // Hooks //
     void Collision_Shape::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
     }
@@ -49,8 +52,6 @@ namespace Vital::Engine {
         auto body = memnew(Collision_Shape);
         if (owner) owner -> add_child(body);
         else Engine::Core::get_singleton() -> add_child(body);
-        // Same pipeline as Model / PhysicsBody: spawned (API binders hydrate
-        // Lua Instances; idempotent if create() already store()'d) then ready.
         Tool::Event::emit("entity:spawned", Tool::Stack({body, false}));
         Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(body)}));
         return body;
@@ -67,9 +68,32 @@ namespace Vital::Engine {
         refresh_debug_mesh();
         #endif
     }
-    
-    #if defined(VSDK_Client)
+
+
+    // Getters //
+    uint32_t Collision_Shape::get_parent_net_id() const {
+        auto* parent = const_cast<Collision_Shape*>(this) -> get_parent();
+        if (!parent) return 0;
+        auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
+        return syncable ? syncable -> get_net_id() : 0;
+    }
+
+    bool Collision_Shape::is_replicated() const {
+        return get_parent_net_id() > 0;
+    }
+
+    bool Collision_Shape::is_debug_visible() const {
+        #if defined(VSDK_Client)
+        return debug_mesh && debug_mesh -> is_visible();
+        #else
+        return false;
+        #endif
+    }
+
+
+    // Setters //
     void Collision_Shape::set_debug_visible(bool state) {
+        #if defined(VSDK_Client)
         if (state) {
             if (!debug_mesh) {
                 debug_mesh = memnew(godot::MeshInstance3D);
@@ -79,8 +103,24 @@ namespace Vital::Engine {
             refresh_debug_mesh();
         }
         else if (debug_mesh) debug_mesh -> set_visible(false);
+        #else
+        (void)state;
+        #endif
     }
 
+    void Collision_Shape::set_debug_all(bool state) {
+        #if defined(VSDK_Client)
+        default_debug_enabled = state;
+        std::lock_guard<std::mutex> lock(live_instances_mutex);
+        for (auto* shape : live_instances) shape -> set_debug_visible(state);
+        #else
+        (void)state;
+        #endif
+    }
+
+
+    // Managers (client debug) //
+    #if defined(VSDK_Client)
     void Collision_Shape::refresh_debug_mesh() {
         if (!debug_mesh || !current_shape.is_valid()) return;
         auto color = is_replicated() ? replicated_debug_color : local_debug_color;
