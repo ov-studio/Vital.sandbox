@@ -27,10 +27,14 @@ namespace Vital::Engine {
         friend class Network;
         private:
             #if defined(VSDK_Client)
+            inline static bool debug_all  = false;
+            inline static std::mutex live_instances_mutex;
+            inline static std::unordered_set<Collision_Shape*> live_instances;
+            inline static godot::Color local_debug_color = godot::Color(0, 1, 0);
+            inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
+
             godot::Ref<godot::Shape3D> current_shape;
             godot::MeshInstance3D* debug_mesh = nullptr;
-            inline static std::unordered_set<Collision_Shape*> live_instances;
-            inline static std::mutex live_instances_mutex;
             #endif
 
 
@@ -45,13 +49,6 @@ namespace Vital::Engine {
             static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
             #endif
         public:
-            #if defined(VSDK_Client)
-            inline static godot::Color local_debug_color = godot::Color(0, 1, 0);
-            inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
-            inline static bool default_debug_enabled = false;
-            #endif
-
-
             // Hooks //
             void _notification(int what);
 
@@ -65,8 +62,11 @@ namespace Vital::Engine {
             // Checkers //
             bool is_replicated() const;
             bool is_debug_visible() const;
+            #if defined(VSDK_Client)
+            static bool is_debug_all() { return debug_all; }
+            #endif
 
-
+            
             // Getters //
             uint32_t get_parent_net_id() const;
 
