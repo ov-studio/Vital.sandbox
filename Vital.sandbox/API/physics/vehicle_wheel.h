@@ -85,18 +85,15 @@ namespace Vital::Sandbox::API {
                 if (!net) return;
 
                 if (pending_spawn) {
-                    net->rpc("_spawn_wheel", (int)nid, body->wheel_index,
-                             body->get_position(), body->get_rotation());
+                    net->rpc("_spawn_wheel", (int)nid, body->wheel_index, body->get_position(), body->get_rotation());
                     pending_spawn = false;
                 }
                 for (auto& [key, value] : pending_configs) {
-                    net->rpc("_sync_wheel_config", (int)nid, body->wheel_index,
-                             godot::String(key.c_str()), value);
+                    net->rpc("_sync_wheel_config", (int)nid, body->wheel_index, godot::String(key.c_str()), value);
                 }
                 pending_configs.clear();
                 if (pending_transform) {
-                    net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index,
-                             body->get_position(), body->get_rotation());
+                    net->rpc("_sync_wheel_transform", (int)nid, body->wheel_index, body->get_position(), body->get_rotation());
                     pending_transform = false;
                 }
             }

@@ -21,6 +21,12 @@
 ///////////////////////////////////
 
 namespace Vital::Engine {
+    // Hooks //
+    void Vehicle_Wheel::_notification(int what) {
+        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
+    }
+
+
     // Managers //
     Vehicle_Wheel* Vehicle_Wheel::create(godot::Node3D* owner) {
         auto wheel = memnew(Vehicle_Wheel);
