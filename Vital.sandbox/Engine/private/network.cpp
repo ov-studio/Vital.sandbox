@@ -533,6 +533,7 @@ namespace Vital::Engine {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
             Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
+            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(col)}));
         }
 
         // FIXED: now routes through Collision_Shape::assign_shape(), which sets
