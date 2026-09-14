@@ -136,10 +136,7 @@ void vsdk_initialize() {
         if (!network_initialized) {
             network_initialized = true;
             auto nm = Vital::Manager::Network::get_singleton();
-            #if defined(VSDK_Client)
-                // TODO: 7777?
-                //nm -> connect_to_server("127.0.0.1", 7777, true);
-            #else
+            #if !defined(VSDK_Client)
                 auto& server_config = Vital::Engine::Core::get_singleton() -> get_server_config();
                 server_config.load();
                 if (!nm -> host(server_config)) return;
