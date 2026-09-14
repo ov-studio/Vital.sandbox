@@ -91,21 +91,21 @@ namespace Vital::Sandbox::API {
                 // is what caused the std::bad_variant_access crash).
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto* spawned = args.array[0].as_raw_ptr<base_class>();
-                if (!spawned) return;
+                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                if (!entity) return;
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, instance] : registry.buffer) {
-                        if (instance -> model == spawned) return;
+                        if (instance -> model == entity) return;
                     }
                 }
                 // Defer Lua registry + entity:created out of the network RPC stack.
                 // Rapid resource restart floods _spawn_entity while scripts start/stop;
                 // synchronous store() → signal → Lua pcall re-enters a dirty VM and
                 // corrupts the Lua heap (luaM_free / growstack crashes).
-                const godot::ObjectID oid(spawned -> get_instance_id());
+                const godot::ObjectID oid(entity -> get_instance_id());
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
@@ -129,12 +129,12 @@ namespace Vital::Sandbox::API {
                 // Model emits {Model*}; PhysicsBody emits {ISyncable*, sub_type}.
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto* dying = args.array[0].as_raw_ptr<base_class>();
-                if (!dying) return;
+                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                if (!entity) return;
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it -> second;
-                    if (instance -> model != dying) { ++it; continue; }
+                    if (instance -> model != entity) { ++it; continue; }
                     ++it;
                     Instance::erase_unlocked(instance);
                     // Same reasoning as the physics body destroy callback: release()
