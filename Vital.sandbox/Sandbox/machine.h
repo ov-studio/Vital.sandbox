@@ -636,7 +636,7 @@ namespace Vital::Sandbox {
                 return lua_pcall(state, arguments, returns, 0) == LUA_OK;
             }
 
-            bool call(int arguments, int returns = LUA_MULTRET, bool protected_call = true, bool throwing = false) {
+            bool call(int arguments, int returns = LUA_MULTRET, bool protected_call = true, bool throw_error = false) {
                 Tool::assert_main_thread("Machine::call");
                 if (!lua_checkstack(state, 16)) { 
                     Tool::print(std::string(Tool::Log::error::label), "lua stack overflow in Machine::call"); 
@@ -651,7 +651,7 @@ namespace Vital::Sandbox {
                         error_handled = false;
                     }
                     else {
-                        if (throwing) {
+                        if (throw_error) {
                             error_handled = true;
                             throw vm_error{err, err};
                         }
