@@ -25,7 +25,6 @@
 
 
 namespace Vital::Manager {
-
     // Client lifecycle tokens: each stop bumps the generation for that resource
     // so deferred start jobs from an older resource:started packet are ignored
     // when a newer stop/restart has already begun (production safe rapid restart).
@@ -41,6 +40,7 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(lifecycle_mutex);
             return ++resource_lifecycle_gen[name];
         }
+        
         uint32_t lifecycle_get(const std::string& name) {
             std::lock_guard<std::mutex> lock(lifecycle_mutex);
             auto it = resource_lifecycle_gen.find(name);
@@ -402,8 +402,6 @@ namespace Vital::Manager {
         Tool::Stack packet = Tool::Stack::make_packet(event);
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            // Caller must hold the resource mutex (or otherwise guarantee the
-            // Manifest is stable). models[] is filled once by load_models().
             auto packed = Internal::pack_manifest(*manifest);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
