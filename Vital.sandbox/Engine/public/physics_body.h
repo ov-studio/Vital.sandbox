@@ -127,33 +127,16 @@ namespace Vital::Engine {
                 sync_authority = (peer_id <= 1) ? 1 : peer_id;
                 sync_sleeping  = false;
                 reset_sync_state();
-
-                // Same race as Model::set_syncer(): if _spawn_entity hasn't
-                // gone out yet (still queued in setup_create()'s deferred
-                // enqueue), broadcasting _set_authority now would arrive
-                // before clients even have this body — find_syncable() finds
-                // nothing, the update is dropped for good. Bail out here;
-                // setup_create()'s deferred lambda re-reads get_sync_authority()
-                // fresh when it finally sends _spawn_entity, so that single
-                // RPC carries whatever authority set_syncer() last wrote,
-                // even if called in the same tick as create().
                 if (!sync_registered) return;
+
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
             }
 
-            // Called from the deferred enqueue lambda in setup_create(), after
-            // net_id is registered and _spawn_entity has been sent.
-            // If set_shape_box/sphere/etc. was called in the same Lua tick as
-            // create() (the common case), broadcast_shape() bailed early because
-            // get_parent_net_id() returned 0 at that point — the shape RPC was
-            // never sent. We stashed it in pending_shape_broadcast; flush it now.
             void flush_pending_shape_broadcast() {
                 if (!pending_shape_broadcast.has_value()) return;
                 auto net_node = Manager::Network::get_singleton() -> get_node();
-                if (net_node) {
-                    net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast->type.c_str()), pending_shape_broadcast->params);
-                }
+                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast->type.c_str()), pending_shape_broadcast->params);
                 pending_shape_broadcast.reset();
             }
 
@@ -221,37 +204,14 @@ namespace Vital::Engine {
                             if (!obj) return; // destroyed before this deferred registration ran
                             auto* self = dynamic_cast<Physics_Body<Base>*>(obj);
                             if (!self) return;
+
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
-                            // Read sync_authority fresh (see set_syncer()'s
-                            // comment) rather than the authority_peer captured
-                            // at setup_create() time, so a same-tick set_syncer()
-                            // call is reflected in this, the only spawn RPC sent.
                             if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self->get_sync_authority(), self->get_sync_position(), self->get_sync_rotation());
-                            // Flush any shape that was set before net_id was registered.
-                            // broadcast_shape() bails when get_parent_net_id() == 0, which
-                            // is always the case when set_shape_* is called in the same
-                            // Lua tick as create(). The shape is stashed in
-                            // pending_shape_broadcast and replayed here, after _spawn_entity,
-                            // so clients receive the body first and then its shape.
                             self -> flush_pending_shape_broadcast();
-                            // Flush any set_position/set_rotation called before net_id
-                            // was registered — sends _force_transform to the owning peer.
                             self -> flush_pending_force_transform();
-                            // Local server spawn: same shape as remote _spawn_entity so
-                            // Physics_Body_Lifecycle binders see every body. spawn_body<>
-                            // is idempotent — Lua create() already store()'d an Instance.
-                            Tool::Event::emit("entity:spawned", Tool::Stack({
-                                static_cast<ISyncable*>(self),
-                                (int32_t)self->get_physics_type(),
-                                false
-                            }));
-                            // Shared ready signal: entity is registered, spawn RPC sent,
-                            // pending shape/transform flushed. Listeners type-check the
-                            // Node3D* payload and act only on entities they own.
-                            Tool::Event::emit("entity:ready", Tool::Stack({
-                                static_cast<godot::Node3D*>(self)
-                            }));
+                            Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self->get_physics_type(), false}));
+                            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self) }));
                         });
                     }
                     else {
