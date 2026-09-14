@@ -180,22 +180,22 @@ namespace Vital::Engine {
         }
 
         godot::Vector3 cur_vel = godot::Vector3();
-        sync_last_pos  = cur_pos;
-        sync_last_rot  = cur_rot;
-        sync_last_vel  = cur_vel;
+        godot::PackedByteArray buf;
+        sync_last_pos = cur_pos;
+        sync_last_rot = cur_rot;
+        sync_last_vel = cur_vel;
         sync_last_scale = cur_scale;
         delta_last_pos = cur_pos;
         delta_last_rot = cur_rot;
         delta_last_vel = godot::Vector3();
         delta_last_scale = cur_scale;
-        sync_sleeping  = false;
-        sync_accum     = 0.0f;
-
-        godot::PackedByteArray buf;
+        sync_sleeping = false;
+        sync_accum = 0.0f;
         buf.resize(8 + SYNC_PACKET_MAX);
         godot::Vector3 enc_pos{}, enc_rot{}, enc_vel{}, enc_scale{};
         int written = encode_delta(buf, 8, net_id, cur_pos, cur_rot, cur_vel, cur_scale, enc_pos, enc_rot, enc_vel, enc_scale);
         if (written <= 0) return;
+        
         buf.resize(8 + written);
         auto wu32 = [&](int off, uint32_t v) {
             buf[off]   =  v        & 0xFF;
@@ -239,6 +239,7 @@ namespace Vital::Engine {
                 snap_count = 1;
                 return;
             }
+            
             if (interval > 0.0f) {
                 jitter_intervals[jitter_idx] = interval;
                 jitter_idx = (jitter_idx + 1) % JITTER_WINDOW;
@@ -287,6 +288,7 @@ namespace Vital::Engine {
             out_rot = after -> rot;
             return;
         }
+        
         if (!after) {
             if (before -> vel.length() > VEL_THRESHOLD) {
                 float cap = interp_step;
