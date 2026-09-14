@@ -24,7 +24,6 @@
 // Vital: API: Physics_Body //
 ///////////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     template<typename Derived, typename BaseClass>
     struct Physics_Body_Instance : vm_instance<Derived> {
