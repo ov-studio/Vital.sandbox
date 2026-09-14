@@ -82,10 +82,18 @@ namespace Vital::Sandbox::API {
             // pointer type and ignores payloads that aren't Model instances.
             static Tool::Event::event_id spawned_binding = 0;
             if (!spawned_binding) spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+                // Emit sites pass raw Model* (stored as void* in StackValue), not
+                // shared_ptr — as_ptr<> always returns nullptr for those payloads.
+                // PhysicsBody also emits on the same channel as
+                // {ISyncable*, sub_type:int, remote:bool}; require the exact Model
+                // shape (raw Model* + bool) so we don't mis-handle physics events
+                // (as_raw_ptr without a type check + .as<bool>() on an int32_t
+                // is what caused the std::bad_variant_access crash).
                 if (args.array.size() < 2) return;
-                auto spawned_ref = args.array[0].as_ptr<base_class>();
-                if (!spawned_ref) return;
-                auto* spawned = spawned_ref.get();
+                if (!args.array[0].is_raw_ptr<base_class>()) return;
+                auto* spawned = args.array[0].as_raw_ptr<base_class>();
+                if (!spawned) return;
+                if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
@@ -117,10 +125,12 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::event_id destroyed_binding = 0;
             if (!destroyed_binding) destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+                // Same raw-pointer vs shared_ptr mismatch as entity:spawned.
+                // Model emits {Model*}; PhysicsBody emits {ISyncable*, sub_type}.
                 if (args.array.size() < 1) return;
-                auto dying_ref = args.array[0].as_ptr<base_class>();
-                if (!dying_ref) return;
-                auto* dying = dying_ref.get();
+                if (!args.array[0].is_raw_ptr<base_class>()) return;
+                auto* dying = args.array[0].as_raw_ptr<base_class>();
+                if (!dying) return;
                 std::lock_guard<std::mutex> lock(registry.mutex);
                 for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                     auto& instance = it -> second;

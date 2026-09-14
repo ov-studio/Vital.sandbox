@@ -82,7 +82,8 @@ namespace Vital::Tool {
         }
         template<typename T>
         T* as_raw_ptr() const {
-            if (!std::holds_alternative<void*>(value)) return nullptr;
+            if (!is_raw_ptr()) return nullptr;
+            if (ptr_type && *ptr_type != typeid(T)) return nullptr;
             return static_cast<T*>(std::get<void*>(value));
         }
 
