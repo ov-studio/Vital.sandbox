@@ -47,9 +47,6 @@ namespace Vital::Engine {
             static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
             #endif
         public:
-            inline static std::function<void(Collision_Shape*)> on_spawned_callback;
-            inline static std::function<void(Collision_Shape*)> on_destroyed_callback;
-
             // Managers //
             static Collision_Shape* create(godot::Node3D* owner);
             void destroy();
