@@ -733,7 +733,6 @@ namespace Vital::Manager {
         send_to_server(Tool::Stack::make_packet("network.manager", { 
             Tool::StackValue(std::string("quit")) 
         }));
-        if (peer.is_valid()) peer->flush();
         peer->close();
         peer.unref();
         auto tree = get_scene_tree();
