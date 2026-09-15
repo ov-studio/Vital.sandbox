@@ -693,7 +693,35 @@ namespace Vital::Manager {
     //------------------//
 
     #if defined(VSDK_Client)
-    bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
+    bool Network::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
+        if (http_port > 0) {
+            const std::string info_url = "http://" + ip + ":" + std::to_string(http_port) + "/info";
+            try {
+                const std::string body = Tool::HTTP::get(info_url, {}, 3);
+                rapidjson::Document doc;
+                if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("sdk_version") && doc["sdk_version"].IsString()) {
+                    int server_major = -1;
+                    const std::string server_sdk = doc["sdk_version"].GetString();
+                    size_t start = (!server_sdk.empty() && (server_sdk[0] == 'v' || server_sdk[0] == 'V')) ? 1 : 0;
+                    size_t end = server_sdk.find('.', start);
+                    if (end == std::string::npos) end = server_sdk.size();
+                    try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
+                    catch (...) {}
+
+                    const int client_major = Vital::Tool::Version::SDK.get_major();
+                    if (server_major >= 0 && server_major != client_major) {
+                        log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
+                        Tool::Event::emit("network:connect:failed", {});
+                        return false;
+                    }
+                    if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
+                    log("sbox", fmt::format("version pre-check ok (sdk={})", server_sdk));
+                }
+            }
+            catch (const std::exception& e) { log("sbox", fmt::format("version pre-check failed ({}): {}", info_url, e.what())); }
+            catch (...) { log("sbox", fmt::format("version pre-check failed ({}): unknown error", info_url)); }
+        }
+
         disconnect_from_server();
         create();
         peer.instantiate();
