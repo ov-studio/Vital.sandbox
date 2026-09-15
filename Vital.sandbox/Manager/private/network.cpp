@@ -503,7 +503,7 @@ namespace Vital::Manager {
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
         #if !defined(VSDK_Client)
-        if (stack.is_packet("system")) {
+        if (stack.is_packet("network.manager")) {
             if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
@@ -515,7 +515,10 @@ namespace Vital::Manager {
                 if (peer.is_valid()) peer->disconnect_peer(sender);
                 return;
             }
-            else if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
+            return;
+        }
+        if (stack.is_packet("resource.manager")) {
+            if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
                 std::string resource_name = stack.array[1].as<std::string>();
                 Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue((int32_t)sender), Tool::StackValue(resource_name));
             }
@@ -727,7 +730,7 @@ namespace Vital::Manager {
         auto_reconnect    = false;
         pending_handshake = false;
         unwire_signals();
-        send_to_server(Tool::Stack::make_packet("system", { 
+        send_to_server(Tool::Stack::make_packet("network.manager", { 
             Tool::StackValue(std::string("quit")) 
         }));
         if (peer.is_valid()) peer->flush();
@@ -1251,7 +1254,7 @@ namespace Vital::Manager {
         if (pending_handshake && is_connected()) {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-            send_to_server(Tool::Stack::make_packet("system", { 
+            send_to_server(Tool::Stack::make_packet("network.manager", { 
                 Tool::StackValue(std::string("ping")) 
             }));
         }
