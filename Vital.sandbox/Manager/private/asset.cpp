@@ -202,16 +202,7 @@ namespace Vital::Manager {
             const auto& cfg = Manager::Network::get_singleton() -> get_server_config();
             rapidjson::Document document;
             document.SetObject();
-            auto& alloc = document.GetAllocator();
-            document.AddMember(rapidjson::StringRef("name"), rapidjson::Value(cfg.get_server_name().c_str(), alloc), alloc);
-            document.AddMember(rapidjson::StringRef("version"), rapidjson::Value(cfg.get_server_version().c_str(), alloc), alloc);
-            document.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
-            document.AddMember(rapidjson::StringRef("description"), rapidjson::Value(cfg.get_server_description().c_str(), alloc), alloc);
-            document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(cfg.get_network_port()), alloc);
-            document.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(cfg.get_http_port()), alloc);
-            document.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(cfg.get_max_clients()), alloc);
-            document.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(cfg.get_discord().c_str(), alloc), alloc);
-            document.AddMember(rapidjson::StringRef("website"), rapidjson::Value(cfg.get_website().c_str(), alloc), alloc);
+            cfg.write_public_info(document, document.GetAllocator());
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
