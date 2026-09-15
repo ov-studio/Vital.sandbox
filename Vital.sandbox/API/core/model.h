@@ -236,16 +236,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_model_name", [](auto vm, auto self, auto& id) -> int {
-                std::string name = self -> model -> get_model_name();
-                if (!name.empty() && name.front() == ':') {
-                    auto slash = name.find('/');
-                    if (slash != std::string::npos) name = name.substr(slash + 1);
-                }
-                vm -> push_value(name);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_components", [](auto vm, auto self, auto& id) -> int {
                 auto list = self -> model -> get_components();
                 vm -> create_table();
