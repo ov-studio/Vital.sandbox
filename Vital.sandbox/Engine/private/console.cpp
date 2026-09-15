@@ -703,11 +703,7 @@ namespace Vital::Engine {
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #else
-            if (cmd == "connect") {
-                const int port = std::atoi(tokens[2].c_str());
-                if (!Manager::Network::get_singleton() -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
-                return true;
-            }
+            if (cmd == "connect") { Manager::Network::get_singleton() -> connect_to_server(tokens[1], std::atoi(tokens[2].c_str()), true) return true; }
             if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
             if (cmd == "status") {
                 // TODO: Improve

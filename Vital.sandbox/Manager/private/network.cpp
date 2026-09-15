@@ -692,7 +692,6 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
-        if (port <= 0 || port > 65535) return false;
         disconnect_from_server();
         create();
         peer.instantiate();
