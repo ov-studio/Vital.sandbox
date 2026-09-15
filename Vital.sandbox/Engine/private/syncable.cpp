@@ -212,6 +212,15 @@ namespace Vital::Engine {
     }
     #endif
 
+    bool ISyncable::has_sync_moved(const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& scale) const {
+        constexpr float MOVE_EPSILON = 0.001f;
+        return (
+            (pos - sync_last_pos).length() > MOVE_EPSILON || 
+            (rot - sync_last_rot).length() > MOVE_EPSILON || 
+            (scale - sync_last_scale).length() > MOVE_EPSILON
+        );
+    }
+
     void ISyncable::sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
         if (!interp_ready) {
             snap_clock = BUFFER_DELAY;
