@@ -504,7 +504,7 @@ namespace Vital::Manager {
 
         #if !defined(VSDK_Client)
         if (stack.is_packet("system")) {
-            if (!stack.array.empty() && stack.array[0].as<std::string>() == "client:ping") {
+            if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
                     log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
@@ -1252,7 +1252,7 @@ namespace Vital::Manager {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
             send_to_server(Tool::Stack::make_packet("system", { 
-                Tool::StackValue(std::string("client:ping")) 
+                Tool::StackValue(std::string("ping")) 
             }));
         }
         #endif
