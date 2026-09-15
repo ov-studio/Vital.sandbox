@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                auto entity = args.array[0].as_raw_ptr<base_class>();
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 if (Instance::find_by_ptr(entity)) return;
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
-                    auto* model = godot::Object::cast_to<base_class>(obj);
+                    auto model = godot::Object::cast_to<base_class>(obj);
                     if (!model) return;
                     if (Instance::find_by_ptr(model)) return;
                     auto instance = Instance::init(nullptr, remote);
@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 
-                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                auto entity = args.array[0].as_raw_ptr<base_class>();
                 Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
                     instance -> model = nullptr;
                 });

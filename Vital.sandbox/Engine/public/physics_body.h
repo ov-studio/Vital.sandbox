@@ -186,7 +186,7 @@ namespace Vital::Engine {
                         Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {
                             godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                             if (!obj) return;
-                            auto* self = dynamic_cast<Physics_Body<Base>*>(obj);
+                            auto self = dynamic_cast<Physics_Body<Base>*>(obj);
                             if (!self) return;
 
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);

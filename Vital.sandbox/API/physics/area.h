@@ -224,7 +224,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(body)", true)
                     .require(2, [](Machine* vm, int idx) { return Physics_Entity::is_body(vm, idx); });
 
-                auto* target = Physics_Entity::resolve_body(vm, 2);
+                auto target = Physics_Entity::resolve_body(vm, 2);
                 vm -> push_value(target ? self -> body -> overlaps_body(target) : false);
                 return 1;
             });

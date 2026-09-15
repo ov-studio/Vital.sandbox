@@ -155,7 +155,7 @@ namespace Vital::Sandbox::API {
         }
 
         static godot::Node3D* resolve_entity(Machine* vm, int idx) {
-            if (auto* node = Physics_Entity::resolve_body(vm, idx)) return node;
+            if (auto node = Physics_Entity::resolve_body(vm, idx)) return node;
             if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
             return nullptr;
         }

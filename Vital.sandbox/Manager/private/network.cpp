@@ -168,7 +168,7 @@ namespace Vital::Manager {
                 entity->delta_last_rot = rot;
                 entity->delta_last_vel = vel;
                 entity->delta_last_scale = scale;
-                auto* node = entity->get_sync_node();
+                auto node = entity->get_sync_node();
                 if (node && node->is_inside_tree()) {
                     if (entity->get_sync_parent_net_id() != 0)
                         node->set_position(pos);
@@ -238,7 +238,7 @@ namespace Vital::Manager {
                 }
             }
             if (found) {
-                auto* node = entity->get_sync_node();
+                auto node = entity->get_sync_node();
                 if (node && node->is_inside_tree()) {
                     if (entity->get_sync_parent_net_id() != 0)
                         node->set_position(pos);
@@ -271,7 +271,7 @@ namespace Vital::Manager {
             snapshot = sync_models;
         }
         int my_id = get_peer_id();
-        for (auto* entity : snapshot) {
+        for (auto entity : snapshot) {
             if (entity->get_sync_authority() == my_id) continue; // locally owned, resource handles it
             entity->destroy_sync();
         }
@@ -297,7 +297,7 @@ namespace Vital::Manager {
         // NOTIFICATION_PREDELETE handler calls unregister_syncable() when Godot
         // actually frees it, so sync_models/sync_id_map are already correctly
         // emptied by the time that happens — nothing further to clear there.
-        for (auto* entity : snapshot) entity -> destroy_sync();
+        for (auto entity : snapshot) entity -> destroy_sync();
 
         {
             std::lock_guard<std::mutex> lock(pending_shape_mutex);
@@ -401,7 +401,7 @@ namespace Vital::Manager {
         #endif
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
-        for (auto* model : sync_models) {
+        for (auto model : sync_models) {
             if (model->get_sync_authority() != my_id) continue;
             model->sync_sleeping   = false;
             model->delta_last_pos  = godot::Vector3();
@@ -434,7 +434,7 @@ namespace Vital::Manager {
         Engine::ISyncable::sync_config.snap_threshold   = snap_threshold;
 
         std::lock_guard<std::mutex> lock(sync_models_mutex);
-        for (auto* m : sync_models) m->interp_step = sync_interval;
+        for (auto m : sync_models) m->interp_step = sync_interval;
 
         log("sbox", fmt::format("sync config confirmed by server -> {} Hz, delay_max={:.0f}ms, jitter={:.2f}x, snap={:.1f}u",
             rate, buffer_delay_max * 1000.0f, jitter_margin, snap_threshold));
@@ -940,7 +940,7 @@ namespace Vital::Manager {
         // real spawn transform if none has arrived yet), so it's always safe to
         // include every model in this dump using its real current transform.
         int cursor = 8;
-        for (auto* model : snapshot) {
+        for (auto model : snapshot) {
             godot::Vector3 pos = model->get_sync_position();
             godot::Vector3 rot = model->get_sync_rotation();
             godot::Vector3 scale = model->get_sync_scale();
@@ -989,7 +989,7 @@ namespace Vital::Manager {
             }
             if (!incoming.empty()) {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
-                for (auto* m : incoming) register_syncable_locked(m);
+                for (auto m : incoming) register_syncable_locked(m);
             }
         }
 
@@ -1006,10 +1006,10 @@ namespace Vital::Manager {
         //    instead, so this no longer needs to touch delta_last_* at all.)
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* e : sync_models) {
+            for (auto e : sync_models) {
                 godot::Vector3 spawn_pos = e->get_sync_position();
                 godot::Vector3 spawn_rot = e->get_sync_rotation();
-                if (auto* n = e->get_sync_node()) {
+                if (auto n = e->get_sync_node()) {
                     if (n->is_inside_tree()) {
                         spawn_pos = n->get_global_position();
                         spawn_rot = n->get_global_rotation_degrees();
@@ -1030,14 +1030,14 @@ namespace Vital::Manager {
         //      VehicleWheel3D children are driven by Godot locally — no shape sync needed.
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* e : sync_models) {
-                auto* godot_obj = dynamic_cast<godot::Object*>(e);
+            for (auto e : sync_models) {
+                auto godot_obj = dynamic_cast<godot::Object*>(e);
                 if (!godot_obj) continue;
-                auto* parent_node = godot::Object::cast_to<godot::Node3D>(godot_obj);
+                auto parent_node = godot::Object::cast_to<godot::Node3D>(godot_obj);
                 if (!parent_node) continue;
 
                 for (int i = 0; i < parent_node->get_child_count(); i++) {
-                    auto* col = godot::Object::cast_to<Engine::Collision_Shape>(parent_node->get_child(i));
+                    auto col = godot::Object::cast_to<Engine::Collision_Shape>(parent_node->get_child(i));
                     if (!col) continue;
                     auto shape = col->get_shape();
                     if (!shape.is_valid()) continue;
@@ -1045,30 +1045,30 @@ namespace Vital::Manager {
                     godot::String shape_type;
                     godot::Array params;
 
-                    if (auto* s = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
+                    if (auto s = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
                         shape_type = "box";
                         auto sz = s->get_size();
                         params.push_back(sz.x); params.push_back(sz.y); params.push_back(sz.z);
                     }
-                    else if (auto* s = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
+                    else if (auto s = godot::Object::cast_to<godot::SphereShape3D>(shape.ptr())) {
                         shape_type = "sphere";
                         params.push_back(s->get_radius());
                     }
-                    else if (auto* s = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
+                    else if (auto s = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
                         shape_type = "capsule";
                         params.push_back(s->get_radius()); params.push_back(s->get_height());
                     }
-                    else if (auto* s = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
+                    else if (auto s = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
                         shape_type = "cylinder";
                         params.push_back(s->get_radius()); params.push_back(s->get_height());
                     }
-                    else if (auto* s = godot::Object::cast_to<godot::WorldBoundaryShape3D>(shape.ptr())) {
+                    else if (auto s = godot::Object::cast_to<godot::WorldBoundaryShape3D>(shape.ptr())) {
                         shape_type = "world_boundary";
                         auto pl = s->get_plane();
                         params.push_back(pl.normal.x); params.push_back(pl.normal.y);
                         params.push_back(pl.normal.z); params.push_back(pl.d);
                     }
-                    else if (auto* s = godot::Object::cast_to<godot::SeparationRayShape3D>(shape.ptr())) {
+                    else if (auto s = godot::Object::cast_to<godot::SeparationRayShape3D>(shape.ptr())) {
                         shape_type = "separation_ray";
                         params.push_back(s->get_length());
                     }
@@ -1081,7 +1081,7 @@ namespace Vital::Manager {
                 // Per-tick inputs (engine_force/brake/steering) are NOT sent —
                 // they only matter on the authority peer.
                 for (int wi = 0; wi < parent_node->get_child_count(); wi++) {
-                    auto* wheel = godot::Object::cast_to<Engine::Vehicle_Wheel>(parent_node->get_child(wi));
+                    auto wheel = godot::Object::cast_to<Engine::Vehicle_Wheel>(parent_node->get_child(wi));
                     if (!wheel) continue;
 
                     node->rpc_id(id, "_spawn_wheel", (int)e->get_net_id(), wheel->get_wheel_id(), wheel->get_position(), wheel->get_rotation());
@@ -1113,8 +1113,8 @@ namespace Vital::Manager {
         //      must already have the right scene hierarchy for reparent to be a no-op).
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* e : sync_models) {
-                auto* model = dynamic_cast<Engine::Model*>(e);
+            for (auto e : sync_models) {
+                auto model = dynamic_cast<Engine::Model*>(e);
                 if (!model) continue;
                 uint32_t parent_net_id = model->get_parent_net_id();
                 if (parent_net_id == 0) continue;  // parented to Core, no replay needed
@@ -1132,8 +1132,8 @@ namespace Vital::Manager {
         //      played". Mirrors how 2.5b replays wheel config on spawn.
         if (node) {
             std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto* e : sync_models) {
-                auto* model = dynamic_cast<Engine::Model*>(e);
+            for (auto e : sync_models) {
+                auto model = dynamic_cast<Engine::Model*>(e);
                 if (!model) continue;
                 for (int layer = 0; layer < model->get_animation_layer_count(); layer++) {
                     auto& state = model->anim_layers[layer];
@@ -1187,7 +1187,7 @@ namespace Vital::Manager {
                     std::lock_guard<std::mutex> lock(sync_models_mutex);
                     snapshot = sync_models;
                 }
-                for (auto* entity : snapshot) {
+                for (auto entity : snapshot) {
                     if (entity->get_sync_authority() == id) {
                         entity->sync_authority = 1;
                         entity->sync_sleeping  = false;
@@ -1268,7 +1268,7 @@ namespace Vital::Manager {
             }
             if (!incoming.empty()) {
                 std::lock_guard<std::mutex> lock(sync_models_mutex);
-                for (auto* entity : incoming) register_syncable_locked(entity);
+                for (auto entity : incoming) register_syncable_locked(entity);
             }
 
             #if defined(VSDK_Client)
@@ -1278,7 +1278,7 @@ namespace Vital::Manager {
                 std::vector<std::pair<Engine::ISyncable*, std::tuple<godot::Vector3, godot::Vector3, godot::Vector3, godot::Vector3>>> to_apply;
                 {
                     std::lock_guard<std::mutex> lock(pending_transform_mutex);
-                    for (auto* entity : incoming) {
+                    for (auto entity : incoming) {
                         uint32_t nid = entity->get_net_id();
                         auto it = pending_transform_syncs.find(nid);
                         if (it != pending_transform_syncs.end()) {
@@ -1288,7 +1288,7 @@ namespace Vital::Manager {
                     }
                 }
                 for (size_t i = 0; i < to_apply.size(); ++i) {
-                    auto* entity = to_apply[i].first;
+                    auto entity = to_apply[i].first;
                     if (entity->get_sync_authority() == my_id) continue;
                     godot::Vector3 pos = std::get<0>(to_apply[i].second);
                     godot::Vector3 rot = std::get<1>(to_apply[i].second);
@@ -1320,7 +1320,7 @@ namespace Vital::Manager {
                 std::vector<std::pair<uint32_t, std::pair<godot::String, godot::Array>>> to_apply;
                 {
                     std::lock_guard<std::mutex> lock(pending_shape_mutex);
-                    for (auto* entity : incoming) {
+                    for (auto entity : incoming) {
                         uint32_t nid = entity->get_net_id();
                         auto it = pending_shape_syncs.find(nid);
                         if (it != pending_shape_syncs.end()) {
@@ -1338,7 +1338,7 @@ namespace Vital::Manager {
                 std::vector<std::pair<uint32_t, uint32_t>> reparents_to_apply;
                 {
                     std::lock_guard<std::mutex> lock(pending_reparent_mutex);
-                    for (auto* entity : incoming) {
+                    for (auto entity : incoming) {
                         uint32_t nid = entity->get_net_id();
                         // Child just registered.
                         auto it = pending_reparent_syncs.find(nid);
@@ -1405,7 +1405,7 @@ namespace Vital::Manager {
                 sync_batch_buf[off+3] = (v >> 24) & 0xFF;
             };
 
-            for (auto* model : snapshot) {
+            for (auto model : snapshot) {
                 if (!model->is_sync_active()) continue;
                 if (model->get_sync_authority() != 1) continue;
 
@@ -1487,7 +1487,7 @@ namespace Vital::Manager {
                 sync_batch_buf[off+3] = (v >> 24) & 0xFF;
             };
 
-            for (auto* model : snapshot) {
+            for (auto model : snapshot) {
                 if (!model->is_sync_active()) continue;
                 if (model->get_sync_authority() != my_id) continue;
 

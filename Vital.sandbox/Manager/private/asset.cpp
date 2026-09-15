@@ -498,7 +498,7 @@ namespace Vital::Manager {
             }
             int hydrated = 0;
             for (auto& entry : pending) {
-                auto* placeholder = static_cast<Engine::Model*>(entry.placeholder);
+                auto placeholder = static_cast<Engine::Model*>(entry.placeholder);
                 if (!placeholder) continue;
                 if (!godot::ObjectDB::get_instance(placeholder->get_instance_id())) continue;
                 placeholder->hydrate(entry.authority_peer);

@@ -197,9 +197,9 @@ namespace Vital::Engine {
 
     // Getters //
     uint32_t Collision_Shape::get_parent_net_id() const {
-        auto* parent = const_cast<Collision_Shape*>(this) -> get_parent();
+        auto parent = const_cast<Collision_Shape*>(this) -> get_parent();
         if (!parent) return 0;
-        auto* syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
+        auto syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
         return syncable ? syncable -> get_net_id() : 0;
     }
 
@@ -221,7 +221,7 @@ namespace Vital::Engine {
     void Collision_Shape::set_debug_all(bool state) {
         debug_all = state;
         std::lock_guard<std::mutex> lock(mutex);
-        for (auto* shape : buffer) shape -> set_debug_visible(state);
+        for (auto shape : buffer) shape -> set_debug_visible(state);
     }
     #endif
 

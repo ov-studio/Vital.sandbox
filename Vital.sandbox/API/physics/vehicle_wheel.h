@@ -50,9 +50,9 @@ namespace Vital::Sandbox::API {
 
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
-                auto* parent = body -> get_parent();
+                auto parent = body -> get_parent();
                 if (!parent) return 0;
-                auto* syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
+                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
                 return syncable ? syncable -> get_net_id() : 0;
             }
 
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
                     pending_configs.emplace_back(key, value);
                     return;
                 }
-                auto* net = Manager::Network::get_singleton() -> get_node();
+                auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key), value);
                 #endif
             }
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                     pending_transform = true;
                     return;
                 }
-                auto* net = Manager::Network::get_singleton() -> get_node();
+                auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
             }
@@ -94,7 +94,7 @@ namespace Vital::Sandbox::API {
             void flush_broadcasts() {
                 uint32_t nid = get_parent_net_id();
                 if (nid == 0 || !body) return;
-                auto* net = Manager::Network::get_singleton() -> get_node();
+                auto net = Manager::Network::get_singleton() -> get_node();
                 if (!net) return;
 
                 if (pending_spawn) {
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
 
-                auto* entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
+                auto entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
                 Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> instance) {
                     instance -> body = nullptr;
                 });
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
             #if !defined(VSDK_Client)
             ready_binding = Tool::Event::bind("entity:ready", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
-                auto* entity = args.array[0].as<godot::Node3D*>();
+                auto entity = args.array[0].as<godot::Node3D*>();
                 if (!entity) return;
 
                 std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
                 auto owner = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
                 auto instance = Instance::init(vm);
                 instance -> body = base_class::create(owner -> get_node());
-                auto* entity = owner -> get_node();
+                auto entity = owner -> get_node();
                 int idx_count = 0;
                 for (int i = 0; i < entity -> get_child_count(); i++) {
                     if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity -> get_child(i))) idx_count++;
@@ -165,7 +165,7 @@ namespace Vital::Sandbox::API {
                 #if !defined(VSDK_Client)
                 uint32_t nid = instance -> get_parent_net_id();
                 if (nid != 0) {
-                    auto* net = Manager::Network::get_singleton() -> get_node();
+                    auto net = Manager::Network::get_singleton() -> get_node();
                     if (net) net -> rpc("_spawn_wheel", (int)nid, instance -> body -> get_wheel_id(), instance -> body -> get_position(), instance -> body -> get_rotation());
                 }
                 else instance -> pending_spawn = true;

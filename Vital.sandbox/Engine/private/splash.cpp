@@ -91,7 +91,7 @@ namespace Vital::Engine {
         webview -> set_visible(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
-            if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+            if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
     }
 

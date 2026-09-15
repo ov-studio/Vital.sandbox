@@ -85,7 +85,7 @@ namespace Vital::Engine {
     }
 
     Shader* Shader::create_from_raw(const std::string& raw, Mode mode) {
-        auto* instance = new Shader();
+        auto instance = new Shader();
         instance -> mode = mode;
         instance -> shader.instantiate();
         instance -> material.instantiate();
@@ -144,7 +144,7 @@ namespace Vital::Engine {
     int Shader::apply_to_node(godot::Node* node) {
         if (!node || !material.is_valid()) return 0;
         int count = 0;
-        if (auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(node)) {
+        if (auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(node)) {
             int surfaces = mesh -> get_surface_override_material_count();
             if (surfaces == 0 && mesh -> get_mesh().is_valid()) surfaces = mesh -> get_mesh() -> get_surface_count();
             for (int i = 0; i < surfaces; i++) {

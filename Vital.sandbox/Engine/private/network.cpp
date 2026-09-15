@@ -125,7 +125,7 @@ namespace Vital::Engine {
                 // Register immediately so get_entity_by_net_id() works inside
                 // the entity:created Lua handler fired by "entity:spawned".
                 // register_syncable() is idempotent, so poll() will skip it.
-                auto* net_mgr = Manager::Network::get_singleton();
+                auto net_mgr = Manager::Network::get_singleton();
                 net_mgr -> register_syncable(object);
                 // Apply server-supplied initial transform for remote bodies only.
                 // Own-authority bodies position themselves — never overwrite.
@@ -187,12 +187,12 @@ namespace Vital::Engine {
                     // Register immediately so get_entity_by_net_id() works inside
                     // the entity:created Lua handler fired by "entity:spawned".
                     // register_syncable() is idempotent, so poll() will skip it.
-                    auto* net_mgr = Manager::Network::get_singleton();
+                    auto net_mgr = Manager::Network::get_singleton();
                     net_mgr -> register_syncable(entity);
                     // Apply server-supplied initial transform for remote bodies only.
                     // Own-authority bodies position themselves via Lua — never overwrite.
                     if (authority != net_mgr->get_peer_id()) {
-                        auto* node = entity->get_sync_node();
+                        auto node = entity->get_sync_node();
                         if (node) {
                             node->set_global_position(init_pos);
                             node->set_rotation_degrees(init_rot);
@@ -203,7 +203,7 @@ namespace Vital::Engine {
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
                     Tool::Event::emit("entity:spawned", Tool::Stack({entity, (int32_t)sub_type, true}));
-                    if (auto* node = entity->get_sync_node()) Tool::Event::emit("entity:ready", Tool::Stack({node}));
+                    if (auto node = entity->get_sync_node()) Tool::Event::emit("entity:ready", Tool::Stack({node}));
                 }
                 break;
             }
@@ -237,7 +237,7 @@ namespace Vital::Engine {
 
     void Network::_reparent_entity(int net_id, int parent_net_id) {
         #if defined(VSDK_Client)
-        auto* mgr = Manager::Network::get_singleton();
+        auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
 
         // Try to apply immediately; if either side isn't registered yet, buffer.
@@ -263,7 +263,7 @@ namespace Vital::Engine {
     // Helper: find the wheel child by index.
     static Engine::Vehicle_Wheel* find_wheel(godot::Node3D* vehicle, int index) {
         for (int i = 0; i < vehicle->get_child_count(); i++) {
-            auto* w = godot::Object::cast_to<Engine::Vehicle_Wheel>(vehicle->get_child(i));
+            auto w = godot::Object::cast_to<Engine::Vehicle_Wheel>(vehicle->get_child(i));
             if (w && w->get_wheel_id() == index) return w;
         }
         return nullptr;
@@ -273,13 +273,13 @@ namespace Vital::Engine {
     // position/rotation are the wheel's local offset from the body center.
     void Network::_spawn_wheel(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation) {
         #if defined(VSDK_Client)
-        auto* vehicle = find_vehicle_node((uint32_t)net_id);
+        auto vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
 
         // Don't double-create
         if (find_wheel(vehicle, wheel_id)) return;
 
-        auto* wheel = memnew(Engine::Vehicle_Wheel);
+        auto wheel = memnew(Engine::Vehicle_Wheel);
         wheel->set_wheel_id(wheel_id);
         vehicle->add_child(wheel);
         wheel->set_position(position);
@@ -293,9 +293,9 @@ namespace Vital::Engine {
     // peer runs those locally; the result is captured in the body transform sync.
     void Network::_sync_wheel_config(int net_id, int wheel_id, godot::String key, godot::Variant value) {
         #if defined(VSDK_Client)
-        auto* vehicle = find_vehicle_node((uint32_t)net_id);
+        auto vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
-        auto* wheel = find_wheel(vehicle, wheel_id);
+        auto wheel = find_wheel(vehicle, wheel_id);
         if (!wheel) return;
 
         std::string k = Tool::to_std_string(key);
@@ -320,9 +320,9 @@ namespace Vital::Engine {
     // Always local-space — wheels are children of the vehicle body.
     void Network::_sync_wheel_transform(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation) {
         #if defined(VSDK_Client)
-        auto* vehicle = find_vehicle_node((uint32_t)net_id);
+        auto vehicle = find_vehicle_node((uint32_t)net_id);
         if (!vehicle) return;
-        auto* wheel = find_wheel(vehicle, wheel_id);
+        auto wheel = find_wheel(vehicle, wheel_id);
         if (!wheel) return;
         wheel->set_position(position);
         wheel->set_rotation(rotation);
@@ -346,7 +346,7 @@ namespace Vital::Engine {
     // through the public play_animation_layer()/etc, which would re-trigger
     // another broadcast and echo the packet back onto the network.
     void Network::_sync_anim_layer(int net_id, int layer, int mode, godot::String name, bool loop, float speed, float weight, float blend_time) {
-        auto* mgr = Manager::Network::get_singleton();
+        auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) return;
@@ -359,10 +359,10 @@ namespace Vital::Engine {
                 " is not the sync authority for net_id=", net_id);
             return;
         }
-        auto* node = mgr->get_node();
+        auto node = mgr->get_node();
         if (node) node->rpc("_sync_anim_layer", net_id, layer, mode, name, loop, speed, weight, blend_time);
         #else
-        auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
 
         std::string std_name = Tool::to_std_string(name);
@@ -387,7 +387,7 @@ namespace Vital::Engine {
     // The server also calls broadcast_sync() separately for all OTHER clients,
     // so this RPC only needs to handle the owning peer's side.
     void Network::_sync_anim_layer_filter(int net_id, int layer, bool enabled, godot::PackedStringArray bones) {
-        auto* mgr = Manager::Network::get_singleton();
+        auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) return;
@@ -401,16 +401,16 @@ namespace Vital::Engine {
             return;
         }
         // Persist on server model state if present (for late-join dump).
-        if (auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity))) {
+        if (auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity))) {
             std::vector<std::string> paths;
             paths.reserve(bones.size());
             for (int i = 0; i < bones.size(); ++i) paths.push_back(Tool::to_std_string(bones[i]));
             model->apply_set_animation_layer_filter(layer, enabled, paths);
         }
-        auto* node = mgr->get_node();
+        auto node = mgr->get_node();
         if (node) node->rpc("_sync_anim_layer_filter", net_id, layer, enabled, bones);
         #else
-        auto* model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
         std::vector<std::string> paths;
         paths.reserve(bones.size());
@@ -422,7 +422,7 @@ namespace Vital::Engine {
 
     void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale) {
         #if defined(VSDK_Client)
-        auto* mgr = Manager::Network::get_singleton();
+        auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
@@ -443,7 +443,7 @@ namespace Vital::Engine {
             return;
         }
 
-        auto* node = entity->get_sync_node();
+        auto node = entity->get_sync_node();
         if (!node) return;
 
         // Parent-relative or global depending on sync coordinate space.
@@ -568,21 +568,20 @@ namespace Vital::Engine {
     // same frame).  If either is missing we buffer the reparent in
     // pending_reparent_syncs; poll() replays it once both register.
     void Network::apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id) {
-        auto* mgr  = Manager::Network::get_singleton();
-        auto* core = Engine::Core::get_singleton();
+        auto mgr  = Manager::Network::get_singleton();
+        auto core = Engine::Core::get_singleton();
         if (!mgr || !core) return;
 
         Engine::ISyncable* child_sync = mgr->find_syncable(net_id);
         if (!child_sync) return;
-        auto* child_node = godot::Object::cast_to<godot::Node3D>(
-            dynamic_cast<godot::Object*>(child_sync));
+        auto child_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(child_sync));
         if (!child_node) return;
 
         godot::Node* target = core;
         if (parent_net_id != 0) {
             Engine::ISyncable* parent_sync = mgr->find_syncable(parent_net_id);
             if (!parent_sync) return;  // caller must retry
-            auto* parent_node = godot::Object::cast_to<godot::Node3D>(
+            auto parent_node = godot::Object::cast_to<godot::Node3D>(
                 dynamic_cast<godot::Object*>(parent_sync));
             if (!parent_node) return;
             target = parent_node;

@@ -52,7 +52,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies) {
-        if (const auto* sv = arguments.get("scripts")) {
+        if (const auto sv = arguments.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
             for (const auto& entry : nested.array) {
@@ -60,17 +60,17 @@ namespace Vital::Manager {
                 scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
             }
         }
-        if (const auto* sv = arguments.get("files")) {
+        if (const auto sv = arguments.get("files")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             files.reserve(nested.array.size());
             for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
         }
-        if (const auto* sv = arguments.get("models")) {
+        if (const auto sv = arguments.get("models")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             models.reserve(nested.array.size());
             for (const auto& entry : nested.array) models.push_back(entry.as<std::string>());
         }
-        if (const auto* sv = arguments.get("dependencies")) {
+        if (const auto sv = arguments.get("dependencies")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             dependencies.reserve(nested.array.size());
             for (const auto& entry : nested.array) dependencies.push_back(entry.as<std::string>());
@@ -652,7 +652,7 @@ namespace Vital::Manager {
         std::vector<std::string> old_dependencies;
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            const auto* resource = Internal::get_resource(name);
+            const auto resource = Internal::get_resource(name);
             if (!resource) return false;
             old_script_hashes = resource -> script_hashes;
             old_file_hashes = resource -> file_hashes;
@@ -674,7 +674,7 @@ namespace Vital::Manager {
 
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            const auto* resource = Internal::get_resource(name);
+            const auto resource = Internal::get_resource(name);
             if (!resource) return false;
 
             auto to_map = [](const std::vector<std::string>& values) {

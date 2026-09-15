@@ -56,13 +56,13 @@ namespace Vital::Sandbox::API {
                 uint32_t nid = body ? body -> get_parent_net_id() : 0;
                 if (nid == 0) {
                     if (body) {
-                        auto* parent = body -> get_parent();
+                        auto parent = body -> get_parent();
                         if (parent) {
                             using PB_Rigid       = Vital::Engine::Physics_Body<godot::RigidBody3D>;
                             using PB_Static      = Vital::Engine::Physics_Body<godot::StaticBody3D>;
                             using PB_Character   = Vital::Engine::Physics_Body<godot::CharacterBody3D>;
                             using PB_Animatable  = Vital::Engine::Physics_Body<godot::AnimatableBody3D>;
-                            auto try_stash = [&](auto* pb) -> bool {
+                            auto try_stash = [&](auto pb) -> bool {
                                 if (!pb) return false;
                                 pb -> pending_shape_broadcast = { shape_type, params };
                                 return true;
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
-            if (auto* node = Physics_Entity::resolve_body(vm, idx)) return node;
+            if (auto node = Physics_Entity::resolve_body(vm, idx)) return node;
             if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
             return nullptr;
         }
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                auto entity = args.array[0].as_raw_ptr<base_class>();
                 if (!args.array[1].is<bool>()) return;
                 bool remote = args.array[1].as<bool>();
                 if (Instance::find_by_ptr(entity)) return;
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
                 Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                     godot::Object* obj = godot::ObjectDB::get_instance(oid);
                     if (!obj) return;
-                    auto* shape = godot::Object::cast_to<base_class>(obj);
+                    auto shape = godot::Object::cast_to<base_class>(obj);
                     if (!shape) return;
                     if (Instance::find_by_ptr(shape)) return;
                     auto instance = Instance::init(nullptr, remote);
@@ -119,7 +119,7 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 
-                auto* entity = args.array[0].as_raw_ptr<base_class>();
+                auto entity = args.array[0].as_raw_ptr<base_class>();
                 Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
                     instance -> body = nullptr;
                 });

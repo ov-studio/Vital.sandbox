@@ -314,7 +314,7 @@ namespace Vital::Engine {
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
             webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
-                if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+                if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
             });
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {

@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
             Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(oid);
                 if (!obj) return;
-                auto* typed = godot::Object::cast_to<Engine_Type>(obj);
+                auto typed = godot::Object::cast_to<Engine_Type>(obj);
                 if (!typed) return;
                 if (API_Type::Instance::find_by_ptr(typed)) return;
 
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
 
         template<typename API_Type, typename Engine_Type>
         static void destroy_body(Vital::Engine::ISyncable* entity) {
-            auto* typed = static_cast<Engine_Type*>(entity);
+            auto typed = static_cast<Engine_Type*>(entity);
             API_Type::Instance::destroy_by_ptr(typed, [](std::shared_ptr<typename API_Type::Instance> instance) {
                 instance -> body = nullptr;
             });
@@ -77,8 +77,9 @@ namespace Vital::Sandbox::API {
 
             spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
-                auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
+                auto entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
+                
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 bool remote = args.array[2].as<bool>();
                 switch (sub_type) {
@@ -103,8 +104,9 @@ namespace Vital::Sandbox::API {
 
             destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
-                auto* entity = args.array[0].as<Vital::Engine::ISyncable*>();
+                auto entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
+
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:

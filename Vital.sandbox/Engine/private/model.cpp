@@ -336,7 +336,7 @@ namespace Vital::Engine {
             Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                 if (!obj) return; // destroyed before this deferred registration ran
-                auto* object = godot::Object::cast_to<Model>(obj);
+                auto object = godot::Object::cast_to<Model>(obj);
                 if (!object) return;
 
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
@@ -759,7 +759,7 @@ namespace Vital::Engine {
 
         // (Re)build graph when grown or tree missing after hydrate.
         {
-            auto* player = anim_player;
+            auto player = anim_player;
             if (!anim_tree) {
                 anim_tree = memnew(godot::AnimationTree);
                 anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
@@ -860,7 +860,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::push_warning("Model::apply_play_animation_layer — no AnimationPlayer yet on '", Tool::to_godot_string(model_name), "' (placeholder=", placeholder, ")");
             return false;
         }
-        auto* player = anim_player;
+        auto player = anim_player;
         if (!player->has_animation(Tool::to_godot_string(name))) {
             godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name), "' not found in model '", Tool::to_godot_string(model_name), "'");
             return false;
@@ -990,7 +990,7 @@ namespace Vital::Engine {
         #if !defined(VSDK_Client)
         // Server: genuine broadcast to every connected client — same
         // pattern as broadcast_sync()/_wake_sync.
-        auto* net_node = Manager::Network::get_singleton()->get_node();
+        auto net_node = Manager::Network::get_singleton()->get_node();
         if (!net_node) return;
         net_node->rpc("_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #else
@@ -1003,9 +1003,9 @@ namespace Vital::Engine {
         // explicit rpc_id(1, ...) target — see that pair for the proven
         // pattern this mirrors. The server then relays it on to every
         // other client (see Network::_sync_anim_layer's server branch).
-        auto* net_mgr = Manager::Network::get_singleton();
+        auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        auto* net_node = net_mgr->get_node();
+        auto net_node = net_mgr->get_node();
         if (!net_node) return;
         net_node->rpc_id(1, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #endif
@@ -1026,7 +1026,7 @@ namespace Vital::Engine {
         if (blend_tree.is_null()) return;
 
         auto node = blend_tree->get_node(Tool::to_godot_string(fmt::format("blend_{}", layer)));
-        auto* blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
+        auto blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
         if (!blend) return;
 
         // Reset so previous filter paths do not stick around.
@@ -1086,13 +1086,13 @@ namespace Vital::Engine {
         for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
 
         #if !defined(VSDK_Client)
-        auto* net_node = Manager::Network::get_singleton()->get_node();
+        auto net_node = Manager::Network::get_singleton()->get_node();
         if (net_node)
             net_node->rpc("_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #else
-        auto* net_mgr = Manager::Network::get_singleton();
+        auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        auto* net_node = net_mgr->get_node();
+        auto net_node = net_mgr->get_node();
         if (!net_node) return;
         net_node->rpc_id(1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #endif

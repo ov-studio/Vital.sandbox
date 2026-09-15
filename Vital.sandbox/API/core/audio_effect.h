@@ -99,7 +99,7 @@ namespace Vital::Sandbox::API {
 
         static std::optional<Effect> identify(const godot::Ref<godot::AudioEffect>& effect) {
             if (!effect.is_valid()) return std::nullopt;
-            auto* obj = effect.ptr();
+            auto obj = effect.ptr();
             if (godot::Object::cast_to<godot::AudioEffectReverb>(obj))          return Effect::REVERB;
             if (godot::Object::cast_to<godot::AudioEffectChorus>(obj))          return Effect::CHORUS;
             if (godot::Object::cast_to<godot::AudioEffectDelay>(obj))           return Effect::DELAY;
