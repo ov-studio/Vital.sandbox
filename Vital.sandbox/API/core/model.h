@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(base_class::is_model_loaded(own_name(Manager::Resource::get_resource_from_vm(vm), vm -> get_string(1))));
+                vm -> push_value(base_class::is_model_loaded(ref_name(Manager::Resource::get_resource_from_vm(vm), vm -> get_string(1))));
                 return 1;
             });
 
