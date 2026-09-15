@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
 
         static void maybe_force_broadcast(godot::Node3D* node) {
             #if !defined(VSDK_Client)
-            if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
+            if (auto sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
                 if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
             }
             #endif
@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
             }
             {
                 vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
-                    auto* parent = self -> get_node() -> get_parent();
+                    auto parent = self -> get_node() -> get_parent();
                     if (!parent || parent == Vital::Engine::Core::get_singleton()) vm -> push_value(false);
                     else {
                         std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
@@ -204,9 +204,9 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(entity = nil)", true)
                         .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
 
-                    auto* node = self -> get_node();
-                    auto* core = Vital::Engine::Core::get_singleton();
-                    auto* self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
+                    auto node = self -> get_node();
+                    auto core = Vital::Engine::Core::get_singleton();
+                    auto self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
                     bool self_is_server = self_syncable && self_syncable->get_net_id() > 0;
                     #if defined(VSDK_Client)
                     if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot be called on a server entity from the client");
@@ -223,21 +223,21 @@ namespace Vital::Sandbox::API {
                         return 1;
                     }
 
-                    auto* ud = vm_module::get_userdata_ptr(vm, 2);
+                    auto ud = vm_module::get_userdata_ptr(vm, 2);
                     if (!ud || !*ud) { 
                         vm -> push_value(false); 
                         return 1;
                     }
-                    
-                    auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
+
+                    auto parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
                     if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
                         vm -> push_value(false);
                         return 1;
                     }
 
-                    auto* parent_syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
-                    bool parent_is_syncable_type = (parent_syncable != nullptr);
-                    bool parent_is_server = (parent_syncable && parent_syncable->get_net_id() > 0);
+                    auto parent_syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
+                    bool parent_is_syncable_type = parent_syncable != nullptr;
+                    bool parent_is_server = parent_syncable && parent_syncable->get_net_id() > 0;
                     #if !defined(VSDK_Client)
                     if (self_is_server) {
                         if (!parent_is_server) {
