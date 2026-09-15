@@ -41,22 +41,20 @@ namespace Vital::Manager {
                 std::atomic<bool> cancelled { false };
             };
 
-            // Placeholder node waiting to be hydrated keyed by model name.
-            // Stored as void* to avoid a circular include with model.h;
-            // asset.cpp casts it back to Engine::Model* where needed.
             struct PendingSpawn {
-                void* placeholder = nullptr; // Engine::Model*
+                void* placeholder = nullptr;
                 int authority_peer = 1;
             };
+            #endif
 
+            std::unordered_map<std::string, AssetEntry> registered_assets;
+            #if defined(VSDK_Client)
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::unordered_map<std::string, std::vector<PendingSpawn>> spawn_queue;
-            // Bumped when a resource stops / queue is cleared so deferred
-            // flush_spawn_queue jobs from a previous generation are no-ops.
-            uint32_t spawn_generation = 0;
             std::unordered_map<std::string, int> group_pending_counts;
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
+            uint32_t spawn_generation = 0;
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
             void _on_file_ready(const std::string& path, const std::string& group);
@@ -64,7 +62,6 @@ namespace Vital::Manager {
             Tool::HTTP::Server http_server;
             std::unordered_set<int> pending_manifest_peers;
             #endif
-            std::unordered_map<std::string, AssetEntry> registered_assets;
 
 
             // Instantiators //
