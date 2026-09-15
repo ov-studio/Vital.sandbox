@@ -201,6 +201,8 @@ namespace Vital::Engine {
     }
 
     void Core::teardown() {
+        Tool::print("sbox", "Core: tearing down...");
+        Engine::Console::get_singleton() -> teardown();
         reset();
         #if !defined(VSDK_Client)
         Manager::Masterlist::free_singleton();
