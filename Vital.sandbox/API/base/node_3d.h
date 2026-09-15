@@ -201,51 +201,23 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                // node_type is accepted for call-site consistency with methods<> but
-                // parenting behaviour is identical regardless of node type, so it is
-                // intentionally unused inside the body.
                 vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(entity = nil)", true)
                         .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
 
                     auto* node = self -> get_node();
                     auto* core = Vital::Engine::Core::get_singleton();
-
-                    // Determine whether self is a server entity (ISyncable with net_id > 0).
-                    // NOTE: on the client this is also true for a REMOTE MIRROR of a server
-                    // entity — Network::_spawn_entity assigns the server's net_id to the
-                    // client-side copy too. A purely client-created model (API::Model::create()
-                    // called from client Lua) never gets a net_id, so this still correctly
-                    // tells the two apart on the client build.
                     auto* self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
-                    bool  self_is_server = (self_syncable && self_syncable->get_net_id() > 0);
-
+                    bool self_is_server = (self_syncable && self_syncable->get_net_id() > 0);
                     #if defined(VSDK_Client)
-                    // Rule C: client Lua must NEVER reparent a server entity — attach or
-                    // detach. Engine::Model::set_parent() (the function that actually does
-                    // this safely: resets sync_parent_net_id, re-seeds the sync baseline,
-                    // and broadcasts _reparent_entity to every peer) doesn't even exist in
-                    // a client build, so this has to be rejected here, up front, before any
-                    // of the server-only logic below.
                     if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "set_parent: cannot be called on a server entity from the client");
                     #endif
 
                     if (vm -> is_nil(2)) {
-                        // Detach to Core root.
                         #if !defined(VSDK_Client)
-                        if (self_is_server) {
-                            // Must go through ISyncable::set_parent() (same as the
-                            // attach path below, shared by every synced type) so
-                            // sync_parent_net_id resets to 0, sync_last_pos/rot
-                            // re-seed in global space, and clients receive the
-                            // _reparent_entity(net_id, 0) broadcast. A raw local
-                            // reparent() here would silently desync every client,
-                            // which would still think this entity is parented.
-                            self_syncable -> set_parent(nullptr);
-                        }
+                        if (self_is_server) self_syncable -> set_parent(nullptr);
                         #endif
                         {
-                            // Rule B: client entity — purely local, no RPC needed.
                             reparent_safe(core, node, core);
                         }
                         vm -> push_value(true);
@@ -261,63 +233,27 @@ namespace Vital::Sandbox::API {
                         return 1;
                     }
 
-                    // Determine whether the requested parent is a server entity.
-                    // These are kept as two separate booleans (rather than folded into
-                    // one) purely so the error message below can tell apart two very
-                    // different situations that both fail the same "is it synced?"
-                    // test:
-                    //   - parent_is_syncable_type: the node's C++ type derives from
-                    //     ISyncable at all (Model, Physics_Body, ...). Types like
-                    //     Collision_Shape, Vehicle_Wheel, etc. never do — by design,
-                    //     they have no net_id and are intentionally excluded from the
-                    //     sync system (see collision_shape.h / vehicle_wheel.h). This
-                    //     is NOT a "client" node; it's simply not a syncable node type.
-                    //   - parent_is_server: it IS a syncable type, but its net_id is 0,
-                    //     meaning it's a genuine client-local instance (created by
-                    //     client Lua, never spawned/tracked on the server).
-                    auto* parent_syncable         = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
+                    auto* parent_syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
                     bool  parent_is_syncable_type = (parent_syncable != nullptr);
-                    bool  parent_is_server        = (parent_syncable && parent_syncable->get_net_id() > 0);
-
+                    bool  parent_is_server = (parent_syncable && parent_syncable->get_net_id() > 0);
                     #if !defined(VSDK_Client)
                     if (self_is_server) {
-                        // Rule A: server entity → parent MUST also be a server entity.
-                        // (Client code cannot reach this branch — rejected above.)
                         if (!parent_is_server) {
-                            if (!parent_is_syncable_type) {
-                                // e.g. Collision_Shape, Vehicle_Wheel: never synced by
-                                // design, regardless of which side created them.
-                                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                                    "set_parent: this node type is never network-synced and cannot be used "
-                                    "as a parent for a server entity (no net_id — e.g. Collision_Shape, "
-                                    "Vehicle_Wheel). Parent to the owning synced entity instead "
-                                    "(e.g. the Rigid_Body/Character/Static body, not its Collision_Shape).");
-                            }
+                            if (!parent_is_syncable_type) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "target node type is not network-synced and cannot parent a server entity");
                             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
                                 "set_parent: server entity cannot be parented to a client-local entity "
                                 "(net_id == 0 — this node was created by client Lua and never spawned on the server)");
                         }
-                        // Delegate to ISyncable::set_parent() — shared by every synced
-                        // type (Model, Physics_Body, ...) — which also broadcasts
-                        // _reparent_entity to all clients. self_is_server already
-                        // proved self_syncable is non-null.
                         self_syncable -> set_parent(parent_node);
-                    } else
-                    #endif
-                    {
-                        // Rule B: client entity — parent may be anything (server or client,
-                        // e.g. a camera or a client-created model attaching to a remote
-                        // server entity). This is purely local; no RPC.
-                        reparent_safe(core, node, parent_node);
+                        vm -> push_value(true);
+                        return 1;
                     }
-
+                    #endif
+                    reparent_safe(core, node, parent_node);
                     vm -> push_value(true);
                     return 1;
                 });
             }
-
-            // ── others ─────────────────────────────────────────────────────────
-
             {
                 vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(offset)", true)
