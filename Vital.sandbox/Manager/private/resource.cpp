@@ -337,7 +337,9 @@ namespace Vital::Manager {
     }
 
     Tool::Stack Resource::Internal::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) {
-        Tool::Stack packet = Tool::Stack::make_packet(event);
+        Tool::Stack packet = Tool::Stack::make_packet(Resource::Name, { 
+            Tool::StackValue(event) 
+        });
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
             auto packed = Internal::pack_manifest(*manifest);
@@ -786,9 +788,12 @@ namespace Vital::Manager {
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
-                if (!arguments.has("name")) return;
+                if (!arguments.is_packet(Resource::Name)) return;
+                if (arguments.array.empty() || !arguments.has("name")) return;
+                
+                const std::string message = arguments.array[0].as<std::string>();
                 const std::string name = arguments.object.at("name").as<std::string>();
-                if (arguments.is_packet("resource:started")) {
+                if (message == "resource:started") {
                     auto rm = Resource::get_singleton();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
@@ -803,7 +808,7 @@ namespace Vital::Manager {
                     }
                     if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() { Internal::register_resource(name, scripts, files, models, dependencies); });
                 }
-                else if (arguments.is_packet("resource:stopped")) {
+                else if (message == "resource:stopped") {
                     auto rm = Resource::get_singleton();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
