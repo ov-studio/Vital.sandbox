@@ -14,6 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Tool/version.h>
+#include <rapidjson/document.h>
 
 
 ////////////////////////////
@@ -141,5 +143,20 @@ namespace Vital::Config {
             bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
             std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
             std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://vital.site/api/masterlist"); }
+
+            
+            // Shared public identity — used by /info and masterlist heartbeat
+            // so both endpoints expose the same fields without duplicated builders.
+            void write_public_info(rapidjson::Value& obj, rapidjson::Document::AllocatorType& alloc) const {
+                obj.AddMember(rapidjson::StringRef("name"), rapidjson::Value(get_server_name().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("version"), rapidjson::Value(get_server_version().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("description"), rapidjson::Value(get_server_description().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
+                obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
+                obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_clients()), alloc);
+                obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
+            }
     };
 }
