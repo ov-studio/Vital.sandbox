@@ -652,8 +652,7 @@ namespace Vital::Engine {
             return true;
         };
         if (!apply_wildcard(component, [&]{ return get_components(); }, exec))
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                fmt::format("component '{}' not found in model '{}'", component, model_name));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return true;
     }
 
@@ -673,8 +672,7 @@ namespace Vital::Engine {
             return true;
         };
         if (!apply_wildcard(material, [&]{ return get_materials(component); }, exec))
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                fmt::format("material '{}' not found in component '{}'", material, component));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, component));
         return true;
     }
 
