@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/API/utility/promise.h>
+#include <Vital.sandbox/API/utility/file.h>
 #include <Vital.sandbox/API/base/node_3d.h>
 #include <Vital.sandbox/API/base/syncable.h>
 
