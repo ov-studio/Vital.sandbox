@@ -503,17 +503,17 @@ namespace Vital::Manager {
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
         #if !defined(VSDK_Client)
-        // Server-side handshake: client sends {event:"system", array:["ping"]} immediately
-        // after connected_to_server fires (via poll()'s pending_handshake path).
-        // We defer network:peer:join until this ping arrives so Lua scripts never see
-        // a peer that isn't ready to receive resource and sync data yet.
         if (stack.is_packet("system")) {
-            if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
+            if (!stack.array.empty() && stack.array[0].as<std::string>() == "client:ping") {
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
                     log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
                     Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)sender));
                 }
+            }
+            else if (stack.array[0].as<std::string>() == "quit") {
+                if (peer.is_valid()) peer->disconnect_peer(sender);
+                return;
             }
             else if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
                 std::string resource_name = stack.array[1].as<std::string>();
@@ -727,6 +727,10 @@ namespace Vital::Manager {
         auto_reconnect    = false;
         pending_handshake = false;
         unwire_signals();
+        send_to_server(Tool::Stack::make_packet("system", { 
+            Tool::StackValue(std::string("quit")) 
+        }));
+        if (peer.is_valid()) peer->flush();
         peer->close();
         peer.unref();
         auto tree = get_scene_tree();
@@ -1248,7 +1252,7 @@ namespace Vital::Manager {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
             send_to_server(Tool::Stack::make_packet("system", { 
-                Tool::StackValue(std::string("ping")) 
+                Tool::StackValue(std::string("client:ping")) 
             }));
         }
         #endif
