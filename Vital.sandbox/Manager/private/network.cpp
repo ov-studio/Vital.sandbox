@@ -174,10 +174,8 @@ namespace Vital::Manager {
                 entity->delta_last_scale = scale;
                 auto node = entity->get_sync_node();
                 if (node && node->is_inside_tree()) {
-                    if (entity->get_sync_parent_net_id() != 0)
-                        node->set_position(pos);
-                    else
-                        node->set_global_position(pos);
+                    if (entity->get_sync_parent_net_id() != 0) node->set_position(pos);
+                    else node->set_global_position(pos);
                     node->set_rotation_degrees(rot);
                     node->set_scale(scale);
                 }
