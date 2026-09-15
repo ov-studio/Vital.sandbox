@@ -115,13 +115,14 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string);
 
                 const std::string name = vm -> get_string(1);
-                const std::string path = vm -> get_string(2);
+                std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
-                // TODO: USE API::FILE::assert_file(vm, path) so it auto detects the asset file and resource base
-                // TODO: SHOULD USE SAME FORMAT FOR RESOURCE PATH AS NAME INSTEAD OF "NAME" but when executed inside same resource it should automatically generate :resourcename/ actually the model.h/cpp should use better storing format map for it imo?? or idk its good
-                Tool::print("warn", resource);
-
-                bool result = base_class::load(name, path);
+                const std::string base = API::File::assert_file(vm, path);
+                const std::string exe_root = Tool::get_directory();
+                std::string relative_base = (base.rfind(exe_root, 0) == 0) ? base.substr(exe_root.size()) : base;
+                if (!relative_base.empty() && relative_base.front() == '/') relative_base.erase(0, 1);
+                const std::string load_path = relative_base + "/" + path;
+                bool result = base_class::load(name, load_path);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
                     model_scope[name] = resource;
@@ -167,22 +168,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // Spatial getters/setters (position, rotation, scale, visibility, etc.)
-            // are provided by Node_3D::methods — no hand-written duplicates needed.
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-
-            // set_parent / get_parent:
-            //   • Server side: Model is a server entity; parent_methods delegates to
-            //     Engine::Model::set_parent() which broadcasts _reparent_entity.
-            //     Rule A (server→server only) is enforced inside parent_methods.
-            //   • Client side: bound too, so a purely client-created model (created
-            //     via this API's "create" on the client, which never gets a net_id)
-            //     can attach to anything, including a remote server entity — Rule B.
-            //     A client-side REMOTE MIRROR of a server model still has a non-zero
-            //     net_id (see Network::_spawn_entity), so parent_methods' own
-            //     self_is_server check correctly tells the two apart and rejects any
-            //     attempt to reparent a server entity from the client — Rule C.
-            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm); // TODO: Unify with one?
 
             // get_net_id() — shared with every physics body type via API::Syncable,
             // so "net_id, or false if not replicated" means the same thing for a
@@ -566,7 +553,13 @@ namespace Vital::Sandbox::API {
         static void clean(const std::string& env) {
             Instance::collect_env(env);
 
-            // TODO: Unload all model assets that were loaded by this resource env, should below be removed and call Engine::Model::unload_resource_models(name); adapt it from resource.cpp to work accordingly?? 
+            // Unload every model asset this resource loaded via the "load" API
+            // above. Deliberately NOT Engine::Model::unload_resource_models(env):
+            // that only unloads names following its own internal ":resource/file"
+            // convention (auto-discovered assets from load_resource_models), and
+            // "load" here accepts arbitrary caller-chosen names — see model_scope
+            // above for why. model_scope is the source of truth for "which names
+            // did this env load", so we unload exactly those.
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;
