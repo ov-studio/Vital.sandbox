@@ -357,10 +357,7 @@ namespace Vital::Sandbox::API {
                 // and broadcasts _reparent_entity to every peer) doesn't even exist in
                 // a client build, so this has to be rejected here, up front, before any
                 // of the server-only logic below.
-                if (self_is_server) {
-                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                        "set_parent: cannot be called on a server entity from the client");
-                }
+                if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "set_parent: cannot be called on a server entity from the client");
                 #endif
 
                 if (vm -> is_nil(2)) {
