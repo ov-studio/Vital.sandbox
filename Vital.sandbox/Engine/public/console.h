@@ -75,6 +75,9 @@ namespace Vital::Engine {
                 static Tool::Stack fetch_mode_color(const std::string& mode);
                 static std::string fetch_version();
                 static std::string fetch_help();
+                #if defined(VSDK_Client)
+                static std::string fetch_status();
+                #endif
                 static void parse_log_line(const std::string& line);
                 #if !defined(VSDK_Client)
                 static constexpr const char* ANSI_RESET = "\033[0m";

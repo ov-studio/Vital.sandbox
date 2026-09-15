@@ -93,6 +93,18 @@ namespace Vital::Engine {
         return oss.str();
     }
 
+    #if defined(VSDK_Client)
+    std::string Console::Internal::fetch_status() {
+        auto nm = Manager::Network::get_singleton();
+        return fmt::format(
+            "Connection:\n> Server — `{}`\n> State — `{}`\n> Peer ID — `{}`",
+            nm -> get_server_ip(),
+            nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"),
+            nm -> get_peer_id()
+        );
+    }
+    #endif
+
     void Console::Internal::parse_log_line(const std::string& line) {
         if (line.empty()) return;
 
@@ -705,17 +717,7 @@ namespace Vital::Engine {
             #else
             if (cmd == "connect") { Manager::Network::get_singleton() -> connect_to_server(tokens[1], std::atoi(tokens[2].c_str()), true); return true; }
             if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
-            if (cmd == "status") {
-                // TODO: Improve
-                auto nm = Manager::Network::get_singleton();
-                print("sbox", fmt::format(
-                    "Connection:\n> Server — `{}`\n> State — `{}`\n> Peer ID — `{}`",
-                    nm -> get_server_ip(),
-                    nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"),
-                    nm -> get_peer_id()
-                ));
-                return true;
-            }
+            if (cmd == "status") { print("sbox", Internal::fetch_status()); return true; }
             if (cmd == "quit") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #endif
             return false;
