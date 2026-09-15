@@ -145,7 +145,6 @@ namespace Vital::Engine {
                 std::string sub = Tool::to_std_string(name);
                 Engine::ISyncable* entity = nullptr;
                 Engine::PhysicsType sub_type = Engine::PhysicsType::Rigid;
-
                 if (sub == "rigid_body") {
                     sub_type = Engine::PhysicsType::Rigid;
                     auto body = memnew(Engine::Rigid_Body);
@@ -176,9 +175,7 @@ namespace Vital::Engine {
                     Engine::Core::get_singleton() -> add_child(body);
                     entity = body;
                 } 
-                else {
-                    godot::UtilityFunctions::push_warning("_spawn_entity [PhysicsBody]: unknown sub-type=", name);
-                }
+                else godot::UtilityFunctions::push_warning("_spawn_entity [PhysicsBody]: unknown sub-type=", name);
 
                 if (entity) {
                     entity -> net_id = (uint32_t)net_id;
