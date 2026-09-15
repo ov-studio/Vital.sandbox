@@ -68,6 +68,15 @@ namespace Vital::Sandbox::API {
         inline static std::mutex scope_mutex;
         inline static std::unordered_map<std::string, std::string> model_scope;
 
+        static std::string own_name(const std::string& resource, const std::string& name) {
+            return fmt::format(":{}/{}", resource, name);
+        }
+
+        static std::string ref_name(const std::string& resource, const std::string& name) {
+            if (!name.empty() && name.front() == ':') return name;
+            return fmt::format(":{}/{}", resource, name);
+        }
+
         static void init(Machine* vm) {
             static Tool::Event::event_id spawned_binding = 0;
             static Tool::Event::event_id destroyed_binding = 0;
@@ -117,11 +126,12 @@ namespace Vital::Sandbox::API {
                 const std::string name = vm -> get_string(1);
                 std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
+                const std::string key = own_name(resource, name);
                 const std::string base = API::File::assert_file(vm, path);
-                bool result = base_class::load(name, base, path);
+                bool result = base_class::load(key, base, path);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
-                    model_scope[name] = resource;
+                    model_scope[key] = resource;
                 }
                 vm -> push_value(result);
                 return 1;
@@ -132,10 +142,12 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 const std::string name = vm -> get_string(1);
-                bool result = base_class::unload(name);
+                const std::string resource = Manager::Resource::get_resource_from_vm(vm);
+                const std::string key = own_name(resource, name);
+                bool result = base_class::unload(key);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
-                    model_scope.erase(name);
+                    model_scope.erase(key);
                 }
                 vm -> push_value(result);
                 return 1;
@@ -145,7 +157,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(base_class::is_model_loaded(vm -> get_string(1)));
+                vm -> push_value(base_class::is_model_loaded(own_name(Manager::Resource::get_resource_from_vm(vm), vm -> get_string(1))));
                 return 1;
             });
 
@@ -156,8 +168,9 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(1);
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
+                const std::string key = ref_name(Manager::Resource::get_resource_from_vm(vm), name);
                 auto instance = Instance::init(vm);
-                instance -> model = base_class::create(name, authority);
+                instance -> model = base_class::create(key, authority);
                 instance -> store(true);
                 return 1;
             });
@@ -224,7 +237,12 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_model_name", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_model_name());
+                std::string name = self -> model -> get_model_name();
+                if (!name.empty() && name.front() == ':') {
+                    auto slash = name.find('/');
+                    if (slash != std::string::npos) name = name.substr(slash + 1);
+                }
+                vm -> push_value(name);
                 return 1;
             });
 
@@ -405,8 +423,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(peer_id)", true)
                     .require(2, &Machine::is_number);
 
-                // Lua passes false as a boolean — get_int on a bool returns 0,
-                // which set_syncer treats as server authority (peer_id <= 1 → 1).
                 int peer_id = (int)(vm -> get_int(2));
                 self -> model -> set_syncer(peer_id);
                 vm -> push_value(true);
