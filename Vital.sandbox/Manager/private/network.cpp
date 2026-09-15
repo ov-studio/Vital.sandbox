@@ -15,7 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
@@ -515,13 +514,6 @@ namespace Vital::Manager {
             else if (stack.array[0].as<std::string>() == "quit") {
                 if (peer.is_valid()) peer->disconnect_peer(sender);
                 return;
-            }
-            return;
-        }
-        if (stack.is_packet(Resource::Name)) {
-            if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
-                std::string resource_name = stack.array[1].as<std::string>();
-                Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue((int32_t)sender), Tool::StackValue(resource_name));
             }
             return;
         }
