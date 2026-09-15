@@ -15,11 +15,15 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/API/utility/event.h>
+#include <Vital.sandbox/Tool/version.h>
+#include <Vital.sandbox/Tool/http.h>
+#include <rapidjson/document.h>
 
 
 //////////////////////////////
