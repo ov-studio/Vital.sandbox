@@ -16,10 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/area.h>
 #include <Vital.sandbox/API/base/collision_object.h>
-#include <Vital.sandbox/API/physics/rigid_body.h>
-#include <Vital.sandbox/API/physics/static_body.h>
-#include <Vital.sandbox/API/physics/character_body.h>
-#include <Vital.sandbox/API/physics/animatable_body.h>
+#include <Vital.sandbox/API/physics/physics_entity.h>
 
 
 ///////////////////////
@@ -225,17 +222,9 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "overlaps_body", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
-                    .require(2, [](Machine* vm, int idx) {
-                        return vm_module::is_userdata<Rigid_Body::Instance>(vm, idx) || vm_module::is_userdata<Static_Body::Instance>(vm, idx) ||
-                               vm_module::is_userdata<Character_Body::Instance>(vm, idx) || vm_module::is_userdata<Animatable_Body::Instance>(vm, idx);
-                    });
+                    .require(2, [](Machine* vm, int idx) { return Physics_Entity::is_body(vm, idx); });
 
-                godot::Node* target = nullptr;
-                if (vm_module::is_userdata<Rigid_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Rigid_Body::Instance>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Static_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Static_Body::Instance>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Character_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Character_Body::Instance>(vm, 2) -> get_node();
-                else if (vm_module::is_userdata<Animatable_Body::Instance>(vm, 2)) target = vm_module::get_userdata_object<Animatable_Body::Instance>(vm, 2) -> get_node();
-
+                auto* target = Physics_Entity::resolve_body(vm, 2);
                 vm -> push_value(target ? self -> body -> overlaps_body(target) : false);
                 return 1;
             });
