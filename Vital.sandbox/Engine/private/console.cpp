@@ -706,10 +706,6 @@ namespace Vital::Engine {
             if (cmd == "connect") {
                 auto nm = Manager::Network::get_singleton();
                 const int port = std::atoi(tokens[2].c_str());
-                if (port <= 0 || port > 65535) {
-                    print("error", fmt::format("Invalid port `{}`", tokens[2]));
-                    return true;
-                }
                 if (!nm -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
                 return true;
             }

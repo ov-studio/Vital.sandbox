@@ -692,6 +692,7 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
+        if (port <= 0 || port > 65535) return false;
         disconnect_from_server();
         create();
         peer.instantiate();
@@ -702,20 +703,20 @@ namespace Vital::Manager {
             peer.unref();
             return false;
         }
-        
+
         auto tree = get_scene_tree();
         if (!tree) { 
-            peer.unref();
-            return false; 
+            peer.unref(); 
+            return false;
         }
 
         tree->get_multiplayer()->set_multiplayer_peer(peer);
         wire_signals();
-        auto_reconnect    = enable_reconnect;
-        reconnect_ip      = ip;
-        reconnect_port    = port;
+        auto_reconnect = enable_reconnect;
+        reconnect_ip = ip;
+        reconnect_port = port;
         reconnect_attempts = 0;
-        reconnect_timer   = 0.0f;
+        reconnect_timer = 0.0f;
         pending_handshake = false;
         log("sbox", fmt::format("connecting to {}:{}", ip, port));
         Tool::Event::emit("network:connect", {});
