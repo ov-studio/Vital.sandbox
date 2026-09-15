@@ -19,7 +19,6 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #include <Vital.sandbox/Tool/http.h>
-#include <Vital.sandbox/Tool/version.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -37,18 +36,10 @@ namespace Vital::Manager {
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
+        server_config -> write_public_info(document, alloc);
         document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("name"), rapidjson::Value(server_config -> get_server_name().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("ip"), rapidjson::Value(nm -> get_server_ip().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(server_config -> get_network_port()), alloc);
-        document.AddMember(rapidjson::StringRef("httpPort"), rapidjson::Value(server_config -> get_http_port()), alloc);
         document.AddMember(rapidjson::StringRef("players"), rapidjson::Value(nm -> get_peer_count()), alloc);
-        document.AddMember(rapidjson::StringRef("maxPlayers"), rapidjson::Value(server_config -> get_max_clients()), alloc);
-        document.AddMember(rapidjson::StringRef("version"), rapidjson::Value(server_config -> get_server_version().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("description"), rapidjson::Value(server_config -> get_server_description().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(server_config -> get_discord().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("website"), rapidjson::Value(server_config -> get_website().c_str(), alloc), alloc);
 
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
