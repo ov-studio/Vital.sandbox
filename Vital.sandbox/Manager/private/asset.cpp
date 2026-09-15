@@ -59,11 +59,9 @@ namespace Vital::Manager {
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.is_packet(Asset::Name)) return;
                 if (arguments.array.empty()) return;
-                
+
                 const std::string message = arguments.array[0].as<std::string>();
-                if (message == "manifest") {
-                    receive_manifest(arguments);
-                }
+                if (message == "manifest") receive_manifest(arguments);
             });
         #endif
     }
