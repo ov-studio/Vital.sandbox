@@ -548,14 +548,6 @@ namespace Vital::Sandbox::API {
 
         static void clean(const std::string& env) {
             Instance::collect_env(env);
-
-            // Unload every model asset this resource loaded via the "load" API
-            // above. Deliberately NOT Engine::Model::unload_resource_models(env):
-            // that only unloads names following its own internal ":resource/file"
-            // convention (auto-discovered assets from load_resource_models), and
-            // "load" here accepts arbitrary caller-chosen names — see model_scope
-            // above for why. model_scope is the source of truth for "which names
-            // did this env load", so we unload exactly those.
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;
