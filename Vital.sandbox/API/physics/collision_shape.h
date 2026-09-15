@@ -16,10 +16,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
-#include <Vital.sandbox/API/physics/rigid_body.h>
-#include <Vital.sandbox/API/physics/static_body.h>
-#include <Vital.sandbox/API/physics/character_body.h>
-#include <Vital.sandbox/API/physics/animatable_body.h>
+#include <Vital.sandbox/API/physics/physics_entity.h>
 #include <Vital.sandbox/API/physics/area.h>
 
 
@@ -86,10 +83,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static godot::Node3D* resolve_owner(Machine* vm, int idx) {
-            if (vm_module::is_userdata<Rigid_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Rigid_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Static_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Static_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Character_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Character_Body::Instance>(vm, idx) -> get_node();
-            if (vm_module::is_userdata<Animatable_Body::Instance>(vm, idx)) return vm_module::get_userdata_object<Animatable_Body::Instance>(vm, idx) -> get_node();
+            if (auto* node = Physics_Entity::resolve_body(vm, idx)) return node;
             if (vm_module::is_userdata<Area::Instance>(vm, idx)) return vm_module::get_userdata_object<Area::Instance>(vm, idx) -> get_node();
             return nullptr;
         }
