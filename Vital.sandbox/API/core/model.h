@@ -118,11 +118,7 @@ namespace Vital::Sandbox::API {
                 std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
                 const std::string base = API::File::assert_file(vm, path);
-                const std::string exe_root = Tool::get_directory();
-                std::string relative_base = (base.rfind(exe_root, 0) == 0) ? base.substr(exe_root.size()) : base;
-                if (!relative_base.empty() && relative_base.front() == '/') relative_base.erase(0, 1);
-                const std::string load_path = relative_base + "/" + path;
-                bool result = base_class::load(name, load_path);
+                bool result = base_class::load(name, base, path);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
                     model_scope[name] = resource;
