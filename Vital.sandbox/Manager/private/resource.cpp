@@ -185,7 +185,7 @@ namespace Vital::Manager {
         #else
             Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
             Manager::Network::get_singleton() -> send_to_server(
-                Tool::Stack::make_packet("resource.manager", { 
+                Tool::Stack::make_packet(Resource::Name, { 
                     Tool::StackValue(std::string("resource:ready")), 
                     Tool::StackValue(name) 
                 })

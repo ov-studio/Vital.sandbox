@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
@@ -503,7 +504,7 @@ namespace Vital::Manager {
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
         #if !defined(VSDK_Client)
-        if (stack.is_packet("network.manager")) {
+        if (stack.is_packet(Network::Name)) {
             if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
@@ -517,7 +518,7 @@ namespace Vital::Manager {
             }
             return;
         }
-        if (stack.is_packet("resource.manager")) {
+        if (stack.is_packet(Resource::Name)) {
             if (stack.array.size() >= 2 && stack.array[0].as<std::string>() == "resource:ready") {
                 std::string resource_name = stack.array[1].as<std::string>();
                 Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue((int32_t)sender), Tool::StackValue(resource_name));
@@ -730,7 +731,7 @@ namespace Vital::Manager {
         auto_reconnect    = false;
         pending_handshake = false;
         unwire_signals();
-        send_to_server(Tool::Stack::make_packet("network.manager", { 
+        send_to_server(Tool::Stack::make_packet(Network::Name, { 
             Tool::StackValue(std::string("quit")) 
         }));
         peer->close();
@@ -1253,7 +1254,7 @@ namespace Vital::Manager {
         if (pending_handshake && is_connected()) {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-            send_to_server(Tool::Stack::make_packet("network.manager", { 
+            send_to_server(Tool::Stack::make_packet(Network::Name, { 
                 Tool::StackValue(std::string("ping")) 
             }));
         }
