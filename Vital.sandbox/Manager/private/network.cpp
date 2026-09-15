@@ -696,15 +696,19 @@ namespace Vital::Manager {
         create();
         peer.instantiate();
 
-        // ENet with default channel count (RPC via MultiplayerAPI)
         godot::Error err = peer->create_client(godot::String(ip.c_str()), port, 0, 0, 0);
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
             return false;
         }
+        
         auto tree = get_scene_tree();
-        if (!tree) { peer.unref(); return false; }
+        if (!tree) { 
+            peer.unref();
+            return false; 
+        }
+
         tree->get_multiplayer()->set_multiplayer_peer(peer);
         wire_signals();
         auto_reconnect    = enable_reconnect;
