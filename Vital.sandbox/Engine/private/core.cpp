@@ -214,7 +214,7 @@ namespace Vital::Engine {
     void Core::shutdown() {
         Tool::print("sbox", "Core: shutting down...");
         enqueue([this]() {
-            Engine::Console::get_singleton() -> teardown();
+            teardown();
             Tool::print("sbox", "Core: shut down successfully!");
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
