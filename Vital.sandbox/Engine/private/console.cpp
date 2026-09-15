@@ -704,9 +704,8 @@ namespace Vital::Engine {
             if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #else
             if (cmd == "connect") {
-                auto nm = Manager::Network::get_singleton();
                 const int port = std::atoi(tokens[2].c_str());
-                if (!nm -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
+                if (!Manager::Network::get_singleton() -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
                 return true;
             }
             if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
