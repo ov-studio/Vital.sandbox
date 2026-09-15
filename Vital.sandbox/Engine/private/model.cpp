@@ -290,8 +290,7 @@ namespace Vital::Engine {
 
     Model* Model::create(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("model '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("model '{}' isn't loaded yet", name));
 
         #if defined(VSDK_Client)
             Model* object = memnew(Model);
@@ -299,8 +298,7 @@ namespace Vital::Engine {
             godot::Node* instance = it->second->instantiate();
             if (!instance) {
                 memdelete(object);
-                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                    fmt::format("failed to instantiate model '{}'", name));
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("failed to instantiate model '{}'", name));
             }
             object->add_child(instance);
             Engine::Core::get_singleton()->add_child(object);
@@ -342,8 +340,7 @@ namespace Vital::Engine {
             // Capture by ObjectID and re-validate through ObjectDB instead.
             godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
 
-            Core::get_singleton()->enqueue([captured_oid, captured_net_id,
-                                            captured_name]() {
+            Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                 if (!obj) return; // destroyed before this deferred registration ran
                 auto* object = godot::Object::cast_to<Model>(obj);
