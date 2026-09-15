@@ -107,7 +107,6 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("network:connect:success", [](Vital::Tool::Stack) {
         auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
-        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(nm -> get_server_ip());
         Vital::Engine::Model::on_connected();
         #if defined(VSDK_Client)
         Vital::Engine::Core::get_singleton() -> get_environment();
