@@ -863,8 +863,7 @@ namespace Vital::Engine {
         }
         auto* player = anim_player;
         if (!player->has_animation(Tool::to_godot_string(name))) {
-            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name),
-                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name), "' not found in model '", Tool::to_godot_string(model_name), "'");
             return false;
         }
         build_animation_tree();
