@@ -711,10 +711,6 @@ namespace Vital::Engine {
                     print("error", fmt::format("Invalid port `{}`", tokens[2]));
                     return true;
                 }
-                // connect_to_server refuses while a connection or retry is in flight, so
-                // drop the current one first — otherwise `connect` is a no-op whenever the
-                // client is mid-reconnect
-                if (nm -> is_connected() || nm -> is_connecting()) nm -> disconnect_from_server();
                 if (!nm -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
                 return true;
             }

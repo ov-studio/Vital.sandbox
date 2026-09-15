@@ -696,10 +696,7 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
-        if (is_connected() || is_connecting()) {
-            log("sbox", "already connected/connecting");
-            return false;
-        }
+        disconnect_from_server();
         create();
         peer.instantiate();
 
@@ -1242,8 +1239,7 @@ namespace Vital::Manager {
         if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f)
-                    connect_to_server(reconnect_ip, reconnect_port, true);
+                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, true);
             }
             return;
         }
