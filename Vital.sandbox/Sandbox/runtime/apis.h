@@ -77,7 +77,7 @@
 #include <Vital.sandbox/API/physics/area.h>
 #include <Vital.sandbox/API/physics/collision_shape.h>
 #include <Vital.sandbox/API/physics/space.h>
-#include <Vital.sandbox/API/physics/physics_body_lifecycle.h>
+#include <Vital.sandbox/API/physics/physics_entity.h>
 
 
 /////////////////////
@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Area>(),
             vm_module::make_api<Collision_Shape>(),
             vm_module::make_api<Space>(),
-            vm_module::make_api<Physics_Body_Lifecycle>()
+            vm_module::make_api<Physics_Entity>()
         };
     }
 }
