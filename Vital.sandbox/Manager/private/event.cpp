@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Vital/entrypoint.h>
-// TODO: Improve / Remove later
 #include <Vital.sandbox/API/core/model.h>
 
 
