@@ -110,14 +110,13 @@ namespace Vital::Sandbox::API {
             {
                 vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
                     auto* parent = self -> get_node() -> get_parent();
-                    if (!parent || parent == Vital::Engine::Core::get_singleton()) {
-                        vm -> push_value(false);
-                        return 1;
+                    if (!parent || parent == Vital::Engine::Core::get_singleton()) vm -> push_value(false);
+                    else {
+                        std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                        auto it = vm_node_registry.find(parent);
+                        if (it != vm_node_registry.end()) it -> second -> push_self(vm);
+                        else vm -> push_value(false);
                     }
-                    std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
-                    auto it = vm_node_registry.find(parent);
-                    if (it != vm_node_registry.end()) it -> second -> push_self(vm);
-                    else vm -> push_value(false);
                     return 1;
                 });
             }
@@ -225,8 +224,11 @@ namespace Vital::Sandbox::API {
                     }
 
                     auto* ud = vm_module::get_userdata_ptr(vm, 2);
-                    if (!ud || !*ud) { vm -> push_value(false); return 1; }
-
+                    if (!ud || !*ud) { 
+                        vm -> push_value(false); 
+                        return 1;
+                    }
+                    
                     auto* parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
                     if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
                         vm -> push_value(false);
