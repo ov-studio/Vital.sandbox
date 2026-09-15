@@ -125,18 +125,18 @@ namespace Vital::Sandbox::API {
                 vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(position)", true)
                         .require(2, &Machine::is_vector3);
-    
+
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_position(position);
                     maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
-    
+
                 vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(position)", true)
                         .require(2, &Machine::is_vector3);
-    
+
                     auto position = vm -> get_vector3(2);
                     self -> get_node() -> set_global_position(position);
                     maybe_force_broadcast(self -> get_node());
