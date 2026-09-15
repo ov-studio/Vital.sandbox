@@ -204,7 +204,7 @@ namespace Vital::Manager {
 
 
             // Shared RPC (channel 0, reliable) //
-            bool send(const Tool::Stack& stack, int peerID = 0);
+            bool send(const Tool::Stack& stack, int peer = 0);
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
 
