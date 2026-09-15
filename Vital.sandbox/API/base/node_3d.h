@@ -39,7 +39,7 @@ namespace Vital::Sandbox::API {
         static void maybe_force_broadcast(godot::Node3D* node) {
             #if !defined(VSDK_Client)
             if (auto sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
-                if (sync->get_sync_authority() > 1) sync->force_transform_broadcast();
+                if (sync -> get_sync_authority() > 1) sync -> force_transform_broadcast();
             }
             #endif
         }
@@ -207,7 +207,7 @@ namespace Vital::Sandbox::API {
                     auto node = self -> get_node();
                     auto core = Vital::Engine::Core::get_singleton();
                     auto self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
-                    bool self_is_server = self_syncable && self_syncable->get_net_id() > 0;
+                    bool self_is_server = self_syncable && self_syncable -> get_net_id() > 0;
                     #if defined(VSDK_Client)
                     if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot be called on a server entity from the client");
                     #endif
@@ -237,7 +237,7 @@ namespace Vital::Sandbox::API {
 
                     auto parent_syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
                     bool parent_is_syncable_type = parent_syncable != nullptr;
-                    bool parent_is_server = parent_syncable && parent_syncable->get_net_id() > 0;
+                    bool parent_is_server = parent_syncable && parent_syncable -> get_net_id() > 0;
                     #if !defined(VSDK_Client)
                     if (self_is_server) {
                         if (!parent_is_server) {
