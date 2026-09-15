@@ -1208,13 +1208,13 @@ namespace Vital::Manager {
     //   Send / Receive   //
     //--------------------//
 
-    bool Network::send(const Tool::Stack& stack, int peer) {
+    bool Network::send(const Tool::Stack& stack, int peer_id) {
         if (!node || !peer.is_valid()) return false;
         #if defined(VSDK_Client)
         if (!is_connected()) return false;
         #endif
-        if (peer == 0) node->rpc("_receive", stack.to_dict());
-        else node->rpc_id(peer, "_receive", stack.to_dict());
+        if (peer_id == 0) node->rpc("_receive", stack.to_dict());
+        else node->rpc_id(peer_id, "_receive", stack.to_dict());
         return true;
     }
 
