@@ -711,7 +711,11 @@ namespace Vital::Manager {
                     const int client_major = Vital::Tool::Version::SDK.get_major();
                     if (server_major >= 0 && server_major != client_major) {
                         log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
-                        Tool::Event::emit("network:connect:failed", {});
+                        Tool::Stack status;
+                        status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
+                        status.object["server_sdk"] = Tool::StackValue(server_sdk);
+                        status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
+                        Tool::Event::emit("network:connect:failed", status);
                         return false;
                     }
                     if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
@@ -730,6 +734,9 @@ namespace Vital::Manager {
         if (err != godot::OK) {
             log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("connect-error"));
+            Tool::Event::emit("network:connect:failed", status);
             return false;
         }
 
@@ -781,7 +788,9 @@ namespace Vital::Manager {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Tool::Event::emit("network:connect:failed", {});
+        Tool::Stack status;
+        status.object["reason"] = Tool::StackValue(std::string("timed-out"));
+        Tool::Event::emit("network:connect:failed", status);
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -803,7 +812,9 @@ namespace Vital::Manager {
         if (reconnect_attempts >= reconnect_max) {
             log("sbox", "max reconnect attempts reached");
             auto_reconnect = false;
-            Tool::Event::emit("network:reconnect:failed", {});
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("max-retries"));
+            Tool::Event::emit("network:reconnect:failed", status);
             return;
         }
         reconnect_attempts++;
