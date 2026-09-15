@@ -34,9 +34,7 @@ namespace Vital::Manager {
     //--------------------//
 
     godot::SceneTree* Network::get_scene_tree() {
-        return godot::Object::cast_to<godot::SceneTree>(
-            godot::Engine::get_singleton()->get_main_loop()
-        );
+        return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
     }
 
     void Network::teardown() {
