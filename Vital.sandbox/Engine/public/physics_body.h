@@ -22,7 +22,6 @@
 // Vital: Engine: Physics_Body //
 //////////////////////////////////
 
-// TODO: Improve 
 namespace Vital::Manager { 
     class Network;
 }
@@ -62,23 +61,23 @@ namespace Vital::Engine {
             }
 
             godot::Vector3 get_sync_position() const override {
-                if (!const_cast<Physics_Body*>(this)->Base::is_inside_tree()) return godot::Vector3();
-                if (sync_parent_net_id != 0) return const_cast<Physics_Body*>(this)->Base::get_position();
-                return const_cast<Physics_Body*>(this)->Base::get_global_position();
+                if (!const_cast<Physics_Body*>(this) -> Base::is_inside_tree()) return godot::Vector3();
+                if (sync_parent_net_id != 0) return const_cast<Physics_Body*>(this) -> Base::get_position();
+                return const_cast<Physics_Body*>(this) -> Base::get_global_position();
             }
 
             godot::Vector3 get_sync_rotation() const override {
-                return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_rotation_degrees() : godot::Vector3();
+                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
             }
 
             godot::Vector3 get_sync_scale() const override {
-                return const_cast<Physics_Body*>(this)->Base::is_inside_tree() ? const_cast<Physics_Body*>(this)->Base::get_scale() : godot::Vector3(1, 1, 1);
+                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_scale() : godot::Vector3(1, 1, 1);
             }
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override {
                 if (!Base::is_inside_tree()) return;
                 auto net = Manager::Network::get_singleton();
-                if (net && net->get_peer_id() == sync_authority) return;
+                if (net && net -> get_peer_id() == sync_authority) return;
                 sync_push_snapshot(pos, rot, vel);
                 Base::set_scale(scale);
                 sync_last_pos = pos;
@@ -91,7 +90,7 @@ namespace Vital::Engine {
             void on_sync_process(double delta) override {
                 if (!Base::is_inside_tree() || !interp_ready || net_id == 0) return;
                 auto net = Manager::Network::get_singleton();
-                if (net && net -> get_peer_id() == sync_authority) return;
+                if (net && net  ->  get_peer_id() == sync_authority) return;
                 godot::Vector3 out_pos, out_rot;
                 interp_process(delta, out_pos, out_rot);
                 if (sync_parent_net_id != 0) Base::set_position(out_pos);
@@ -134,7 +133,7 @@ namespace Vital::Engine {
             void flush_pending_shape_broadcast() {
                 if (!pending_shape_broadcast.has_value()) return;
                 auto net_node = Manager::Network::get_singleton() -> get_node();
-                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast->type.c_str()), pending_shape_broadcast->params);
+                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast -> type.c_str()), pending_shape_broadcast -> params);
                 pending_shape_broadcast.reset();
             }
 
@@ -194,10 +193,10 @@ namespace Vital::Engine {
 
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
                             auto net_node = Manager::Network::get_singleton() -> get_node();
-                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self->get_sync_authority(), self->get_sync_position(), self->get_sync_rotation());
+                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
                             self -> flush_pending_shape_broadcast();
                             self -> flush_pending_force_transform();
-                            Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self->get_physics_type(), false}));
+                            Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
                             Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self) }));
                         });
                     }
