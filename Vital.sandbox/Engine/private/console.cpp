@@ -96,12 +96,13 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     std::string Console::Internal::fetch_status() {
         auto nm = Manager::Network::get_singleton();
-        return fmt::format(
-            "Connection:\n> Server — `{}`\n> State — `{}`\n> Peer ID — `{}`",
-            nm -> get_server_ip(),
-            nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"),
-            nm -> get_peer_id()
-        );
+        std::ostringstream oss;
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value); };
+        oss << "Connection:\n";
+        append_field("Server", nm -> get_server_ip());
+        append_field("State",  nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"));
+        append_field("Peer ID", std::to_string(nm -> get_peer_id()));
+        return oss.str();
     }
     #endif
 
