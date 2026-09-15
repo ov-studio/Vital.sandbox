@@ -35,6 +35,7 @@ namespace Vital::Engine {
             static constexpr float DELTA_POS_THRESHOLD  = 0.001f; // metres
             static constexpr float DELTA_ROT_THRESHOLD  = 0.05f;  // degrees
             static constexpr float DELTA_VEL_THRESHOLD  = 0.01f;  // units/sec
+            static constexpr float MOVE_EPSILON         = 0.001f; // has_sync_moved() cutoff — pos(m)/rot(deg)/scale delta magnitude below which a transform counts as unchanged
             static constexpr int   SYNC_RATE            = 60;     // default sync rate in Hz
             static constexpr int   SNAPSHOT_COUNT       = 32;     // ~530ms of history at 60Hz — headroom above BUFFER_DELAY_MAX so a big adaptive buffer still has real snapshots behind it.
             static constexpr float BUFFER_DELAY         = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
