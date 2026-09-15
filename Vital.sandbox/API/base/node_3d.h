@@ -208,9 +208,9 @@ namespace Vital::Sandbox::API {
                     auto* node = self -> get_node();
                     auto* core = Vital::Engine::Core::get_singleton();
                     auto* self_syncable = dynamic_cast<Vital::Engine::ISyncable*>(node);
-                    bool self_is_server = (self_syncable && self_syncable->get_net_id() > 0);
+                    bool self_is_server = self_syncable && self_syncable->get_net_id() > 0;
                     #if defined(VSDK_Client)
-                    if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "set_parent: cannot be called on a server entity from the client");
+                    if (self_is_server) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot be called on a server entity from the client");
                     #endif
 
                     if (vm -> is_nil(2)) {
@@ -234,15 +234,13 @@ namespace Vital::Sandbox::API {
                     }
 
                     auto* parent_syncable = dynamic_cast<Vital::Engine::ISyncable*>(parent_node);
-                    bool  parent_is_syncable_type = (parent_syncable != nullptr);
-                    bool  parent_is_server = (parent_syncable && parent_syncable->get_net_id() > 0);
+                    bool parent_is_syncable_type = (parent_syncable != nullptr);
+                    bool parent_is_server = (parent_syncable && parent_syncable->get_net_id() > 0);
                     #if !defined(VSDK_Client)
                     if (self_is_server) {
                         if (!parent_is_server) {
                             if (!parent_is_syncable_type) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "target node type is not network-synced and cannot parent a server entity");
-                            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                                "set_parent: server entity cannot be parented to a client-local entity "
-                                "(net_id == 0 — this node was created by client Lua and never spawned on the server)");
+                            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "server entity cannot be parented to a client-local entity");
                         }
                         self_syncable -> set_parent(parent_node);
                         vm -> push_value(true);
