@@ -333,7 +333,6 @@ namespace Vital::Engine {
             // capture would be dangling if Model::destroy() runs first.
             // Capture by ObjectID and re-validate through ObjectDB instead.
             godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
-
             Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                 if (!obj) return; // destroyed before this deferred registration ran
