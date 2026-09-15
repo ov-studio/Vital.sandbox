@@ -414,11 +414,6 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
-            // Layered animation blending — lets several animations run and
-            // blend at once (e.g. base locomotion on layer 0, an aim/action
-            // overlay on layer 1+). Replicated automatically: whichever peer
-            // holds sync authority over this model has its layer state
-            // mirrored to everyone else via the network layer.
             vm_module::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
@@ -484,7 +479,6 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
-                // (layer, enabled [, bone_paths table of strings] [, sync])
                 vm_args(vm, id, "(layer, enabled, bone_paths?, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_bool)
