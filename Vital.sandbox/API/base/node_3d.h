@@ -372,7 +372,7 @@ namespace Vital::Sandbox::API {
                         // reparent() here would silently desync every client,
                         // which would still think this entity is parented.
                         self_syncable -> set_parent(nullptr);
-                    } else
+                    }
                     #endif
                     {
                         // Rule B: client entity — purely local, no RPC needed.
