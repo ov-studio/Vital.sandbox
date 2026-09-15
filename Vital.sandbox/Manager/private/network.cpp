@@ -497,7 +497,7 @@ namespace Vital::Manager {
         int32_t sender = mp.is_valid() ? mp->get_remote_sender_id() : 0;
 
         godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
-        obj["sender_id"] = (int64_t)sender;
+        obj["sender"] = (int64_t)sender;
         data["object"] = obj;
 
         Tool::Stack stack = Tool::Stack::from_dict(data);
@@ -615,11 +615,11 @@ namespace Vital::Manager {
 
     // Called by Engine::Network::_sync_client — batched client-auth upload on server.
     // Client packet layout: [sender u32][VSST magic u32][count u32][N*28 bytes]
-    void Network::dispatch_client_sync(const godot::PackedByteArray& data, int sender_id) {
+    void Network::dispatch_client_sync(const godot::PackedByteArray& data, int sender) {
         #if !defined(VSDK_Client)
         if (data.size() < 12) return;
-        if (connected_peers.find(sender_id) == connected_peers.end()) return;
-        if ((int)Engine::ISyncable::read_u32(data, 0) != sender_id) return; // anti-spoof
+        if (connected_peers.find(sender) == connected_peers.end()) return;
+        if ((int)Engine::ISyncable::read_u32(data, 0) != sender) return; // anti-spoof
         if (Engine::ISyncable::read_u32(data, 4) != STATE_DUMP_MAGIC) return;
 
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 8);
@@ -657,7 +657,7 @@ namespace Vital::Manager {
                 }
                 if (consumed < 0) break;
 
-                if (model && model->get_sync_authority() == sender_id) {
+                if (model && model->get_sync_authority() == sender) {
                     model->apply_sync(pos, rot, vel, scale);
                     // Copy variable-length entry verbatim into relay.
                     for (int b = 0; b < consumed; b++) relay[relay_cursor + b] = data[offset + b];
@@ -671,7 +671,7 @@ namespace Vital::Manager {
             relay.resize(relay_cursor);
             wu32_r(4, (uint32_t)(relay_cursor - 8));
             for (int pid : connected_peers) {
-                if (pid == sender_id) continue;
+                if (pid == sender) continue;
                 node->rpc_id(pid, "_sync_entities", relay);
             }
         }

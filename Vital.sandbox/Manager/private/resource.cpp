@@ -843,10 +843,10 @@ namespace Vital::Manager {
 
                 const std::string message = arguments.array[0].as<std::string>();
                 if (message == "resource:ready") {
-                    if (arguments.array.size() < 2 || !arguments.has("sender_id")) return;
-                    const int32_t sender_id = arguments.object.at("sender_id").as<int32_t>();
+                    if (arguments.array.size() < 2 || !arguments.has("sender")) return;
+                    const int32_t sender = arguments.object.at("sender").as<int32_t>();
                     const std::string resource_name = arguments.array[1].as<std::string>();
-                    Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue(sender_id), Tool::StackValue(resource_name));
+                    Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue(sender), Tool::StackValue(resource_name));
                 }
             });
         #endif
