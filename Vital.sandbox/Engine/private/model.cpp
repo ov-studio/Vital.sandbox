@@ -33,14 +33,12 @@ namespace Vital::Engine {
         if (placeholder) return;
         find_node(this, skeleton);
         find_node(this, anim_player);
-
         sync_authority = pending_authority;
-        sync_last_pos  = get_global_position();
-        sync_last_rot  = get_rotation_degrees();
-        sync_sleeping  = false;
-        sync_accum     = 0.0f;
-        reset_sync_state(); // ISyncable
-        // sync registration happens on first poll() — safe from any thread
+        sync_last_pos = get_global_position();
+        sync_last_rot = get_rotation_degrees();
+        sync_sleeping = false;
+        sync_accum = 0.0f;
+        reset_sync_state();
     }
 
     void Model::_notification(int what) {
@@ -69,9 +67,7 @@ namespace Vital::Engine {
         if (net && net->get_peer_id() == sync_authority) return;
 
         sync_push_snapshot(pos, rot, vel);
-        // Scale snaps (not interpolated) — rare changes, exact value matters.
         set_scale(scale);
-
         sync_last_pos = pos;
         sync_last_rot = rot;
         sync_last_vel = vel;
