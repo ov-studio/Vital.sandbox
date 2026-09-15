@@ -1489,17 +1489,14 @@ namespace Vital::Manager {
             for (auto model : snapshot) {
                 if (!model->is_sync_active()) continue;
                 if (model->get_sync_authority() != my_id) continue;
-
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
                 godot::Vector3 cur_scale = model->get_sync_scale();
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
-                    || (cur_rot - model->sync_last_rot).length() > 0.001f
-                    || (cur_scale - model->sync_last_scale).length() > 0.001f;
-                // See the server branch above: force a send on the wake
-                // transition too, not just the sleep transition, so the first
-                // post-sleep packet goes out immediately instead of after a
-                // full throttled sync_interval of already-happened movement.
+                bool moved = (
+                    (cur_pos - model->sync_last_pos).length() > 0.001f || 
+                    (cur_rot - model->sync_last_rot).length() > 0.001f ||
+                    (cur_scale - model->sync_last_scale).length() > 0.001f
+                );
                 bool was_sleeping = model->sync_sleeping;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
@@ -1507,23 +1504,15 @@ namespace Vital::Manager {
                 }
                 else model->sync_sleeping = false;
                 bool woke_up = was_sleeping && !model->sync_sleeping;
-
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping && !woke_up) continue;
-
-                // See the server branch above for why this divides by the
-                // real accumulated time instead of the fixed sync_interval.
                 godot::Vector3 cur_vel = (cur_pos - model->sync_last_pos) / model->sync_accum;
                 model->sync_accum    = 0.0f;
                 model->sync_last_pos = cur_pos;
                 model->sync_last_rot = cur_rot;
                 model->sync_last_scale = cur_scale;
                 model->sync_last_vel = cur_vel;
-
-                int written = Engine::ISyncable::encode_delta(
-                    sync_batch_buf, cursor,
-                    model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale,
-                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
+                int written = Engine::ISyncable::encode_delta(sync_batch_buf, cursor, model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale, model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
                 cursor += written;
             }
 
