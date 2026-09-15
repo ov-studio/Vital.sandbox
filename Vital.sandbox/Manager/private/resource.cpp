@@ -790,7 +790,7 @@ namespace Vital::Manager {
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.is_packet(Resource::Name)) return;
                 if (arguments.array.empty() || !arguments.has("name")) return;
-                
+
                 const std::string message = arguments.array[0].as<std::string>();
                 const std::string name = arguments.object.at("name").as<std::string>();
                 if (message == "resource:started") {
@@ -835,6 +835,19 @@ namespace Vital::Manager {
                 if (arguments.array.empty()) return;
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
+            });
+
+            Tool::Event::bind("network:packet", [](Tool::Stack arguments) {
+                if (!arguments.is_packet(Resource::Name)) return;
+                if (arguments.array.empty()) return;
+
+                const std::string message = arguments.array[0].as<std::string>();
+                if (message == "resource:ready") {
+                    if (arguments.array.size() < 2 || !arguments.has("sender_id")) return;
+                    const int32_t sender_id = arguments.object.at("sender_id").as<int32_t>();
+                    const std::string resource_name = arguments.array[1].as<std::string>();
+                    Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue(sender_id), Tool::StackValue(resource_name));
+                }
             });
         #endif
     }
