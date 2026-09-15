@@ -21,7 +21,6 @@
 // Vital: API: Node_3D //
 //////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox {
     struct vm_instance_base;
     extern std::unordered_map<void*, vm_instance_base*> vm_node_registry;
