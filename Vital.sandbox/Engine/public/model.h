@@ -44,8 +44,6 @@ namespace Vital::Engine {
             static constexpr int ANIM_LAYER_SOFT_MAX = 16;
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         private:
-            static void _bind_methods() {}
-
             std::string model_name;
             int pending_authority = 1;
             bool remote = false;
@@ -69,35 +67,40 @@ namespace Vital::Engine {
             };
             std::vector<AnimLayerState> anim_layers;
 
-            // Grow anim_layers to include `layer` (0-based) and rebuild the blend
-            // tree if the capacity increased. Returns false if layer is invalid.
-            bool ensure_animation_layer(int layer);
-            void build_animation_tree();
-            void update_animation_layers(float delta);
-
-            // Pure local application (no network broadcast) — used both by
-            // the public API below and by Network::_sync_anim_layer when
-            // mirroring another peer's animation state. Network is a friend
-            // of this class (see top of file) so it can call these directly.
-            bool apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
-            void apply_stop_animation_layer(int layer, float blend_time);
-            bool apply_set_animation_layer_weight(int layer, float weight, float blend_time);
-            void apply_set_animation_layer_speed(int layer, float speed);
-            // Bone filter on overlay blend nodes (layer >= 1). When enabled, only
-            // listed bone tracks from this layer are blended; the rest keep the
-            // base/lower-layer pose — so a wave/reload can leave the legs walking.
-            void apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
-            void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
-            void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
-
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
             // same-path updates without wiping the whole resource cache.
             inline static std::unordered_map<std::string, std::string> cache_hashes;
 
+            
+            // Asserts //
+            godot::MeshInstance3D* assert_component(const std::string& component);
+            std::pair<godot::MeshInstance3D*, int> assert_material(const std::string& component, const std::string& material);
+            godot::Skeleton3D* assert_skeleton();
+            godot::AnimationPlayer* assert_animation_player();
+            void assert_material_feature(int feature);
+            void assert_material_flag(int flag);
+
+
+            // Instantiators //
+            Model() = default;
+            ~Model() override = default;
+            static void _bind_methods() {}
+
 
             // Helpers //
+            bool ensure_animation_layer(int layer);
+            void build_animation_tree();
+            void update_animation_layers(float delta);
+            bool apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
+            void apply_stop_animation_layer(int layer, float blend_time);
+            bool apply_set_animation_layer_weight(int layer, float weight, float blend_time);
+            void apply_set_animation_layer_speed(int layer, float speed);
+            void apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
+            void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
+            void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
+
             template<typename T>
             T* find_node(godot::Node* node, T*& cache) {
                 if (!node || cache) return cache;
@@ -136,18 +139,6 @@ namespace Vital::Engine {
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
-
-            // Asserts //
-            godot::MeshInstance3D* assert_component(const std::string& component);
-            std::pair<godot::MeshInstance3D*, int> assert_material(const std::string& component, const std::string& material);
-            godot::Skeleton3D* assert_skeleton();
-            godot::AnimationPlayer* assert_animation_player();
-            void assert_material_feature(int feature);
-            void assert_material_flag(int flag);
-
-            // Instantiators //
-            Model() = default;
-            ~Model() override = default;
         public:
             // Hooks //
             void _ready() override;
@@ -191,16 +182,16 @@ namespace Vital::Engine {
 
 
             // ISyncable interface //
-            Type       get_sync_type()     const override { return Type::Model; }
-            std::string    get_sync_name()     const override { return model_name; }
-            bool           is_sync_active()    const override;
+            Type get_sync_type() const override { return Type::Model; }
+            std::string get_sync_name() const override { return model_name; }
+            bool is_sync_active() const override;
             godot::Vector3 get_sync_position() const override;
             godot::Vector3 get_sync_rotation() const override;
             godot::Vector3 get_sync_scale() const override;
-            void           apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override;
-            void           on_sync_process(double delta) override;
-            void           destroy_sync()       override { this->queue_free(); }
-            godot::Node3D* get_sync_node()       override { return this; }
+            void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override;
+            void on_sync_process(double delta) override;
+            void destroy_sync() override { this->queue_free(); }
+            godot::Node3D* get_sync_node() override { return this; }
 
             // Getters //
             static Models get_loaded_models();
@@ -224,14 +215,6 @@ namespace Vital::Engine {
 
             // Setters //
             void set_model_name(const std::string& name);
-
-            // set_syncer(peer_id) — assign authority to a client (client-auth mode).
-            // set_syncer(0 or 1) — revert to server authority.
-            // Server-side only. Broadcasts _set_authority to all clients so they
-            // enable/disable interpolation correctly. Called automatically on disconnect.
-            // set_parent()/get_parent_net_id() are inherited as-is from
-            // ISyncable — see syncable.h. Every synced type shares the same
-            // networked-reparent behaviour rather than each reimplementing it.
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id);
             #endif
@@ -247,21 +230,8 @@ namespace Vital::Engine {
 
 
             // Misc //
-            // Legacy single-track play_animation()/stop_animation()/etc. were
-            // removed — everything now goes through layers below (layer 0 is
-            // the always-on base, equivalent to what play_animation() used
-            // to drive). Every call takes a trailing `sync` flag (default
-            // true) — set it false to play/stop/adjust a layer purely on
-            // this peer without broadcasting it to anyone else at all (e.g.
-            // a one-off local hit-reaction or camera-facing detail no other
-            // client needs to see).
             bool play_animation_layer(int layer, const std::string& name, bool loop = true, float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
             void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
-            // Restrict overlay layer (1..) to specific bones. Paths are AnimationMixer
-            // filter paths, typically "Skeleton3D:BoneName" or just "BoneName" depending
-            // on the GLB. Pass enabled=false to clear (full-body blend again).
-            // `sync` (default true): broadcast like play_animation_layer. Server
-            // always relays; client only if it holds this model's sync authority.
             bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {}, bool sync = true);
     };
 }
