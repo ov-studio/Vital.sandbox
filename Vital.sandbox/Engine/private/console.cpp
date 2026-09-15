@@ -703,7 +703,6 @@ namespace Vital::Engine {
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #else
-            // TODO: Improve connecdt disconnect status reports
             if (cmd == "connect") {
                 auto nm = Manager::Network::get_singleton();
                 const int port = std::atoi(tokens[2].c_str());
@@ -716,6 +715,7 @@ namespace Vital::Engine {
             }
             if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
             if (cmd == "status") {
+                // TODO: Improve
                 auto nm = Manager::Network::get_singleton();
                 print("sbox", fmt::format(
                     "Connection:\n> Server — `{}`\n> State — `{}`\n> Peer ID — `{}`",
