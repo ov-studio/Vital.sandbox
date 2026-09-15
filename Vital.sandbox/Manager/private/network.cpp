@@ -702,7 +702,7 @@ namespace Vital::Manager {
                 if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("sdk_version") && doc["sdk_version"].IsString()) {
                     int server_major = -1;
                     const std::string server_sdk = doc["sdk_version"].GetString();
-                    size_t start = (!server_sdk.empty() && (server_sdk[0] == 'v' || server_sdk[0] == 'V')) ? 1 : 0;
+                    size_t start = (!server_sdk.empty() && (server_sdk[0] == 'v')) ? 1 : 0;
                     size_t end = server_sdk.find('.', start);
                     if (end == std::string::npos) end = server_sdk.size();
                     try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
