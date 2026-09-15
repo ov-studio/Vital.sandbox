@@ -1411,9 +1411,7 @@ namespace Vital::Manager {
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
                 godot::Vector3 cur_scale = model->get_sync_scale();
-                bool moved = (cur_pos - model->sync_last_pos).length() > 0.001f
-                    || (cur_rot - model->sync_last_rot).length() > 0.001f
-                    || (cur_scale - model->sync_last_scale).length() > 0.001f;
+                bool moved = model->has_sync_moved(cur_pos, cur_rot, cur_scale);
 
                 // Mirrors the forced send on the *sleep* transition below: force
                 // one on the *wake* transition too. Without this, sync_accum sat
@@ -1487,11 +1485,7 @@ namespace Vital::Manager {
                 godot::Vector3 cur_pos = model->get_sync_position();
                 godot::Vector3 cur_rot = model->get_sync_rotation();
                 godot::Vector3 cur_scale = model->get_sync_scale();
-                bool moved = (
-                    (cur_pos - model->sync_last_pos).length() > 0.001f || 
-                    (cur_rot - model->sync_last_rot).length() > 0.001f ||
-                    (cur_scale - model->sync_last_scale).length() > 0.001f
-                );
+                bool moved = model->has_sync_moved(cur_pos, cur_rot, cur_scale);
                 bool was_sleeping = model->sync_sleeping;
                 if (!moved) {
                     if (model->sync_sleeping) continue;
