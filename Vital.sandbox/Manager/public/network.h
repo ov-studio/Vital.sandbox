@@ -182,7 +182,7 @@ namespace Vital::Manager {
             double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS)
 
             #if defined(VSDK_Client)
-            bool connect_to_server(const std::string& ip, int port, bool enable_reconnect = false);
+            bool connect_to_server(const std::string& ip, int port, int http_port = -1, bool enable_reconnect = false);
             bool disconnect_from_server();
             void _on_connected_to_server();
             void _on_connection_failed();
