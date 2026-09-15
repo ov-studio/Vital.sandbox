@@ -167,9 +167,7 @@ namespace Vital::Engine {
             }
 
             void _notify_predelete_sync() {
-                Tool::Event::emit("entity:unspawned", Tool::Stack({
-                    static_cast<ISyncable*>(this), (int32_t)get_physics_type()
-                }));
+                Tool::Event::emit("entity:unspawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type()}));
                 Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }

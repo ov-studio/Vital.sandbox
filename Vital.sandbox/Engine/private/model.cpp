@@ -25,8 +25,6 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-
-
     //------------------//
     //  Hooks / Notify  //
     //------------------//
@@ -47,11 +45,9 @@ namespace Vital::Engine {
 
     void Model::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) {
-            // Always attempt unregister — poll() may have registered us
-            // even if _ready() didn't (deferred registration pattern).
+            Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
-            Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
         }
     }
 
