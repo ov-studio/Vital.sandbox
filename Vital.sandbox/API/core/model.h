@@ -179,10 +179,6 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
             API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm); // TODO: Unify with one?
-
-            // get_net_id() — shared with every physics body type via API::Syncable,
-            // so "net_id, or false if not replicated" means the same thing for a
-            // Model as it does for a Rigid_Body/Static_Body/etc.
             API::Syncable::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
