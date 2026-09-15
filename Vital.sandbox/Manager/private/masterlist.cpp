@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #include <Vital.sandbox/Tool/http.h>
+#include <Vital.sandbox/Tool/version.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -44,6 +45,7 @@ namespace Vital::Manager {
         document.AddMember(rapidjson::StringRef("players"), rapidjson::Value(nm -> get_peer_count()), alloc);
         document.AddMember(rapidjson::StringRef("maxPlayers"), rapidjson::Value(server_config -> get_max_clients()), alloc);
         document.AddMember(rapidjson::StringRef("version"), rapidjson::Value(server_config -> get_server_version().c_str(), alloc), alloc);
+        document.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("description"), rapidjson::Value(server_config -> get_server_description().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(server_config -> get_discord().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("website"), rapidjson::Value(server_config -> get_website().c_str(), alloc), alloc);
