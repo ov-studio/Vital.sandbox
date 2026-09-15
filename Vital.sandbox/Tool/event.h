@@ -52,7 +52,6 @@ namespace Vital::Tool::Event {
         return true;
     }
 
-    
     // Owns a single listener. Re-bind or destruction automatically unbinds the
     // previous handler — use this instead of manual event_id bookkeeping.
     struct Handle {
@@ -61,12 +60,12 @@ namespace Vital::Tool::Event {
 
         Handle() = default;
         ~Handle() { reset(); }
+
         Handle(const Handle&) = delete;
-        
         Handle& operator=(const Handle&) = delete;
-        Handle(Handle&& o) noexcept : identifier(std::move(o.identifier)), id(o.id) { 
-            o.id = 0; 
-        }
+
+        Handle(Handle&& o) noexcept
+            : identifier(std::move(o.identifier)), id(o.id) { o.id = 0; }
 
         Handle& operator=(Handle&& o) noexcept {
             if (this == &o) return *this;
@@ -75,10 +74,6 @@ namespace Vital::Tool::Event {
             id = o.id;
             o.id = 0;
             return *this;
-        }
-
-        explicit operator bool() const { 
-            return id != 0; 
         }
 
         void bind(const std::string& name, event_handle exec) {
@@ -93,5 +88,7 @@ namespace Vital::Tool::Event {
                 id = 0;
             }
         }
+
+        explicit operator bool() const { return id != 0; }
     };
 }

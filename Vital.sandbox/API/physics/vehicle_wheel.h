@@ -115,23 +115,9 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            static Tool::Event::event_id destroyed_binding = 0;
-            static Tool::Event::event_id ready_binding = 0;
-            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
-            if (ready_binding) Tool::Event::unbind("entity:ready", ready_binding);
-
-            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
-                if (args.array.size() < 1) return;
-                if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
-
-                auto entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
-                Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> instance) {
-                    instance -> body = nullptr;
-                });
-            });
-
             #if !defined(VSDK_Client)
-            ready_binding = Tool::Event::bind("entity:ready", [](Tool::Stack args) {
+            static Tool::Event::Handle ready_binding;
+            ready_binding.bind("entity:ready", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 auto entity = args.array[0].as<godot::Node3D*>();
                 if (!entity) return;
@@ -144,6 +130,17 @@ namespace Vital::Sandbox::API {
                 }
             });
             #endif
+            
+            static Tool::Event::Handle unspawned_binding;
+            unspawned_binding.bind("entity:unspawned", [](Tool::Stack args) {
+                if (args.array.size() < 1) return;
+                if (!args.array[0].is_raw_ptr<Vital::Engine::Vehicle_Wheel>()) return;
+
+                auto entity = args.array[0].as_raw_ptr<Vital::Engine::Vehicle_Wheel>();
+                Vehicle_Wheel::Instance::destroy_by_ptr(entity, [](std::shared_ptr<Vehicle_Wheel::Instance> instance) {
+                    instance -> body = nullptr;
+                });
+            });
         }
 
         static void bind(Machine* vm) {

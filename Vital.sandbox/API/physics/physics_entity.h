@@ -70,12 +70,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void init(Machine* vm) {
-            static Tool::Event::event_id spawned_binding = 0;
-            static Tool::Event::event_id destroyed_binding = 0;
-            if (spawned_binding) Tool::Event::unbind("entity:spawned", spawned_binding);
-            if (destroyed_binding) Tool::Event::unbind("entity:unspawned", destroyed_binding);
-
-            spawned_binding = Tool::Event::bind("entity:spawned", [](Tool::Stack args) {
+            static Tool::Event::Handle spawned_binding;
+            spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
                 auto entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
@@ -102,7 +98,8 @@ namespace Vital::Sandbox::API {
                 }
             });
 
-            destroyed_binding = Tool::Event::bind("entity:unspawned", [](Tool::Stack args) {
+            static Tool::Event::Handle unspawned_binding;
+            unspawned_binding.bind("entity:unspawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 auto entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
