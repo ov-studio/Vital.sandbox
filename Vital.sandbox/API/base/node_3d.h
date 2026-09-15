@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> get_node() -> get_position());
                     return 1;
                 });
-    
+
                 vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> get_node() -> get_global_position());
                     return 1;
@@ -104,6 +104,20 @@ namespace Vital::Sandbox::API {
                     auto quaternion = self -> get_node() -> get_quaternion();
                     auto value = godot::Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
                     vm -> push_value(value);
+                    return 1;
+                });
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "get_parent", [](auto vm, auto self, auto& id) -> int {
+                    auto* parent = self -> get_node() -> get_parent();
+                    if (!parent || parent == Vital::Engine::Core::get_singleton()) {
+                        vm -> push_value(false);
+                        return 1;
+                    }
+                    std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                    auto it = vm_node_registry.find(parent);
+                    if (it != vm_node_registry.end()) it -> second -> push_self(vm);
+                    else vm -> push_value(false);
                     return 1;
                 });
             }
