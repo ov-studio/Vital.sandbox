@@ -178,7 +178,6 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm); // TODO: Unify with one?
             API::Syncable::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {

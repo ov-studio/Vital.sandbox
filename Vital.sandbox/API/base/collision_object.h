@@ -36,7 +36,6 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type object_type = Type::Body>
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
-            API::Node_3D::parent_methods<Instance, Node_3D::Type::Spatial>(vm);
 
             {
                 vm_module::bind_method<Instance>(vm, "get_collision_layer", [](auto vm, auto self, auto& id) -> int {
