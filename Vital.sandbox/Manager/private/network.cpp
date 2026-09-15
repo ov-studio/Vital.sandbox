@@ -1432,7 +1432,6 @@ namespace Vital::Manager {
                 }
                 else model->sync_sleeping = false;
                 bool woke_up = was_sleeping && !model->sync_sleeping;
-
                 model->sync_accum += static_cast<float>(delta);
                 if (model->sync_accum < sync_interval && !model->sync_sleeping && !woke_up) continue;
 
@@ -1450,11 +1449,7 @@ namespace Vital::Manager {
                 model->sync_last_rot = cur_rot;
                 model->sync_last_scale = cur_scale;
                 model->sync_last_vel = cur_vel;
-
-                int written = Engine::ISyncable::encode_delta(
-                    sync_batch_buf, cursor,
-                    model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale,
-                    model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
+                int written = Engine::ISyncable::encode_delta(sync_batch_buf, cursor, model->get_net_id(), cur_pos, cur_rot, cur_vel, cur_scale, model->delta_last_pos, model->delta_last_rot, model->delta_last_vel, model->delta_last_scale);
                 cursor += written;
             }
 
