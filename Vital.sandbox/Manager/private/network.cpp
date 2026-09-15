@@ -751,12 +751,25 @@ namespace Vital::Manager {
         auto_reconnect = enable_reconnect;
         reconnect_ip = ip;
         reconnect_port = port;
+        reconnect_http_port = http_port;
         reconnect_attempts = 0;
         reconnect_timer = 0.0f;
         pending_handshake = false;
         log("sbox", fmt::format("connecting to {}:{}", ip, port));
         Tool::Event::emit("network:connect", {});
         return true;
+    }
+
+    bool Network::reconnect() {
+        if (reconnect_ip.empty() || reconnect_port <= 0) {
+            log("sbox", "reconnect failed — no previous server");
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("no-previous-server"));
+            Tool::Event::emit("network:connect:failed", status);
+            return false;
+        }
+        log("sbox", fmt::format("reconnecting to {}:{}", reconnect_ip, reconnect_port));
+        return connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
     }
 
     bool Network::disconnect_from_server() {
@@ -1283,7 +1296,7 @@ namespace Vital::Manager {
         if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, -1, true);
+                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
             }
             return;
         }
