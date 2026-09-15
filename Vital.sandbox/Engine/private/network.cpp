@@ -450,7 +450,8 @@ namespace Vital::Engine {
         if (entity->get_sync_parent_net_id() != 0) {
             node->set_position(pos);
             node->set_rotation_degrees(rot);
-        } else {
+        } 
+        else {
             node->set_global_position(pos);
             node->set_rotation_degrees(rot);
         }

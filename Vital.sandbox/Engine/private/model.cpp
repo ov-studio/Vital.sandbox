@@ -97,7 +97,8 @@ namespace Vital::Engine {
         if (sync_parent_net_id != 0) {
             set_position(out_pos);
             set_rotation_degrees(out_rot);
-        } else {
+        }
+        else {
             set_global_position(out_pos);
             set_rotation_degrees(out_rot);
         }
