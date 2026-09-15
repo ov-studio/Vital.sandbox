@@ -1244,7 +1244,7 @@ namespace Vital::Manager {
         if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, true);
+                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, -1, true);
             }
             return;
         }
