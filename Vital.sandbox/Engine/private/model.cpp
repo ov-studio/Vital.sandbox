@@ -168,39 +168,33 @@ namespace Vital::Engine {
 
     godot::MeshInstance3D* Model::assert_component(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return mesh;
     }
 
     std::pair<godot::MeshInstance3D*, int> Model::assert_material(const std::string& component, const std::string& material) {
         auto mesh = assert_component(component);
         int idx = find_material_index(mesh, material);
-        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("material '{}' not found in component '{}'", material, component));
+        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, component));
         return { mesh, idx };
     }
 
     godot::Skeleton3D* Model::assert_skeleton() {
-        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("no skeleton found in model '{}'", model_name));
+        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no skeleton found in model '{}'", model_name));
         return skeleton;
     }
 
     godot::AnimationPlayer* Model::assert_animation_player() {
-        if (!anim_player) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            fmt::format("no animation player found in model '{}'", model_name));
+        if (!anim_player) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no animation player found in model '{}'", model_name));
         return anim_player;
     }
 
     void Model::assert_material_feature(int feature) {
-        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX)
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material feature");
+        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material feature");
     }
 
     void Model::assert_material_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX)
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material flag");
+        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material flag");
     }
 
 
