@@ -15,6 +15,7 @@
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/Tool/version.h>
 
 
 ////////////////////////////
@@ -204,6 +205,7 @@ namespace Vital::Manager {
             auto& alloc = document.GetAllocator();
             document.AddMember(rapidjson::StringRef("name"), rapidjson::Value(cfg.get_server_name().c_str(), alloc), alloc);
             document.AddMember(rapidjson::StringRef("version"), rapidjson::Value(cfg.get_server_version().c_str(), alloc), alloc);
+            document.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
             document.AddMember(rapidjson::StringRef("description"), rapidjson::Value(cfg.get_server_description().c_str(), alloc), alloc);
             document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(cfg.get_network_port()), alloc);
             document.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(cfg.get_http_port()), alloc);
