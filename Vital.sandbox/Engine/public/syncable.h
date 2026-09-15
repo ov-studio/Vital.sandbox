@@ -143,6 +143,7 @@ namespace Vital::Engine {
             // Helpers //
             void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
+            bool has_sync_moved(const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& scale) const;
             virtual godot::Node3D* get_sync_node() = 0;
             #if !defined(VSDK_Client)
             void apply_parent(godot::Node* parent_node);
