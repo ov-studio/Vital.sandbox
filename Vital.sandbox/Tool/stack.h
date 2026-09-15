@@ -151,7 +151,6 @@ namespace Vital::Tool {
     };
 
     struct Stack {
-        uint16_t version = Tool::Version::SDK.major;
         std::vector<StackValue> array;
         std::map<std::string, StackValue> object;
 
@@ -232,7 +231,7 @@ namespace Vital::Tool {
 
 
         // Equality //
-        bool operator==(const Stack& other) const { return (version == other.version) && (array == other.array) && (object == other.object); }
+        bool operator==(const Stack& other) const { return (array == other.array) && (object == other.object); }
         bool operator!=(const Stack& other) const { return !(*this == other); }
     };
 }
