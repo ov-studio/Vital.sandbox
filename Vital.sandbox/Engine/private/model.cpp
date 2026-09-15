@@ -233,27 +233,21 @@ namespace Vital::Engine {
     //    Managers      //
     //------------------//
 
-    bool Model::load(const std::string& name, const std::string& path) {
-        const std::string file_hash = Tool::File::hash(Tool::get_directory(), path);
-        // Same path, new bytes: drop old PackedScene so generate_scene runs again.
+    bool Model::load(const std::string& name, const std::string& base, const std::string& path) {
+        const std::string file_hash = Tool::File::hash(base, path);
         if (is_model_loaded(name)) {
             auto hit = cache_hashes.find(name);
-            if (hit != cache_hashes.end() && hit->second == file_hash)
-                return true;
+            if (hit != cache_hashes.end() && hit->second == file_hash) return true;
             unload(name);
         }
-        if (!load_from_buffer(name, Tool::File::read_binary(Tool::get_directory(), path)))
-            return false;
+        if (!load_from_buffer(name, Tool::File::read_binary(base, path))) return false;
         cache_hashes[name] = file_hash;
         return true;
     }
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        // Serialize imports: concurrent/rapid restart must not interleave
-        // GLTFDocument work (GPU/driver heap corruption in generate_scene).
         static std::mutex load_mutex;
         std::lock_guard<std::mutex> load_lock(load_mutex);
-
         if (is_model_loaded(name)) return true;
 
         godot::Ref<godot::PackedScene> scene;
@@ -271,8 +265,6 @@ namespace Vital::Engine {
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to pack model scene");
                 }
                 memdelete(root);
-                // Drop GLTF objects before releasing lock so the next import
-                // does not overlap document/state teardown.
                 document.unref();
                 state.unref();
                 break;
@@ -280,8 +272,7 @@ namespace Vital::Engine {
             default: break;
         }
 
-        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-            "unsupported or invalid model format");
+        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "unsupported or invalid model format");
         cache_loaded[name] = scene;
         #if defined(VSDK_Client)
         Manager::Asset::get_singleton()->flush_spawn_queue(name);
@@ -292,8 +283,6 @@ namespace Vital::Engine {
     bool Model::unload(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) return false;
-        // Drop cache entry only. Live instances keep their own node trees;
-        // pending hydrates must be cancelled via Asset::spawn_generation first.
         cache_loaded.erase(it);
         cache_hashes.erase(name);
         return true;
@@ -328,8 +317,7 @@ namespace Vital::Engine {
             godot::Node* instance = it->second->instantiate();
             if (!instance) {
                 memdelete(object);
-                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error,
-                    fmt::format("failed to instantiate model '{}'", name));
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("failed to instantiate model '{}'", name));
             }
             object->set_model_name(name);
 
@@ -341,8 +329,7 @@ namespace Vital::Engine {
             object->add_child(instance);
             Core::get_singleton()->add_child(object);
 
-            godot::UtilityFunctions::print("Model::create -> net_id=",
-                object->net_id, " name=", Tool::to_godot_string(name));
+            godot::UtilityFunctions::print("Model::create -> net_id=", object->net_id, " name=", Tool::to_godot_string(name));
 
             // Defer only the network side-effects (RPC + sync registration)
             // to the next frame so the _spawn_entity RPC goes out after _ready()
@@ -373,7 +360,6 @@ namespace Vital::Engine {
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
                 Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
             });
-
             return object;
         #endif
     }
@@ -433,16 +419,16 @@ namespace Vital::Engine {
 
     void Model::load_resource_models(const std::string& resource, const std::vector<std::string>& files) {
         auto rm = Vital::Manager::Resource::get_singleton();
+        const std::string base = Vital::Manager::Resource::get_resource_base(resource);
         std::vector<std::string> loaded, failed;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string mn = fmt::format(":{}/{}", resource, file);
-            const std::string lp = fmt::format("resources/{}/{}", resource, file);
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, lp)) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource, file))) continue;
             try {
                 const bool was_loaded = is_model_loaded(mn);
                 const std::string before = was_loaded ? cache_hashes[mn] : "";
-                load(mn, lp);
+                load(mn, base, file);
                 if (!was_loaded || cache_hashes[mn] != before) loaded.push_back(mn);
                 #if defined(VSDK_Client)
                 Manager::Asset::get_singleton()->flush_spawn_queue(mn);
