@@ -551,12 +551,12 @@ namespace Vital::Sandbox::API {
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;
-                for (const auto& [model_name, resource_env] : model_scope) {
-                    if (resource_env == env) to_unload.push_back(model_name);
+                for (const auto& [key, resource_env] : model_scope) {
+                    if (resource_env == env) to_unload.push_back(key);
                 }
-                for (const auto& model_name : to_unload) {
-                    model_scope.erase(model_name);
-                    try { base_class::unload(model_name); }
+                for (const auto& key : to_unload) {
+                    model_scope.erase(key);
+                    try { base_class::unload(key); }
                     catch (...) {}
                 }
             }
