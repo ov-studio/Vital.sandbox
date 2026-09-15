@@ -695,7 +695,7 @@ namespace Vital::Manager {
     #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
         if (http_port > 0) {
-            const std::string info_url = "http://" + ip + ":" + std::to_string(http_port) + "/info";
+            const std::string info_url = fmt::format("http://{}:{}/info", ip, http_port);
             try {
                 const std::string body = Tool::HTTP::get(info_url, {}, 3);
                 rapidjson::Document doc;
