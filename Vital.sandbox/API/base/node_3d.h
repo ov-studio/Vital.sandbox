@@ -44,6 +44,13 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        static void reparent_safe(Vital::Engine::Core* core, godot::Node3D* node, godot::Node* target) {
+            if (!core || !node) return;
+            core -> execute_when_ready(node, target, [](godot::Node3D* n, godot::Node* t) {
+                if (n -> get_parent() != t) n -> reparent(t, true);
+            });
+        }
+
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
