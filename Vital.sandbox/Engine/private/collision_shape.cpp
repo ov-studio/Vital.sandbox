@@ -47,7 +47,7 @@ namespace Vital::Engine {
 
     void Collision_Shape::Internal::add_half_ring(godot::PackedVector3Array& points, float radius, float center_y, int plane, bool upper, int segments) {
         float start = upper ? 0.0f : 3.14159265358979323846f;
-        float end   = upper ? 3.14159265358979323846f : 6.28318530717958647692f;
+        float end = upper ? 3.14159265358979323846f : 6.28318530717958647692f;
         for (int i = 0; i < segments; i++) {
             float a0 = start + (end - start) * (float)i / segments;
             float a1 = start + (end - start) * (float)(i + 1) / segments;
@@ -86,7 +86,7 @@ namespace Vital::Engine {
             add_ring(points, r, 0, 2);
         }
         else if (auto capsule = godot::Object::cast_to<godot::CapsuleShape3D>(shape.ptr())) {
-            float r      = static_cast<float>(capsule -> get_radius());
+            float r = static_cast<float>(capsule -> get_radius());
             float half_h = std::max<float>(static_cast<float>(capsule -> get_height()) * 0.5f - r, 0.0f);
             add_ring(points, r,  half_h, 0);
             add_ring(points, r, -half_h, 0);
@@ -101,7 +101,7 @@ namespace Vital::Engine {
             }
         }
         else if (auto cylinder = godot::Object::cast_to<godot::CylinderShape3D>(shape.ptr())) {
-            float r      = static_cast<float>(cylinder -> get_radius());
+            float r = static_cast<float>(cylinder -> get_radius());
             float half_h = static_cast<float>(cylinder -> get_height()) * 0.5f;
             add_ring(points, r,  half_h, 0);
             add_ring(points, r, -half_h, 0);
@@ -109,6 +109,23 @@ namespace Vital::Engine {
             for (auto& p : side_pts) {
                 points.push_back(godot::Vector3(p[0],  half_h, p[1]));
                 points.push_back(godot::Vector3(p[0], -half_h, p[1]));
+            }
+        }
+        else if (auto convex = godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr())) {
+            auto pts = convex -> get_points();
+            for (int i = 0; i < pts.size(); i++) {
+                for (int j = i + 1; j < pts.size() && j < i + 4; j++) {
+                    points.push_back(pts[i]);
+                    points.push_back(pts[j]);
+                }
+            }
+        }
+        else if (auto concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr())) {
+            auto faces = concave -> get_faces();
+            for (int i = 0; i + 2 < faces.size(); i += 3) {
+                points.push_back(faces[i]);     points.push_back(faces[i + 1]);
+                points.push_back(faces[i + 1]); points.push_back(faces[i + 2]);
+                points.push_back(faces[i + 2]); points.push_back(faces[i]);
             }
         }
 
@@ -126,6 +143,53 @@ namespace Vital::Engine {
             mesh -> surface_set_material(0, material);
         }
         return mesh;
+    }
+
+    // TODO: WIP
+    // Mesh shape builders //
+    godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh_instance) {
+        if (!mesh_instance) return {};
+        auto mesh = mesh_instance -> get_mesh();
+        if (!mesh.is_valid()) return {};
+
+        godot::PackedVector3Array verts;
+        for (int s = 0; s < mesh -> get_surface_count(); s++) {
+            auto arrays = mesh -> surface_get_arrays(s);
+            auto surface_verts = static_cast<godot::PackedVector3Array>(arrays[godot::Mesh::ARRAY_VERTEX]);
+            for (int i = 0; i < surface_verts.size(); i++) verts.push_back(surface_verts[i]);
+        }
+        godot::Ref<godot::ConvexPolygonShape3D> shape;
+        shape.instantiate();
+        shape -> set_points(verts);
+        return shape;
+    }
+
+    godot::Ref<godot::ConcavePolygonShape3D> Collision_Shape::Internal::build_concave_shape(godot::MeshInstance3D* mesh_instance) {
+        if (!mesh_instance) return {};
+        auto mesh = mesh_instance -> get_mesh();
+        if (!mesh.is_valid()) return {};
+        
+        godot::PackedVector3Array faces;
+        for (int s = 0; s < mesh -> get_surface_count(); s++) {
+            auto arrays = mesh -> surface_get_arrays(s);
+            auto verts = static_cast<godot::PackedVector3Array>(arrays[godot::Mesh::ARRAY_VERTEX]);
+            if (mesh -> surface_get_primitive_type(s) != godot::Mesh::PRIMITIVE_TRIANGLES) continue;
+            if (arrays[godot::Mesh::ARRAY_INDEX].get_type() != godot::Variant::NIL) {
+                auto indices = static_cast<godot::PackedInt32Array>(arrays[godot::Mesh::ARRAY_INDEX]);
+                for (int i = 0; i + 2 < indices.size(); i += 3) {
+                    faces.push_back(verts[indices[i]]);
+                    faces.push_back(verts[indices[i + 1]]);
+                    faces.push_back(verts[indices[i + 2]]);
+                }
+            }
+            else {
+                for (int i = 0; i < verts.size(); i++) faces.push_back(verts[i]);
+            }
+        }
+        godot::Ref<godot::ConcavePolygonShape3D> shape;
+        shape.instantiate();
+        shape -> set_faces(faces);
+        return shape;
     }
 }
 #endif

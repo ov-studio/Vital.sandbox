@@ -46,6 +46,10 @@ namespace Vital::Engine {
                     // Helpers //
                     static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
                 #endif
+                // TODO: WIP
+                // Mesh shape builders //
+                static godot::Ref<godot::ConvexPolygonShape3D> build_convex_shape(godot::MeshInstance3D* mesh_instance);
+                static godot::Ref<godot::ConcavePolygonShape3D> build_concave_shape(godot::MeshInstance3D* mesh_instance);
             };
 
 
