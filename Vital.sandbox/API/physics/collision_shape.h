@@ -399,9 +399,7 @@ namespace Vital::Sandbox::API {
              */
             vm_module::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, config = {})", true)
-                    .require(2, [](Machine* vm, int idx) {
-                        return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx);
-                    })
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); })
                     .optional(3, &Machine::is_table);
 
                 auto model_inst = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
