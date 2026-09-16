@@ -121,6 +121,7 @@ namespace Vital::Manager {
 
             // Managers //
             void teardown();
+            void reset();
             void _on_packet_received(godot::Dictionary data);
 
 

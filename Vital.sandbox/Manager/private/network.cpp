@@ -55,6 +55,14 @@ namespace Vital::Manager {
         }
     }
 
+    #if defined(VSDK_Client)
+    void Network::reset() {
+        destroy_all_syncables();
+        Engine::Model::cleanup_spawned();
+        Manager::Asset::get_singleton() -> clear();
+    }
+    #endif
+
 
     //--------------------//
     //    Node Helpers    //

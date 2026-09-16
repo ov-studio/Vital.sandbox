@@ -189,9 +189,7 @@ namespace Vital::Engine {
         Tool::print("sbox", "Core: resetting session...");
         Manager::Resource::get_singleton() -> stop_all();
         #if defined(VSDK_Client)
-        Manager::Network::get_singleton() -> destroy_all_syncables();
-        Engine::Model::cleanup_spawned();
-        Manager::Asset::get_singleton() -> clear();
+        Manager::Network::get_singleton() -> reset();
         free_environment();
         #endif
         enqueue([]() {
