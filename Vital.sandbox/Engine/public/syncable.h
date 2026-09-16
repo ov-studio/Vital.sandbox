@@ -38,7 +38,7 @@ namespace Vital::Engine {
             static constexpr float MOVE_EPSILON         = 0.001f; // has_sync_moved() cutoff — pos(m)/rot(deg)/scale delta magnitude below which a transform counts as unchanged
             static constexpr int   SYNC_RATE            = 60;     // default sync rate in Hz
             static constexpr int   SNAPSHOT_COUNT       = 32;     // ~530ms of history at 60Hz — headroom above BUFFER_DELAY_MAX so a big adaptive buffer still has real snapshots behind it.
-            static constexpr float BUFFER_DELAY         = 0.033f; // seed — 2 packets at 60Hz; adapts up fast
+            static constexpr float BUFFER_DELAY         = 0.100f; // seed — ~6 packets at 60Hz; starts wide enough for high-latency links before adaptation kicks in
             static constexpr float SNAP_THRESHOLD       = 5.0f;   // units — teleport if gap exceeds this
             static constexpr float VEL_THRESHOLD        = 0.05f;  // units/sec — "moving" cutoff
             static constexpr float RESYNC_GAP_THRESHOLD = 0.5f;   // seconds — inter-packet silence that signals a stream gap; resets buffer and jitter state
@@ -118,6 +118,10 @@ namespace Vital::Engine {
             float interp_step = 1.0f / 20.0f;
             bool interp_ready = false;
             float jitter_last_arrival = -1.0f;
+            // Real monotonic timestamp (seconds since epoch via steady_clock) of
+            // the last snapshot push. Used instead of snap_clock for jitter
+            // measurement so render-frame drift doesn't corrupt the interval signal.
+            double real_arrival_time = -1.0;
             float jitter_intervals[JITTER_WINDOW] = {};
             int jitter_idx = 0;
             int jitter_count = 0;

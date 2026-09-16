@@ -153,6 +153,7 @@ namespace Vital::Engine {
         snap_clock = 0.0f;
         interp_ready = false;
         jitter_last_arrival = -1.0f;
+        real_arrival_time = -1.0;
         jitter_idx = 0;
         jitter_count = 0;
         adaptive_delay = BUFFER_DELAY;
@@ -222,13 +223,15 @@ namespace Vital::Engine {
     }
 
     void ISyncable::sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel) {
+        double now = std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
         if (!interp_ready) {
             snap_clock = BUFFER_DELAY;
+            real_arrival_time = now;
             jitter_last_arrival = snap_clock;
             interp_ready = true;
         }
         else {
-            float interval = snap_clock - jitter_last_arrival;
+            float interval = (real_arrival_time >= 0.0) ? static_cast<float>(now - real_arrival_time) : 0.0f;
             if (interval > RESYNC_GAP_THRESHOLD) {
                 snap_count = 0;
                 snap_head  = 0;
@@ -236,6 +239,7 @@ namespace Vital::Engine {
                 jitter_count = 0;
                 adaptive_delay = BUFFER_DELAY;
                 snap_clock = BUFFER_DELAY;
+                real_arrival_time = now;
                 jitter_last_arrival = snap_clock;
                 Snapshot& slot = snap_buf[snap_head];
                 slot.pos = pos;
@@ -246,11 +250,12 @@ namespace Vital::Engine {
                 snap_count = 1;
                 return;
             }
-            
+
             if (interval > 0.0f) {
                 jitter_intervals[jitter_idx] = interval;
                 jitter_idx = (jitter_idx + 1) % JITTER_WINDOW;
                 if (jitter_count < JITTER_WINDOW) jitter_count++;
+
                 float mean = 0.0f;
                 for (int i = 0; i < jitter_count; i++) mean += jitter_intervals[i];
                 mean /= (float)jitter_count;
@@ -261,8 +266,10 @@ namespace Vital::Engine {
                 }
                 float stddev = (jitter_count > 1) ? std::sqrt(variance / (float)(jitter_count - 1)) : 0.0f;
                 float target = std::clamp(interp_step + sync_config.jitter_margin * stddev, BUFFER_DELAY_MIN, sync_config.buffer_delay_max);
-                adaptive_delay = adaptive_delay * 0.8f + target * 0.2f;
+                if (target > adaptive_delay) adaptive_delay = target;
+                else adaptive_delay = adaptive_delay * 0.95f + target * 0.05f;
             }
+            real_arrival_time = now;
             jitter_last_arrival = snap_clock;
         }
 
