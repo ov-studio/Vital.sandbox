@@ -786,6 +786,7 @@ namespace Vital::Manager {
         if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
         log("sbox", "disconnected");
         Tool::Event::emit("network:disconnect", {});
+        Engine::Core::get_singleton() -> reset();
         return true;
     }
 
@@ -812,7 +813,10 @@ namespace Vital::Manager {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
+        auto tree = get_scene_tree();
+        if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
         Tool::Event::emit("network:server:disconnect", {});
+        Engine::Core::get_singleton() -> reset();
         if (auto_reconnect) _schedule_reconnect();
     }
 
