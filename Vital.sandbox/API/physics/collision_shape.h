@@ -438,6 +438,7 @@ namespace Vital::Sandbox::API {
                     {
                         godot::Array p;
                         p.push_back((int)model_node -> get_net_id());
+                        p.push_back((int)0); // mode 0: single mesh — shape goes directly on the sync target (`col`), no anchor/children involved.
                         p.push_back(godot::String(used_component.c_str()));
                         p.push_back(godot::String(shape_type == "concave" ? "concave" : "convex"));
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos (identity — body origin)
@@ -468,6 +469,7 @@ namespace Vital::Sandbox::API {
                 #if !defined(VSDK_Client)
                 godot::Array sync_params;
                 sync_params.push_back((int)model_node -> get_net_id());
+                sync_params.push_back((int)1); // mode 1: include_children — `col` stays the (untouched) anchor, every matched mesh becomes its own child.
                 #endif
 
                 for (auto& component : components) {
@@ -479,8 +481,15 @@ namespace Vital::Sandbox::API {
                     auto shape = build_shape(mesh, resolved);
                     if (!shape.is_valid()) continue;
 
-                    // Offset: mesh local transform relative to the model root.
-                    auto rel = model_node -> get_transform().inverse() * mesh -> get_global_transform();
+                    // Offset: mesh transform relative to the model root, both in WORLD
+                    // space. Using model_node's LOCAL transform here (as before) only
+                    // happened to work while the model sat unparented at world origin
+                    // (its local == global transform in that case, e.g. right after
+                    // core.model.create() and before set_parent()); as soon as the
+                    // model already has a non-identity parent/global transform when
+                    // set_shape_mesh() runs, mixing a local transform with mesh's
+                    // global one puts every child shape in the wrong place.
+                    auto rel = model_node -> get_global_transform().inverse() * mesh -> get_global_transform();
                     auto* child = base_class::create(self -> body);
                     child -> assign_shape(shape);
                     child -> set_transform(rel);
@@ -499,8 +508,8 @@ namespace Vital::Sandbox::API {
                 }
 
                 #if !defined(VSDK_Client)
-                // Only the anchor int is present when nothing matched — nothing to send.
-                if (sync_params.size() > 1)
+                // Only the net_id + mode ints are present when nothing matched — nothing to send.
+                if (sync_params.size() > 2)
                     self -> broadcast("mesh_ref", sync_params);
                 #endif
 

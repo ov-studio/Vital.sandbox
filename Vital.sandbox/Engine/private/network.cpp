@@ -601,13 +601,16 @@ namespace Vital::Engine {
             }
         }
         else if (type == "mesh_ref") {
-            // Layout: [int model_net_id, then per entry: String component,
-            //          String shape_type, float px,py,pz, float rx,ry,rz]
-            if (params.size() < 1) return;
+            // Layout: [int model_net_id, int mode (0=single mesh -> shape goes
+            //          directly on the sync target, 1=include_children -> anchor
+            //          + one child per matched mesh), then per entry: String
+            //          component, String shape_type, float px,py,pz, float rx,ry,rz]
+            if (params.size() < 2) return;
             uint32_t model_net_id = (uint32_t)(int)params[0];
+            int mode = (int)params[1];
             godot::Array entries;
-            for (int i = 1; i < params.size(); i++) entries.push_back(params[i]);
-            apply_mesh_ref(net_id, model_net_id, entries);
+            for (int i = 2; i < params.size(); i++) entries.push_back(params[i]);
+            apply_mesh_ref(net_id, model_net_id, mode, entries);
         }
         else godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
         #endif
@@ -622,7 +625,7 @@ namespace Vital::Engine {
     // client already has the model's asset loaded locally (it's rendering it),
     // so it rebuilds the exact same shape from local mesh data via the same
     // build_convex_shape/build_concave_shape helpers the server used.
-    void Network::apply_mesh_ref(uint32_t net_id, uint32_t model_net_id, godot::Array entries) {
+    void Network::apply_mesh_ref(uint32_t net_id, uint32_t model_net_id, int mode, godot::Array entries) {
         #if defined(VSDK_Client)
         auto* net_mgr = Manager::Network::get_singleton();
         Engine::ISyncable* body_entity  = net_mgr -> find_syncable(net_id);
@@ -632,8 +635,8 @@ namespace Vital::Engine {
             // RPC can arrive after this one on the same frame). Retry next frame —
             // mirrors the existing defer_shape_sync pattern used just above for
             // the plain-shape types, but also covers the model net_id.
-            Core::get_singleton() -> enqueue([net_id, model_net_id, entries]() {
-                Network::apply_mesh_ref(net_id, model_net_id, entries);
+            Core::get_singleton() -> enqueue([net_id, model_net_id, mode, entries]() {
+                Network::apply_mesh_ref(net_id, model_net_id, mode, entries);
             });
             return;
         }
@@ -644,7 +647,7 @@ namespace Vital::Engine {
 
         // Wait until both nodes are actually in the scene tree before touching them.
         Core::get_singleton() -> execute_when_ready(body_node, model_node,
-            [entries](godot::Node3D* body_node, godot::Node* model_node_raw) {
+            [entries, mode](godot::Node3D* body_node, godot::Node* model_node_raw) {
             auto* model = godot::Object::cast_to<Engine::Model>(model_node_raw);
             if (!model) return;
 
@@ -665,7 +668,6 @@ namespace Vital::Engine {
             }
 
             int i = 0;
-            bool first = true;
             while (i + 8 <= entries.size()) {
                 std::string component  = Tool::to_std_string((godot::String)entries[i]); i++;
                 std::string shape_type = Tool::to_std_string((godot::String)entries[i]); i++;
@@ -682,18 +684,33 @@ namespace Vital::Engine {
                     : godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_convex_shape(mesh));
                 if (!shape.is_valid()) continue;
 
-                Engine::Collision_Shape* dest = col;
-                if (!first) {
-                    dest = memnew(Engine::Collision_Shape);
-                    col -> add_child(dest);
-                    Tool::Event::emit("entity:spawned", Tool::Stack({dest, true}));
-                    Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(dest)}));
-                }
-                dest -> assign_shape(shape);
                 godot::Basis basis = godot::Basis::from_euler(
                     godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
-                dest -> set_transform(godot::Transform3D(basis, godot::Vector3(px, py, pz)));
-                first = false;
+                godot::Transform3D xform(basis, godot::Vector3(px, py, pz));
+
+                // mode 0 (single mesh, no include_children): the server assigned the
+                // shape straight onto its Collision_Shape with no anchor/children,
+                // so `col` itself is the right (and only) destination here too.
+                if (mode == 0) {
+                    col -> assign_shape(shape);
+                    col -> set_transform(xform);
+                    return; // single mode only ever sends one entry
+                }
+
+                // mode 1 (include_children): `col` is only the anchor the server set
+                // (a tiny 0.001 box) and is never touched again on the server side —
+                // every matched mesh, including the first, gets its own child
+                // Collision_Shape. Previously the first entry here reused `col` as
+                // `dest`, which overwrote the anchor's shape AND transform with the
+                // first mesh's — and since every later child is added under `col`,
+                // each of them then had that first mesh's offset/rotation silently
+                // stacked underneath its own, scattering everything after entry 0.
+                auto* dest = memnew(Engine::Collision_Shape);
+                col -> add_child(dest);
+                Tool::Event::emit("entity:spawned", Tool::Stack({dest, true}));
+                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(dest)}));
+                dest -> assign_shape(shape);
+                dest -> set_transform(xform);
             }
         });
         #endif
