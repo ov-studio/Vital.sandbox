@@ -411,12 +411,17 @@ namespace Vital::Sandbox::API {
                 };
 
                 if (!include_children) {
-                    // Single mesh: use root if it's a MeshInstance3D, else first child that is.
+                    // Single mesh: use root if it's a MeshInstance3D, else the first
+                    // MeshInstance3D found anywhere in the model's subtree (glTF imports
+                    // routinely nest the mesh 2+ levels below the scene root, so a
+                    // shallow immediate-children scan misses it entirely).
                     godot::MeshInstance3D* mesh = godot::Object::cast_to<godot::MeshInstance3D>(model_node);
+                    std::string used_component; // empty == "the model root itself"
                     if (!mesh) {
-                        for (int i = 0; i < model_node -> get_child_count(); i++) {
-                            mesh = godot::Object::cast_to<godot::MeshInstance3D>(model_node -> get_child(i));
-                            if (mesh) break;
+                        auto components = model_node -> get_components();
+                        if (!components.empty()) {
+                            mesh = model_node -> find_mesh_node(model_node, components[0]);
+                            used_component = components[0];
                         }
                     }
                     if (!mesh) { vm -> push_value(false); return 1; }
@@ -424,32 +429,20 @@ namespace Vital::Sandbox::API {
                     if (!shape.is_valid()) { vm -> push_value(false); return 1; }
                     self -> body -> assign_shape(shape);
                     #if !defined(VSDK_Client)
-                    // Pack as single-shape mesh_children entry with identity transform so the
-                    // existing apply_shape path handles it uniformly on clients.
+                    // Sync by REFERENCE, not by geometry: clients already have this
+                    // model's asset loaded (they render it), so send just enough to
+                    // let them rebuild the same convex/concave shape locally —
+                    // model net_id + component path + shape type + transform —
+                    // instead of the full vertex/face array. See "mesh_ref" in
+                    // Network::apply_shape (Engine/private/network.cpp).
                     {
                         godot::Array p;
+                        p.push_back((int)model_node -> get_net_id());
+                        p.push_back(godot::String(used_component.c_str()));
                         p.push_back(godot::String(shape_type == "concave" ? "concave" : "convex"));
-                        // transform (identity — shape sits at body origin)
-                        p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos
+                        p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos (identity — body origin)
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // rot (euler deg)
-                        if (shape_type == "concave") {
-                            auto concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr());
-                            auto faces = concave -> get_faces();
-                            for (int i = 0; i < faces.size(); i++) {
-                                p.push_back(faces[i].x);
-                                p.push_back(faces[i].y);
-                                p.push_back(faces[i].z);
-                            }
-                        } else {
-                            auto convex = godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr());
-                            auto pts = convex -> get_points();
-                            for (int i = 0; i < pts.size(); i++) {
-                                p.push_back(pts[i].x);
-                                p.push_back(pts[i].y);
-                                p.push_back(pts[i].z);
-                            }
-                        }
-                        self -> broadcast("mesh_children", p);
+                        self -> broadcast("mesh_ref", p);
                     }
                     #endif
                     vm -> push_value(true);
@@ -468,12 +461,13 @@ namespace Vital::Sandbox::API {
                     self -> body -> assign_shape(anchor);
                 }
 
-                // For sync, pack every child's shape data into one "mesh_children" broadcast.
-                // Layout per child entry (6 header floats + N*3 data floats):
-                //   [type_str, px, py, pz, rx, ry, rz, vx0, vy0, vz0, vx1, ...]
-                // Entries are separated by the string token so apply_shape can re-slice them.
+                // Sync by REFERENCE (mesh_ref), same rationale as the single-mesh
+                // branch above: one model net_id + one (component, type, transform)
+                // tuple per child, no vertex/face data. Clients rebuild each child
+                // shape locally from their own already-loaded copy of the model.
                 #if !defined(VSDK_Client)
                 godot::Array sync_params;
+                sync_params.push_back((int)model_node -> get_net_id());
                 #endif
 
                 for (auto& component : components) {
@@ -492,6 +486,7 @@ namespace Vital::Sandbox::API {
                     child -> set_transform(rel);
 
                     #if !defined(VSDK_Client)
+                    sync_params.push_back(godot::String(component.c_str()));
                     sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
                     sync_params.push_back(rel.origin.x);
                     sync_params.push_back(rel.origin.y);
@@ -500,31 +495,13 @@ namespace Vital::Sandbox::API {
                     sync_params.push_back(euler.x);
                     sync_params.push_back(euler.y);
                     sync_params.push_back(euler.z);
-                    if (resolved == "concave") {
-                        auto concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr());
-                        auto faces = concave -> get_faces();
-                        sync_params.push_back((int)faces.size());
-                        for (int i = 0; i < faces.size(); i++) {
-                            sync_params.push_back(faces[i].x);
-                            sync_params.push_back(faces[i].y);
-                            sync_params.push_back(faces[i].z);
-                        }
-                    } else {
-                        auto convex = godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr());
-                        auto pts = convex -> get_points();
-                        sync_params.push_back((int)pts.size());
-                        for (int i = 0; i < pts.size(); i++) {
-                            sync_params.push_back(pts[i].x);
-                            sync_params.push_back(pts[i].y);
-                            sync_params.push_back(pts[i].z);
-                        }
-                    }
                     #endif
                 }
 
                 #if !defined(VSDK_Client)
-                if (!sync_params.is_empty())
-                    self -> broadcast("mesh_children", sync_params);
+                // Only the anchor int is present when nothing matched — nothing to send.
+                if (sync_params.size() > 1)
+                    self -> broadcast("mesh_ref", sync_params);
                 #endif
 
                 vm -> push_value(true);
