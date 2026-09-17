@@ -1138,6 +1138,49 @@ namespace Vital::Manager {
                         shape_type = "separation_ray";
                         params.push_back(s->get_length());
                     }
+                    else if (godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr()) ||
+                             godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr())) {
+                        // Mesh shape — could be a single-mesh root or the anchor of include_children.
+                        // In both cases pack as "mesh_children" so apply_shape handles it uniformly.
+                        shape_type = "mesh_children";
+                        auto pack_entry = [&](godot::Ref<godot::Shape3D> s2, godot::Transform3D t) {
+                            bool is_concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr()) != nullptr;
+                            params.push_back(is_concave ? godot::String("concave") : godot::String("convex"));
+                            auto euler = t.basis.get_euler() * (180.f / 3.14159265358979323846f);
+                            params.push_back(t.origin.x); params.push_back(t.origin.y); params.push_back(t.origin.z);
+                            params.push_back(euler.x); params.push_back(euler.y); params.push_back(euler.z);
+                            if (is_concave) {
+                                auto cs = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr());
+                                auto faces = cs->get_faces();
+                                params.push_back((int)faces.size());
+                                for (int fi = 0; fi < faces.size(); fi++) {
+                                    params.push_back(faces[fi].x); params.push_back(faces[fi].y); params.push_back(faces[fi].z);
+                                }
+                            } else {
+                                auto cs = godot::Object::cast_to<godot::ConvexPolygonShape3D>(s2.ptr());
+                                auto pts = cs->get_points();
+                                params.push_back((int)pts.size());
+                                for (int pi = 0; pi < pts.size(); pi++) {
+                                    params.push_back(pts[pi].x); params.push_back(pts[pi].y); params.push_back(pts[pi].z);
+                                }
+                            }
+                        };
+                        // Check for grandchildren (include_children mode).
+                        bool has_mesh_children = false;
+                        for (int ci = 0; ci < col->get_child_count(); ci++) {
+                            if (godot::Object::cast_to<Engine::Collision_Shape>(col->get_child(ci))) { has_mesh_children = true; break; }
+                        }
+                        if (has_mesh_children) {
+                            for (int ci = 0; ci < col->get_child_count(); ci++) {
+                                auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(col->get_child(ci));
+                                if (!child_col) continue;
+                                auto cs = child_col->get_shape();
+                                if (cs.is_valid()) pack_entry(cs, child_col->get_transform());
+                            }
+                        } else {
+                            pack_entry(shape, godot::Transform3D());
+                        }
+                    }
                     else continue; // unknown shape type — skip
 
                     node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), shape_type, params);

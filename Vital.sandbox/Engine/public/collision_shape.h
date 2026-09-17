@@ -36,6 +36,11 @@ namespace Vital::Engine {
             godot::MeshInstance3D* debug_mesh = nullptr;
             #endif
 
+            // Instantiators //
+            Collision_Shape();
+            ~Collision_Shape() override;
+            static void _bind_methods() {}
+        public:
             struct Internal {
                 #if defined(VSDK_Client)
                 private:
@@ -52,12 +57,6 @@ namespace Vital::Engine {
                 static godot::Ref<godot::ConcavePolygonShape3D> build_concave_shape(godot::MeshInstance3D* mesh_instance);
             };
 
-
-            // Instantiators //
-            Collision_Shape();
-            ~Collision_Shape() override;
-            static void _bind_methods() {}
-        public:
             // Hooks //
             void _notification(int what);
 

@@ -551,6 +551,55 @@ namespace Vital::Engine {
             s -> set_length((float)params[0]);
             col -> assign_shape(s);
         }
+        else if (type == "mesh_children") {
+            // Remove any existing mesh-children shapes (identified by having a parent that is
+            // itself a Collision_Shape, i.e. they are grandchildren of the body node).
+            // The root Collision_Shape col is kept as the anchor.
+            for (int i = col -> get_child_count() - 1; i >= 0; i--) {
+                auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(col -> get_child(i));
+                if (child_col) child_col -> destroy();
+            }
+
+            // Parse entries. Layout per child:
+            //   [String type, float px, py, pz, float rx, ry, rz, int count, float x0, y0, z0, ...]
+            int i = 0;
+            while (i < params.size()) {
+                if (params[i].get_type() != godot::Variant::STRING) break;
+                std::string entry_type = Tool::to_std_string((godot::String)params[i]); i++;
+                if (i + 7 > params.size()) break;
+                float px = (float)params[i++], py = (float)params[i++], pz = (float)params[i++];
+                float rx = (float)params[i++], ry = (float)params[i++], rz = (float)params[i++];
+                int   count = (int)params[i++];
+                if (i + count * 3 > params.size()) break;
+
+                godot::PackedVector3Array verts;
+                verts.resize(count);
+                for (int v = 0; v < count; v++) {
+                    verts[v] = godot::Vector3((float)params[i], (float)params[i+1], (float)params[i+2]);
+                    i += 3;
+                }
+
+                godot::Ref<godot::Shape3D> shape;
+                if (entry_type == "concave") {
+                    godot::Ref<godot::ConcavePolygonShape3D> s; s.instantiate();
+                    s -> set_faces(verts);
+                    shape = s;
+                } else {
+                    godot::Ref<godot::ConvexPolygonShape3D> s; s.instantiate();
+                    s -> set_points(verts);
+                    shape = s;
+                }
+
+                auto* child = memnew(Engine::Collision_Shape);
+                col -> add_child(child);
+                Tool::Event::emit("entity:spawned", Tool::Stack({child, true}));
+                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(child)}));
+                child -> assign_shape(shape);
+                godot::Basis basis = godot::Basis::from_euler(
+                    godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
+                child -> set_transform(godot::Transform3D(basis, godot::Vector3(px, py, pz)));
+            }
+        }
         else godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
         #endif
     }

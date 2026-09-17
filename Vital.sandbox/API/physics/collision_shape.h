@@ -89,53 +89,6 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        // TODO: Reuse Tool/index.h
-        // Wildcard pattern matching: supports * anywhere in pattern //
-        static bool match_wildcard(const std::string& pattern, const std::string& name) {
-            if (pattern == "*") return true;
-            std::size_t pi = 0, ni = 0, star_pi = std::string::npos, star_ni = 0;
-            while (ni < name.size()) {
-                if (pi < pattern.size() && (pattern[pi] == name[ni] || pattern[pi] == '?')) {
-                    ++pi; ++ni;
-                } else if (pi < pattern.size() && pattern[pi] == '*') {
-                    star_pi = pi++;
-                    star_ni = ni;
-                } else if (star_pi != std::string::npos) {
-                    pi = star_pi + 1;
-                    ni = ++star_ni;
-                } else return false;
-            }
-            while (pi < pattern.size() && pattern[pi] == '*') ++pi;
-            return pi == pattern.size();
-        }
-
-        // Resolve filter map from Lua table at stack index idx into a std::vector of {pattern, type} pairs //
-        // Returns false if the table is missing or malformed. type is "convex", "concave", or "none".      //
-        static bool resolve_filters(Machine* vm, int idx, std::vector<std::pair<std::string, std::string>>& out) {
-            if (!vm -> is_table(idx)) return false;
-            lua_State* L = vm -> get_state();
-            lua_pushnil(L);
-            while (lua_next(L, idx < 0 ? idx - 1 : idx) != 0) {
-                if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TSTRING) {
-                    out.emplace_back(lua_tostring(L, -2), lua_tostring(L, -1));
-                }
-                lua_pop(L, 1);
-            }
-            return true;
-        }
-
-        // Match a mesh component name against the ordered filter list, return matched type or empty string //
-        static std::string apply_filters(const std::string& component, const std::vector<std::pair<std::string, std::string>>& filters) {
-            for (auto& [pattern, type] : filters) {
-                // Extract just the leaf name for matching (after the last /) //
-                auto slash = component.rfind('/');
-                auto leaf  = (slash == std::string::npos) ? component : component.substr(slash + 1);
-                if (match_wildcard(pattern, leaf) || match_wildcard(pattern, component))
-                    return type;
-            }
-            return "";
-        }
-
         static void init(Machine* vm) {
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
@@ -377,79 +330,88 @@ namespace Vital::Sandbox::API {
             /*
              * set_shape_mesh(model, config = {})
              *
-             * config fields (all optional):
-             *   shape_type        = "convex"|"concave"   -- default "convex", used when include_children=false
-             *                                               or as the catch-all when no filter matches
-             *   include_children  = bool                 -- default false; when true, creates one child
-             *                                               CollisionShape3D per matching MeshInstance3D in
-             *                                               the model and parents them to this shape's Node3D
-             *                                               at the mesh's local offset
-             *   filters           = {                    -- ordered list of {pattern, type} pairs
-             *     ["*_terrain_*"] = "convex",            --   wildcard matched against leaf mesh name
-             *     ["*_interior_*"] = "concave",          --   first match wins
-             *     ["*_leaves_*"]  = "none",              --   "none" skips that mesh
-             *     ["*"]           = "convex",            --   catch-all fallback
+             * config (all optional):
+             *   shape_type       = "convex"|"concave"  -- default "convex"
+             *                                             used as fallback when no filter matches,
+             *                                             and as the sole type when include_children=false
+             *   include_children = bool                -- default false
+             *                                             true: one child CollisionShape3D per mesh,
+             *                                             parented to self->body at the mesh's local offset
+             *   filters = {                            -- first-match-wins, matched against leaf mesh name
+             *     ["*_terrain_*"] = "convex",
+             *     ["*_interior_*"] = "concave",
+             *     ["*_leaves_*"]  = "none",            -- skip this mesh entirely
+             *     ["*"]           = "convex",
              *   }
              *
-             * When include_children=false: builds one shape from the root MeshInstance3D (or first found)
-             *   using shape_type, and calls assign_shape on self.
-             * When include_children=true: iterates all MeshInstance3D children via model->get_components(),
-             *   resolves each against filters (falling back to shape_type), skips "none", and attaches
-             *   a child Collision_Shape parented to self->body at the mesh's relative transform.
+             * Sync behaviour:
+             *   Server broadcasts "mesh_children" with all per-child shape data packed into params.
+             *   Clients reconstruct the full set of child CollisionShape3D nodes from that single RPC.
+             *   Late-joiners are covered by the existing join-sync path in Manager/private/network.cpp
+             *   which was extended to serialise ConvexPolygonShape3D and ConcavePolygonShape3D children.
              */
             vm_module::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, config = {})", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); })
+                    .require(2, [](Machine* vm, int idx) {
+                        return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx);
+                    })
                     .optional(3, &Machine::is_table);
 
                 auto model_inst = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
                 if (!model_inst || !model_inst -> model) { vm -> push_value(false); return 1; }
 
                 // Parse config //
-                std::string shape_type      = "convex";
-                bool include_children       = false;
+                std::string shape_type    = "convex";
+                bool include_children     = false;
                 std::vector<std::pair<std::string, std::string>> filters;
 
                 if (vm -> is_table(3)) {
-                    lua_State* L = vm -> get_state();
+                    vm -> get_table_field("shape_type", 3);
+                    if (vm -> is_string(-1)) shape_type = vm -> get_string(-1);
+                    vm -> pop(1);
 
-                    lua_getfield(L, 3, "shape_type");
-                    if (lua_type(L, -1) == LUA_TSTRING) shape_type = lua_tostring(L, -1);
-                    lua_pop(L, 1);
+                    vm -> get_table_field("include_children", 3);
+                    if (vm -> is_bool(-1)) include_children = vm -> get_bool(-1);
+                    vm -> pop(1);
 
-                    lua_getfield(L, 3, "include_children");
-                    if (lua_type(L, -1) == LUA_TBOOLEAN) include_children = lua_toboolean(L, -1);
-                    lua_pop(L, 1);
-
-                    lua_getfield(L, 3, "filters");
-                    if (lua_type(L, -1) == LUA_TTABLE) {
-                        lua_pushnil(L);
-                        while (lua_next(L, -2) != 0) {
-                            if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TSTRING)
-                                filters.emplace_back(lua_tostring(L, -2), lua_tostring(L, -1));
-                            lua_pop(L, 1);
+                    vm -> get_table_field("filters", 3);
+                    if (vm -> is_table(-1)) {
+                        vm -> push_nil();
+                        while (vm -> next(-2)) {
+                            // stack: ... filters_table key value
+                            if (vm -> is_string(-2) && vm -> is_string(-1))
+                                filters.emplace_back(vm -> get_string(-2), vm -> get_string(-1));
+                            vm -> pop(1); // pop value, leave key for next()
                         }
                     }
-                    lua_pop(L, 1);
+                    vm -> pop(1); // pop filters field
                 }
 
                 auto* model_node = model_inst -> model;
 
-                // Helper: resolve the correct MeshInstance3D* from a component path string //
-                auto get_mesh = [&](const std::string& component) -> godot::MeshInstance3D* {
-                    return model_node -> find_mesh_node(model_node, component);
+                // Resolve the type for a given leaf/component name against filters,
+                // falling back to shape_type if nothing matches.
+                auto resolve_type = [&](const std::string& component) -> std::string {
+                    if (filters.empty()) return shape_type;
+                    auto slash = component.rfind('/');
+                    auto leaf  = (slash == std::string::npos) ? component : component.substr(slash + 1);
+                    for (auto& [pattern, type] : filters) {
+                        if (Tool::match_wildcard(pattern, leaf) || Tool::match_wildcard(pattern, component))
+                            return type;
+                    }
+                    return shape_type;
                 };
 
-                // Helper: build a shape from a MeshInstance3D* given a type string //
+                // Build a shape ref from a MeshInstance3D* given type string.
                 auto build_shape = [&](godot::MeshInstance3D* mesh, const std::string& type)
                     -> godot::Ref<godot::Shape3D>
                 {
                     if (type == "concave") return base_class::Internal::build_concave_shape(mesh);
-                    return base_class::Internal::build_convex_shape(mesh); // default convex
+                    return base_class::Internal::build_convex_shape(mesh);
                 };
 
                 if (!include_children) {
-                    // Single-mesh mode: use root or first MeshInstance3D child //
+                    // Single mesh: use root if it's a MeshInstance3D, else first child that is.
                     godot::MeshInstance3D* mesh = godot::Object::cast_to<godot::MeshInstance3D>(model_node);
                     if (!mesh) {
                         for (int i = 0; i < model_node -> get_child_count(); i++) {
@@ -461,16 +423,44 @@ namespace Vital::Sandbox::API {
                     auto shape = build_shape(mesh, shape_type);
                     if (!shape.is_valid()) { vm -> push_value(false); return 1; }
                     self -> body -> assign_shape(shape);
+                    #if !defined(VSDK_Client)
+                    // Pack as single-shape mesh_children entry with identity transform so the
+                    // existing apply_shape path handles it uniformly on clients.
+                    {
+                        godot::Array p;
+                        p.push_back(godot::String(shape_type == "concave" ? "concave" : "convex"));
+                        // transform (identity — shape sits at body origin)
+                        p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos
+                        p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // rot (euler deg)
+                        if (shape_type == "concave") {
+                            auto concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr());
+                            auto faces = concave -> get_faces();
+                            for (int i = 0; i < faces.size(); i++) {
+                                p.push_back(faces[i].x);
+                                p.push_back(faces[i].y);
+                                p.push_back(faces[i].z);
+                            }
+                        } else {
+                            auto convex = godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr());
+                            auto pts = convex -> get_points();
+                            for (int i = 0; i < pts.size(); i++) {
+                                p.push_back(pts[i].x);
+                                p.push_back(pts[i].y);
+                                p.push_back(pts[i].z);
+                            }
+                        }
+                        self -> broadcast("mesh_children", p);
+                    }
+                    #endif
                     vm -> push_value(true);
                     return 1;
                 }
 
-                // Multi-mesh mode: iterate all components, apply filters, attach child shapes //
+                // Multi-mesh mode.
                 auto components = model_node -> get_components();
                 if (components.empty()) { vm -> push_value(false); return 1; }
 
-                // Give the root shape a dummy shape so it acts as a valid anchor node //
-                // (CollisionShape3D with no shape causes Godot warnings)
+                // Anchor shape so the root CollisionShape3D is a valid node (zero-size box).
                 {
                     godot::Ref<godot::BoxShape3D> anchor;
                     anchor.instantiate();
@@ -478,36 +468,64 @@ namespace Vital::Sandbox::API {
                     self -> body -> assign_shape(anchor);
                 }
 
-                for (auto& component : components) {
-                    // Resolve filter type for this component //
-                    std::string resolved_type = filters.empty() ? shape_type : "";
-                    if (!filters.empty()) {
-                        // Extract leaf name (after last /) for matching //
-                        auto slash = component.rfind('/');
-                        auto leaf  = (slash == std::string::npos) ? component : component.substr(slash + 1);
-                        for (auto& [pattern, type] : filters) {
-                            if (match_wildcard(pattern, leaf) || match_wildcard(pattern, component)) {
-                                resolved_type = type;
-                                break;
-                            }
-                        }
-                        // If no filter matched, fall back to shape_type //
-                        if (resolved_type.empty()) resolved_type = shape_type;
-                    }
-                    if (resolved_type == "none") continue;
+                // For sync, pack every child's shape data into one "mesh_children" broadcast.
+                // Layout per child entry (6 header floats + N*3 data floats):
+                //   [type_str, px, py, pz, rx, ry, rz, vx0, vy0, vz0, vx1, ...]
+                // Entries are separated by the string token so apply_shape can re-slice them.
+                #if !defined(VSDK_Client)
+                godot::Array sync_params;
+                #endif
 
-                    auto* mesh = get_mesh(component);
+                for (auto& component : components) {
+                    auto resolved = resolve_type(component);
+                    if (resolved == "none") continue;
+
+                    auto* mesh = model_node -> find_mesh_node(model_node, component);
                     if (!mesh) continue;
-                    auto shape = build_shape(mesh, resolved_type);
+                    auto shape = build_shape(mesh, resolved);
                     if (!shape.is_valid()) continue;
 
-                    // Create child CollisionShape3D parented to self->body, offset to mesh position //
+                    // Offset: mesh local transform relative to the model root.
+                    auto rel = model_node -> get_transform().inverse() * mesh -> get_global_transform();
                     auto* child = base_class::create(self -> body);
                     child -> assign_shape(shape);
-                    // Apply the mesh's transform relative to the model root so the child
-                    // sits exactly where the mesh is in world space when the parent moves //
-                    child -> set_transform(model_node -> get_transform().inverse() * mesh -> get_global_transform());
+                    child -> set_transform(rel);
+
+                    #if !defined(VSDK_Client)
+                    sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
+                    sync_params.push_back(rel.origin.x);
+                    sync_params.push_back(rel.origin.y);
+                    sync_params.push_back(rel.origin.z);
+                    auto euler = rel.basis.get_euler() * (180.f / 3.14159265358979323846f);
+                    sync_params.push_back(euler.x);
+                    sync_params.push_back(euler.y);
+                    sync_params.push_back(euler.z);
+                    if (resolved == "concave") {
+                        auto concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr());
+                        auto faces = concave -> get_faces();
+                        sync_params.push_back((int)faces.size());
+                        for (int i = 0; i < faces.size(); i++) {
+                            sync_params.push_back(faces[i].x);
+                            sync_params.push_back(faces[i].y);
+                            sync_params.push_back(faces[i].z);
+                        }
+                    } else {
+                        auto convex = godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr());
+                        auto pts = convex -> get_points();
+                        sync_params.push_back((int)pts.size());
+                        for (int i = 0; i < pts.size(); i++) {
+                            sync_params.push_back(pts[i].x);
+                            sync_params.push_back(pts[i].y);
+                            sync_params.push_back(pts[i].z);
+                        }
+                    }
+                    #endif
                 }
+
+                #if !defined(VSDK_Client)
+                if (!sync_params.is_empty())
+                    self -> broadcast("mesh_children", sync_params);
+                #endif
 
                 vm -> push_value(true);
                 return 1;

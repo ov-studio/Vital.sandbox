@@ -136,10 +136,10 @@ namespace Vital::Engine {
                 return exec(pattern);
             }
 
-            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
-            void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
         public:
+            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
+            void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             // Hooks //
             void _ready() override;
             void _notification(int what);
