@@ -481,18 +481,33 @@ namespace Vital::Sandbox::API {
                     auto shape = build_shape(mesh, resolved);
                     if (!shape.is_valid()) continue;
 
-                    // Offset: mesh transform relative to the model root, both in WORLD
-                    // space. Using model_node's LOCAL transform here (as before) only
-                    // happened to work while the model sat unparented at world origin
-                    // (its local == global transform in that case, e.g. right after
-                    // core.model.create() and before set_parent()); as soon as the
-                    // model already has a non-identity parent/global transform when
-                    // set_shape_mesh() runs, mixing a local transform with mesh's
-                    // global one puts every child shape in the wrong place.
-                    auto rel = model_node -> get_global_transform().inverse() * mesh -> get_global_transform();
-                    auto* child = base_class::create(self -> body);
+                    // Parent each per-mesh Collision_Shape DIRECTLY under the physics body
+                    // (StaticBody / RigidBody / …), not under the intermediate anchor
+                    // Collision_Shape. Nested CollisionShape3D under another
+                    // CollisionShape3D often fails to register with the shape owner —
+                    // debug wireframe is visible but the character never collides.
+                    godot::Node3D* physics_body = godot::Object::cast_to<godot::Node3D>(self -> body -> get_parent());
+                    if (!physics_body) physics_body = self -> body; // fallback
+
+                    // Offset: mesh transform relative to the PHYSICS BODY in world
+                    // space. Model-root relative was fragile (only matched when the
+                    // model sat unparented at the same world pose as the body).
+                    // Body-relative is correct whether the model is already parented
+                    // under the body or still at world origin, as long as body and
+                    // model share the same world pose when set_shape_mesh runs.
+                    auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
+
+                    auto* child = base_class::create(physics_body);
+                    // Ensure the shape is registered with the body's shape owner.
+                    // set_shape while already in-tree, force enabled, apply local
+                    // transform, then toggle disabled to force a shape-owner refresh
+                    // (Godot can miss registration when shape + transform are set
+                    // in the same tick as add_child).
+                    child -> set_disabled(false);
                     child -> assign_shape(shape);
                     child -> set_transform(rel);
+                    child -> set_disabled(true);
+                    child -> set_disabled(false);
 
                     #if !defined(VSDK_Client)
                     sync_params.push_back(godot::String(component.c_str()));

@@ -662,9 +662,16 @@ namespace Vital::Engine {
                 Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
                 Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(col)}));
             }
+            // Clear any previous per-mesh shapes. They may live under the anchor
+            // (old hierarchy) or directly under the physics body (new hierarchy).
             for (int i = col -> get_child_count() - 1; i >= 0; i--) {
                 auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(col -> get_child(i));
                 if (child_col) child_col -> destroy();
+            }
+            for (int i = body_node -> get_child_count() - 1; i >= 0; i--) {
+                auto* child = body_node -> get_child(i);
+                auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(child);
+                if (child_col && child_col != col) child_col -> destroy();
             }
 
             int i = 0;
@@ -692,25 +699,33 @@ namespace Vital::Engine {
                 // shape straight onto its Collision_Shape with no anchor/children,
                 // so `col` itself is the right (and only) destination here too.
                 if (mode == 0) {
+                    col -> set_disabled(false);
                     col -> assign_shape(shape);
                     col -> set_transform(xform);
+                    col -> set_disabled(true);
+                    col -> set_disabled(false);
                     return; // single mode only ever sends one entry
                 }
 
-                // mode 1 (include_children): `col` is only the anchor the server set
-                // (a tiny 0.001 box) and is never touched again on the server side —
-                // every matched mesh, including the first, gets its own child
-                // Collision_Shape. Previously the first entry here reused `col` as
-                // `dest`, which overwrote the anchor's shape AND transform with the
-                // first mesh's — and since every later child is added under `col`,
-                // each of them then had that first mesh's offset/rotation silently
-                // stacked underneath its own, scattering everything after entry 0.
+                // mode 1 (include_children): parent each per-mesh Collision_Shape
+                // DIRECTLY under the physics body (body_node), not under the
+                // intermediate anchor `col`. Nested CollisionShape3D under another
+                // CollisionShape3D often fails to register with the shape owner —
+                // debug wireframe appears but character never collides. Parenting
+                // to the body keeps the exact same local transform (visualizer
+                // stays put) while making the shape a proper direct contributor.
                 auto* dest = memnew(Engine::Collision_Shape);
-                col -> add_child(dest);
+                body_node -> add_child(dest);
                 Tool::Event::emit("entity:spawned", Tool::Stack({dest, true}));
                 Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(dest)}));
+                // Force shape-owner registration: enable, assign, transform, then
+                // toggle disabled so Godot re-binds the shape to the StaticBody
+                // even when everything is applied in the same tick as add_child.
+                dest -> set_disabled(false);
                 dest -> assign_shape(shape);
                 dest -> set_transform(xform);
+                dest -> set_disabled(true);
+                dest -> set_disabled(false);
             }
         });
         #endif
