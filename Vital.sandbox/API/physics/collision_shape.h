@@ -480,7 +480,7 @@ namespace Vital::Sandbox::API {
                     if (!shape.is_valid()) continue;
 
                     // Offset: mesh local transform relative to the model root.
-                    auto rel = model_node -> get_global_transform().inverse() * mesh -> get_global_transform();
+                    auto rel = model_node -> get_transform().inverse() * mesh -> get_global_transform();
                     auto* child = base_class::create(self -> body);
                     child -> assign_shape(shape);
                     child -> set_transform(rel);
