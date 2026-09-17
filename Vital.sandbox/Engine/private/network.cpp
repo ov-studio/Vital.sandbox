@@ -552,12 +552,17 @@ namespace Vital::Engine {
             col -> assign_shape(s);
         }
         else if (type == "mesh_children") {
-            // Remove any existing mesh-children shapes (identified by having a parent that is
-            // itself a Collision_Shape, i.e. they are grandchildren of the body node).
-            // The root Collision_Shape col is kept as the anchor.
+            // Remove any existing mesh-children shapes. They may live nested under
+            // the anchor `col` (old/buggy hierarchy this branch used to create) or
+            // directly under the body node (correct hierarchy — see the FIXED note
+            // below). Clear both so a re-sync doesn't leave stale/duplicate shapes.
             for (int i = col -> get_child_count() - 1; i >= 0; i--) {
                 auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(col -> get_child(i));
                 if (child_col) child_col -> destroy();
+            }
+            for (int i = node -> get_child_count() - 1; i >= 0; i--) {
+                auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(node -> get_child(i));
+                if (child_col && child_col != col) child_col -> destroy();
             }
 
             // Parse entries. Layout per child:
@@ -590,14 +595,32 @@ namespace Vital::Engine {
                     shape = s;
                 }
 
+                // FIXED: parent directly under the body (`node`), i.e. as a SIBLING
+                // of the anchor `col`, not as col's child. This matches the real
+                // server-side hierarchy set_shape_mesh actually builds (per-mesh
+                // shapes are parented under physics_body, never under the anchor
+                // Collision_Shape) and matches apply_mesh_ref's proven-working
+                // parenting used for everyone already connected when the shape is
+                // (re)built. Nesting under `col`, as this branch used to do, left
+                // these shapes unregistered with the body's physics shape owner —
+                // the debug wireframe still rendered, but nothing actually
+                // collided. That's why late-joining players fell straight through
+                // the town floor while everyone already connected was fine.
                 auto* child = memnew(Engine::Collision_Shape);
-                col -> add_child(child);
+                node -> add_child(child);
                 Tool::Event::emit("entity:spawned", Tool::Stack({child, true}));
                 Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(child)}));
+                child -> set_disabled(false);
                 child -> assign_shape(shape);
                 godot::Basis basis = godot::Basis::from_euler(
                     godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
                 child -> set_transform(godot::Transform3D(basis, godot::Vector3(px, py, pz)));
+                // Force shape-owner registration, same fix already applied to
+                // set_shape_mesh / apply_mesh_ref: toggle disabled after the
+                // shape+transform are set so Godot re-binds it to the body even
+                // when everything happens in the same tick as add_child.
+                child -> set_disabled(true);
+                child -> set_disabled(false);
             }
         }
         else if (type == "mesh_ref") {

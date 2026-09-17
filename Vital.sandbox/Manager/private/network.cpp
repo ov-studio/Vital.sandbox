@@ -1102,6 +1102,45 @@ namespace Vital::Manager {
                 auto parent_node = godot::Object::cast_to<godot::Node3D>(godot_obj);
                 if (!parent_node) continue;
 
+                // FIXED: set_shape_mesh's include_children mode parents every
+                // per-mesh Collision_Shape DIRECTLY under the body (siblings of
+                // the anchor), not nested under one another. The old code below
+                // treated each of those siblings as its own independent "col" and
+                // fired one "_sync_shape" RPC per mesh — all targeting the SAME
+                // body net_id. On the client, _sync_shape/apply_shape has no way
+                // to tell those calls apart (Collision_Shape isn't itself
+                // net-synced), so each new call wiped out whatever the previous
+                // call had just built: only the last submesh ever survived a late
+                // join, and even that one went out with an identity transform
+                // instead of its real per-mesh offset (see pack_mesh_entry below).
+                // Fix: accumulate every mesh-derived Collision_Shape sibling on
+                // this body into ONE combined "mesh_children" payload — mirroring
+                // how the live "mesh_ref" broadcast already batches them — and
+                // send it as a single RPC after the loop.
+                godot::Array mesh_children_params;
+                auto pack_mesh_entry = [&](godot::Ref<godot::Shape3D> s2, godot::Transform3D t) {
+                    bool is_concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr()) != nullptr;
+                    mesh_children_params.push_back(is_concave ? godot::String("concave") : godot::String("convex"));
+                    auto euler = t.basis.get_euler() * (180.f / 3.14159265358979323846f);
+                    mesh_children_params.push_back(t.origin.x); mesh_children_params.push_back(t.origin.y); mesh_children_params.push_back(t.origin.z);
+                    mesh_children_params.push_back(euler.x); mesh_children_params.push_back(euler.y); mesh_children_params.push_back(euler.z);
+                    if (is_concave) {
+                        auto cs = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr());
+                        auto faces = cs->get_faces();
+                        mesh_children_params.push_back((int)faces.size());
+                        for (int fi = 0; fi < faces.size(); fi++) {
+                            mesh_children_params.push_back(faces[fi].x); mesh_children_params.push_back(faces[fi].y); mesh_children_params.push_back(faces[fi].z);
+                        }
+                    } else {
+                        auto cs = godot::Object::cast_to<godot::ConvexPolygonShape3D>(s2.ptr());
+                        auto pts = cs->get_points();
+                        mesh_children_params.push_back((int)pts.size());
+                        for (int pi = 0; pi < pts.size(); pi++) {
+                            mesh_children_params.push_back(pts[pi].x); mesh_children_params.push_back(pts[pi].y); mesh_children_params.push_back(pts[pi].z);
+                        }
+                    }
+                };
+
                 for (int i = 0; i < parent_node->get_child_count(); i++) {
                     auto col = godot::Object::cast_to<Engine::Collision_Shape>(parent_node->get_child(i));
                     if (!col) continue;
@@ -1140,32 +1179,21 @@ namespace Vital::Manager {
                     }
                     else if (godot::Object::cast_to<godot::ConvexPolygonShape3D>(shape.ptr()) ||
                              godot::Object::cast_to<godot::ConcavePolygonShape3D>(shape.ptr())) {
-                        // Mesh shape — could be a single-mesh root or the anchor of include_children.
-                        // In both cases pack as "mesh_children" so apply_shape handles it uniformly.
-                        shape_type = "mesh_children";
-                        auto pack_entry = [&](godot::Ref<godot::Shape3D> s2, godot::Transform3D t) {
-                            bool is_concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr()) != nullptr;
-                            params.push_back(is_concave ? godot::String("concave") : godot::String("convex"));
-                            auto euler = t.basis.get_euler() * (180.f / 3.14159265358979323846f);
-                            params.push_back(t.origin.x); params.push_back(t.origin.y); params.push_back(t.origin.z);
-                            params.push_back(euler.x); params.push_back(euler.y); params.push_back(euler.z);
-                            if (is_concave) {
-                                auto cs = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr());
-                                auto faces = cs->get_faces();
-                                params.push_back((int)faces.size());
-                                for (int fi = 0; fi < faces.size(); fi++) {
-                                    params.push_back(faces[fi].x); params.push_back(faces[fi].y); params.push_back(faces[fi].z);
-                                }
-                            } else {
-                                auto cs = godot::Object::cast_to<godot::ConvexPolygonShape3D>(s2.ptr());
-                                auto pts = cs->get_points();
-                                params.push_back((int)pts.size());
-                                for (int pi = 0; pi < pts.size(); pi++) {
-                                    params.push_back(pts[pi].x); params.push_back(pts[pi].y); params.push_back(pts[pi].z);
-                                }
-                            }
-                        };
-                        // Check for grandchildren (include_children mode).
+                        // Mesh shape. Three possible layouts for `col`:
+                        //   (a) single-mesh root (no include_children) — col carries
+                        //       the shape directly, identity transform is correct
+                        //       since there's no per-mesh body-relative offset.
+                        //   (b) legacy nested include_children — per-mesh shapes are
+                        //       grandchildren of col.
+                        //   (c) current include_children — col is itself just ONE of
+                        //       several per-mesh shapes living as a direct SIBLING
+                        //       under the body, each with its own real transform
+                        //       (set via set_transform(rel) when it was built) that
+                        //       MUST be preserved — using identity here (the old bug)
+                        //       silently discards that offset for every submesh.
+                        // All three funnel into the same accumulator and go out
+                        // together as one "mesh_children" RPC after this loop —
+                        // never sent per-col (see the stomping bug explained above).
                         bool has_mesh_children = false;
                         for (int ci = 0; ci < col->get_child_count(); ci++) {
                             if (godot::Object::cast_to<Engine::Collision_Shape>(col->get_child(ci))) { has_mesh_children = true; break; }
@@ -1175,16 +1203,20 @@ namespace Vital::Manager {
                                 auto child_col = godot::Object::cast_to<Engine::Collision_Shape>(col->get_child(ci));
                                 if (!child_col) continue;
                                 auto cs = child_col->get_shape();
-                                if (cs.is_valid()) pack_entry(cs, child_col->get_transform());
+                                if (cs.is_valid()) pack_mesh_entry(cs, child_col->get_transform());
                             }
                         } else {
-                            pack_entry(shape, godot::Transform3D());
+                            pack_mesh_entry(shape, col->get_transform());
                         }
+                        continue; // accumulated, not sent individually
                     }
                     else continue; // unknown shape type — skip
 
                     node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), shape_type, params);
                 }
+
+                if (mesh_children_params.size() > 0)
+                    node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), godot::String("mesh_children"), mesh_children_params);
 
                 // 2.5b. Send wheel spawn + config for any Vehicle_Wheel children.
                 // Per-tick inputs (engine_force/brake/steering) are NOT sent —
