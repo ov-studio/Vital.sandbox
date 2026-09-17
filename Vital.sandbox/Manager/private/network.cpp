@@ -413,6 +413,19 @@ namespace Vital::Manager {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         for (auto model : sync_models) {
             if (model->get_sync_authority() != my_id) continue;
+            // FIXED: only reset bodies that are actually asleep. A body that's
+            // currently moving is already broadcasting fresh, correctly-baselined
+            // packets every tick — zeroing its delta_last_* out from under it here
+            // doesn't help it, but it DOES corrupt the next packet for everyone:
+            // the regular per-tick send transmits real (non-zeroed) velocity, so
+            // any axis whose velocity happens to be near zero on this exact tick
+            // (e.g. a ball at the top of a bounce) gets masked out relative to the
+            // freshly-zeroed baseline — the brand-new peer, whose own baseline for
+            // that axis came from the dump's always-zeroed velocity, has no real
+            // value to fall back on and stays stale on that one axis while the
+            // rest of the body races ahead, producing a visible offset that only
+            // shows up on bodies that were moving when the peer joined.
+            if (!model->sync_sleeping) continue;
             model->sync_sleeping   = false;
             model->delta_last_pos  = godot::Vector3();
             model->delta_last_rot  = godot::Vector3();
