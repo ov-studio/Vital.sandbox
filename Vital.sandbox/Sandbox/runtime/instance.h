@@ -226,8 +226,24 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
+                /*
                 instance -> vm = remote ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
                 if (!remote) instance -> env = vm -> get_environment_id();
+                */
+
+                // TODO:
+                // A null vm means there's no live Lua call stack behind this
+                // init (e.g. the entity:spawned fallback registration for
+                // objects created directly by engine code, like the child
+                // CollisionShape3D nodes from set_shape_mesh's include_children
+                // mode). Treat that the same as remote=true: attach to the
+                // root vm and skip get_environment_id(), which would otherwise
+                // dereference the null vm and crash.
+                bool detached = remote || !vm;
+                instance -> vm = detached ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
+                if (!detached) instance -> env = vm -> get_environment_id();
+                ///// still needed?
+            
                 return instance;
             }
 
