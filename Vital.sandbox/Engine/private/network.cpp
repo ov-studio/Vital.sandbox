@@ -785,34 +785,20 @@ namespace Vital::Engine {
         }
 
         if (child_node->is_inside_tree() && child_node->get_parent() != target) {
-            // FIXED: was reparent(target, true) — keep_global_transform=true
-            // recomputes the new LOCAL offset from the child's and target's
-            // CURRENT global positions at the moment this RPC is processed.
-            // For a body-parented model, that's fine when the body is
-            // stationary (both sides were captured at the same resting
-            // position), but for a body that's still moving when the
-            // late-join handshake runs, the model's spawn snapshot and the
-            // body's spawn snapshot were captured at slightly different
-            // server ticks — a real, non-trivial position gap for a moving
-            // object — and keep_global bakes that gap in as a permanent
-            // local offset. Nothing downstream ever corrects it: a
-            // body-parented model's local offset only changes when the
-            // *server* deliberately moves it (e.g. set_position()), which
-            // never happens for something like the basketball model (always
-            // parented at a fixed local (0,0,0)), so it sits there wrong
-            // forever. Confirmed directly via logging: reparenting an idle
-            // ball's model baked local_pos=(0,0,0) (correct), reparenting a
-            // just-kicked ball's model baked local_pos=(0.57,-1.83,-0.51) —
-            // real garbage, not noise.
-            // The comment this replaces already said the real intent: "local
-            // offset is corrected by state dump / force" immediately after.
-            // That correction is authoritative and arrives in the same
-            // handshake batch, so there's no need to guess a global-preserving
-            // offset here at all — keep_global=false just leaves the default
-            // (0,0,0) local transform in place for the instant it takes the
-            // dump/force to land, instead of baking in a wrong one that
-            // nothing will ever fix.
-            child_node->reparent(target, false);
+            // REVERTED: keep_global=false (my previous attempt) was wrong —
+            // it left the raw GLOBAL spawn position sitting in the node's
+            // transform and let it get reinterpreted as LOCAL on reparent,
+            // which broke even idle balls (double-offset from the body).
+            // keep_global=true is correct in principle: it recomputes the
+            // local offset from the child's and target's current global
+            // positions, which is exactly right when both were captured at
+            // the same instant. The actual bug (see _spawn_entity below) was
+            // that the SERVER captures the model's spawn position
+            // independently of its parent body's, so for a still-moving body
+            // the two global snapshots genuinely disagree by the time this
+            // reparent runs. Fixed at the source instead of worked around
+            // here.
+            child_node->reparent(target, true);
         }
 
         // DIAGNOSTIC (temporary): shows exactly what local offset the
