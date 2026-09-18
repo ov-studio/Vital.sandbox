@@ -104,7 +104,39 @@ namespace Vital::Engine {
         }
     }
 
-    void Model::on_sync_process(double delta) { _process(delta); }
+    void Model::on_sync_process(double delta) {
+        // FIXED: this used to be just `_process(delta)` — apply_sync() has
+        // always pushed every synced position into the interpolation buffer
+        // (sync_push_snapshot), but nothing ever drained it back out onto the
+        // node's actual transform. A body-parented model's on-screen position
+        // was therefore set exactly ONCE: whatever local offset
+        // apply_reparent_entity's reparent(target, true) happened to bake in
+        // at that single moment (computed from wherever the model's and
+        // body's client-side nodes happened to be at that instant), then
+        // frozen forever — it only ever rode along with the body afterward
+        // via ordinary Godot scene-graph parenting, never re-corrected.
+        // For a body that's stationary when the late-join/reparent handshake
+        // runs, that one-shot offset is close enough to be invisible. For a
+        // body still moving at that moment (a just-kicked ball, most
+        // obviously), the offset baked in at reparent time is stale before
+        // it's even applied, and nothing downstream ever fixes it — exactly
+        // the "collision correct, visual model off" bug.
+        // Mirror Physics_Body::on_sync_process: actually drain the
+        // interpolation buffer every frame, same as a body does, so the
+        // model's local (or global, if unparented) transform gets
+        // continuously corrected just like a body's.
+        if (is_inside_tree() && interp_ready && net_id != 0) {
+            auto net = Manager::Network::get_singleton();
+            if (!net || net->get_peer_id() != sync_authority) {
+                godot::Vector3 out_pos, out_rot;
+                interp_process(delta, out_pos, out_rot);
+                if (sync_parent_net_id != 0) set_position(out_pos);
+                else set_global_position(out_pos);
+                set_rotation_degrees(out_rot);
+            }
+        }
+        _process(delta);
+    }
 
 
     //---------------------------//

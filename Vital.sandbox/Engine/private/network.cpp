@@ -803,6 +803,25 @@ namespace Vital::Engine {
         child_sync->delta_last_rot = child_sync->sync_last_rot;
         child_sync->delta_last_vel = godot::Vector3();
 
+        // FIXED: the re-seed above only resets the DELTA decode baseline
+        // (parse_sync_packet_at's incremental-update math), not the
+        // INTERPOLATION ring buffer (sync_push_snapshot / interp_process).
+        // Any snapshots pushed before this reparent were captured in the
+        // OLD coordinate space (global, while still parented to Core);
+        // interp_process doesn't know the coordinate space changed and
+        // will happily keep blending toward/from those stale entries once
+        // they're reinterpreted as local-space. The physics body itself
+        // never reparents (bodies are always Core children), so this only
+        // ever shows up on reparented Models — which is exactly why a
+        // kicked ball's visual mesh drifts away from its (correct)
+        // collision shape after a late join or set_parent() call, while
+        // an idle one looks fine (its stale global snapshot happens to
+        // already sit near local (0,0,0)). reset_sync_state() wipes the
+        // buffer so the very next snapshot starts a clean interpolation
+        // baseline in the new coordinate space — the same fix already
+        // used for authority changes elsewhere in this file.
+        child_sync->reset_sync_state();
+
         #if defined(VSDK_Client)
         // If a _force_transform was buffered because it arrived before this
         // reparent (or while reparent was still pending), apply it now that
