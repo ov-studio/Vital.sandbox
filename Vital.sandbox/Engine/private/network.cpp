@@ -785,20 +785,18 @@ namespace Vital::Engine {
         }
 
         if (child_node->is_inside_tree() && child_node->get_parent() != target) {
-            // REVERTED: keep_global=false (my previous attempt) was wrong —
-            // it left the raw GLOBAL spawn position sitting in the node's
-            // transform and let it get reinterpreted as LOCAL on reparent,
-            // which broke even idle balls (double-offset from the body).
-            // keep_global=true is correct in principle: it recomputes the
-            // local offset from the child's and target's current global
-            // positions, which is exactly right when both were captured at
-            // the same instant. The actual bug (see _spawn_entity below) was
-            // that the SERVER captures the model's spawn position
-            // independently of its parent body's, so for a still-moving body
-            // the two global snapshots genuinely disagree by the time this
-            // reparent runs. Fixed at the source instead of worked around
-            // here.
-            child_node->reparent(target, true);
+            // FIXED (again, correctly this time): keep_global_transform=false.
+            // _spawn_entity now sends a parented entity's raw LOCAL offset
+            // directly (see the spawn-loop comment in
+            // Manager/private/network.cpp) instead of a computed global
+            // position, so the node's current transform at this point
+            // already holds the correct local value — it was just applied
+            // globally as a harmless placeholder while still parented to
+            // Core. keep_global=false leaves that value untouched across the
+            // reparent instead of recomputing it from (racy) live global
+            // positions, so it's already correct the instant parenting
+            // actually happens.
+            child_node->reparent(target, false);
         }
 
         // DIAGNOSTIC (temporary): shows exactly what local offset the

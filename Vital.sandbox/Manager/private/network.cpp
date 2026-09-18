@@ -1088,53 +1088,56 @@ namespace Vital::Manager {
             for (auto e : sync_models) {
                 godot::Vector3 spawn_pos = e->get_sync_position();
                 godot::Vector3 spawn_rot = e->get_sync_rotation();
-                if (auto n = e->get_sync_node()) {
-                    if (n->is_inside_tree()) {
-                        // If this entity is parented to another synced entity
-                        // (e.g. a model riding a physics body), compute its
-                        // spawn transform from the PARENT's current global
-                        // transform combined with the entity's own LOCAL
-                        // offset — instead of reading this entity's own
-                        // global position independently. Reading every
-                        // entity's global transform independently, in a loop
-                        // that visits every entity sequentially, left a real
-                        // timing window between a model's snapshot and its
-                        // body's snapshot for anything still moving (a
-                        // kicked ball, most obviously): the two could drift
-                        // apart by however far the body moved between loop
-                        // iterations, the client would apply both as
-                        // independent global placements, and the later
-                        // reparent's keep_global_transform step would bake
-                        // that drift in as a bogus permanent local offset —
-                        // confirmed via logging (an idle ball baked a correct
-                        // (0,0,0) local offset; a just-kicked one baked
-                        // (0.57,-1.83,-0.51), matching the drift between the
-                        // two independent reads).
-                        // get_sync_position()/get_sync_rotation() already
-                        // give the entity's real LOCAL offset when parented
-                        // (a fixed value that doesn't drift with the body's
-                        // motion — it's the same value the state dump sends,
-                        // which is why a character model's local (0,-0.9,0)
-                        // already arrives correctly). Combining that fixed
-                        // local offset with the PARENT's current transform,
-                        // read at this same instant, gives the true current
-                        // global placement with no drift window at all — not
-                        // a placeholder that gets corrected a moment later,
-                        // and not forced to (0,0,0) for entities with a real
-                        // non-zero local offset.
-                        uint32_t parent_id = e->get_parent_net_id();
-                        auto parent_3d = parent_id != 0 ? godot::Object::cast_to<godot::Node3D>(n->get_parent()) : nullptr;
-                        if (parent_3d) {
-                            godot::Vector3 local_offset = e->get_sync_position();
-                            godot::Transform3D parent_xform = parent_3d->get_global_transform();
-                            spawn_pos = parent_xform.xform(local_offset);
-                            spawn_rot = parent_3d->get_global_rotation_degrees() + e->get_sync_rotation();
-                        } else {
+                uint32_t parent_id = e->get_parent_net_id();
+                if (parent_id == 0) {
+                    // Not parented — behave exactly as before: live global
+                    // transform is the correct, unambiguous spawn placement.
+                    if (auto n = e->get_sync_node()) {
+                        if (n->is_inside_tree()) {
                             spawn_pos = n->get_global_position();
                             spawn_rot = n->get_global_rotation_degrees();
                         }
                     }
                 }
+                // else: leave spawn_pos/spawn_rot as e->get_sync_position()/
+                // get_sync_rotation() — i.e. the entity's raw LOCAL offset.
+                //
+                // FIXED (again): the previous attempt combined this local
+                // offset with the PARENT's live global transform, read at
+                // spawn-send time, to compute a global spawn placement. That
+                // removed the original timing gap (model vs body read
+                // independently) but introduced a DIFFERENT one: the body is
+                // already awake and broadcasting regular position updates on
+                // the UNRELIABLE channel, which has no ordering guarantee
+                // relative to this RELIABLE handshake batch (spawn -> shape
+                // -> reparent -> dump). For a body still moving fast, one of
+                // those regular packets can land and move the body's
+                // client-side node BEFORE the reparent RPC processes — so by
+                // the time keep_global_transform reads "current" positions,
+                // the body has already jumped somewhere the model's spawn
+                // snapshot never accounted for, and the reparent bakes in
+                // that gap just like before (confirmed: baked local_pos
+                // ended up even larger this time, (11.5, 3.58, -4.44), and
+                // the state dump never corrected it because the client had
+                // already treated the bad baked value as authoritative).
+                // Any approach based on "read the live position, whenever
+                // that happens to be" is racing against that unreliable
+                // stream and can't be made safe by picking a better moment
+                // to read it.
+                // Real fix: don't compute a global spawn placement for a
+                // parented entity at all. Send its real LOCAL offset
+                // directly (a fixed value that never drifts with the body's
+                // motion — the same value the state dump already sends
+                // correctly). The client applies it via
+                // set_global_position() as a harmless placeholder while
+                // still parented to Core (briefly at/near world origin —
+                // visually wrong for an instant, same as any other
+                // not-yet-parented entity, but never a wild motion-dependent
+                // offset), then apply_reparent_entity uses
+                // keep_global_transform=false so that exact local value
+                // survives the reparent untouched — already correct the
+                // moment parenting actually happens, no live position math,
+                // nothing left to race.
                 node->rpc_id(id, "_spawn_entity",
                     (int)e->get_net_id(),
                     (int)e->get_sync_type(),
