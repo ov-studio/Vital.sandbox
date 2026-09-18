@@ -1090,8 +1090,49 @@ namespace Vital::Manager {
                 godot::Vector3 spawn_rot = e->get_sync_rotation();
                 if (auto n = e->get_sync_node()) {
                     if (n->is_inside_tree()) {
-                        spawn_pos = n->get_global_position();
-                        spawn_rot = n->get_global_rotation_degrees();
+                        // If this entity is parented to another synced entity
+                        // (e.g. a model riding a physics body), compute its
+                        // spawn transform from the PARENT's current global
+                        // transform combined with the entity's own LOCAL
+                        // offset — instead of reading this entity's own
+                        // global position independently. Reading every
+                        // entity's global transform independently, in a loop
+                        // that visits every entity sequentially, left a real
+                        // timing window between a model's snapshot and its
+                        // body's snapshot for anything still moving (a
+                        // kicked ball, most obviously): the two could drift
+                        // apart by however far the body moved between loop
+                        // iterations, the client would apply both as
+                        // independent global placements, and the later
+                        // reparent's keep_global_transform step would bake
+                        // that drift in as a bogus permanent local offset —
+                        // confirmed via logging (an idle ball baked a correct
+                        // (0,0,0) local offset; a just-kicked one baked
+                        // (0.57,-1.83,-0.51), matching the drift between the
+                        // two independent reads).
+                        // get_sync_position()/get_sync_rotation() already
+                        // give the entity's real LOCAL offset when parented
+                        // (a fixed value that doesn't drift with the body's
+                        // motion — it's the same value the state dump sends,
+                        // which is why a character model's local (0,-0.9,0)
+                        // already arrives correctly). Combining that fixed
+                        // local offset with the PARENT's current transform,
+                        // read at this same instant, gives the true current
+                        // global placement with no drift window at all — not
+                        // a placeholder that gets corrected a moment later,
+                        // and not forced to (0,0,0) for entities with a real
+                        // non-zero local offset.
+                        uint32_t parent_id = e->get_parent_net_id();
+                        auto parent_3d = parent_id != 0 ? godot::Object::cast_to<godot::Node3D>(n->get_parent()) : nullptr;
+                        if (parent_3d) {
+                            godot::Vector3 local_offset = e->get_sync_position();
+                            godot::Transform3D parent_xform = parent_3d->get_global_transform();
+                            spawn_pos = parent_xform.xform(local_offset);
+                            spawn_rot = parent_3d->get_global_rotation_degrees() + e->get_sync_rotation();
+                        } else {
+                            spawn_pos = n->get_global_position();
+                            spawn_rot = n->get_global_rotation_degrees();
+                        }
                     }
                 }
                 node->rpc_id(id, "_spawn_entity",
