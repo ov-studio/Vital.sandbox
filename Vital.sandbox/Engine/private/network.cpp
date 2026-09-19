@@ -799,16 +799,6 @@ namespace Vital::Engine {
             child_node->reparent(target, false);
         }
 
-        // DIAGNOSTIC (temporary): shows exactly what local offset the
-        // keep_global reparent above just baked in, before anything else
-        // touches it. If this is non-zero for a model whose real local
-        // offset should be (0,0,0) (e.g. the basketball model), that's the
-        // stale-snapshot-at-reparent-time bug caught in the act.
-        godot::UtilityFunctions::print("apply_reparent_entity [diag] net_id=", (int)net_id,
-            " -> parent_net_id=", (int)parent_net_id,
-            " baked local_pos=", child_node->get_position(),
-            " global_pos=", child_node->get_global_position());
-
         // Switch sync coordinate space for every ISyncable type (Model,
         // Physics_Body subtypes, or anything added later).
         // set_sync_parent_net_id is defined once on ISyncable — no per-type
