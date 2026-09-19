@@ -22,8 +22,6 @@
 // Vital: Engine: Physics_Body //
 //////////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Manager { 
     class Network;
 }
@@ -62,19 +60,9 @@ namespace Vital::Engine {
                 return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() && net_id != 0;
             }
 
-            godot::Vector3 get_sync_position() const override {
-                if (!const_cast<Physics_Body*>(this) -> Base::is_inside_tree()) return godot::Vector3();
-                if (sync_parent_net_id != 0) return const_cast<Physics_Body*>(this) -> Base::get_position();
-                return const_cast<Physics_Body*>(this) -> Base::get_global_position();
-            }
-
-            godot::Vector3 get_sync_rotation() const override {
-                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_rotation_degrees() : godot::Vector3();
-            }
-
-            godot::Vector3 get_sync_scale() const override {
-                return const_cast<Physics_Body*>(this) -> Base::is_inside_tree() ? const_cast<Physics_Body*>(this) -> Base::get_scale() : godot::Vector3(1, 1, 1);
-            }
+            // get_sync_position()/get_sync_rotation()/get_sync_scale(): use
+            // ISyncable's shared defaults (see syncable.cpp) — get_sync_node()
+            // below is all they need.
 
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override {
                 if (!Base::is_inside_tree()) return;
@@ -88,6 +76,10 @@ namespace Vital::Engine {
                 sync_last_scale = scale;
                 sync_sleeping = false;
             }
+
+            // on_sync_process(): uses ISyncable's shared default (see
+            // syncable.cpp) — is_sync_active() and get_sync_node() below
+            // already give it everything it needs for this type.
 
             void _notification(int what) {
                 if (what == Base::NOTIFICATION_PREDELETE) _notify_predelete_sync();

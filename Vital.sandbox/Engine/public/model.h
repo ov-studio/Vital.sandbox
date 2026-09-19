@@ -185,9 +185,9 @@ namespace Vital::Engine {
             Type get_sync_type() const override { return Type::Model; }
             std::string get_sync_name() const override { return model_name; }
             bool is_sync_active() const override;
-            godot::Vector3 get_sync_position() const override;
-            godot::Vector3 get_sync_rotation() const override;
-            godot::Vector3 get_sync_scale() const override;
+            // get_sync_position()/get_sync_rotation()/get_sync_scale(): no
+            // override needed — ISyncable's shared defaults (see
+            // syncable.cpp) already handle this via get_sync_node() below.
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override;
             // on_sync_process(): no override needed — uses ISyncable's
             // shared default (see syncable.cpp), driven by is_sync_active()

@@ -20,8 +20,6 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Manager {
     class Network;
 }
@@ -178,9 +176,9 @@ namespace Vital::Engine {
             virtual std::string get_sync_name() const { return ""; }
             virtual uint32_t get_net_id() const { return net_id; }
             virtual int get_sync_authority() const { return sync_authority; }
-            virtual godot::Vector3 get_sync_position() const = 0;
-            virtual godot::Vector3 get_sync_rotation() const = 0;
-            virtual godot::Vector3 get_sync_scale() const = 0;
+            virtual godot::Vector3 get_sync_position() const;
+            virtual godot::Vector3 get_sync_rotation() const;
+            virtual godot::Vector3 get_sync_scale() const;
             uint32_t get_sync_parent_net_id() const { return sync_parent_net_id; }
             #if !defined(VSDK_Client)
             uint32_t get_parent_net_id() const;

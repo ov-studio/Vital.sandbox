@@ -75,11 +75,6 @@ namespace Vital::Engine {
         sync_sleeping = false;
     }
 
-    godot::Vector3 Model::get_sync_scale() const {
-        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3(1, 1, 1);
-        return const_cast<Model*>(this)->get_scale();
-    }
-
     void Model::_process(double delta) {
         // Layer weight tweening runs regardless of sync authority/placeholder
         // state — it's purely a local visual concern (every peer that has
@@ -339,22 +334,15 @@ namespace Vital::Engine {
                     // entity is created while peers are already connected, e.g.
                     // a resource restart), which uses different code and was
                     // missed the first time.
-                    // Same fix: when parented, send the model's real LOCAL
-                    // offset (get_sync_position() already returns local once
-                    // sync_parent_net_id is set — a fixed value that doesn't
-                    // drift with the body's motion) instead of a global read
-                    // that can disagree with the body by however far it moved
-                    // in that one deferred frame. apply_reparent_entity already
-                    // uses keep_global_transform=false, so that exact local
+                    // get_sync_position()/get_sync_rotation() (ISyncable's
+                    // shared defaults, see syncable.cpp) already return LOCAL
+                    // when parented and GLOBAL otherwise — no need to branch on
+                    // get_parent_net_id() here at all, that dispatch already
+                    // happens inside them. apply_reparent_entity already uses
+                    // keep_global_transform=false, so a parented model's local
                     // value survives the reparent untouched once it lands.
-                    godot::Vector3 spawn_pos, spawn_rot;
-                    if (object->get_parent_net_id() != 0) {
-                        spawn_pos = object->get_sync_position();
-                        spawn_rot = object->get_sync_rotation();
-                    } else {
-                        spawn_pos = object->get_global_position();
-                        spawn_rot = object->get_global_rotation_degrees();
-                    }
+                    godot::Vector3 spawn_pos = object->get_sync_position();
+                    godot::Vector3 spawn_rot = object->get_sync_rotation();
                     net_node->rpc("_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
                 }
                 object->flush_pending_force_transform();
@@ -552,21 +540,9 @@ namespace Vital::Engine {
     // ISyncable overrides
     bool Model::is_sync_active() const { return const_cast<Model*>(this)->is_inside_tree() && !placeholder; }
 
-    godot::Vector3 Model::get_sync_position() const {
-        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3();
-        // When parented to another synced entity, sync local position so the child
-        // packet only carries the offset from the parent — not the full world coordinate.
-        if (sync_parent_net_id != 0) return const_cast<Model*>(this)->get_position();
-        return const_cast<Model*>(this)->get_global_position();
-    }
-    godot::Vector3 Model::get_sync_rotation() const {
-        if (!const_cast<Model*>(this)->is_inside_tree()) return godot::Vector3();
-        // Local rotation_degrees when parented — no change needed since Godot's
-        // get_rotation_degrees() already returns local Euler angles.
-        // When unparented it is also local (== global when parent is Core root),
-        // so this is consistent in both cases.
-        return const_cast<Model*>(this)->get_rotation_degrees();
-    }
+    // get_sync_position()/get_sync_rotation()/get_sync_scale(): use
+    // ISyncable's shared defaults (syncable.cpp) via get_sync_node() — no
+    // longer duplicated here.
     int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
 

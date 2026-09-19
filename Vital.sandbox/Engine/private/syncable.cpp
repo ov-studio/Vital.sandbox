@@ -21,8 +21,6 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Engine {
     void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
         buffer[offset]   =  value        & 0xFF;
@@ -334,6 +332,35 @@ namespace Vital::Engine {
             godot::Quaternion q_interp = q_before.slerp(q_after, t);
             out_rot = godot::Basis(q_interp).get_euler() * RAD2DEG;
         }
+    }
+
+    godot::Vector3 ISyncable::get_sync_position() const {
+        // Shared default for every ISyncable type (Physics_Body subtypes,
+        // Model) — previously duplicated near-identically in each. When
+        // parented to another synced entity, sync the LOCAL position so the
+        // child packet only carries the offset from the parent, not the full
+        // world coordinate; otherwise sync_parent_net_id is 0 and this falls
+        // straight through to the global position, so callers never need to
+        // branch on parenting themselves — see get_sync_node() below.
+        auto node = const_cast<ISyncable*>(this) -> get_sync_node();
+        if (!node || !node -> is_inside_tree()) return godot::Vector3();
+        if (sync_parent_net_id != 0) return node -> get_position();
+        return node -> get_global_position();
+    }
+
+    godot::Vector3 ISyncable::get_sync_rotation() const {
+        // Godot's get_rotation_degrees() is always local Euler angles, which
+        // already equals global when the parent is the Core root — no
+        // parent-check needed here, unlike position.
+        auto node = const_cast<ISyncable*>(this) -> get_sync_node();
+        if (!node || !node -> is_inside_tree()) return godot::Vector3();
+        return node -> get_rotation_degrees();
+    }
+
+    godot::Vector3 ISyncable::get_sync_scale() const {
+        auto node = const_cast<ISyncable*>(this) -> get_sync_node();
+        if (!node || !node -> is_inside_tree()) return godot::Vector3(1, 1, 1);
+        return node -> get_scale();
     }
 
     void ISyncable::on_sync_process(double delta) {
