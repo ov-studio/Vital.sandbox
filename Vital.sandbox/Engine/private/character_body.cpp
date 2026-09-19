@@ -27,7 +27,7 @@ namespace Vital::Engine {
         _ready_sync(pending_authority); 
     }
 
-    void Character_Body::_process(double delta) {
+    void Character_Body::_process(double delta) { 
         on_sync_process(delta); 
     }
 
