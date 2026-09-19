@@ -22,6 +22,8 @@
 // Vital: Engine: Physics_Body //
 //////////////////////////////////
 
+// TODO: Improve
+
 namespace Vital::Manager { 
     class Network;
 }
@@ -85,17 +87,6 @@ namespace Vital::Engine {
                 sync_last_vel = vel;
                 sync_last_scale = scale;
                 sync_sleeping = false;
-            }
-
-            void on_sync_process(double delta) override {
-                if (!Base::is_inside_tree() || !interp_ready || net_id == 0) return;
-                auto net = Manager::Network::get_singleton();
-                if (net && net  ->  get_peer_id() == sync_authority) return;
-                godot::Vector3 out_pos, out_rot;
-                interp_process(delta, out_pos, out_rot);
-                if (sync_parent_net_id != 0) Base::set_position(out_pos);
-                else Base::set_global_position(out_pos);
-                Base::set_rotation_degrees(out_rot);
             }
 
             void _notification(int what) {

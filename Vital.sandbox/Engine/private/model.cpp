@@ -17,7 +17,6 @@
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
-#include <set>
 
 
 ///////////////////////////
@@ -86,45 +85,8 @@ namespace Vital::Engine {
         // state — it's purely a local visual concern (every peer that has
         // this model rendered needs its overlay layers to blend smoothly).
         if (anim_tree) update_animation_layers((float)delta);
-
-        // DIAGNOSTIC (temporary): one-shot log per net_id the first time this
-        // model is actually gated/rendered by the sync system, so we can see
-        // exactly which state (placeholder / interp_ready / parent) was true
-        // at the moment it mattered, instead of guessing from screenshots.
-        // Safe to remove once the model-offset bug is confirmed fixed.
-        static std::set<void*> logged_block, logged_apply;
-        if (net_id != 0 && sync_parent_net_id != 0) {
-            if ((placeholder || !interp_ready) && logged_block.insert((void*)this).second) {
-                godot::UtilityFunctions::print("Model::_process [diag] net_id=", (int)net_id,
-                    " BLOCKED render — placeholder=", placeholder, " interp_ready=", interp_ready,
-                    " is_inside_tree=", is_inside_tree(), " local_pos=", get_position());
-            }
-        }
-
-        if (placeholder || !is_inside_tree() || !interp_ready) return;
-        auto net = Manager::Network::get_singleton();
-        if (net && net->get_peer_id() == sync_authority) return;
-        // Delegate snapshot interpolation to ISyncable shared implementation.
-        godot::Vector3 out_pos, out_rot;
-        interp_process(delta, out_pos, out_rot);
-        if (net_id != 0 && sync_parent_net_id != 0 && logged_apply.insert((void*)this).second) {
-            godot::UtilityFunctions::print("Model::_process [diag] net_id=", (int)net_id,
-                " FIRST APPLY — sync_parent_net_id=", (int)sync_parent_net_id,
-                " out_pos=", out_pos, " prior_local_pos=", get_position());
-        }
-        // When parented to another synced entity the snapshot values are in local
-        // space, so write them back as local transform — not global.
-        if (sync_parent_net_id != 0) {
-            set_position(out_pos);
-            set_rotation_degrees(out_rot);
-        }
-        else {
-            set_global_position(out_pos);
-            set_rotation_degrees(out_rot);
-        }
+        on_sync_process(delta);
     }
-
-    void Model::on_sync_process(double delta) { _process(delta); }
 
 
     //---------------------------//

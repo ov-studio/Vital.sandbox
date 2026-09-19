@@ -21,6 +21,8 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
+// TODO: Improve
+
 namespace Vital::Engine {
     void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
         buffer[offset]   =  value        & 0xFF;
@@ -332,6 +334,29 @@ namespace Vital::Engine {
             godot::Quaternion q_interp = q_before.slerp(q_after, t);
             out_rot = godot::Basis(q_interp).get_euler() * RAD2DEG;
         }
+    }
+
+    void ISyncable::on_sync_process(double delta) {
+        // Shared default for every ISyncable type (Physics_Body subtypes,
+        // Model). Previously duplicated near-identically in each: this
+        // implementation only needs get_sync_node() (the Node3D to actually
+        // move) and is_sync_active() (each type's own "am I eligible to
+        // render sync data right now" check — Physics_Body: in tree and has
+        // a net_id; Model: in tree and not still a streaming placeholder) to
+        // stay fully generic. A subtype only needs to override this again if
+        // it genuinely needs different behavior, none currently do.
+        if (!is_sync_active() || !interp_ready || net_id == 0) return;
+        auto net = Manager::Network::get_singleton();
+        if (net && net -> get_peer_id() == sync_authority) return;
+        auto node = get_sync_node();
+        if (!node) return;
+        godot::Vector3 out_pos, out_rot;
+        interp_process(delta, out_pos, out_rot);
+        // When parented to another synced entity the snapshot values are in
+        // local space, so write them back as local transform — not global.
+        if (sync_parent_net_id != 0) node -> set_position(out_pos);
+        else node -> set_global_position(out_pos);
+        node -> set_rotation_degrees(out_rot);
     }
 
     #if !defined(VSDK_Client)

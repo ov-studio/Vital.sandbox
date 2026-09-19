@@ -189,7 +189,9 @@ namespace Vital::Engine {
             godot::Vector3 get_sync_rotation() const override;
             godot::Vector3 get_sync_scale() const override;
             void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) override;
-            void on_sync_process(double delta) override;
+            // on_sync_process(): no override needed — uses ISyncable's
+            // shared default (see syncable.cpp), driven by is_sync_active()
+            // and get_sync_node() below.
             void destroy_sync() override { this->queue_free(); }
             godot::Node3D* get_sync_node() override { return this; }
 
