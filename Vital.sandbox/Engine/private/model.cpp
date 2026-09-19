@@ -321,8 +321,40 @@ namespace Vital::Engine {
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
                 auto net_node = Manager::Network::get_singleton()->get_node();
                 if (net_node) {
-                    godot::Vector3 spawn_pos = object->get_global_position();
-                    godot::Vector3 spawn_rot = object->get_global_rotation_degrees();
+                    // FIXED: was object->get_global_position()/get_global_rotation_degrees()
+                    // — this reads the model's raw global transform, completely
+                    // ignoring whether it's parented. This RPC is deferred one
+                    // frame (see comment above), and Lua's set_parent() call for
+                    // a body-riding model (e.g. the basketball model parented to
+                    // its rigid body) runs synchronously in the SAME tick that
+                    // created it — so by the time this deferred broadcast fires,
+                    // the model is already parented, and for anything already
+                    // moving (many balls spawned in a loop, already falling and
+                    // colliding with each other by the time each one's deferred
+                    // broadcast goes out) its raw global position no longer
+                    // agrees with where its body actually is. Exactly the same
+                    // bug already found and fixed for the late-join handshake
+                    // path in Manager/private/network.cpp's spawn loop — this is
+                    // the equivalent live-broadcast path (fires when a NEW
+                    // entity is created while peers are already connected, e.g.
+                    // a resource restart), which uses different code and was
+                    // missed the first time.
+                    // Same fix: when parented, send the model's real LOCAL
+                    // offset (get_sync_position() already returns local once
+                    // sync_parent_net_id is set — a fixed value that doesn't
+                    // drift with the body's motion) instead of a global read
+                    // that can disagree with the body by however far it moved
+                    // in that one deferred frame. apply_reparent_entity already
+                    // uses keep_global_transform=false, so that exact local
+                    // value survives the reparent untouched once it lands.
+                    godot::Vector3 spawn_pos, spawn_rot;
+                    if (object->get_parent_net_id() != 0) {
+                        spawn_pos = object->get_sync_position();
+                        spawn_rot = object->get_sync_rotation();
+                    } else {
+                        spawn_pos = object->get_global_position();
+                        spawn_rot = object->get_global_rotation_degrees();
+                    }
                     net_node->rpc("_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
                 }
                 object->flush_pending_force_transform();
