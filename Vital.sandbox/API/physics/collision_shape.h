@@ -363,8 +363,8 @@ namespace Vital::Sandbox::API {
                 auto model = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
 
                 // Parse config //
-                std::string shape_type    = "convex";
-                bool include_children     = false;
+                std::string shape_type = "convex";
+                bool include_children = false;
                 std::vector<std::pair<std::string, std::string>> filters;
                 if (vm -> is_table(3)) {
                     vm -> get_table_field("shape_type", 3);
@@ -382,7 +382,6 @@ namespace Vital::Sandbox::API {
                                 vm -> get_table_field("match", -1);
                                 std::string match_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
                                 vm -> pop(1);
-
                                 vm -> get_table_field("shape_type", -1);
                                 std::string type_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
                                 vm -> pop(1);
