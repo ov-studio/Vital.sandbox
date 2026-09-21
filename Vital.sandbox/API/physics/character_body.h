@@ -221,36 +221,29 @@ namespace Vital::Sandbox::API {
 
                 int index = vm -> get_int(2);
                 int count = self -> body -> get_slide_collision_count();
-                if (index < 0 || index >= count) {
-                    vm -> push_value(nullptr);
-                    return 1;
+                if (index < 0 || index >= count) vm -> push_value(false);
+                else {
+                    godot::KinematicCollision3D* col = self -> body -> get_slide_collision(index).ptr();
+                    if (!col) vm -> push_value(false);
+                    else {
+                        uint32_t collider_net_id = 0;
+                        godot::Object* collider_obj = col -> get_collider();
+                        if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(collider_obj)) collider_net_id = sync -> get_net_id();
+                        vm -> create_table();
+                        vm -> push_value((int)collider_net_id);
+                        vm -> set_table_field("collider_net_id", -2);
+                        vm -> push_value(col -> get_normal());
+                        vm -> set_table_field("normal", -2);
+                        vm -> push_value(col -> get_travel());
+                        vm -> set_table_field("travel", -2);
+                        vm -> push_value(col -> get_remainder());
+                        vm -> set_table_field("remainder", -2);
+                        vm -> push_value(col -> get_position());
+                        vm -> set_table_field("position", -2);
+                        vm -> push_value(col -> get_collider_velocity());
+                        vm -> set_table_field("collider_velocity", -2);
+                    }
                 }
-
-                godot::KinematicCollision3D* col = self -> body -> get_slide_collision(index).ptr();
-                if (!col) {
-                    vm -> push_value(nullptr);
-                    return 1;
-                }
-
-                uint32_t collider_net_id = 0;
-                godot::Object* collider_obj = col -> get_collider();
-                if (auto* sync = dynamic_cast<Vital::Engine::ISyncable*>(collider_obj)) {
-                    collider_net_id = sync -> get_net_id();
-                }
-
-                vm -> create_table();
-                vm -> push_value((int)collider_net_id);
-                vm -> set_table_field("collider_net_id", -2);
-                vm -> push_value(col -> get_normal());
-                vm -> set_table_field("normal", -2);
-                vm -> push_value(col -> get_travel());
-                vm -> set_table_field("travel", -2);
-                vm -> push_value(col -> get_remainder());
-                vm -> set_table_field("remainder", -2);
-                vm -> push_value(col -> get_position());
-                vm -> set_table_field("position", -2);
-                vm -> push_value(col -> get_collider_velocity());
-                vm -> set_table_field("collider_velocity", -2);
                 return 1;
             });
             ///////////////////
