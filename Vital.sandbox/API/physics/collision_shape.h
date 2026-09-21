@@ -396,9 +396,6 @@ namespace Vital::Sandbox::API {
                 }
 
                 auto* model_node = model_inst -> model;
-
-                // Resolve the type for a given leaf/component name against filters,
-                // falling back to shape_type if nothing matches.
                 auto resolve_type = [&](const std::string& component) -> std::string {
                     if (filters.empty()) return shape_type;
                     auto slash = component.rfind('/');
