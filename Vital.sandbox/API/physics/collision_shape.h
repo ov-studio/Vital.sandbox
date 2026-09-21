@@ -360,8 +360,7 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); })
                     .optional(3, &Machine::is_table);
 
-                auto model_inst = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
-                if (!model_inst || !model_inst -> model) { vm -> push_value(false); return 1; }
+                auto model = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
 
                 // Parse config //
                 std::string shape_type    = "convex";
@@ -395,7 +394,7 @@ namespace Vital::Sandbox::API {
                     vm -> pop(1); 
                 }
 
-                auto* model_node = model_inst -> model;
+                auto* model_node = model -> model;
                 auto resolve_type = [&](const std::string& component) -> std::string {
                     if (filters.empty()) return shape_type;
                     auto slash = component.rfind('/');
