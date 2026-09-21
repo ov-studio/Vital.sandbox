@@ -91,8 +91,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(camera = nil)")
                     .optional(1, [](Machine* vm, int idx) { return vm_module::is_userdata<Instance>(vm, idx); });
 
-                std::shared_ptr<Instance> instance = vm -> is_nil(1) ? nullptr : vm_module::get_userdata_object<Instance>(vm, 1);
-                base_class::set_active(instance ? instance -> get_node() : nullptr);
+                std::shared_ptr<Instance> camera = vm -> is_nil(1) ? nullptr : vm_module::get_userdata_object<Instance>(vm, 1);
+                base_class::set_active(camera ? camera -> get_node() : nullptr);
                 vm -> push_value(true);
                 return 1;
             });
