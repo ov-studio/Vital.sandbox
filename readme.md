@@ -60,7 +60,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
   - **`Vital/`** — entrypoint, precompiled header, and top-level includes
 - **`Vital.client/`** — Godot client project (loads the GDExtension, ships as the player binary)
 - **`Vital.server/`** — Godot server project with `config.yaml` (network, sync, masterlist, bootstrap)
-- **`Vital.benchmark/`** — self-contained benchmark project; runs benchmark scripts and exports `benchmark.json`
+- **`Vital.benchmark/`** — self-contained benchmark project; runs benchmark and exports `benchmark.json`
 - **`build.py`** — cross-platform build script
 
 ## Privacy Policy
