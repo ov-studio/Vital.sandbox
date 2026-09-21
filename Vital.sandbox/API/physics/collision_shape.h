@@ -376,7 +376,7 @@ namespace Vital::Sandbox::API {
                     if (vm -> is_table(-1)) {
                         int n = vm -> get_length(-1);
                         for (int i = 1; i <= n; ++i) {
-                            vm -> get_table_field(i, -1); // push filters[i]
+                            vm -> get_table_field(i, -1);
                             if (vm -> is_table(-1)) {
                                 vm -> get_table_field("match", -1);
                                 std::string match_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
