@@ -43,17 +43,19 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         public:
             struct Internal {
-                #if defined(VSDK_Client)
                 private:
                     // Helpers //
+                    #if defined(VSDK_Client)
                     static void add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments = 24);
                     static void add_half_ring(godot::PackedVector3Array& points, float radius, float center_y, int plane, bool upper, int segments = 12);
+                    #endif
                 public:
                     // Helpers //
+                    #if defined(VSDK_Client)
                     static godot::Ref<godot::ArrayMesh> build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color);
+                    #endif
                     static godot::Ref<godot::ConvexPolygonShape3D> build_convex_shape(godot::MeshInstance3D* mesh_instance);
                     static godot::Ref<godot::ConcavePolygonShape3D> build_concave_shape(godot::MeshInstance3D* mesh_instance);
-                #endif
             };
 
             // Hooks //

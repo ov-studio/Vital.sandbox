@@ -20,9 +20,9 @@
 // Vital: Engine: Collision_Shape //
 /////////////////////////////////////
 
-#if defined(VSDK_Client)
 namespace Vital::Engine {
     // Helpers //
+    #if defined(VSDK_Client)
     void Collision_Shape::Internal::add_ring(godot::PackedVector3Array& points, float radius, float y, int plane, int segments) {
         for (int i = 0; i < segments; i++) {
             float a0 = (float)i / segments * 6.28318530717958647692f;
@@ -64,7 +64,9 @@ namespace Vital::Engine {
             points.push_back(p1);
         }
     }
+    #endif
 
+    #if defined(VSDK_Client)
     godot::Ref<godot::ArrayMesh> Collision_Shape::Internal::build_wireframe_mesh(const godot::Ref<godot::Shape3D>& shape, const godot::Color& color) {
         godot::PackedVector3Array points;
         if (auto box = godot::Object::cast_to<godot::BoxShape3D>(shape.ptr())) {
@@ -144,6 +146,7 @@ namespace Vital::Engine {
         }
         return mesh;
     }
+    #endif
 
     godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh_instance) {
         if (!mesh_instance) return {};
@@ -187,7 +190,6 @@ namespace Vital::Engine {
         return shape;
     }
 }
-#endif
 
 namespace Vital::Engine {
     // Instantiators //
