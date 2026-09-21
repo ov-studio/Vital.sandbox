@@ -428,6 +428,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
             auto node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;
+            
             auto syncable = dynamic_cast<ISyncable*>(node);
             if (!syncable || syncable -> get_net_id() != captured_net_id) return;
             if (syncable -> get_sync_authority() > 1) syncable -> force_transform_broadcast();
