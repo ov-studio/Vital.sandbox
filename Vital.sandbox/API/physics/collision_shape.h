@@ -406,9 +406,7 @@ namespace Vital::Sandbox::API {
                 };
 
                 // Build a shape ref from a MeshInstance3D* given type string.
-                auto build_shape = [&](godot::MeshInstance3D* mesh, const std::string& type)
-                    -> godot::Ref<godot::Shape3D>
-                {
+                auto build_shape = [&](godot::MeshInstance3D* mesh, const std::string& type) -> godot::Ref<godot::Shape3D> {
                     if (type == "concave") return base_class::Internal::build_concave_shape(mesh);
                     return base_class::Internal::build_convex_shape(mesh);
                 };
