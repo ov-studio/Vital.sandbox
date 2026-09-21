@@ -168,9 +168,7 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
                 auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
-                if (vm -> is_string(3)) {
-                    base_class::get_singleton() -> draw_material(position, size, vm -> get_string(3), rotation, pivot, color);
-                }
+                if (vm -> is_string(3)) base_class::get_singleton() -> draw_material(position, size, vm -> get_string(3), rotation, pivot, color);
                 else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
                     auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_material(position, size, instance -> texture, rotation, pivot, color);
