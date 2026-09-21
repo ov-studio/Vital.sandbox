@@ -106,6 +106,7 @@ namespace Vital::Sandbox::API {
                     auto shape = godot::Object::cast_to<base_class>(obj);
                     if (!shape) return;
                     if (Instance::find_by_ptr(shape)) return;
+                    
                     auto instance = Instance::init(nullptr, remote);
                     instance -> body = shape;
                     instance -> store(false);
