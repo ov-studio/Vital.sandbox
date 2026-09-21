@@ -434,12 +434,6 @@ namespace Vital::Sandbox::API {
                     if (!shape.is_valid()) { vm -> push_value(false); return 1; }
                     self -> body -> assign_shape(shape);
                     #if !defined(VSDK_Client)
-                    // Sync by REFERENCE, not by geometry: clients already have this
-                    // model's asset loaded (they render it), so send just enough to
-                    // let them rebuild the same convex/concave shape locally —
-                    // model net_id + component path + shape type + transform —
-                    // instead of the full vertex/face array. See "mesh_ref" in
-                    // Network::apply_shape (Engine/private/network.cpp).
                     {
                         godot::Array p;
                         p.push_back((int)model_node -> get_net_id());
