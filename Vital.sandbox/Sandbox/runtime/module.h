@@ -187,7 +187,7 @@ namespace Vital::Sandbox {
             static bool is_node3d_userdata(Machine* vm, int idx = 1) {
                 auto ud = get_userdata_ptr(vm, idx);
                 if (!ud || !*ud) return false;
-                std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                std::lock_guard<std::mutex> lock(vm_registry_mutex);
                 return vm_instance_registry.count(*ud) > 0;
             }
 

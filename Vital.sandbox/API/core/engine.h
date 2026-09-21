@@ -122,7 +122,7 @@ namespace Vital::Sandbox::API {
                 Vital::Engine::ISyncable* syncable = (net_id != 0 && Manager::Network::has_singleton()) ? Manager::Network::get_singleton() -> find_syncable(net_id) : nullptr;
                 godot::Node3D* node = syncable ? dynamic_cast<godot::Node3D*>(syncable) : nullptr;
                 if (node) {
-                    std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                    std::lock_guard<std::mutex> lock(vm_registry_mutex);
                     auto it = vm_node_registry.find(node);
                     if (it != vm_node_registry.end()) {
                         it -> second -> push_self(vm);

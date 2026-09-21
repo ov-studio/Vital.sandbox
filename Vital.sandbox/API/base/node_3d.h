@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
                     auto parent = self -> get_node() -> get_parent();
                     if (!parent || parent == Vital::Engine::Core::get_singleton()) vm -> push_value(false);
                     else {
-                        std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                        std::lock_guard<std::mutex> lock(vm_registry_mutex);
                         auto it = vm_node_registry.find(parent);
                         if (it != vm_node_registry.end()) it -> second -> push_self(vm);
                         else vm -> push_value(false);

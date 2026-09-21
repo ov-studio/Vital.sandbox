@@ -164,7 +164,7 @@ namespace Vital::Sandbox {
                 {
                     auto node_3d = instance -> get_node_3d();
                     if (node_3d) {
-                        std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                        std::lock_guard<std::mutex> lock(vm_registry_mutex);
                         vm_node_registry[node_3d] = instance.get();
                         vm_instance_registry[static_cast<void*>(instance.get())] = instance.get();
                     }
@@ -203,7 +203,7 @@ namespace Vital::Sandbox {
             static bool release(const std::shared_ptr<Derived> instance) {
                 {
                     auto node_3d = instance -> get_node_3d();
-                    std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                    std::lock_guard<std::mutex> lock(vm_registry_mutex);
                     if (node_3d) vm_node_registry.erase(node_3d);
                     vm_instance_registry.erase(static_cast<void*>(instance.get()));
                 }
