@@ -134,9 +134,8 @@ namespace Vital::Sandbox::API {
                     .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Image::Instance>(vm, idx); });
 
                 auto name = vm -> get_string(2);
-                auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
-                auto ref = instance -> get_node() -> get_canvas_texture();
-                vm -> push_value(self -> shader -> set_param_texture(name, ref));
+                auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
+                vm -> push_value(self -> shader -> set_param_texture(name, image -> get_node() -> get_canvas_texture()));
                 return 1;
             });
 
@@ -146,8 +145,8 @@ namespace Vital::Sandbox::API {
                     .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
 
                 auto name = vm -> get_string(2);
-                auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                vm -> push_value(self -> shader -> set_param_viewport_texture(name, instance -> get_node() -> get_texture()));
+                auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                vm -> push_value(self -> shader -> set_param_viewport_texture(name, rendertarget -> get_node() -> get_texture()));
                 return 1;
             });
 
