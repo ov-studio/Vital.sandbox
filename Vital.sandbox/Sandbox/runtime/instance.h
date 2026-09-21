@@ -24,7 +24,7 @@ namespace Vital::Sandbox {
     struct vm_instance_base {
         virtual ~vm_instance_base() = default;
         virtual void push_self(Machine* vm) = 0;
-        virtual godot::Node3D* get_node_3d() { return nullptr; }
+        virtual godot::Node3D* get_node() { return nullptr; }
     };
 
     template<typename Derived>
@@ -79,7 +79,7 @@ namespace Vital::Sandbox {
             template<typename T>
             struct has_node3d_node<T, std::void_t<decltype(static_cast<godot::Node3D*>(std::declval<T*>() -> get_node()))>> : std::true_type {};
         public:
-            godot::Node3D* get_node_3d() override {
+            godot::Node3D* get_node() override {
                 if constexpr (has_node3d_node<Derived>::value) return static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node());
                 return nullptr;
             }
@@ -162,7 +162,7 @@ namespace Vital::Sandbox {
                 calling_vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(calling_vm, -1);
                 {
-                    auto node3d = instance -> get_node_3d();
+                    auto node3d = instance -> get_node();
                     if (node3d) {
                         std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
                         vm_node_registry[node3d] = instance.get();
@@ -202,7 +202,7 @@ namespace Vital::Sandbox {
 
             static bool release(const std::shared_ptr<Derived> instance) {
                 {
-                    auto node3d = instance -> get_node_3d();
+                    auto node3d = instance -> get_node();
                     std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
                     if (node3d) vm_node_registry.erase(node3d);
                     vm_instance_registry.erase(static_cast<void*>(instance.get()));

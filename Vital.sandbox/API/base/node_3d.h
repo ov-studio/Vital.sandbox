@@ -218,7 +218,7 @@ namespace Vital::Sandbox::API {
                     }
 
                     auto ud = vm_module::get_userdata_ptr(vm, 2);
-                    auto parent_node = static_cast<vm_instance_base*>(*ud) -> get_node_3d();
+                    auto parent_node = static_cast<vm_instance_base*>(*ud) -> get_node();
                     if (!parent_node || parent_node == node || node -> is_ancestor_of(parent_node)) {
                         vm -> push_value(false);
                         return 1;
