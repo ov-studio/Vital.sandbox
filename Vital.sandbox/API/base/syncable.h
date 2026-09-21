@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "get_net_id", [](auto vm, auto self, auto& id) -> int {
                 auto node = self -> get_node();
-                if (node && node -> is_replicated()) vm -> push_value((int)node -> get_net_id());
+                if (node -> is_replicated()) vm -> push_value((int)node -> get_net_id());
                 else vm -> push_value(false);
                 return 1;
             });
