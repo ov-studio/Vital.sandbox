@@ -234,7 +234,7 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Area::Instance>(vm, idx); });
 
                 auto other = vm_module::get_userdata_object<Area::Instance>(vm, 2);
-                vm -> push_value(other ? self -> body -> overlaps_area(other -> get_node()) : false);
+                vm -> push_value(self -> body -> overlaps_area(other -> get_node()));
                 return 1;
             });
 
