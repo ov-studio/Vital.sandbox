@@ -226,7 +226,7 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
-                instance -> vm = remote ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
+                instance -> vm = (!vm || remote) ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
                 if (vm && !remote) instance -> env = vm -> get_environment_id();
                 return instance;
             }
