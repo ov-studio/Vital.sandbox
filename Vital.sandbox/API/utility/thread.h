@@ -215,7 +215,7 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Promise::Instance>(vm, idx); });
 
                 auto promise = vm_module::get_userdata_object<API::Promise::Instance>(vm, 2);
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) {
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) {
                     vm -> push_value(false);
                     return 1;
                 }
