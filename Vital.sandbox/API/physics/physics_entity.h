@@ -107,15 +107,20 @@ namespace Vital::Sandbox::API {
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 switch (sub_type) {
                     case Vital::Engine::PhysicsType::Rigid:
-                        destroy_body<Rigid_Body, Vital::Engine::Rigid_Body>(entity); break;
+                        destroy_body<Rigid_Body, Vital::Engine::Rigid_Body>(entity); 
+                        break;
                     case Vital::Engine::PhysicsType::Static:
-                        destroy_body<Static_Body, Vital::Engine::Static_Body>(entity); break;
+                        destroy_body<Static_Body, Vital::Engine::Static_Body>(entity); 
+                        break;
                     case Vital::Engine::PhysicsType::Character:
-                        destroy_body<Character_Body, Vital::Engine::Character_Body>(entity); break;
+                        destroy_body<Character_Body, Vital::Engine::Character_Body>(entity); 
+                        break;
                     case Vital::Engine::PhysicsType::Animatable:
-                        destroy_body<Animatable_Body, Vital::Engine::Animatable_Body>(entity); break;
+                        destroy_body<Animatable_Body, Vital::Engine::Animatable_Body>(entity); 
+                        break;
                     case Vital::Engine::PhysicsType::Vehicle:
-                        destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); break;
+                        destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); 
+                        break;
                     default: break;
                 }
             });
