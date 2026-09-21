@@ -369,7 +369,6 @@ namespace Vital::Sandbox::API {
                     vm -> get_table_field("shape_type", 3);
                     if (vm -> is_string(-1)) shape_type = vm -> get_string(-1);
                     vm -> pop(1);
-
                     vm -> get_table_field("include_children", 3);
                     if (vm -> is_bool(-1)) include_children = vm -> get_bool(-1);
                     vm -> pop(1);
