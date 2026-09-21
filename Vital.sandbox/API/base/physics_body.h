@@ -207,8 +207,8 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(body)", true)
                         .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
-                    auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                    self -> get_node() -> remove_collision_exception_with(instance -> get_node());
+                    auto body = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                    self -> get_node() -> remove_collision_exception_with(body -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
