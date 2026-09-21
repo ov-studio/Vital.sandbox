@@ -374,8 +374,6 @@ namespace Vital::Sandbox::API {
                     vm -> pop(1);
                     vm -> get_table_field("filters", 3);
                     if (vm -> is_table(-1)) {
-                        // filters is an ordered array:  { {match="*_leaves_*", shape_type="none"}, … }
-                        // Iterate i = 1 .. #filters to preserve declaration order.
                         int n = vm -> get_length(-1);
                         for (int i = 1; i <= n; ++i) {
                             vm -> get_table_field(i, -1); // push filters[i]
