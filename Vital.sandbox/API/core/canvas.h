@@ -172,20 +172,20 @@ namespace Vital::Sandbox::API {
                     base_class::get_singleton() -> draw_material(position, size, vm -> get_string(3), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
-                    auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
+                    auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, image -> get_node(), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::SVG::Instance>(vm, 3)) {
-                    auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
+                    auto svg = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, svg -> get_node(), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
-                    auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
+                    auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, rendertarget -> get_node(), rotation, pivot, color);
                 }
                 else {
-                    auto instance = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
+                    auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, shader -> get_node(), rotation, pivot, color);
                 }
                 vm -> push_value(true);
                 return 1;
