@@ -36,6 +36,7 @@ namespace Vital::Engine {
             godot::MeshInstance3D* debug_mesh = nullptr;
             #endif
 
+            
             // Instantiators //
             Collision_Shape();
             ~Collision_Shape() override;
