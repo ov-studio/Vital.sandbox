@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                 else {
                     Machine::enqueue([thread_id, resolved, promise]() {
                         auto instance = Instance::find(thread_id);
-                        if (!Instance::find_unlocked(instance) || !instance -> thread_vm) return;
+                        if (!instance || !instance -> thread_vm) return;
                         instance -> thread_vm -> push_bool(resolved);
                         int values = API::Promise::push_values(promise, instance -> thread_vm);
                         instance -> awaiting = false;
