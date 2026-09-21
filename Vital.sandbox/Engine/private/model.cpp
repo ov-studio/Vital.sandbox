@@ -115,7 +115,7 @@ namespace Vital::Engine {
     }
 
     int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return -1;
         for (int i = 0; i < array_mesh->get_surface_count(); i++) {
             if (Tool::to_std_string(array_mesh->surface_get_name(i)) == material) return i;
