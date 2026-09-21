@@ -162,10 +162,10 @@ namespace Vital::Sandbox {
                 calling_vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(calling_vm, -1);
                 {
-                    auto node3d = instance -> get_node_3d();
-                    if (node3d) {
+                    auto node_3d = instance -> get_node_3d();
+                    if (node_3d) {
                         std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
-                        vm_node_registry[node3d] = instance.get();
+                        vm_node_registry[node_3d] = instance.get();
                         vm_instance_registry[static_cast<void*>(instance.get())] = instance.get();
                     }
                 }
@@ -202,9 +202,9 @@ namespace Vital::Sandbox {
 
             static bool release(const std::shared_ptr<Derived> instance) {
                 {
-                    auto node3d = instance -> get_node_3d();
+                    auto node_3d = instance -> get_node_3d();
                     std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
-                    if (node3d) vm_node_registry.erase(node3d);
+                    if (node_3d) vm_node_registry.erase(node_3d);
                     vm_instance_registry.erase(static_cast<void*>(instance.get()));
                 }
                 vm_module::release_userdata_ptr(instance -> userdata);
