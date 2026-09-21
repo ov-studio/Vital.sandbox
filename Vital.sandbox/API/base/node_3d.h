@@ -201,7 +201,7 @@ namespace Vital::Sandbox::API {
             {
                 vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(entity = nil)", true)
-                        .optional(2, [](Machine* vm, int idx) { return lua_isuserdata(vm -> get_state(), idx); });
+                        .optional(2, &vm_module::is_node3d_userdata);
 
                     auto node = self -> get_node();
                     auto core = Vital::Engine::Core::get_singleton();

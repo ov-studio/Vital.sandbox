@@ -183,6 +183,13 @@ namespace Vital::Sandbox {
                 return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
             }
 
+            static bool is_node3d_userdata(Machine* vm, int idx = 1) {
+                auto ud = get_userdata_ptr(vm, idx);
+                if (!ud || !*ud) return false;
+                std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
+                return vm_node_registry.count(*ud) > 0;
+            }
+
             template<typename T = void>
             static std::string get_userdata_type(Machine* vm, int idx = 1) {
                 auto state = vm -> get_state();
