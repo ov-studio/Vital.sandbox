@@ -518,8 +518,7 @@ namespace Vital::Sandbox::API {
 
                 #if !defined(VSDK_Client)
                 // Only the net_id + mode ints are present when nothing matched — nothing to send.
-                if (sync_params.size() > 2)
-                    self -> broadcast("mesh_ref", sync_params);
+                if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
                 #endif
 
                 vm -> push_value(true);
