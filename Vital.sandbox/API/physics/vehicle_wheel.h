@@ -149,7 +149,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Vehicle_Wheel>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(owner)", true)
+                vm_args(vm, id, "(body)", true)
                     .require(1, [](Machine* vm, int idx) { return vm_module::is_userdata<Vehicle_Body::Instance>(vm, idx); });
 
                 auto body = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
