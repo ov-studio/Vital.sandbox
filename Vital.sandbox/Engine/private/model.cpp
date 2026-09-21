@@ -554,7 +554,7 @@ namespace Vital::Engine {
 
     std::vector<std::string> Model::get_materials(const std::string& component) {
         godot::ArrayMesh* array_mesh =
-            godot::Object::cast_to<godot::ArrayMesh>(assert_component(component)->get_mesh().ptr());
+            godot::Object::cast_to<godot::ArrayMesh>(assert_component(component) -> get_mesh().ptr());
         std::vector<std::string> materials;
         if (!array_mesh) return materials;
         for (int i = 0; i < array_mesh->get_surface_count(); i++) materials.push_back(Tool::to_std_string(array_mesh->surface_get_name(i)));
@@ -563,7 +563,7 @@ namespace Vital::Engine {
 
     std::vector<std::string> Model::get_blendshapes(const std::string& component) {
         auto mesh = assert_component(component);
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         std::vector<std::string> blendshapes;
         if (!array_mesh) return blendshapes;
         for (int i = 0; i < mesh->get_blend_shape_count(); i++) blendshapes.push_back(Tool::to_std_string(array_mesh->get_blend_shape_name(i)));
