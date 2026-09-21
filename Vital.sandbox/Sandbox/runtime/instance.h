@@ -126,7 +126,10 @@ namespace Vital::Sandbox {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 for (auto it = Derived::Owner::registry.buffer.begin(); it != Derived::Owner::registry.buffer.end();) {
                     auto& instance = it -> second;
-                    if (instance -> get_node() != ptr) { ++it; continue; }
+                    if (instance -> get_node() != ptr) { 
+                        ++it; 
+                        continue;
+                    }
                     ++it;
                     erase_unlocked(instance);
                     Vital::Engine::Core::get_singleton() -> execute([instance, on_release]() {
