@@ -1074,8 +1074,7 @@ namespace Vital::Engine {
 
         #if !defined(VSDK_Client)
         auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node)
-            net_node->rpc("_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        if (net_node) net_node->rpc("_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #else
         auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
