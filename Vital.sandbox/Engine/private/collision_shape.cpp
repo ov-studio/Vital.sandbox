@@ -218,13 +218,13 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Collision_Shape* Collision_Shape::create(godot::Node3D* owner) {
-        auto body = memnew(Collision_Shape);
-        if (owner) owner -> add_child(body);
-        else Engine::Core::get_singleton() -> add_child(body);
-        Tool::Event::emit("entity:spawned", Tool::Stack({body, false}));
-        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(body)}));
-        return body;
+    Collision_Shape* Collision_Shape::create(godot::Node3D* body) {
+        auto collision = memnew(Collision_Shape);
+        if (body) body -> add_child(collision);
+        else Engine::Core::get_singleton() -> add_child(collision);
+        Tool::Event::emit("entity:spawned", Tool::Stack({collision, false}));
+        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(collision)}));
+        return collision;
     }
 
     void Collision_Shape::destroy() {

@@ -38,7 +38,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Vehicle_Wheel* create(godot::Node3D* owner);
+            static Vehicle_Wheel* create(godot::Node3D* body);
             void destroy();
 
 

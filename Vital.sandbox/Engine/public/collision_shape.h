@@ -63,7 +63,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Collision_Shape* create(godot::Node3D* owner);
+            static Collision_Shape* create(godot::Node3D* body);
             void destroy();
             void assign_shape(godot::Ref<godot::Shape3D> shape);
 
