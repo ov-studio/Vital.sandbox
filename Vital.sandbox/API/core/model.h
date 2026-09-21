@@ -94,6 +94,7 @@ namespace Vital::Sandbox::API {
                     auto model = godot::Object::cast_to<base_class>(obj);
                     if (!model) return;
                     if (Instance::find_by_ptr(model)) return;
+                    
                     auto instance = Instance::init(nullptr, remote);
                     instance -> model = model;
                     instance -> store();
