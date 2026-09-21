@@ -1,6 +1,7 @@
 # Builds
 .vs/
 .vscode/
+.kilo/
 .conan/
 .vcpkg/
 .godot/
