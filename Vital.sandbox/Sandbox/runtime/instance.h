@@ -26,8 +26,6 @@ namespace Vital::Sandbox {
         virtual void push_self(Machine* vm) = 0;
         virtual godot::Node3D* get_node_3d() { return nullptr; }
     };
-    inline std::unordered_map<void*, vm_instance_base*> vm_node_registry;
-    inline std::mutex vm_node_registry_mutex;
 
     template<typename Derived>
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
