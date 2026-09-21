@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.sandbox/Sandbox/runtime/registry.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 
@@ -20,12 +21,6 @@
 //////////////////////////
 // Vital: API: Node_3D //
 //////////////////////////
-
-namespace Vital::Sandbox {
-    struct vm_instance_base;
-    extern std::unordered_map<void*, vm_instance_base*> vm_node_registry;
-    extern std::mutex vm_node_registry_mutex;
-}
 
 namespace Vital::Sandbox::API {
     struct Node_3D {
