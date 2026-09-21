@@ -94,7 +94,8 @@ namespace Vital::Sandbox::API {
                     case Vital::Engine::PhysicsType::Vehicle:
                         spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity) -> get_instance_id()), remote);
                         break;
-                    default: break;
+                    default: 
+                        break;
                 }
             });
 
@@ -121,7 +122,8 @@ namespace Vital::Sandbox::API {
                     case Vital::Engine::PhysicsType::Vehicle:
                         destroy_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(entity); 
                         break;
-                    default: break;
+                    default: 
+                        break;
                 }
             });
         }
