@@ -188,7 +188,7 @@ namespace Vital::Sandbox {
                 auto ud = get_userdata_ptr(vm, idx);
                 if (!ud || !*ud) return false;
                 std::lock_guard<std::mutex> lock(vm_node_registry_mutex);
-                return vm_node_registry.count(*ud) > 0;
+                return vm_instance_registry.count(*ud) > 0;
             }
 
             template<typename T = void>

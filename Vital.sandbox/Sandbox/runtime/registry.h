@@ -23,5 +23,6 @@
 namespace Vital::Sandbox {
     struct vm_instance_base;
     inline std::unordered_map<void*, vm_instance_base*> vm_node_registry;
+    inline std::unordered_map<void*, vm_instance_base*> vm_instance_registry;
     inline std::mutex vm_node_registry_mutex;
 }
