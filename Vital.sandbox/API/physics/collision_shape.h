@@ -326,7 +326,6 @@ namespace Vital::Sandbox::API {
             });
 
 
-            // TODO: WIP
             /*
              * set_shape_mesh(model, config = {})
              *
@@ -337,15 +336,19 @@ namespace Vital::Sandbox::API {
              *   include_children = bool                -- default false
              *                                             true: one child CollisionShape3D per mesh,
              *                                             parented to self->body at the mesh's local offset
-             *   filters = {                            -- first-match-wins, matched against leaf mesh name
-             *     ["*_terrain_*"] = "convex",
-             *     ["*_interior_*"] = "concave",
-             *     ["*_leaves_*"]  = "none",            -- skip this mesh entirely
-             *     ["*"]           = "convex",
+             *   filters = {                            -- ORDERED array-of-tables, first-match-wins.
+             *                                             Lua hash tables have no guaranteed iteration
+             *                                             order, so filters MUST use the array form:
+             *     { match = "*_leaves_*",   type = "none"    },  -- checked first (highest priority)
+             *     { match = "*_interior_*", type = "concave" },
+             *     { match = "*_terrain_*",  type = "convex"  },
+             *     { match = "*",            type = "convex"  },  -- catch-all (lowest priority)
              *   }
+             *   Wildcards: "*" matches any substring inside a part name.
+             *   type = "none" skips the mesh entirely (no CollisionShape3D created for it).
              *
              * Sync behaviour:
-             *   Server broadcasts "mesh_children" with all per-child shape data packed into params.
+             *   Server broadcasts "mesh_ref" with all per-child shape data packed into params.
              *   Clients reconstruct the full set of child CollisionShape3D nodes from that single RPC.
              *   Late-joiners are covered by the existing join-sync path in Manager/private/network.cpp
              *   which was extended to serialise ConvexPolygonShape3D and ConcavePolygonShape3D children.
@@ -376,12 +379,24 @@ namespace Vital::Sandbox::API {
 
                     vm -> get_table_field("filters", 3);
                     if (vm -> is_table(-1)) {
-                        vm -> push_nil();
-                        while (vm -> next(-2)) {
-                            // stack: ... filters_table key value
-                            if (vm -> is_string(-2) && vm -> is_string(-1))
-                                filters.emplace_back(vm -> get_string(-2), vm -> get_string(-1));
-                            vm -> pop(1); // pop value, leave key for next()
+                        // filters is an ordered array:  { {match="*_leaves_*", type="none"}, … }
+                        // Iterate i = 1 .. #filters to preserve declaration order.
+                        int n = vm -> get_length(-1);
+                        for (int i = 1; i <= n; ++i) {
+                            vm -> get_table_field(i, -1); // push filters[i]
+                            if (vm -> is_table(-1)) {
+                                vm -> get_table_field("match", -1);
+                                std::string match_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
+                                vm -> pop(1);
+
+                                vm -> get_table_field("type", -1);
+                                std::string type_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
+                                vm -> pop(1);
+
+                                if (!match_str.empty() && !type_str.empty())
+                                    filters.emplace_back(match_str, type_str);
+                            }
+                            vm -> pop(1); // pop filters[i]
                         }
                     }
                     vm -> pop(1); // pop filters field
