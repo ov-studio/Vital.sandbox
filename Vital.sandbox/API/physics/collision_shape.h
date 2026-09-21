@@ -385,9 +385,7 @@ namespace Vital::Sandbox::API {
                                 vm -> get_table_field("shape_type", -1);
                                 std::string type_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
                                 vm -> pop(1);
-
-                                if (!match_str.empty() && !type_str.empty())
-                                    filters.emplace_back(match_str, type_str);
+                                if (!match_str.empty() && !type_str.empty()) filters.emplace_back(match_str, type_str);
                             }
                             vm -> pop(1); // pop filters[i]
                         }
