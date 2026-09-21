@@ -393,7 +393,7 @@ namespace Vital::Sandbox::API {
                     vm -> pop(1); 
                 }
 
-                auto* model_node = model -> model;
+                auto* model_node = model -> get_node();
                 auto resolve_type = [&](const std::string& component) -> std::string {
                     if (filters.empty()) return shape_type;
                     auto slash = component.rfind('/');
