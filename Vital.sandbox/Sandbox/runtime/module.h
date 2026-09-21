@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/runtime/types.h>
+#include <Vital.sandbox/Sandbox/runtime/registry.h>
 
 
 /////////////////////
