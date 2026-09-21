@@ -704,18 +704,13 @@ namespace Vital::Engine {
                 float px = (float)entries[i++], py = (float)entries[i++], pz = (float)entries[i++];
                 float rx = (float)entries[i++], ry = (float)entries[i++], rz = (float)entries[i++];
 
-                godot::MeshInstance3D* mesh = component.empty()
-                    ? godot::Object::cast_to<godot::MeshInstance3D>(model)
-                    : model -> find_mesh_node(model, component);
+                godot::MeshInstance3D* mesh = component.empty() ? godot::Object::cast_to<godot::MeshInstance3D>(model) : model -> find_mesh_node(model, component);
                 if (!mesh) continue;
 
-                godot::Ref<godot::Shape3D> shape = (shape_type == "concave")
-                    ? godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_concave_shape(mesh))
-                    : godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_convex_shape(mesh));
+                godot::Ref<godot::Shape3D> shape = (shape_type == "concave") ? godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_concave_shape(mesh)) : godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_convex_shape(mesh));
                 if (!shape.is_valid()) continue;
 
-                godot::Basis basis = godot::Basis::from_euler(
-                    godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
+                godot::Basis basis = godot::Basis::from_euler(godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
                 godot::Transform3D xform(basis, godot::Vector3(px, py, pz));
 
                 // mode 0 (single mesh, no include_children): the server assigned the
@@ -778,8 +773,7 @@ namespace Vital::Engine {
         if (parent_net_id != 0) {
             Engine::ISyncable* parent_sync = mgr->find_syncable(parent_net_id);
             if (!parent_sync) return;  // caller must retry
-            auto parent_node = godot::Object::cast_to<godot::Node3D>(
-                dynamic_cast<godot::Object*>(parent_sync));
+            auto parent_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(parent_sync));
             if (!parent_node) return;
             target = parent_node;
         }
