@@ -154,9 +154,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(model)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); });
 
-                using ModelInstance = Vital::Sandbox::API::Model::Instance;
-                auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
-                vm -> push_value(self -> shader -> apply_to_node(instance -> get_node()));
+                auto model = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
+                vm -> push_value(self -> shader -> apply_to_node(model -> get_node()));
                 return 1;
             });
         }
