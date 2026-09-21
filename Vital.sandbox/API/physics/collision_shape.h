@@ -353,6 +353,7 @@ namespace Vital::Sandbox::API {
              *   Late-joiners are covered by the existing join-sync path in Manager/private/network.cpp
              *   which was extended to serialise ConvexPolygonShape3D and ConcavePolygonShape3D children.
              */
+             // TODO: Improve
             vm_module::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, config = {})", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); })
