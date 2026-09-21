@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                 std::shared_ptr<Instance> instance = vm -> is_nil(1) ? nullptr : vm_module::get_userdata_object<Instance>(vm, 1);
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                base_class::set_active(instance ? instance -> rendertarget : nullptr, clear, instant);
+                base_class::set_active(instance ? instance -> get_node() : nullptr, clear, instant);
                 vm -> push_value(true);
                 return 1;
             });

@@ -143,8 +143,7 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(2);
                 auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                auto vp_tex = instance -> rendertarget -> get_texture();
-                vm -> push_value(self -> shader -> set_param_viewport_texture(name, vp_tex));
+                vm -> push_value(self -> shader -> set_param_viewport_texture(name, instance -> get_node() -> get_texture()));
                 return 1;
             });
 
@@ -154,7 +153,7 @@ namespace Vital::Sandbox::API {
 
                 using ModelInstance = Vital::Sandbox::API::Model::Instance;
                 auto instance = vm_module::get_userdata_object<ModelInstance>(vm, 2);
-                vm -> push_value(self -> shader -> apply_to_node(instance -> model));
+                vm -> push_value(self -> shader -> apply_to_node(instance -> get_node()));
                 return 1;
             });
         }
