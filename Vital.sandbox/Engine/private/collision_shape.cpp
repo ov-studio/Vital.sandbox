@@ -149,8 +149,7 @@ namespace Vital::Engine {
     #endif
 
     godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh) {
-        // TODO: These validity checks makes sense or deadchecks?
-        if (!mesh || !mesh -> get_mesh() || mesh -> get_mesh().is_valid()) return {};
+        if (!mesh || !mesh -> get_mesh().is_valid()) return {};
         godot::PackedVector3Array verts;
         for (int s = 0; s < mesh -> get_mesh() -> get_surface_count(); s++) {
             auto arrays = mesh -> get_mesh() -> surface_get_arrays(s);
@@ -164,8 +163,7 @@ namespace Vital::Engine {
     }
 
     godot::Ref<godot::ConcavePolygonShape3D> Collision_Shape::Internal::build_concave_shape(godot::MeshInstance3D* mesh) {
-        // TODO: These validity checks makes sense or deadchecks?
-        if (!mesh || !mesh -> get_mesh() || mesh -> get_mesh().is_valid()) return {};
+        if (!mesh || !mesh -> get_mesh().is_valid()) return {};
         godot::PackedVector3Array faces;
         for (int s = 0; s < mesh -> get_mesh() -> get_surface_count(); s++) {
             auto arrays = mesh -> get_mesh() -> surface_get_arrays(s);
