@@ -339,13 +339,13 @@ namespace Vital::Sandbox::API {
              *   filters = {                            -- ORDERED array-of-tables, first-match-wins.
              *                                             Lua hash tables have no guaranteed iteration
              *                                             order, so filters MUST use the array form:
-             *     { match = "*_leaves_*",   type = "none"    },  -- checked first (highest priority)
-             *     { match = "*_interior_*", type = "concave" },
-             *     { match = "*_terrain_*",  type = "convex"  },
-             *     { match = "*",            type = "convex"  },  -- catch-all (lowest priority)
+             *     { match = "*_leaves_*",   shape_type = "none"    },  -- checked first (highest priority)
+             *     { match = "*_interior_*", shape_type = "concave" },
+             *     { match = "*_terrain_*",  shape_type = "convex"  },
+             *     { match = "*",            shape_type = "convex"  },  -- catch-all (lowest priority)
              *   }
              *   Wildcards: "*" matches any substring inside a part name.
-             *   type = "none" skips the mesh entirely (no CollisionShape3D created for it).
+             *   shape_type = "none" skips the mesh entirely (no CollisionShape3D created for it).
              *
              * Sync behaviour:
              *   Server broadcasts "mesh_ref" with all per-child shape data packed into params.
@@ -379,7 +379,7 @@ namespace Vital::Sandbox::API {
 
                     vm -> get_table_field("filters", 3);
                     if (vm -> is_table(-1)) {
-                        // filters is an ordered array:  { {match="*_leaves_*", type="none"}, … }
+                        // filters is an ordered array:  { {match="*_leaves_*", shape_type="none"}, … }
                         // Iterate i = 1 .. #filters to preserve declaration order.
                         int n = vm -> get_length(-1);
                         for (int i = 1; i <= n; ++i) {
@@ -389,7 +389,7 @@ namespace Vital::Sandbox::API {
                                 std::string match_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
                                 vm -> pop(1);
 
-                                vm -> get_table_field("type", -1);
+                                vm -> get_table_field("shape_type", -1);
                                 std::string type_str = vm -> is_string(-1) ? vm -> get_string(-1) : "";
                                 vm -> pop(1);
 
