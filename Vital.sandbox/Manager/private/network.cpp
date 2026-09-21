@@ -906,6 +906,7 @@ namespace Vital::Manager {
         tree->get_multiplayer()->set_multiplayer_peer(peer);
         wire_signals();
         try {
+            // TODO: Possible to know without depending on it?
             server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
             if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
