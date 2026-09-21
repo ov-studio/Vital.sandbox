@@ -163,7 +163,11 @@ namespace Vital::Engine {
     #if !defined(VSDK_Client)
     void ISyncable::flush_pending_force_transform() {
         if (!pending_force_transform.has_value()) return;
-        if (sync_authority <= 1) { pending_force_transform.reset(); return; }
+        if (sync_authority <= 1) { 
+            pending_force_transform.reset(); 
+            return;
+        }
+        
         auto net_node = Manager::Network::get_singleton() -> get_node();
         if (net_node) net_node -> rpc("_force_transform", (int)net_id, pending_force_transform -> pos, pending_force_transform -> rot, pending_force_transform -> scale);
         pending_force_transform.reset();
