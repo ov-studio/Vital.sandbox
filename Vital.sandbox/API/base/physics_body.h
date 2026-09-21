@@ -221,22 +221,20 @@ namespace Vital::Sandbox::API {
                     auto motion = vm -> get_vector3(2);
                     auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                     auto collision = self -> get_node() -> move_and_collide(motion, test_only);
-                    if (!collision.is_valid()) {
-                        vm -> push_value(false);
-                        return 1;
+                    if (!collision.is_valid()) vm -> push_value(false);
+                    else {
+                        vm -> create_table();
+                        vm -> push_value(collision -> get_position());
+                        vm -> set_table_field("position", -2);
+                        vm -> push_value(collision -> get_normal());
+                        vm -> set_table_field("normal", -2);
+                        vm -> push_value(collision -> get_travel());
+                        vm -> set_table_field("travel", -2);
+                        vm -> push_value(collision -> get_remainder());
+                        vm -> set_table_field("remainder", -2);
+                        vm -> push_value(collision -> get_depth());
+                        vm -> set_table_field("depth", -2);
                     }
-
-                    vm -> create_table();
-                    vm -> push_value(collision -> get_position());
-                    vm -> set_table_field("position", -2);
-                    vm -> push_value(collision -> get_normal());
-                    vm -> set_table_field("normal", -2);
-                    vm -> push_value(collision -> get_travel());
-                    vm -> set_table_field("travel", -2);
-                    vm -> push_value(collision -> get_remainder());
-                    vm -> set_table_field("remainder", -2);
-                    vm -> push_value(collision -> get_depth());
-                    vm -> set_table_field("depth", -2);
                     return 1;
                 });
             }
