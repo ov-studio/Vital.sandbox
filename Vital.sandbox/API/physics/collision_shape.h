@@ -468,7 +468,7 @@ namespace Vital::Sandbox::API {
                     for (auto& component : components) {
                         auto resolved = resolve_type(component);
                         if (resolved == "none") continue;
-    
+
                         auto* mesh = model_node -> find_mesh_node(model_node, component);
                         if (!mesh) continue;
                         auto shape = build_shape(mesh, resolved);
@@ -489,7 +489,6 @@ namespace Vital::Sandbox::API {
                         // under the body or still at world origin, as long as body and
                         // model share the same world pose when set_shape_mesh runs.
                         auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
-    
                         auto* child = base_class::create(physics_body);
                         // Ensure the shape is registered with the body's shape owner.
                         // set_shape while already in-tree, force enabled, apply local
@@ -501,7 +500,7 @@ namespace Vital::Sandbox::API {
                         child -> set_transform(rel);
                         child -> set_disabled(true);
                         child -> set_disabled(false);
-    
+
                         #if !defined(VSDK_Client)
                         sync_params.push_back(godot::String(component.c_str()));
                         sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
