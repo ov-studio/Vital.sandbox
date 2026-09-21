@@ -76,6 +76,7 @@ namespace Vital::Sandbox::API {
                     }
                     return;
                 }
+
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);
                 #endif
