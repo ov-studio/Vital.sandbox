@@ -130,12 +130,12 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Collision_Shape>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(owner)", true)
+                vm_args(vm, id, "(body)", true)
                     .require(1, [](Machine* vm, int idx) { return resolve_owner(vm, idx) != nullptr; });
 
-                auto owner = resolve_owner(vm, 1);
+                auto body = resolve_owner(vm, 1);
                 auto instance = Instance::init(vm);
-                instance -> body = base_class::create(owner);
+                instance -> body = base_class::create(body);
                 instance -> store(true);
                 return 1;
             });
@@ -477,7 +477,7 @@ namespace Vital::Sandbox::API {
                         // Parent each per-mesh Collision_Shape DIRECTLY under the physics body
                         // (StaticBody / RigidBody / …), not under the intermediate anchor
                         // Collision_Shape. Nested CollisionShape3D under another
-                        // CollisionShape3D often fails to register with the shape owner —
+                        // CollisionShape3D often fails to register with the shape body —
                         // debug wireframe is visible but the character never collides.
                         godot::Node3D* physics_body = godot::Object::cast_to<godot::Node3D>(self -> body -> get_parent());
                         if (!physics_body) physics_body = self -> body; // fallback
@@ -490,9 +490,9 @@ namespace Vital::Sandbox::API {
                         // model share the same world pose when set_shape_mesh runs.
                         auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
                         auto* child = base_class::create(physics_body);
-                        // Ensure the shape is registered with the body's shape owner.
+                        // Ensure the shape is registered with the body's shape body.
                         // set_shape while already in-tree, force enabled, apply local
-                        // transform, then toggle disabled to force a shape-owner refresh
+                        // transform, then toggle disabled to force a shape-body refresh
                         // (Godot can miss registration when shape + transform are set
                         // in the same tick as add_child).
                         child -> set_disabled(false);
