@@ -183,6 +183,8 @@ namespace Vital::Sandbox {
                 return result;
             }
 
+            bool is_quaternion(int idx = 1) { return is_vector4(idx); }
+
 
             // Getters //
             vm_state* get_state() const { return state; }
@@ -298,6 +300,11 @@ namespace Vital::Sandbox {
                 return value;
             }
 
+            godot::Quaternion get_quaternion(int idx = 1) {
+                auto value = get_vector4(idx);
+                return godot::Quaternion(value.x, value.y, value.z, value.w);
+            }
+
 
             // Pushers //
             void push_global(const std::string& idx) { lua_setglobal(state, idx.c_str()); }
@@ -362,6 +369,10 @@ namespace Vital::Sandbox {
                     push_value(value[i]);
                     set_table_field(i + 1, -2);
                 }
+            }
+
+            void push_quaternion(const godot::Quaternion& value) {
+                push_vector4(godot::Vector4(value.x, value.y, value.z, value.w));
             }
 
             void push_transform3d(const godot::Transform3D& value) {

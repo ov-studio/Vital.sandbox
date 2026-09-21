@@ -94,10 +94,7 @@ namespace Vital::Sandbox::API {
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_quaternion", [](auto vm, auto self, auto& id) -> int {
-                    // TODO: Allow for pushing quaternion
-                    auto quaternion = self -> get_node() -> get_quaternion();
-                    auto value = godot::Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                    vm -> push_value(value);
+                    vm -> push_value(self -> get_node() -> get_quaternion());
                     return 1;
                 });
             }
@@ -173,12 +170,9 @@ namespace Vital::Sandbox::API {
 
                 vm_module::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(quaternion)", true)
-                        .require(2, &Machine::is_vector4);
+                        .require(2, &Machine::is_quaternion);
 
-                    // TODO: Allow for pulling quaternion directly
-                    auto value = vm -> get_vector4(2);
-                    auto quaternion = godot::Quaternion(value.x, value.y, value.z, value.w);
-                    self -> get_node() -> set_quaternion(quaternion);
+                    self -> get_node() -> set_quaternion(vm -> get_quaternion(2));
                     vm -> push_value(true);
                     return 1;
                 });
