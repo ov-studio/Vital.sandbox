@@ -168,14 +168,16 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
                 auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
-                if (vm -> is_string(3)) base_class::get_singleton() -> draw_material(position, size, vm -> get_string(3), rotation, pivot, color);
+                if (vm -> is_string(3)) {
+                    base_class::get_singleton() -> draw_material(position, size, vm -> get_string(3), rotation, pivot, color);
+                }
                 else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
                     auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> texture, rotation, pivot, color);
+                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::SVG::Instance>(vm, 3)) {
                     auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> texture, rotation, pivot, color);
+                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
                     auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
@@ -183,7 +185,7 @@ namespace Vital::Sandbox::API {
                 }
                 else {
                     auto instance = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, instance -> shader, rotation, pivot, color);
+                    base_class::get_singleton() -> draw_material(position, size, instance -> get_node(), rotation, pivot, color);
                 }
                 vm -> push_value(true);
                 return 1;
@@ -221,7 +223,7 @@ namespace Vital::Sandbox::API {
                 auto stroke_color = vm -> is_color(12) ? vm -> get_color(12) : godot::Color{1, 1, 1, 1};
                 auto rotation = vm -> is_number(13) ? vm -> get_float(13) : 0.0f;
                 auto pivot = vm -> is_vector2(14) ? vm -> get_vector2(14) : godot::Vector2{0.0f, 0.0f};
-                base_class::get_singleton() -> draw_text(text, start_at, end_at, font_instance -> font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
+                base_class::get_singleton() -> draw_text(text, start_at, end_at, font_instance -> get_node(), font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
                 vm -> push_value(true);
                 return 1;
             });

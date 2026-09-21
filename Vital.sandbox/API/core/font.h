@@ -32,6 +32,10 @@ namespace Vital::Sandbox::API {
             using Owner = Font;
             base_class* font = nullptr;
 
+            auto get_node() {
+                return font;
+            }
+
             bool is_alive() const { 
                 return font ? true : false;
             }

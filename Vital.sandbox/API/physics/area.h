@@ -225,7 +225,7 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* vm, int idx) { return Physics_Entity::is_body(vm, idx); });
 
                 auto target = Physics_Entity::resolve_body(vm, 2);
-                vm -> push_value(target ? self -> body -> overlaps_body(target) : false);
+                vm -> push_value(self -> body -> overlaps_body(target));
                 return 1;
             });
 

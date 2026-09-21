@@ -49,6 +49,10 @@ namespace Vital::Sandbox::API {
             using Owner = Image;
             base_class* texture = nullptr;
 
+            auto get_node() {
+                return texture;
+            }
+
             bool is_alive() const { 
                 return texture ? true : false;
             }

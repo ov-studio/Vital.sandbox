@@ -35,6 +35,10 @@ namespace Vital::Sandbox::API {
             using Owner = Shader;
             base_class* shader = nullptr;
 
+            auto get_node() {
+                return shader;
+            }
+
             bool is_alive() const {
                 return shader ? true : false;
             }
@@ -131,7 +135,7 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(2);
                 auto instance = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
-                auto ref = instance -> texture -> get_canvas_texture();
+                auto ref = instance -> get_node() -> get_canvas_texture();
                 vm -> push_value(self -> shader -> set_param_texture(name, ref));
                 return 1;
             });
