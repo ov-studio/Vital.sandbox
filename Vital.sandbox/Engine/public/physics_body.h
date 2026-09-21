@@ -22,6 +22,7 @@
 // Vital: Engine: Physics_Body //
 //////////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager { 
     class Network;
 }
@@ -68,6 +69,7 @@ namespace Vital::Engine {
                 if (!Base::is_inside_tree()) return;
                 auto net = Manager::Network::get_singleton();
                 if (net && net -> get_peer_id() == sync_authority) return;
+
                 sync_push_snapshot(pos, rot, vel);
                 Base::set_scale(scale);
                 sync_last_pos = pos;
@@ -115,6 +117,7 @@ namespace Vital::Engine {
 
             void flush_pending_shape_broadcast() {
                 if (!pending_shape_broadcast.has_value()) return;
+
                 auto net_node = Manager::Network::get_singleton() -> get_node();
                 if (net_node) net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast -> type.c_str()), pending_shape_broadcast -> params);
                 pending_shape_broadcast.reset();
