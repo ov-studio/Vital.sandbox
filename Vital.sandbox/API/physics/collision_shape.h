@@ -440,87 +440,85 @@ namespace Vital::Sandbox::API {
                         self -> broadcast("mesh_ref", p);
                     }
                     #endif
-                    vm -> push_value(true);
-                    return 1;
                 }
-
-                // Multi-mesh mode.
-                auto components = model_node -> get_components();
-                if (components.empty()) { vm -> push_value(false); return 1; }
-
-                // Anchor shape so the root CollisionShape3D is a valid node (zero-size box).
-                {
-                    godot::Ref<godot::BoxShape3D> anchor;
-                    anchor.instantiate();
-                    anchor -> set_size(godot::Vector3(0.001f, 0.001f, 0.001f));
-                    self -> body -> assign_shape(anchor);
-                }
-
-                // Sync by REFERENCE (mesh_ref), same rationale as the single-mesh
-                // branch above: one model net_id + one (component, type, transform)
-                // tuple per child, no vertex/face data. Clients rebuild each child
-                // shape locally from their own already-loaded copy of the model.
-                #if !defined(VSDK_Client)
-                godot::Array sync_params;
-                sync_params.push_back((int)model_node -> get_net_id());
-                sync_params.push_back((int)1); // mode 1: include_children — `col` stays the (untouched) anchor, every matched mesh becomes its own child.
-                #endif
-
-                for (auto& component : components) {
-                    auto resolved = resolve_type(component);
-                    if (resolved == "none") continue;
-
-                    auto* mesh = model_node -> find_mesh_node(model_node, component);
-                    if (!mesh) continue;
-                    auto shape = build_shape(mesh, resolved);
-                    if (!shape.is_valid()) continue;
-
-                    // Parent each per-mesh Collision_Shape DIRECTLY under the physics body
-                    // (StaticBody / RigidBody / …), not under the intermediate anchor
-                    // Collision_Shape. Nested CollisionShape3D under another
-                    // CollisionShape3D often fails to register with the shape owner —
-                    // debug wireframe is visible but the character never collides.
-                    godot::Node3D* physics_body = godot::Object::cast_to<godot::Node3D>(self -> body -> get_parent());
-                    if (!physics_body) physics_body = self -> body; // fallback
-
-                    // Offset: mesh transform relative to the PHYSICS BODY in world
-                    // space. Model-root relative was fragile (only matched when the
-                    // model sat unparented at the same world pose as the body).
-                    // Body-relative is correct whether the model is already parented
-                    // under the body or still at world origin, as long as body and
-                    // model share the same world pose when set_shape_mesh runs.
-                    auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
-
-                    auto* child = base_class::create(physics_body);
-                    // Ensure the shape is registered with the body's shape owner.
-                    // set_shape while already in-tree, force enabled, apply local
-                    // transform, then toggle disabled to force a shape-owner refresh
-                    // (Godot can miss registration when shape + transform are set
-                    // in the same tick as add_child).
-                    child -> set_disabled(false);
-                    child -> assign_shape(shape);
-                    child -> set_transform(rel);
-                    child -> set_disabled(true);
-                    child -> set_disabled(false);
-
+                else {
+                    // Multi-mesh mode.
+                    auto components = model_node -> get_components();
+                    if (components.empty()) { vm -> push_value(false); return 1; }
+    
+                    // Anchor shape so the root CollisionShape3D is a valid node (zero-size box).
+                    {
+                        godot::Ref<godot::BoxShape3D> anchor;
+                        anchor.instantiate();
+                        anchor -> set_size(godot::Vector3(0.001f, 0.001f, 0.001f));
+                        self -> body -> assign_shape(anchor);
+                    }
+    
+                    // Sync by REFERENCE (mesh_ref), same rationale as the single-mesh
+                    // branch above: one model net_id + one (component, type, transform)
+                    // tuple per child, no vertex/face data. Clients rebuild each child
+                    // shape locally from their own already-loaded copy of the model.
                     #if !defined(VSDK_Client)
-                    sync_params.push_back(godot::String(component.c_str()));
-                    sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
-                    sync_params.push_back(rel.origin.x);
-                    sync_params.push_back(rel.origin.y);
-                    sync_params.push_back(rel.origin.z);
-                    auto euler = rel.basis.get_euler() * (180.f / 3.14159265358979323846f);
-                    sync_params.push_back(euler.x);
-                    sync_params.push_back(euler.y);
-                    sync_params.push_back(euler.z);
+                    godot::Array sync_params;
+                    sync_params.push_back((int)model_node -> get_net_id());
+                    sync_params.push_back((int)1); // mode 1: include_children — `col` stays the (untouched) anchor, every matched mesh becomes its own child.
+                    #endif
+    
+                    for (auto& component : components) {
+                        auto resolved = resolve_type(component);
+                        if (resolved == "none") continue;
+    
+                        auto* mesh = model_node -> find_mesh_node(model_node, component);
+                        if (!mesh) continue;
+                        auto shape = build_shape(mesh, resolved);
+                        if (!shape.is_valid()) continue;
+    
+                        // Parent each per-mesh Collision_Shape DIRECTLY under the physics body
+                        // (StaticBody / RigidBody / …), not under the intermediate anchor
+                        // Collision_Shape. Nested CollisionShape3D under another
+                        // CollisionShape3D often fails to register with the shape owner —
+                        // debug wireframe is visible but the character never collides.
+                        godot::Node3D* physics_body = godot::Object::cast_to<godot::Node3D>(self -> body -> get_parent());
+                        if (!physics_body) physics_body = self -> body; // fallback
+    
+                        // Offset: mesh transform relative to the PHYSICS BODY in world
+                        // space. Model-root relative was fragile (only matched when the
+                        // model sat unparented at the same world pose as the body).
+                        // Body-relative is correct whether the model is already parented
+                        // under the body or still at world origin, as long as body and
+                        // model share the same world pose when set_shape_mesh runs.
+                        auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
+    
+                        auto* child = base_class::create(physics_body);
+                        // Ensure the shape is registered with the body's shape owner.
+                        // set_shape while already in-tree, force enabled, apply local
+                        // transform, then toggle disabled to force a shape-owner refresh
+                        // (Godot can miss registration when shape + transform are set
+                        // in the same tick as add_child).
+                        child -> set_disabled(false);
+                        child -> assign_shape(shape);
+                        child -> set_transform(rel);
+                        child -> set_disabled(true);
+                        child -> set_disabled(false);
+    
+                        #if !defined(VSDK_Client)
+                        sync_params.push_back(godot::String(component.c_str()));
+                        sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
+                        sync_params.push_back(rel.origin.x);
+                        sync_params.push_back(rel.origin.y);
+                        sync_params.push_back(rel.origin.z);
+                        auto euler = rel.basis.get_euler() * (180.f / 3.14159265358979323846f);
+                        sync_params.push_back(euler.x);
+                        sync_params.push_back(euler.y);
+                        sync_params.push_back(euler.z);
+                        #endif
+                    }
+    
+                    #if !defined(VSDK_Client)
+                    // Only the net_id + mode ints are present when nothing matched — nothing to send.
+                    if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
                     #endif
                 }
-
-                #if !defined(VSDK_Client)
-                // Only the net_id + mode ints are present when nothing matched — nothing to send.
-                if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
-                #endif
-
                 vm -> push_value(true);
                 return 1;
             });
