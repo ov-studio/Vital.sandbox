@@ -20,7 +20,6 @@
 // Vital: Engine: Collision_Shape //
 /////////////////////////////////////
 
-// TODO: Improve
 #if defined(VSDK_Client)
 namespace Vital::Engine {
     // Helpers //
@@ -145,11 +144,7 @@ namespace Vital::Engine {
         }
         return mesh;
     }
-}
-#endif
 
-namespace Vital::Engine {
-    // Mesh shape builders //
     godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh_instance) {
         if (!mesh_instance) return {};
         auto mesh = mesh_instance -> get_mesh();
@@ -158,8 +153,7 @@ namespace Vital::Engine {
         for (int s = 0; s < mesh -> get_surface_count(); s++) {
             auto arrays = mesh -> surface_get_arrays(s);
             auto surface_verts = static_cast<godot::PackedVector3Array>(arrays[godot::Mesh::ARRAY_VERTEX]);
-            for (int i = 0; i < surface_verts.size(); i++)
-                verts.push_back(surface_verts[i]);
+            for (int i = 0; i < surface_verts.size(); i++) verts.push_back(surface_verts[i]);
         }
         godot::Ref<godot::ConvexPolygonShape3D> shape;
         shape.instantiate();
@@ -184,8 +178,7 @@ namespace Vital::Engine {
                 }
             }
             else {
-                for (int i = 0; i < verts.size(); i++)
-                    faces.push_back(verts[i]);
+                for (int i = 0; i < verts.size(); i++) faces.push_back(verts[i]);
             }
         }
         godot::Ref<godot::ConcavePolygonShape3D> shape;
@@ -193,8 +186,10 @@ namespace Vital::Engine {
         shape -> set_faces(faces);
         return shape;
     }
+}
+#endif
 
-
+namespace Vital::Engine {
     // Instantiators //
     Collision_Shape::Collision_Shape() {
         #if defined(VSDK_Client)
