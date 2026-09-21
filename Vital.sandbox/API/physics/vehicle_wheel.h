@@ -73,6 +73,7 @@ namespace Vital::Sandbox::API {
                     pending_configs.emplace_back(key, value);
                     return;
                 }
+                
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key), value);
                 #endif
@@ -85,6 +86,7 @@ namespace Vital::Sandbox::API {
                     pending_transform = true;
                     return;
                 }
+
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (net) net -> rpc("_sync_wheel_transform", (int)nid, body -> get_wheel_id(), body -> get_position(), body -> get_rotation());
                 #endif
