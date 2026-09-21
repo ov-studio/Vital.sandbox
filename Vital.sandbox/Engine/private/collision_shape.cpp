@@ -148,13 +148,11 @@ namespace Vital::Engine {
     }
     #endif
 
-    godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh_instance) {
-        if (!mesh_instance) return {};
-        auto mesh = mesh_instance -> get_mesh();
-        if (!mesh.is_valid()) return {};
+    godot::Ref<godot::ConvexPolygonShape3D> Collision_Shape::Internal::build_convex_shape(godot::MeshInstance3D* mesh) {
+        if (!mesh || !mesh.is_valid()) return {};
         godot::PackedVector3Array verts;
-        for (int s = 0; s < mesh -> get_surface_count(); s++) {
-            auto arrays = mesh -> surface_get_arrays(s);
+        for (int s = 0; s < mesh -> get_mesh() -> get_surface_count(); s++) {
+            auto arrays = mesh -> get_mesh() -> surface_get_arrays(s);
             auto surface_verts = static_cast<godot::PackedVector3Array>(arrays[godot::Mesh::ARRAY_VERTEX]);
             for (int i = 0; i < surface_verts.size(); i++) verts.push_back(surface_verts[i]);
         }
@@ -164,13 +162,11 @@ namespace Vital::Engine {
         return shape;
     }
 
-    godot::Ref<godot::ConcavePolygonShape3D> Collision_Shape::Internal::build_concave_shape(godot::MeshInstance3D* mesh_instance) {
-        if (!mesh_instance) return {};
-        auto mesh = mesh_instance -> get_mesh();
-        if (!mesh.is_valid()) return {};
+    godot::Ref<godot::ConcavePolygonShape3D> Collision_Shape::Internal::build_concave_shape(godot::MeshInstance3D* mesh) {
+        if (!mesh || !mesh.is_valid()) return {};
         godot::PackedVector3Array faces;
-        for (int s = 0; s < mesh -> get_surface_count(); s++) {
-            auto arrays = mesh -> surface_get_arrays(s);
+        for (int s = 0; s < mesh -> get_mesh() -> get_surface_count(); s++) {
+            auto arrays = mesh -> get_mesh() -> surface_get_arrays(s);
             auto verts = static_cast<godot::PackedVector3Array>(arrays[godot::Mesh::ARRAY_VERTEX]);
             if (arrays[godot::Mesh::ARRAY_INDEX].get_type() != godot::Variant::NIL) {
                 auto indices = static_cast<godot::PackedInt32Array>(arrays[godot::Mesh::ARRAY_INDEX]);
