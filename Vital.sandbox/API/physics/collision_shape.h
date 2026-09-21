@@ -399,8 +399,7 @@ namespace Vital::Sandbox::API {
                     auto slash = component.rfind('/');
                     auto leaf  = (slash == std::string::npos) ? component : component.substr(slash + 1);
                     for (auto& [pattern, type] : filters) {
-                        if (Tool::match_wildcard(pattern, leaf) || Tool::match_wildcard(pattern, component))
-                            return type;
+                        if (Tool::match_wildcard(pattern, leaf) || Tool::match_wildcard(pattern, component)) return type;
                     }
                     return shape_type;
                 };
