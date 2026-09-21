@@ -79,8 +79,7 @@ namespace Vital::Sandbox::API {
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_global_scale", [](auto vm, auto self, auto& id) -> int {
-                    auto scale = self -> get_node() -> get_global_transform().basis.get_scale();
-                    vm -> push_value(scale);
+                    vm -> push_value(self -> get_node() -> get_global_transform().basis.get_scale());
                     return 1;
                 });
 
