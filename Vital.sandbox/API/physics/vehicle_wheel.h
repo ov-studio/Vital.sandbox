@@ -152,13 +152,12 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(owner)", true)
                     .require(1, [](Machine* vm, int idx) { return vm_module::is_userdata<Vehicle_Body::Instance>(vm, idx); });
 
-                auto owner = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
+                auto body = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
                 auto instance = Instance::init(vm);
-                instance -> body = base_class::create(owner -> get_node());
-                auto entity = owner -> get_node();
+                instance -> body = base_class::create(body -> get_node());
                 int idx_count = 0;
-                for (int i = 0; i < entity -> get_child_count(); i++) {
-                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(entity -> get_child(i))) idx_count++;
+                for (int i = 0; i < body -> get_node() -> get_child_count(); i++) {
+                    if (godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(body -> get_node() -> get_child(i))) idx_count++;
                 }
                 instance -> body -> set_wheel_id(idx_count - 1);
                 #if !defined(VSDK_Client)
