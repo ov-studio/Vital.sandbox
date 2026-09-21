@@ -211,7 +211,7 @@ namespace Vital::Sandbox::API {
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
-                auto font_instance = vm_module::get_userdata_object<API::Font::Instance>(vm, 4);
+                auto font = vm_module::get_userdata_object<API::Font::Instance>(vm, 4);
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
@@ -223,7 +223,7 @@ namespace Vital::Sandbox::API {
                 auto stroke_color = vm -> is_color(12) ? vm -> get_color(12) : godot::Color{1, 1, 1, 1};
                 auto rotation = vm -> is_number(13) ? vm -> get_float(13) : 0.0f;
                 auto pivot = vm -> is_vector2(14) ? vm -> get_vector2(14) : godot::Vector2{0.0f, 0.0f};
-                base_class::get_singleton() -> draw_text(text, start_at, end_at, font_instance -> get_node(), font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
+                base_class::get_singleton() -> draw_text(text, start_at, end_at, font -> get_node(), font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
                 vm -> push_value(true);
                 return 1;
             });
