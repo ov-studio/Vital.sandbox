@@ -365,7 +365,6 @@ namespace Vital::Sandbox::API {
                 std::string shape_type    = "convex";
                 bool include_children     = false;
                 std::vector<std::pair<std::string, std::string>> filters;
-
                 if (vm -> is_table(3)) {
                     vm -> get_table_field("shape_type", 3);
                     if (vm -> is_string(-1)) shape_type = vm -> get_string(-1);
@@ -374,7 +373,6 @@ namespace Vital::Sandbox::API {
                     vm -> get_table_field("include_children", 3);
                     if (vm -> is_bool(-1)) include_children = vm -> get_bool(-1);
                     vm -> pop(1);
-
                     vm -> get_table_field("filters", 3);
                     if (vm -> is_table(-1)) {
                         // filters is an ordered array:  { {match="*_leaves_*", shape_type="none"}, … }
