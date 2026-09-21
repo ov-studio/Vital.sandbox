@@ -66,7 +66,6 @@ namespace Vital::Sandbox::API {
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> values = args_count;
-
             if (instance -> vm != vm) {
                 int root_base = instance -> vm -> get_count() + 1;
                 for (int i = 0; i < args_count; ++i) vm -> push(args_start + i);
