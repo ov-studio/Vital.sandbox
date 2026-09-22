@@ -497,9 +497,7 @@ namespace Vital::Sandbox {
                 if (lua_getstack(state, 1, &debug)) {
                     lua_getinfo(state, "Sl", &debug);
                     const char* src = debug.source;
-                    source = fmt::format("{}:{}",
-                        (src && src[0] == '@') ? src + 1 : (src ? src : "?"),
-                        debug.currentline);
+                    source = fmt::format("{}:{}", src ? src : "?", debug.currentline);
                 }
                 return source;
             }

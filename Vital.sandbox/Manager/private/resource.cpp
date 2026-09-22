@@ -26,7 +26,7 @@
 namespace Vital::Manager {
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
-        return fmt::format("@{}/{}", resource, src);
+        return fmt::format("{}/{}", resource, src);
     }
 
     Tool::Stack Resource::Internal::pack_manifest(const Manifest& manifest) {
