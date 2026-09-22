@@ -906,11 +906,12 @@ namespace Vital::Manager {
         tree->get_multiplayer()->set_multiplayer_peer(peer);
         wire_signals();
         try {
-            // TODO: Possible to know without depending on it?
-            server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
-            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
+            const std::string body = Tool::HTTP::get("https://api.vital-sandbox.com/ip", {}, 10);
+            rapidjson::Document doc;
+            if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("ip") && doc["ip"].IsString()) server_ip = doc["ip"].GetString();
         }
         catch (...) {}
+        
         // Physics tick rate is normally fixed at compile time (project.godot),
         // which would mean the owner is stuck with whatever rate we shipped.
         // godot::Engine allows setting it at runtime, and this runs before any
