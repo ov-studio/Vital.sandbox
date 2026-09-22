@@ -69,4 +69,4 @@ social:
 masterlist:
   enabled: false
   token: ""
-  url: "https://vital-sandbox.com/api/masterlist"
+  url: "https://api.vital-sandbox.com/masterlist"
