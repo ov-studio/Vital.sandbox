@@ -33,17 +33,14 @@ namespace Vital::Sandbox::API {
 
         template<typename NodeT>
         static bool is_streamed(NodeT* node) {
-            if constexpr (std::is_base_of_v<Vital::Engine::ISyncable, NodeT>) return node ? node -> is_streamed() : false;
-            else {
-                #if defined(VSDK_Client)
-                if (!node || !node -> is_inside_tree() || !node -> is_visible_in_tree()) return false;
-                auto camera = Vital::Engine::Core::get_scene_root() -> get_camera_3d();
-                if (!camera) return false;
-                return camera -> is_position_in_frustum(node -> get_global_position());
-                #else
-                return true;
-                #endif
-            }
+            #if defined(VSDK_Client)
+            if (!node || !node -> is_inside_tree() || !node -> is_visible_in_tree()) return false;
+            auto camera = Vital::Engine::Core::get_scene_root() -> get_camera_3d();
+            if (!camera) return false;
+            return camera -> is_position_in_frustum(node -> get_global_position());
+            #else
+            return true;
+            #endif
         }
 
         static void maybe_force_broadcast(godot::Node3D* node) {
