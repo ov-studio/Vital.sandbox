@@ -29,7 +29,6 @@ namespace Vital::Sandbox {
             inline static std::unordered_map<entity_type, entity_collector> entity_pool;
         public:
             inline static constexpr bool has_remote = false;
-            inline static constexpr bool has_streaming = false;
             inline static constexpr bool pre_cleanup = true;
             static void init(Machine* vm) {}
             static void bind(Machine* vm) {}
@@ -154,12 +153,6 @@ namespace Vital::Sandbox {
                     });
                 }
 
-                if constexpr (TOwner::has_streaming) {
-                    bind_method<TInstance>(vm, "is_streamed", [](auto vm, auto self, auto& id) -> int {
-                        vm -> push_value(self -> is_streamed());
-                        return 1;
-                    });
-                }
                 #endif
 
                 bind_method<TInstance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {

@@ -26,7 +26,6 @@ namespace Vital::Sandbox::API {
     struct Rigid_Body : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "rigid"};
         inline static constexpr bool has_remote = true;
-        inline static constexpr bool has_streaming = true;
         using base_class = Vital::Engine::Rigid_Body;
 
         inline static const std::vector<std::pair<std::string, base_class::FreezeMode>> freeze_mode_registry = {
