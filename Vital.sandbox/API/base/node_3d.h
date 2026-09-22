@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Sandbox/runtime/registry.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/API/base/syncable.h>
 
 
 //////////////////////////
