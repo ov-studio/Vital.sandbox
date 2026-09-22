@@ -60,7 +60,7 @@ namespace Vital::Sandbox {
 
             template<typename T>
             static void register_type(Machine* vm) {
-                const auto name = scope_name(T::base_scope);
+                const auto name = scope_id(T::base_scope);
                 vm -> create_metatable(name);
                 vm -> create_table();
                 T::methods(vm);
@@ -115,8 +115,8 @@ namespace Vital::Sandbox {
             static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<T>, const std::string&)> exec) {
                 using exec_type = std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>;
                 push_owned<exec_type>(vm -> get_state(), std::move(exec));
-                push_owned<std::string>(vm -> get_state(), scope_name(T::Owner::base_scope));
-                push_owned<std::string>(vm -> get_state(), "self<" + scope_name(T::Owner::base_scope) + ">:" + name);
+                push_owned<std::string>(vm -> get_state(), scope_id(T::Owner::base_scope));
+                push_owned<std::string>(vm -> get_state(), "self<" + scope_id(T::Owner::base_scope) + ">:" + name);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                     auto fn = static_cast<exec_type*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
@@ -142,7 +142,7 @@ namespace Vital::Sandbox {
                     vm_args(vm, id, "(name)", true)
                         .require(2, &Machine::is_string);
 
-                    vm -> push_value(scope_name(TOwner::base_scope) == vm -> get_string(2));
+                    vm -> push_value(scope_id(TOwner::base_scope) == vm -> get_string(2));
                     return 1;
                 });
 
@@ -163,7 +163,7 @@ namespace Vital::Sandbox {
                 #endif
 
                 bind_method<TInstance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(scope_name(TOwner::base_scope));
+                    vm -> push_value(scope_id(TOwner::base_scope));
                     return 1;
                 });
 
@@ -179,7 +179,7 @@ namespace Vital::Sandbox {
 
             template<typename T>
             static bool is_userdata(Machine* vm, int idx = 1) {
-                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), idx, scope_name(T::Owner::base_scope).c_str()));
+                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), idx, scope_id(T::Owner::base_scope).c_str()));
                 if (!ud || !*ud) return false;
                 return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
             }

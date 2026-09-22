@@ -159,7 +159,7 @@ namespace Vital::Sandbox {
                 }
                 auto calling_vm = instance -> vm;
                 auto root_vm = calling_vm -> get_root();
-                calling_vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
+                calling_vm -> create_object(vm_module::scope_id(Derived::Owner::base_scope), instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(calling_vm, -1);
                 {
                     auto node_3d = instance -> get_node_3d();
