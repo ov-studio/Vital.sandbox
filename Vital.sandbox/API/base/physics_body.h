@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
                 });
                 #endif
 
-                vm_module::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(axis, lock)", true)
                         .require_enum(2, axis_registry)
                         .require(3, &Machine::is_bool);
@@ -138,7 +138,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             if constexpr (body_type == Type::Rigid || body_type == Type::Static || body_type == Type::Animatable) {
-                vm_module::bind_method<Instance>(vm, "set_physics_material", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_physics_material", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(friction, bounce, rough = false, absorbent = false)", true)
                         .require(2, &Machine::is_number)
                         .require(3, &Machine::is_number)
@@ -161,7 +161,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             if constexpr (body_type == Type::Static || body_type == Type::Animatable) {
-                vm_module::bind_method<Instance>(vm, "set_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(velocity)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -171,7 +171,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_constant_angular_velocity", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_constant_angular_velocity", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(velocity)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -182,7 +182,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             if constexpr (body_type == Type::Animatable) {
-                vm_module::bind_method<Instance>(vm, "set_sync_to_physics", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_sync_to_physics", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(state)", true)
                         .require(2, &Machine::is_bool);
 
@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                vm_module::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(body)", true)
                         .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(body)", true)
                         .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
@@ -220,6 +220,7 @@ namespace Vital::Sandbox::API {
 
                     auto motion = vm -> get_vector3(2);
                     auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
+                    if (!test_only) API::Syncable::require_authority(self -> get_node());
                     auto collision = self -> get_node() -> move_and_collide(motion, test_only);
                     if (!collision.is_valid()) vm -> push_value(false);
                     else {
