@@ -108,6 +108,7 @@ namespace Vital::Engine {
                 Engine::Model* object = memnew(Engine::Model);
                 object -> net_id = (uint32_t)net_id;
                 object -> pending_authority = authority;
+                object -> sync_authority = authority;
                 object -> remote = true;
 
                 if (it != Engine::Model::cache_loaded.end()) {
