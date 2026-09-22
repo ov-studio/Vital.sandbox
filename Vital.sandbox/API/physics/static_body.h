@@ -25,6 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Static_Body : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "static"};
+        inline static constexpr bool has_remote = true;
         using base_class = Vital::Engine::Static_Body;
 
         struct Instance : Physics_Body_Instance<Instance, base_class> {
