@@ -37,7 +37,6 @@ namespace Vital::Sandbox {
             static void inject(Machine* vm) {}
             static void clean(const std::string& env) {}
 
-            static std::string scope_name(const std::vector<std::string>& scope) { return scope.empty() ? "" : scope.back(); }
             static std::string scope_id(const std::vector<std::string>& scope) {
                 std::string id;
                 for (std::size_t i = 0; i < scope.size(); ++i) {
