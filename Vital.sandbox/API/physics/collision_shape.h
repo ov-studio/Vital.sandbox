@@ -29,6 +29,7 @@ namespace Vital::Sandbox::API {
     struct Collision_Shape : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "collision_shape"};
         inline static constexpr bool has_remote = true;
+        inline static constexpr bool has_streaming = true;
         using base_class = Vital::Engine::Collision_Shape;
 
         struct Instance : vm_instance<Instance> {
