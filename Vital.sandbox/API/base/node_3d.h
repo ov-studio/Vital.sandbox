@@ -34,12 +34,12 @@ namespace Vital::Sandbox::API {
         template<typename NodeT>
         static bool is_streamed(NodeT* node) {
             #if defined(VSDK_Client)
-            if (!node || !node -> is_inside_tree() || !node -> is_visible_in_tree()) return false;
-            auto camera = Vital::Engine::Core::get_scene_root() -> get_camera_3d();
-            if (!camera) return false;
-            return camera -> is_position_in_frustum(node -> get_global_position());
+                if (!node || !node -> is_inside_tree() || !node -> is_visible_in_tree()) return false;
+                auto camera = Vital::Engine::Core::get_scene_root() -> get_camera_3d();
+                if (!camera) return false;
+                return camera -> is_position_in_frustum(node -> get_global_position());
             #else
-            return true;
+                return true;
             #endif
         }
 

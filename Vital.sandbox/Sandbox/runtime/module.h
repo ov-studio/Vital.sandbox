@@ -160,7 +160,6 @@ namespace Vital::Sandbox {
                         return 1;
                     });
                 }
-
                 #endif
 
                 bind_method<TInstance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
