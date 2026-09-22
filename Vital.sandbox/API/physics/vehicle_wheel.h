@@ -30,6 +30,7 @@ namespace Vital::Sandbox::API {
     struct Vehicle_Wheel : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "vehicle_wheel"};
         inline static constexpr bool has_remote = true;
+        inline static constexpr bool has_streamed = true;
         using base_class = Vital::Engine::Vehicle_Wheel;
 
         struct Instance : vm_instance<Instance> {

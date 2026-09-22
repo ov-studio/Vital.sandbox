@@ -26,6 +26,7 @@ namespace Vital::Sandbox::API {
     struct Character_Body : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "character"};
         inline static constexpr bool has_remote = true;
+        inline static constexpr bool has_streamed = true;
         using base_class = Vital::Engine::Character_Body;
 
         inline static const std::vector<std::pair<std::string, base_class::MotionMode>> motion_mode_registry = {
