@@ -26,6 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Spot_Light : vm_module {
         inline static const std::vector<std::string> base_scope = {"light", "spot"};
+        inline static constexpr bool has_streamed = true;
         using base_class = Vital::Engine::Spot_Light;
 
         inline static const std::vector<std::pair<std::string, base_class::BakeMode>> bake_mode_registry = {
@@ -40,6 +41,10 @@ namespace Vital::Sandbox::API {
 
             auto get_node() {
                 return light;
+            }
+
+            bool is_streamed() const {
+                return Node_3D::is_streamed(light);
             }
 
             bool is_alive() const {

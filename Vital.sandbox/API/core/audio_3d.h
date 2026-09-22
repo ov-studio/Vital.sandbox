@@ -28,6 +28,7 @@
 namespace Vital::Sandbox::API {
     struct Audio_3D : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "audio_3d"};
+        inline static constexpr bool has_streamed = true;
         using base_class = Vital::Engine::Audio_3D;
 
         inline static const std::vector<std::pair<std::string, godot::AudioStreamPlayer3D::AttenuationModel>> attenuation_model_registry = {
@@ -49,6 +50,10 @@ namespace Vital::Sandbox::API {
 
             auto get_node() {
                 return audio -> get_player();
+            }
+
+            bool is_streamed() const {
+                return Node_3D::is_streamed(audio -> get_player());
             }
 
             bool is_alive() const {

@@ -26,6 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Directional_Light : vm_module {
         inline static const std::vector<std::string> base_scope = {"light", "directional"};
+        inline static constexpr bool has_streamed = true;
         using base_class = Vital::Engine::Directional_Light;
 
         inline static const std::vector<std::pair<std::string, base_class::BakeMode>> bake_mode_registry = {
@@ -52,6 +53,10 @@ namespace Vital::Sandbox::API {
 
             auto get_node() {
                 return light;
+            }
+
+            bool is_streamed() const {
+                return true;
             }
 
             bool is_alive() const {
