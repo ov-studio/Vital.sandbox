@@ -26,6 +26,15 @@
 
 namespace Vital::Sandbox::API {
     struct Syncable {
+        // Authority Guard //
+        // Replicated entities are owned either by the server (authority 1) or by a single client.
+        // The server is always trusted. A client may only mutate a replicated entity it owns.
+        // Client-local entities (net_id == 0) are never restricted.
+
+        // Resolves the syncable that governs authority over `node`.
+        // Collision shapes and vehicle wheels have no authority of their own, they follow
+        // the body they are attached to. Any other node (e.g. a client-local prop that was
+        // parented under a replicated entity) stays unrestricted.
         static Vital::Engine::ISyncable* resolve(godot::Node* node) {
             if (!node) return nullptr;
             if (auto sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) return sync;
@@ -33,10 +42,6 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        // Authority Guards //
-        // Replicated entities are owned either by the server (authority 1) or by a single client.
-        // The server is always trusted. A client may only mutate a replicated entity it owns.
-        // Client-local entities (net_id == 0) are never restricted.
         static bool is_authorized(godot::Node* node) {
             #if !defined(VSDK_Client)
             return true;
@@ -49,6 +54,7 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        // Throws (surfaced to Lua as a VM error) when the caller may not modify `node`.
         static void require_authority(godot::Node* node) {
             #if defined(VSDK_Client)
             if (is_authorized(node)) return;
@@ -58,6 +64,7 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        // Drop-in replacement for `vm_module::bind_method` for methods that mutate replicated state.
         template<typename Instance>
         static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<Instance>, const std::string&)> exec) {
             vm_module::bind_method<Instance>(vm, name, [exec = std::move(exec)](Machine* vm, std::shared_ptr<Instance> self, const std::string& id) -> int {

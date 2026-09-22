@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
             bool is_alive() const {
                 return body ? true : false;
             }
-
+            
             uint32_t get_parent_net_id() const {
                 if (!body) return 0;
                 auto parent = body -> get_parent();

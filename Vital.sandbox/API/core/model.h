@@ -43,10 +43,6 @@ namespace Vital::Sandbox::API {
                 return model ? true : false;
             }
 
-            bool is_streamed() const {
-                return model ? model -> is_streamed() : false;
-            }
-
             bool is_remote() const {
                 return model ? model -> is_remote() : false;
             }

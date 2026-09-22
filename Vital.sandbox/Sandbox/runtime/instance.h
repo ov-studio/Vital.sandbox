@@ -46,10 +46,6 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            bool is_streamed() const {
-                return true;
-            }
-
             bool is_remote() const {
                 return env.empty();
             }

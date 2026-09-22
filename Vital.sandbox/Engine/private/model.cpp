@@ -493,17 +493,6 @@ namespace Vital::Engine {
     bool Model::is_model_loaded(const std::string& name) { return cache_loaded.find(name) != cache_loaded.end(); }
     bool Model::is_remote() const { return remote; }
 
-    bool Model::is_streamed() const {
-        if (placeholder || !is_visible_in_tree()) return false;
-        #if defined(VSDK_Client)
-            auto camera = Engine::Core::get_scene_root()->get_camera_3d();
-            if (!camera) return false;
-            return camera->is_position_in_frustum(get_global_position());
-        #else
-            return true;
-        #endif
-    }
-
     bool Model::is_component_visible(const std::string& component) { return assert_component(component)->is_visible(); }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
