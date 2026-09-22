@@ -50,6 +50,10 @@ namespace Vital::Sandbox {
                 return env.empty();
             }
 
+            bool is_streamed() const {
+                return true;
+            }
+            
             void set_reference(const std::string& name, int idx) {
                 vm -> set_reference("runtime", name, idx);
                 if (std::find(references.begin(), references.end(), name) == references.end()) references.push_back(name);

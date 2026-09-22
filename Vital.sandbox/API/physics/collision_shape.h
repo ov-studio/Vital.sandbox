@@ -44,6 +44,10 @@ namespace Vital::Sandbox::API {
                 return body ? true : false;
             }
 
+            bool is_streamed() const {
+                return Node_3D::is_streamed(body);
+            }
+
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;

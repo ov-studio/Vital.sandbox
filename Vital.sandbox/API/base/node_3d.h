@@ -67,12 +67,10 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type node_type = Type::Spatial>
         static void methods(Machine* vm) {
             #if defined(VSDK_Client)
-            if constexpr (Sandbox::has_is_streamed<Instance>::value) {
-                vm_module::bind_method<Instance>(vm, "is_streamed", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> is_streamed());
-                    return 1;
-                });
-            }
+            vm_module::bind_method<Instance>(vm, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> is_streamed());
+                return 1;
+            });
             #endif
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {

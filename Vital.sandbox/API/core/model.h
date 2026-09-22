@@ -47,6 +47,10 @@ namespace Vital::Sandbox::API {
                 return model ? model -> is_remote() : false;
             }
 
+            bool is_streamed() const {
+                return Node_3D::is_streamed(model);
+            }
+
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
