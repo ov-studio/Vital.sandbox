@@ -59,8 +59,8 @@ namespace Vital::Sandbox::API {
             #if defined(VSDK_Client)
             if (is_authorized(node)) return;
             auto sync = resolve(node);
-            if (sync && sync -> get_sync_authority() > 1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: cannot modify an entity owned by another client");
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: cannot modify a server-owned entity from the client");
+            if (sync && sync -> get_sync_authority() > 1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot modify an entity owned by another client");
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot modify a server-owned entity from the client");
             #endif
         }
 

@@ -123,7 +123,7 @@ namespace Vital::Sandbox {
                     auto vm = Machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
                         auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
-                        auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
+                        auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("`<{}>` instance was destroyed", *type)); };
                         if (!ud || !*ud) throw_destroyed();
                         auto self = T::find_unlocked(static_cast<T*>(*ud) -> id);
                         if (!self) throw_destroyed();
@@ -169,7 +169,7 @@ namespace Vital::Sandbox {
                 bind_method<TInstance>(vm, "destroy", [](auto vm, auto self, auto& id) -> int {
                     #if defined(VSDK_Client)
                     if constexpr (TOwner::has_remote) {
-                        if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
+                        if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "remote entities cannot be destroyed by the client");
                     }
                     #endif
                     return TInstance::destroy(vm);
