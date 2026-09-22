@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
 
-            vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -189,7 +189,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -200,7 +200,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -211,7 +211,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(rotation)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -222,7 +222,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(rotation)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -334,7 +334,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_radius", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_radius", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(radius)", true)
                     .require(2, &Machine::is_number);
 
@@ -345,7 +345,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_suspension_rest_length", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_suspension_rest_length", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(length)", true)
                     .require(2, &Machine::is_number);
 
@@ -356,7 +356,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_suspension_travel", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_suspension_travel", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(length)", true)
                     .require(2, &Machine::is_number);
 
@@ -367,7 +367,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_suspension_stiffness", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_suspension_stiffness", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(stiffness)", true)
                     .require(2, &Machine::is_number);
 
@@ -378,7 +378,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_suspension_max_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_suspension_max_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_number);
 
@@ -389,7 +389,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_damping_compression", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_damping_compression", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(damping)", true)
                     .require(2, &Machine::is_number);
 
@@ -400,7 +400,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_damping_relaxation", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_damping_relaxation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(damping)", true)
                     .require(2, &Machine::is_number);
 
@@ -411,7 +411,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_use_as_traction", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_use_as_traction", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -422,7 +422,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_use_as_steering", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_use_as_steering", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -433,7 +433,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_friction_slip", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_friction_slip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(slip)", true)
                     .require(2, &Machine::is_number);
 
@@ -444,7 +444,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_roll_influence", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_roll_influence", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(influence)", true)
                     .require(2, &Machine::is_number);
 
@@ -455,7 +455,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_engine_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_engine_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_number);
 
@@ -465,7 +465,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_brake", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_brake", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(brake)", true)
                     .require(2, &Machine::is_number);
 
@@ -475,7 +475,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_steering", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_steering", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(steering)", true)
                     .require(2, &Machine::is_number);
 
