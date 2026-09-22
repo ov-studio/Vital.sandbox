@@ -155,6 +155,7 @@ namespace Vital::Sandbox::API {
                     .require(1, [](Machine* vm, int idx) { return vm_module::is_userdata<Vehicle_Body::Instance>(vm, idx); });
 
                 auto body = vm_module::get_userdata_object<Vehicle_Body::Instance>(vm, 1);
+                API::Syncable::require_authority(body -> get_node());
                 auto instance = Instance::init(vm);
                 instance -> body = base_class::create(body -> get_node());
                 int idx_count = 0;
