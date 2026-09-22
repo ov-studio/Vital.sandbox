@@ -31,16 +31,6 @@ namespace Vital::Tool::Log {
 
     inline constexpr std::string_view type_labels[] = { "sbox", "info", "warn", "error" };
 
-    struct Command {
-        std::string_view code;
-        std::string_view message;
-    };
-
-    inline constexpr Command error_list[] = {
-        { "invalid-argument", "invalid argument: {}" },
-        { "request-failed",   "request failed: {}" }
-    };
-
     template <Type T>
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
@@ -67,13 +57,9 @@ namespace Vital::Tool::Log {
         return label != type_label(Type::sbox) && is_type(label);
     }
 
-    inline std::string_view resolve(std::string_view code) {
-        for (const auto& e : error_list) if (code == e.code) return e.message;
-        return "unknown error";
-    }
-
     inline std::runtime_error fetch(std::string_view code, Type type = Type::info, std::string_view detail = "") {
-        auto body = fmt::format(fmt::runtime(resolve(code)), detail);
+        std::string body(code);
+        if (!detail.empty()) body += fmt::format("\n> Reason: {}", detail);
         switch (type) {
             case Type::sbox: return sbox(body);
             case Type::info: return info(body);
