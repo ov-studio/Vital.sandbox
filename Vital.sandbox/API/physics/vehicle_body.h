@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_engine_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_engine_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_number);
 
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_brake", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_brake", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(brake)", true)
                     .require(2, &Machine::is_number);
 
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_steering", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_steering", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(steering)", true)
                     .require(2, &Machine::is_number);
 

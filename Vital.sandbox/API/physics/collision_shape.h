@@ -136,6 +136,7 @@ namespace Vital::Sandbox::API {
                     .require(1, [](Machine* vm, int idx) { return resolve_owner(vm, idx) != nullptr; });
 
                 auto body = resolve_owner(vm, 1);
+                API::Syncable::require_authority(body);
                 auto instance = Instance::init(vm);
                 instance -> body = base_class::create(body);
                 instance -> store(true);
@@ -168,7 +169,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_disabled", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -195,7 +196,7 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
-            vm_module::bind_method<Instance>(vm, "set_shape_box", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_box", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -217,7 +218,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_shape_sphere", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_sphere", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(radius)", true)
                     .require(2, &Machine::is_number);
 
@@ -237,7 +238,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_shape_capsule", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_capsule", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(radius, height)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number);
@@ -260,7 +261,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_shape_cylinder", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_cylinder", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(radius, height)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number);
@@ -284,7 +285,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_shape_world_boundary", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_world_boundary", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(plane_normal, plane_distance = 0)", true)
                     .require(2, &Machine::is_vector3)
                     .optional(3, &Machine::is_number);
@@ -309,7 +310,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_shape_separation_ray", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_separation_ray", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(length)", true)
                     .require(2, &Machine::is_number);
 
@@ -358,7 +359,7 @@ namespace Vital::Sandbox::API {
              *   which was extended to serialise ConvexPolygonShape3D and ConcavePolygonShape3D children.
              */
              // TODO: Improve
-            vm_module::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, config = {})", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); })
                     .optional(3, &Machine::is_table);

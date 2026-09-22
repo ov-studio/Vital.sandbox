@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(position)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(position)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
-                vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -147,7 +147,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(euler_degrees)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -158,7 +158,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(euler_degrees)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -169,7 +169,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(quaternion)", true)
                         .require(2, &Machine::is_quaternion);
 
@@ -240,7 +240,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(offset)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -250,7 +250,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(offset)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -281,7 +281,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "scale_local", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "scale_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -291,7 +291,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "scale_global", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "scale_global", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -301,7 +301,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "rotate", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "rotate", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(axis, degrees)", true)
                         .require(2, &Machine::is_vector3)
                         .require(3, &Machine::is_number);
@@ -313,7 +313,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "rotate_local", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "rotate_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(axis, degrees)", true)
                         .require(2, &Machine::is_vector3)
                         .require(3, &Machine::is_number);
@@ -325,7 +325,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(target, up = {0, 1, 0})", true)
                         .require(2, &Machine::is_vector3)
                         .optional(3, &Machine::is_vector3);
@@ -337,7 +337,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "look_at_from_position", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "look_at_from_position", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(position, target, up = {0, 1, 0})", true)
                         .require(2, &Machine::is_vector3)
                         .require(3, &Machine::is_vector3)

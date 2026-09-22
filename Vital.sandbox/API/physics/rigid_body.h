@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_mass", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_mass", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mass)", true)
                     .require(2, &Machine::is_number);
 
@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_gravity_scale", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_gravity_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(scale)", true)
                     .require(2, &Machine::is_number);
 
@@ -176,7 +176,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_linear_velocity", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_linear_velocity", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(velocity)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -186,7 +186,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_angular_velocity", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_angular_velocity", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(velocity)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -196,7 +196,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_linear_damp", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_linear_damp", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(damp)", true)
                     .require(2, &Machine::is_number);
 
@@ -206,7 +206,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_angular_damp", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_angular_damp", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(damp)", true)
                     .require(2, &Machine::is_number);
 
@@ -216,7 +216,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_sleeping", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_sleeping", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -226,7 +226,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_can_sleep", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_can_sleep", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -236,7 +236,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_contact_monitor", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_contact_monitor", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -246,7 +246,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_max_contacts_reported", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_max_contacts_reported", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(amount)", true)
                     .require(2, &Machine::is_number);
 
@@ -256,7 +256,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_use_continuous_collision_detection", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_use_continuous_collision_detection", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -266,7 +266,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_lock_rotation_enabled", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_lock_rotation_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -276,7 +276,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_freeze_enabled", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_freeze_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -286,7 +286,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_freeze_mode", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_freeze_mode", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, freeze_mode_registry);
 
@@ -296,7 +296,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_central_impulse", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_central_impulse", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(impulse)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -306,7 +306,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_impulse", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_impulse", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(impulse, position = {0, 0, 0})", true)
                     .require(2, &Machine::is_vector3)
                     .optional(3, &Machine::is_vector3);
@@ -318,7 +318,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_torque_impulse", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_torque_impulse", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(impulse)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -328,7 +328,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_central_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_central_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -338,7 +338,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force, position = {0, 0, 0})", true)
                     .require(2, &Machine::is_vector3)
                     .optional(3, &Machine::is_vector3);
@@ -350,7 +350,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_torque", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_torque", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(torque)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -360,7 +360,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "add_constant_central_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "add_constant_central_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -370,7 +370,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "add_constant_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "add_constant_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force, position = {0, 0, 0})", true)
                     .require(2, &Machine::is_vector3)
                     .optional(3, &Machine::is_vector3);
@@ -382,7 +382,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "add_constant_torque", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "add_constant_torque", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(torque)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -392,7 +392,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_constant_force", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_constant_force", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(force)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -402,7 +402,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_constant_torque", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_constant_torque", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(torque)", true)
                     .require(2, &Machine::is_vector3);
 

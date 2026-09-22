@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                vm_module::bind_method<Instance>(vm, "set_collision_layer", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_collision_layer", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(layer)", true)
                         .require(2, &Machine::is_number);
 
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_collision_mask", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_collision_mask", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(mask)", true)
                         .require(2, &Machine::is_number);
 
@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_collision_layer_value", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(layer_number, value)", true)
                         .require(2, &Machine::is_number)
                         .require(3, &Machine::is_bool);
@@ -105,7 +105,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_collision_mask_value", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(layer_number, value)", true)
                         .require(2, &Machine::is_number)
                         .require(3, &Machine::is_bool);
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             if constexpr (object_type == Type::Body) {
-                vm_module::bind_method<Instance>(vm, "set_collision_priority", [](auto vm, auto self, auto& id) -> int {
+                API::Syncable::bind_method<Instance>(vm, "set_collision_priority", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(priority)", true)
                         .require(2, &Machine::is_number);
 

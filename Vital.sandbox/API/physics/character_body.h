@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             
-            vm_module::bind_method<Instance>(vm, "set_velocity", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_velocity", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(velocity)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -170,7 +170,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_up_direction", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_up_direction", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(direction)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -180,7 +180,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_motion_mode", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_motion_mode", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, motion_mode_registry);
 
@@ -190,7 +190,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_platform_on_leave", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_platform_on_leave", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, platform_on_leave_registry);
 
@@ -200,7 +200,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_floor_max_angle", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_floor_max_angle", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(radians)", true)
                     .require(2, &Machine::is_number);
 
@@ -210,7 +210,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_floor_snap_length", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_floor_snap_length", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(length)", true)
                     .require(2, &Machine::is_number);
 
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_floor_stop_on_slope_enabled", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_floor_stop_on_slope_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -230,7 +230,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_slide_on_ceiling_enabled", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_slide_on_ceiling_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
@@ -240,13 +240,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "move_and_slide", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "move_and_slide", [](auto vm, auto self, auto& id) -> int {
                 auto collided = self -> body -> move_and_slide();
                 vm -> push_value(collided);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_floor_snap", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "apply_floor_snap", [](auto vm, auto self, auto& id) -> int {
                 self -> body -> apply_floor_snap();
                 vm -> push_value(true);
                 return 1;

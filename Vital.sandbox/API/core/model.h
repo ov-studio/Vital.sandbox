@@ -391,7 +391,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(speed)", true)
                     .require(2, &Machine::is_number);
 
@@ -413,7 +413,7 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
-            vm_module::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_string)
@@ -434,7 +434,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "stop_animation_layer", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "stop_animation_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .optional(3, &Machine::is_number)
@@ -448,7 +448,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, weight, blend_time = 0, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
@@ -463,7 +463,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, speed, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
@@ -477,7 +477,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, enabled, bone_paths?, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_bool)
