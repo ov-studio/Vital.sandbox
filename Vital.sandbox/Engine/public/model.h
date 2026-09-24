@@ -156,7 +156,6 @@ namespace Vital::Engine {
             static void cleanup_spawned();
             static void on_connected();
             void destroy();
-
             #if defined(VSDK_Client)
             void hydrate(int authority_peer);
             #endif
@@ -193,6 +192,7 @@ namespace Vital::Engine {
             // and get_sync_node() below.
             void destroy_sync() override { this->queue_free(); }
             godot::Node3D* get_sync_node() override { return this; }
+
 
             // Getters //
             static Models get_loaded_models();
@@ -234,5 +234,6 @@ namespace Vital::Engine {
             bool play_animation_layer(int layer, const std::string& name, bool loop = true, float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
             void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
             bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {}, bool sync = true);
+            int apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material);
     };
 }

@@ -1115,4 +1115,33 @@ namespace Vital::Engine {
         if (anim_layers[layer].current_anim.empty()) return false;
         return layer == 0 || anim_layers[layer].weight_target > 0.0f;
     }
+
+    // Applies shader_material to all surfaces matching component + material
+    // wildcards.  Pass an invalid (null) Ref to clear the override and restore
+    // the mesh's own material — used by remove_from_material.
+    int Model::apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material) {
+        int count = 0;
+
+        auto apply_to_component = [&](const std::string& comp_name) -> bool {
+            godot::MeshInstance3D* mesh = find_mesh_node(this, comp_name);
+            if (!mesh) return false;
+
+            auto apply_to_surface = [&](const std::string& mat_name) -> bool {
+                int idx = find_material_index(mesh, mat_name);
+                if (idx < 0) return false;
+                // Passing an invalid Ref clears the override (restores default).
+                mesh -> set_surface_override_material(idx, shader_material);
+                count++;
+                return true;
+            };
+
+            if (!apply_wildcard(material, [&]{ return get_materials(comp_name); }, apply_to_surface))
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, comp_name));
+            return true;
+        };
+
+        if (!apply_wildcard(component, [&]{ return get_components(); }, apply_to_component))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return count;
+    }
 }
