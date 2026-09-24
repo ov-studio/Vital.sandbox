@@ -138,22 +138,5 @@ namespace Vital::Engine {
         material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
         return true;
     }
-
-
-    // Misc //
-    int Shader::apply_to_node(godot::Node* node) {
-        if (!node || !material.is_valid()) return 0;
-        int count = 0;
-        if (auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(node)) {
-            int surfaces = mesh -> get_surface_override_material_count();
-            if (surfaces == 0 && mesh -> get_mesh().is_valid()) surfaces = mesh -> get_mesh() -> get_surface_count();
-            for (int i = 0; i < surfaces; i++) {
-                mesh -> set_surface_override_material(i, material);
-                count++;
-            }
-        }
-        for (int i = 0; i < node -> get_child_count(); i++) count += apply_to_node(node -> get_child(i));
-        return count;
-    }
 }
 #endif

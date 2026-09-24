@@ -273,15 +273,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "apply_to_model", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(model)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Vital::Sandbox::API::Model::Instance>(vm, idx); });
-
-                auto model = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
-                vm -> push_value(self -> shader -> apply_to_node(model -> get_node()));
-                return 1;
-            });
-
             // apply_to_material(model_pattern, component, material)
             //
             // Registers a persistent shader assignment and immediately applies
