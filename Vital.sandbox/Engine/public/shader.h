@@ -15,12 +15,15 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
+#include <functional>
+#include <vector>
 
 
 ////////////////////////////
 // Vital: Engine: Shader //
 ////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     class Shader {
         public:
@@ -28,6 +31,8 @@ namespace Vital::Engine {
                 Spatial,
                 CanvasItem
             };
+
+            using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
 
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
                 { "CANVAS_ITEM", Mode::CanvasItem },
@@ -37,6 +42,13 @@ namespace Vital::Engine {
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
             Mode mode = Mode::CanvasItem;
+
+            // Per-surface material clones. A ShaderMaterial can only hold one
+            // texture per uniform, so every surface that needs its own
+            // original texture (albedo/normal/...) gets its own clone.
+            // Parameters set via set_param* are mirrored to all live clones.
+            std::vector<godot::Ref<godot::ShaderMaterial>> surface_materials;
+            void prune_surface_materials();
 
             struct Internal {
                 struct EntryPoint {
@@ -68,6 +80,8 @@ namespace Vital::Engine {
             Mode get_mode() const;
             std::string get_code() const;
             godot::Ref<godot::ShaderMaterial> get_material() const;
+            godot::Ref<godot::ShaderMaterial> create_surface_material(godot::Ref<godot::Material> original);
+            SurfaceFactory get_surface_factory();
 
 
             // Setters //

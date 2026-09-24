@@ -1120,6 +1120,13 @@ namespace Vital::Engine {
     // wildcards.  Pass an invalid (null) Ref to clear the override and restore
     // the mesh's own material — used by remove_from_material.
     int Model::apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material) {
+        if (!shader_material.is_valid()) return apply_material_shader(component, material, SurfaceMaterialFactory{});
+        return apply_material_shader(component, material, SurfaceMaterialFactory([shader_material](godot::Ref<godot::Material>) { return shader_material; }));
+    }
+
+    // Empty factory clears the override. Otherwise the factory receives the surface's
+    // ORIGINAL mesh material (not the current override) so its textures can be reused.
+    int Model::apply_material_shader(const std::string& component, const std::string& material, const SurfaceMaterialFactory& factory) {
         int count = 0;
 
         auto apply_to_component = [&](const std::string& comp_name) -> bool {
@@ -1129,8 +1136,14 @@ namespace Vital::Engine {
             auto apply_to_surface = [&](const std::string& mat_name) -> bool {
                 int idx = find_material_index(mesh, mat_name);
                 if (idx < 0) return false;
-                // Passing an invalid Ref clears the override (restores default).
-                mesh -> set_surface_override_material(idx, shader_material);
+                if (!factory) {
+                    // Clears the override (restores default).
+                    mesh -> set_surface_override_material(idx, godot::Ref<godot::Material>());
+                } else {
+                    godot::Ref<godot::Material> original;
+                    if (mesh -> get_mesh().is_valid()) original = mesh -> get_mesh() -> surface_get_material(idx);
+                    mesh -> set_surface_override_material(idx, factory(original));
+                }
                 count++;
                 return true;
             };

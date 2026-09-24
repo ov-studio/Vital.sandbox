@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
                 model -> apply_material_shader(
                     reg.component_pattern,
                     reg.material_pattern,
-                    reg.owner -> shader -> get_material()
+                    reg.owner -> shader -> get_surface_factory()
                 );
             } catch (...) {}
         }
@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
                 for (const auto& reg : registrations) {
                     if (!reg.owner || !reg.owner -> shader) continue;
                     if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                    try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_material()); }
+                    try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
                     catch (...) {}
                 }
             }
@@ -324,7 +324,7 @@ namespace Vital::Sandbox::API {
                     auto* model = instance -> get_node();
                     if (!model) continue;
                     if (!Tool::match_wildcard(model_pattern, model -> get_model_name())) continue;
-                    try { count += model -> apply_material_shader(component, material, self -> shader -> get_material()); }
+                    try { count += model -> apply_material_shader(component, material, self -> shader -> get_surface_factory()); }
                     catch (...) {}
                 }
                 vm -> push_value(count);
@@ -379,7 +379,7 @@ namespace Vital::Sandbox::API {
                     for (const auto& reg : registrations) {
                         if (!reg.owner || !reg.owner -> shader) continue;
                         if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_material()); }
+                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
                         catch (...) {}
                     }
                 }
@@ -423,7 +423,7 @@ namespace Vital::Sandbox::API {
                     for (const auto& reg : registrations) {
                         if (!reg.owner || !reg.owner -> shader) continue;
                         if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_material()); }
+                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
                         catch (...) {}
                     }
                 }

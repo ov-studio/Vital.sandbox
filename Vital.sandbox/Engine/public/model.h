@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <functional>
 
 
 ///////////////////////////
@@ -234,6 +235,8 @@ namespace Vital::Engine {
             bool play_animation_layer(int layer, const std::string& name, bool loop = true, float speed = 1.0f, float weight = 1.0f, float blend_time = 0.25f, bool sync = true);
             void stop_animation_layer(int layer, float blend_time = 0.25f, bool sync = true);
             bool set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths = {}, bool sync = true);
+            using SurfaceMaterialFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
             int apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material);
+            int apply_material_shader(const std::string& component, const std::string& material, const SurfaceMaterialFactory& factory);
     };
 }
