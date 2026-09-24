@@ -203,6 +203,23 @@ namespace Vital::Engine {
                 else if (type == godot::Variant::VECTOR4) v = godot::Vector4(c.r, c.g, c.b, c.a);
                 else if (type == godot::Variant::VECTOR3) v = godot::Vector3(c.r, c.g, c.b);
             }
+            else if (n == "roughness_channel" || n == "metallic_channel" || n == "ao_channel") {
+                // Which texture channel Godot reads for this property (glTF ORM: ao=R, roughness=G, metallic=B).
+                // Exposed as a vec4 mask: use dot(texture(tex, uv), mask).
+                int ch = (n == "roughness_channel") ? (int)base -> get_roughness_texture_channel()
+                       : (n == "metallic_channel")  ? (int)base -> get_metallic_texture_channel()
+                                                    : (int)base -> get_ao_texture_channel();
+                godot::Vector4 mask(1, 0, 0, 0);
+                switch (ch) {
+                    case godot::BaseMaterial3D::TEXTURE_CHANNEL_GREEN:     mask = godot::Vector4(0, 1, 0, 0); break;
+                    case godot::BaseMaterial3D::TEXTURE_CHANNEL_BLUE:      mask = godot::Vector4(0, 0, 1, 0); break;
+                    case godot::BaseMaterial3D::TEXTURE_CHANNEL_ALPHA:     mask = godot::Vector4(0, 0, 0, 1); break;
+                    case godot::BaseMaterial3D::TEXTURE_CHANNEL_GRAYSCALE: mask = godot::Vector4(0.333333f, 0.333333f, 0.333333f, 0); break;
+                    default: break;
+                }
+                if (type == godot::Variant::COLOR) v = godot::Color(mask.x, mask.y, mask.z, mask.w);
+                else v = mask;
+            }
             else if (n == "uv1_scale")  v = base -> get_uv1_scale();
             else if (n == "uv1_offset") v = base -> get_uv1_offset();
             if (v.get_type() != godot::Variant::NIL) clone -> set_shader_parameter(name, v);
