@@ -289,9 +289,9 @@ namespace Vital::Sandbox::API {
             // Returns the number of surfaces updated on already-live models.
             vm_module::bind_method<Instance>(vm, "apply_to_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
-                bool is_wildcard       = !is_model_instance && vm -> is_string(2) && vm -> get_string(2) == "*";
+                bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
                 if (!is_model_instance && !is_wildcard)
-                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance or \"*\" expected)");
+                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance, \"*\", or nil expected)");
 
                 vm_args(vm, id, "(model, component, material)", true)
                     .require(3, &Machine::is_string)
@@ -356,9 +356,9 @@ namespace Vital::Sandbox::API {
             // Returns the number of surfaces whose override was changed.
             vm_module::bind_method<Instance>(vm, "remove_from_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
-                bool is_wildcard       = !is_model_instance && vm -> is_string(2) && vm -> get_string(2) == "*";
+                bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
                 if (!is_model_instance && !is_wildcard)
-                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance or \"*\" expected)");
+                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance, \"*\", or nil expected)");
 
                 vm_args(vm, id, "(model, component, material)", true)
                     .require(3, &Machine::is_string)
