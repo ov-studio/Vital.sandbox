@@ -43,6 +43,14 @@ namespace Vital::Engine {
 
     void Model::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) {
+            // Free any components that were detached from the tree and are
+            // therefore not owned by any parent — Godot won't free them
+            // automatically since they have no parent node.
+            for (auto& [name, mesh] : detached_components) {
+                if (mesh) mesh->queue_free();
+            }
+            detached_components.clear();
+
             Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
             Manager::Network::get_singleton()->unregister_syncable(this);
             sync_registered = false;
@@ -624,11 +632,103 @@ namespace Vital::Engine {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (!mesh) return false;
             mesh->set_visible(state);
+            // Track non-default (hidden) state for late-join dump.
+            // Default is visible, so only record when hidden.
+            if (!state) component_visibility[name] = false;
+            else        component_visibility.erase(name);
             return true;
         };
         if (!apply_wildcard(component, [&]{ return get_components(); }, exec))
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        #if !defined(VSDK_Client)
+        broadcast_component_visible(component, state);
+        #endif
         return true;
+    }
+
+    void Model::broadcast_component_visible(const std::string& component, bool state) {
+        if (net_id == 0) return;
+        auto net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node) net_node->rpc("_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
+    }
+
+    bool Model::is_component_rendered(const std::string& component) {
+        if (Tool::contains_wildcard(component)) {
+            for (const auto& name : get_components())
+                if (Tool::match_wildcard(component, name) && !detached_components.count(name)) return true;
+            return false;
+        }
+        return detached_components.count(component) == 0;
+    }
+
+    // set_component_rendered(component, true)  → reattach (make rendered)
+    // set_component_rendered(component, false) → detach   (stop rendering)
+    bool Model::set_component_rendered(const std::string& component, bool state) {
+        if (state) {
+            // Reattach: move from detached map back into the scene tree.
+            auto exec = [&](const std::string& name) -> bool {
+                auto it = detached_components.find(name);
+                if (it == detached_components.end()) return true; // already live, no-op
+                godot::MeshInstance3D* mesh = it->second;
+                detached_components.erase(it);
+                component_rendered_set.erase(name);
+                this->add_child(mesh);
+                mesh->set_physics_process(true);
+                mesh->set_process(true);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                std::vector<std::string> keys;
+                keys.reserve(detached_components.size());
+                for (const auto& [name, _] : detached_components) keys.push_back(name);
+                bool matched = !keys.empty();
+                for (const auto& name : keys)
+                    if (Tool::match_wildcard(component, name)) exec(name);
+                if (!matched)
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in detached components of model '{}'", component, model_name));
+            } else {
+                exec(component);
+            }
+        } else {
+            // Detach: remove from scene tree, keep alive in detached_components.
+            auto live_names = get_components();
+            auto exec = [&](const std::string& name) -> bool {
+                if (detached_components.count(name)) return true; // already detached, no-op
+                godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+                if (!mesh) return false;
+                godot::Node* parent = mesh->get_parent();
+                if (!parent) return false;
+                mesh->set_physics_process(false);
+                mesh->set_process(false);
+                parent->remove_child(mesh);
+                detached_components[name] = mesh;
+                component_rendered_set.insert(name);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                bool matched = false;
+                for (const auto& name : live_names)
+                    if (Tool::match_wildcard(component, name)) { exec(name); matched = true; }
+                for (const auto& [name, _] : detached_components)
+                    if (Tool::match_wildcard(component, name)) matched = true;
+                if (!matched)
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+            } else {
+                if (!exec(component))
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+            }
+        }
+
+        #if !defined(VSDK_Client)
+        broadcast_component_rendered(component, state);
+        #endif
+        return true;
+    }
+
+    void Model::broadcast_component_rendered(const std::string& component, bool state) {
+        if (net_id == 0) return;
+        auto net_node = Manager::Network::get_singleton()->get_node();
+        if (net_node) net_node->rpc("_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {

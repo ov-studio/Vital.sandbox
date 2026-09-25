@@ -25,6 +25,7 @@
 // Vital: API: Model //
 ////////////////////////
 
+// TODO: Sort API order
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "model"};
@@ -322,7 +323,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
@@ -331,6 +332,26 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(3);
                 self -> model -> set_component_visible(component, state);
                 vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                vm -> push_value(self -> model -> is_component_rendered(component));
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_rendered", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, state)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_bool);
+
+                auto component = vm -> get_string(2);
+                auto state = vm -> get_bool(3);
+                vm -> push_value(self -> model -> set_component_rendered(component, state));
                 return 1;
             });
 

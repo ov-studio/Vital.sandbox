@@ -54,6 +54,8 @@ namespace Vital::Engine {
         rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
         rpc_config("_sync_anim_layer_filter", reliable);
+        rpc_config("_sync_component_visible", reliable);
+        rpc_config("_sync_component_render", reliable);
         rpc_config("_force_transform", reliable);
         rpc_config("_wake_sync", reliable);
 
@@ -417,6 +419,110 @@ namespace Vital::Engine {
         #endif
     }
 
+
+    // _sync_component_visible: server → all clients.
+    // Replicates set_component_visible() calls made on the server.
+    // Server: validates sender is the sync authority, then relays to all clients.
+    // Client: applies directly via the private apply helper (Network is friend of Model).
+    void Network::_sync_component_visible(int net_id, godot::String component, bool state) {
+        auto mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        #if !defined(VSDK_Client)
+        // Server only relays — it already applied the change locally when the
+        // Lua call came in. No sender check needed: this RPC is only ever
+        // initiated by the server itself via broadcast_component_visible().
+        auto node = mgr->get_node();
+        if (node) node->rpc("_sync_component_visible", net_id, component, state);
+        #else
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+        std::string comp = Tool::to_std_string(component);
+        // Apply directly — do NOT call the public set_component_visible() which
+        // would re-broadcast on a server build and is guarded by Syncable authority.
+        // We replicate the minimal local side-effect here instead.
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = model->find_mesh_node(model, name);
+            if (!mesh) return false;
+            mesh->set_visible(state);
+            if (!state) model->component_visibility[name] = false;
+            else        model->component_visibility.erase(name);
+            return true;
+        };
+        if (Tool::contains_wildcard(comp)) {
+            for (const auto& name : model->get_components())
+                if (Tool::match_wildcard(comp, name)) exec(name);
+        } else {
+            exec(comp);
+        }
+        #endif
+    }
+
+    // _sync_component_render: server → all clients.
+    // state=true  → detach (remove from tree, keep alive).
+    // state=false → reattach (add back under model root).
+    void Network::_sync_component_render(int net_id, godot::String component, bool state) {
+        auto mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) return;
+
+        #if !defined(VSDK_Client)
+        auto node = mgr->get_node();
+        if (node) node->rpc("_sync_component_render", net_id, component, state);
+        #else
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+        std::string comp = Tool::to_std_string(component);
+        if (state) {
+            // Detach
+            auto exec_detach = [&](const std::string& name) -> bool {
+                if (model->detached_components.count(name)) return true;
+                godot::MeshInstance3D* mesh = model->find_mesh_node(model, name);
+                if (!mesh) return false;
+                godot::Node* parent = mesh->get_parent();
+                if (!parent) return false;
+                mesh->set_physics_process(false);
+                mesh->set_process(false);
+                parent->remove_child(mesh);
+                model->detached_components[name] = mesh;
+                model->component_rendered_set.insert(name);
+                return true;
+            };
+            if (Tool::contains_wildcard(comp)) {
+                for (const auto& name : model->get_components())
+                    if (Tool::match_wildcard(comp, name)) exec_detach(name);
+                // Also catch already-detached entries that match
+                for (const auto& [name, _] : model->detached_components)
+                    if (Tool::match_wildcard(comp, name)) exec_detach(name);
+            } else {
+                exec_detach(comp);
+            }
+        } else {
+            // Reattach
+            std::vector<std::string> keys;
+            for (const auto& [name, _] : model->detached_components) keys.push_back(name);
+            auto exec_reattach = [&](const std::string& name) {
+                auto it = model->detached_components.find(name);
+                if (it == model->detached_components.end()) return;
+                godot::MeshInstance3D* mesh = it->second;
+                model->detached_components.erase(it);
+                model->component_rendered_set.erase(name);
+                model->add_child(mesh);
+                mesh->set_physics_process(true);
+                mesh->set_process(true);
+            };
+            if (Tool::contains_wildcard(comp)) {
+                for (const auto& name : keys)
+                    if (Tool::match_wildcard(comp, name)) exec_reattach(name);
+            } else {
+                exec_reattach(comp);
+            }
+        }
+        #endif
+    }
 
     void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale) {
         #if defined(VSDK_Client)

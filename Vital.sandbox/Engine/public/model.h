@@ -68,6 +68,19 @@ namespace Vital::Engine {
             };
             std::vector<AnimLayerState> anim_layers;
 
+            // Detached components — removed from the scene tree but kept alive
+            // so they can be reattached later without reloading from the GLB.
+            // Keyed by the same component path string used in find_mesh_node.
+            std::unordered_map<std::string, godot::MeshInstance3D*> detached_components;
+
+            // Persistent state for late-join replication.
+            // component_visibility: components explicitly hidden via set_component_visible(false).
+            //   Not set for components that are simply at their default visible state.
+            // component_detached: components currently detached from the scene tree.
+            //   Stored as a flat set — presence = detached.
+            std::unordered_map<std::string, bool> component_visibility;
+            std::unordered_set<std::string> component_rendered_set;
+
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
@@ -222,6 +235,16 @@ namespace Vital::Engine {
             #endif
 
             bool set_component_visible(const std::string& component, bool state);
+            bool set_component_rendered(const std::string& component, bool state);
+            bool is_component_rendered(const std::string& component);
+
+            // Broadcast helpers (server→clients, then stores state for late-join dump).
+            void broadcast_component_visible(const std::string& component, bool state);
+            void broadcast_component_rendered(const std::string& component, bool state);
+
+            // Late-join accessors used by Manager::Network::send_full_state_to_peer.
+            const std::unordered_map<std::string, bool>& get_component_visibility_state() const { return component_visibility; }
+            const std::unordered_set<std::string>& get_component_detached_state() const { return component_rendered_set; }
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);

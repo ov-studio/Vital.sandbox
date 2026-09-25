@@ -1317,6 +1317,23 @@ namespace Vital::Manager {
             }
         }
 
+        // 2.8. Replay component visibility overrides so late-joiners see the
+        //      same hidden/shown component state as everyone else.
+        //      Only components explicitly hidden (non-default) are stored.
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto e : sync_models) {
+                auto model = dynamic_cast<Engine::Model*>(e);
+                if (!model) continue;
+                for (const auto& [comp, visible] : model->get_component_visibility_state()) {
+                    node->rpc_id(id, "_sync_component_visible", (int)e->get_net_id(), Tool::to_godot_string(comp), visible);
+                }
+                for (const auto& comp : model->get_component_detached_state()) {
+                    node->rpc_id(id, "_sync_component_render", (int)e->get_net_id(), Tool::to_godot_string(comp), true);
+                }
+            }
+        }
+
         // 3. Send transform state dump (reliable) so all models snap to correct
         //    positions. wake_all_syncables() + _wake_sync below then force a
         //    fresh live packet from every sleeping body within one physics tick,
