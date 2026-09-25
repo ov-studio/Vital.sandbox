@@ -389,16 +389,29 @@ namespace Vital::Sandbox::API {
                         }
                     }
                 } else {
-                    // Wildcard "*" — remove persistent registration and clear all live models
+                    // Wildcard "*" — remove persistent registration and replay survivors on live models.
+                    // Do everything under one lock to avoid deadlock (remove_registration also locks).
                     const std::string model_pattern = "*";
-                    remove_registration(self.get(), model_pattern, component, material);
-
                     std::lock_guard<std::mutex> lock(registrations_mutex);
+
+                    registrations.erase(
+                        std::remove_if(registrations.begin(), registrations.end(),
+                            [&](const Registration& r) {
+                                return r.owner            == self.get()
+                                    && r.model_pattern     == model_pattern
+                                    && r.component_pattern == component
+                                    && r.material_pattern  == material;
+                            }),
+                        registrations.end()
+                    );
+
                     for (auto& [mid, inst] : Model::registry.buffer) {
                         if (!inst || !inst -> is_alive()) continue;
                         auto* model = inst -> get_node();
                         if (!model) continue;
 
+                        // Clear the surface back to no-override, then replay every surviving
+                        // registration that covers this model so other shaders remain intact.
                         try { model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>()); count++; }
                         catch (...) {}
 
