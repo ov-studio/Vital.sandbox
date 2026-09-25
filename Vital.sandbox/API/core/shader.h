@@ -290,12 +290,12 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "apply_to_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
                 bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
-                if (!is_model_instance && !is_wildcard)
-                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance, \"*\", or nil expected)");
 
-                vm_args(vm, id, "(model, component, material)", true)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_string);
+                vm_args args_check(vm, id, "(model, component, material)", true);
+                if (!is_model_instance && !is_wildcard)
+                    args_check.validate(2, [](Machine*, int) { return false; }, "model instance, \"*\", or nil expected");
+                args_check.require(3, &Machine::is_string)
+                          .require(4, &Machine::is_string);
 
                 auto component = vm -> get_string(3);
                 auto material  = vm -> get_string(4);
@@ -357,12 +357,12 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "remove_from_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
                 bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
-                if (!is_model_instance && !is_wildcard)
-                    return vm -> throw_error(id, "(model, component, material)", "bad argument #1 'model' (model instance, \"*\", or nil expected)");
 
-                vm_args(vm, id, "(model, component, material)", true)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_string);
+                vm_args args_check(vm, id, "(model, component, material)", true);
+                if (!is_model_instance && !is_wildcard)
+                    args_check.validate(2, [](Machine*, int) { return false; }, "model instance, \"*\", or nil expected");
+                args_check.require(3, &Machine::is_string)
+                          .require(4, &Machine::is_string);
 
                 auto component = vm -> get_string(3);
                 auto material  = vm -> get_string(4);
