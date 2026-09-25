@@ -21,6 +21,7 @@
 // Vital: Engine: Network //
 /////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     class Network : public godot::Node {
         GDCLASS(Network, godot::Node)
