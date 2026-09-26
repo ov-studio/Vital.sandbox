@@ -211,7 +211,7 @@ namespace Vital::Engine {
             // Getters //
             static Models get_loaded_models();
             std::string get_model_name();
-            std::vector<std::string> get_components();
+            std::vector<std::string> get_components(bool include_all = false);
             std::vector<std::string> get_materials(const std::string& component);
             std::vector<std::string> get_blendshapes(const std::string& component);
             std::vector<std::string> get_bones();

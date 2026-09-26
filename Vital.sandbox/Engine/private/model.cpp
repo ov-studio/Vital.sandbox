@@ -543,9 +543,12 @@ namespace Vital::Engine {
     int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
 
-    std::vector<std::string> Model::get_components() {
+    std::vector<std::string> Model::get_components(bool include_all) {
         std::vector<std::string> components;
         collect_mesh_nodes(this, components, "");
+        if (include_all) {
+            for (const auto& [name, _] : detached_components) components.push_back(name);
+        }
         return components;
     }
 

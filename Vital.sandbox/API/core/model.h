@@ -235,7 +235,7 @@ namespace Vital::Sandbox::API {
                     .optional(2, &Machine::is_bool);
 
                 bool include_all = vm -> is_bool(2) ? vm -> get_bool(2) : false;
-                auto list = include_all ? self -> model -> get_all_components() : self -> model -> get_components();
+                auto list = self -> model -> get_components(include_all);
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
                     vm -> push_value(list[i]);
