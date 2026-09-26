@@ -1456,6 +1456,29 @@ namespace Vital::Manager {
             }
         }
 
+        // 2.8. Replay non-default component visibility/render state so late-joiners
+        //      see the same hidden/detached components (e.g. a hat hiding hair,
+        //      a removed clothing piece) that everyone else already sees, instead
+        //      of the model's default fully-visible/fully-attached appearance.
+        //      component_visibility/component_rendered_set only ever hold NON-default
+        //      entries (see Model::set_component_visible/set_component_rendered), so
+        //      this only sends the overrides that actually differ from spawn defaults.
+        //      Uses the same _sync_component_visible/_sync_component_render RPCs the
+        //      live broadcast path uses, so the client applies them identically
+        //      (including the pending-registration defer/replay if this races the
+        //      model's own _spawn_entity).
+        if (node) {
+            std::lock_guard<std::mutex> lock(sync_models_mutex);
+            for (auto e : sync_models) {
+                auto model = dynamic_cast<Engine::Model*>(e);
+                if (!model) continue;
+                for (const auto& [name, visible] : model->get_component_visibility_state())
+                    node->rpc_id(id, "_sync_component_visible", (int)e->get_net_id(), Tool::to_godot_string(name), visible);
+                for (const auto& name : model->get_component_detached_state())
+                    node->rpc_id(id, "_sync_component_render", (int)e->get_net_id(), Tool::to_godot_string(name), false);
+            }
+        }
+
         // 3. Send transform state dump (reliable) so all models snap to correct
         //    positions. wake_all_syncables() + _wake_sync below then force a
         //    fresh live packet from every sleeping body within one physics tick,
