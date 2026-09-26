@@ -1460,7 +1460,7 @@ namespace Vital::Manager {
         //      see the same hidden/detached components (e.g. a hat hiding hair,
         //      a removed clothing piece) that everyone else already sees, instead
         //      of the model's default fully-visible/fully-attached appearance.
-        //      component_hidden/component_rendered_set are both flat sets that only
+        //      component_hidden/component_detached are both flat sets that only
         //      ever hold NON-default entries (presence = hidden/detached — see
         //      Model::set_component_visible/set_component_rendered), so this only
         //      sends the overrides that actually differ from spawn defaults.

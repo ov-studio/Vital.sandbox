@@ -80,7 +80,7 @@ namespace Vital::Engine {
             // component_detached: components currently detached from the scene tree.
             //   Stored as a flat set — presence = detached.
             std::unordered_set<std::string> component_hidden;
-            std::unordered_set<std::string> component_rendered_set;
+            std::unordered_set<std::string> component_detached;
 
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
@@ -245,7 +245,7 @@ namespace Vital::Engine {
 
             // Late-join accessors used by Manager::Network::send_full_state_to_peer.
             const std::unordered_set<std::string>& get_component_visibility_state() const { return component_hidden; }
-            const std::unordered_set<std::string>& get_component_detached_state() const { return component_rendered_set; }
+            const std::unordered_set<std::string>& get_component_detached_state() const { return component_detached; }
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);

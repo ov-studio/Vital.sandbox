@@ -674,7 +674,7 @@ namespace Vital::Engine {
                 if (it == detached_components.end()) return true; // already live, no-op
                 godot::MeshInstance3D* mesh = it->second;
                 detached_components.erase(it);
-                component_rendered_set.erase(name);
+                component_detached.erase(name);
                 this->add_child(mesh);
                 mesh->set_physics_process(true);
                 mesh->set_process(true);
@@ -705,7 +705,7 @@ namespace Vital::Engine {
                 mesh->set_process(false);
                 parent->remove_child(mesh);
                 detached_components[name] = mesh;
-                component_rendered_set.insert(name);
+                component_detached.insert(name);
                 return true;
             };
             if (Tool::contains_wildcard(component)) {
