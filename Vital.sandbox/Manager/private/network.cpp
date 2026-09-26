@@ -1473,9 +1473,9 @@ namespace Vital::Manager {
             for (auto e : sync_models) {
                 auto model = dynamic_cast<Engine::Model*>(e);
                 if (!model) continue;
-                for (const auto& name : model->get_component_visibility_state())
+                for (const auto& name : model->get_hidden_components())
                     node->rpc_id(id, "_sync_component_visible", (int)e->get_net_id(), Tool::to_godot_string(name), false);
-                for (const auto& name : model->get_component_detached_state())
+                for (const auto& name : model->get_detached_components())
                     node->rpc_id(id, "_sync_component_render", (int)e->get_net_id(), Tool::to_godot_string(name), false);
             }
         }

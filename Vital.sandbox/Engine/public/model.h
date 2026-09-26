@@ -244,8 +244,8 @@ namespace Vital::Engine {
             void broadcast_component_rendered(const std::string& component, bool state);
 
             // Late-join accessors used by Manager::Network::send_full_state_to_peer.
-            const std::unordered_set<std::string>& get_component_visibility_state() const { return component_hidden; }
-            const std::unordered_set<std::string>& get_component_detached_state() const { return component_detached; }
+            const std::unordered_set<std::string>& get_hidden_components() const { return component_hidden; }
+            const std::unordered_set<std::string>& get_detached_components() const { return component_detached; }
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
