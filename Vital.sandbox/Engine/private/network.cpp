@@ -419,20 +419,6 @@ namespace Vital::Engine {
         #endif
     }
 
-
-    // _sync_component_visible: server → all clients.
-    // Replicates set_component_visible() calls made on the server.
-    // Server: relays to all clients (already applied locally).
-    // Client: applies directly, or defers into pending map if entity not yet registered.
-    void Network::_sync_component_visible(int net_id, godot::String component, bool state) {
-        auto mgr = Manager::Network::get_singleton();
-        if (!mgr) return;
-
-        #if !defined(VSDK_Client)
-    // _sync_component_visible: server → all clients.
-    // Replicates set_component_visible() calls made on the server.
-    // Server: relays to all clients (already applied locally).
-    // Client: applies directly, or defers into pending map if entity not yet registered.
     void Network::_sync_component_visible(int net_id, godot::String component, bool state) {
         auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
