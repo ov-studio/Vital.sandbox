@@ -55,6 +55,14 @@ namespace Vital::Manager {
             std::mutex pending_force_transform_mutex;
             std::unordered_map<uint32_t, uint32_t> pending_reparent_syncs;
             std::mutex pending_reparent_mutex;
+
+            // component_visible: net_id → list of (component_pattern, state) pairs
+            // component_render:  net_id → list of (component_pattern, state) pairs
+            // Both keyed by net_id; applied in replay_pending_syncs when the entity registers.
+            std::unordered_map<uint32_t, std::vector<std::pair<godot::String, bool>>> pending_component_visible_syncs;
+            std::mutex pending_component_visible_mutex;
+            std::unordered_map<uint32_t, std::vector<std::pair<godot::String, bool>>> pending_component_render_syncs;
+            std::mutex pending_component_render_mutex;
             #endif
             godot::PackedByteArray sync_batch_buf;
 

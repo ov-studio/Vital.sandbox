@@ -267,6 +267,44 @@ namespace Vital::Manager {
                 godot::UtilityFunctions::print("replay _force_transform: net_id=", nid, " pos=", pos);
             }
         }
+
+        // 5. Component visibility overrides (_sync_component_visible that arrived
+        //    before this entity registered — applied in order so last write wins).
+        {
+            std::vector<std::pair<godot::String, bool>> entries;
+            {
+                std::lock_guard<std::mutex> lock(pending_component_visible_mutex);
+                auto it = pending_component_visible_syncs.find(nid);
+                if (it != pending_component_visible_syncs.end()) {
+                    entries = std::move(it->second);
+                    pending_component_visible_syncs.erase(it);
+                }
+            }
+            auto model = dynamic_cast<Engine::Model*>(entity);
+            if (model) {
+                for (const auto& [comp, state] : entries)
+                    model->set_component_visible(Tool::to_std_string(comp), state);
+            }
+        }
+
+        // 6. Component render (detach/reattach) overrides (_sync_component_render
+        //    that arrived before this entity registered).
+        {
+            std::vector<std::pair<godot::String, bool>> entries;
+            {
+                std::lock_guard<std::mutex> lock(pending_component_render_mutex);
+                auto it = pending_component_render_syncs.find(nid);
+                if (it != pending_component_render_syncs.end()) {
+                    entries = std::move(it->second);
+                    pending_component_render_syncs.erase(it);
+                }
+            }
+            auto model = dynamic_cast<Engine::Model*>(entity);
+            if (model) {
+                for (const auto& [comp, state] : entries)
+                    model->set_component_rendered(Tool::to_std_string(comp), state);
+            }
+        }
     }
     #endif
 
@@ -320,6 +358,14 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(pending_reparent_mutex);
             pending_reparent_syncs.clear();
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_component_visible_mutex);
+            pending_component_visible_syncs.clear();
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_component_render_mutex);
+            pending_component_render_syncs.clear();
         }
     }
     #endif
@@ -1317,21 +1363,6 @@ namespace Vital::Manager {
             }
         }
 
-        // 2.8. Replay component visibility overrides so late-joiners see the
-        //      same hidden/shown component state as everyone else.
-        //      Only components explicitly hidden (non-default) are stored.
-        if (node) {
-            std::lock_guard<std::mutex> lock(sync_models_mutex);
-            for (auto e : sync_models) {
-                auto model = dynamic_cast<Engine::Model*>(e);
-                if (!model) continue;
-                for (const auto& [comp, visible] : model->get_component_visibility_state()) {
-                    node->rpc_id(id, "_sync_component_visible", (int)e->get_net_id(), Tool::to_godot_string(comp), visible);
-                }
-                for (const auto& comp : model->get_component_detached_state()) {
-                    node->rpc_id(id, "_sync_component_render", (int)e->get_net_id(), Tool::to_godot_string(comp), true);
-                }
-            }
         }
 
         // 3. Send transform state dump (reliable) so all models snap to correct
