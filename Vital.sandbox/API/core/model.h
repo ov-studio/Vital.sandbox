@@ -231,7 +231,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_components", [](auto vm, auto self, auto& id) -> int {
-                auto list = self -> model -> get_components();
+                vm_args(vm, id, "(include_all = false)")
+                    .optional(2, &Machine::is_bool);
+
+                bool include_all = vm -> is_bool(2) ? vm -> get_bool(2) : false;
+                auto list = include_all ? self -> model -> get_all_components() : self -> model -> get_components();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
                     vm -> push_value(list[i]);
