@@ -1373,8 +1373,6 @@ namespace Vital::Manager {
             }
         }
 
-        }
-
         // 3. Send transform state dump (reliable) so all models snap to correct
         //    positions. wake_all_syncables() + _wake_sync below then force a
         //    fresh live packet from every sleeping body within one physics tick,
