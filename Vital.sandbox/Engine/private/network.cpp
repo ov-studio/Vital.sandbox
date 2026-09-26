@@ -456,21 +456,12 @@ namespace Vital::Engine {
         }
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
-        std::string comp = Tool::to_std_string(component);
-        auto exec = [&](const std::string& name) -> bool {
-            godot::MeshInstance3D* mesh = model->find_mesh_node(model, name);
-            if (!mesh) return false;
-            mesh->set_visible(state);
-            if (!state) model->component_hidden.insert(name);
-            else        model->component_hidden.erase(name);
-            return true;
-        };
-        if (Tool::contains_wildcard(comp)) {
-            for (const auto& name : model->get_components())
-                if (Tool::match_wildcard(comp, name)) exec(name);
-        } else {
-            exec(comp);
-        }
+        // apply_component_visible() never throws — see its declaration in
+        // model.h — and persists the requested state into component_hidden
+        // if the model is still a placeholder, for hydrate() to re-apply
+        // once its mesh tree actually exists (same race _sync_component_render
+        // handles; see the comment there).
+        model->apply_component_visible(Tool::to_std_string(component), state);
         #endif
     }
 
@@ -493,7 +484,28 @@ namespace Vital::Engine {
         }
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
-        model->set_component_rendered(Tool::to_std_string(component), state);
+
+        // The entity can finish registering (find_syncable succeeds above)
+        // before its mesh subtree has actually finished building — a
+        // second/late-joining peer's state dump replays every existing
+        // model's component-render state as soon as each net_id registers,
+        // but the model is still a `placeholder` at that point (see
+        // hydrate()) whenever this peer hadn't already cached that model's
+        // asset. set_component_rendered() throws Tool::Log::error when the
+        // named component can't be found — correct for direct API/Lua
+        // callers who want immediate feedback, but fatal from an RPC
+        // callback: an uncaught C++ exception unwinding back through Godot's
+        // GDExtensionCallError/MethodBind RPC dispatch is undefined behavior
+        // and crashes the client instead of just failing the call.
+        //
+        // apply_component_rendered() is the non-throwing counterpart (same
+        // relationship set_component_rendered has to apply_play_animation_layer
+        // and friends): while placeholder it only persists the requested
+        // state into component_detached; hydrate() re-applies it to the real
+        // mesh tree once it exists, exactly like ensure_animation_layer()
+        // replays anim_layers after hydrate. No retry/attempt-count needed —
+        // the state isn't lost, it's just picked up on hydrate instead.
+        model->apply_component_rendered(Tool::to_std_string(component), state);
         #endif
     }
 

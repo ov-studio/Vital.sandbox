@@ -239,6 +239,21 @@ namespace Vital::Engine {
             bool set_component_rendered(const std::string& component, bool state);
             bool is_component_rendered(const std::string& component);
 
+            // Pure local application — never broadcasts, never throws. Same
+            // relationship to set_component_visible()/set_component_rendered()
+            // that apply_play_animation_layer() etc. have to their public
+            // API counterparts: called by Network::_sync_component_visible /
+            // _sync_component_render when mirroring a remote peer's state,
+            // where an unhandled exception would unwind back through Godot's
+            // GDExtensionCallError/MethodBind RPC dispatch and crash instead
+            // of just failing the call. While `placeholder` is true (mesh
+            // subtree not instanced yet — see hydrate()) these only update
+            // component_hidden/component_detached; hydrate() re-applies both
+            // sets to the real mesh tree once it exists, mirroring how
+            // ensure_animation_layer() replays anim_layers after hydrate.
+            bool apply_component_visible(const std::string& component, bool state);
+            bool apply_component_rendered(const std::string& component, bool state);
+
             // Broadcast helpers (server→clients, then stores state for late-join dump).
             void broadcast_component_visible(const std::string& component, bool state);
             void broadcast_component_rendered(const std::string& component, bool state);

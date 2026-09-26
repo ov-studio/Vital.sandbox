@@ -393,6 +393,30 @@ namespace Vital::Engine {
         find_node(this, skeleton);
         find_node(this, anim_player);
         if (anim_player && (!anim_tree || blend_tree.is_null()) && !anim_layers.empty()) ensure_animation_layer(std::max(0, (int)anim_layers.size() - 1));
+
+        // Re-apply component visibility/render state that arrived via
+        // Network::_sync_component_visible / _sync_component_render while
+        // this model was still a placeholder — those calls could only
+        // persist into component_hidden/component_detached (see
+        // apply_component_visible/apply_component_rendered), since there was
+        // no mesh tree yet to act on. Same late-join race as the anim-layer
+        // rebuild just above; walk both sets now that the real tree exists.
+        for (const auto& name : component_hidden) {
+            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+            if (mesh) mesh->set_visible(false);
+        }
+        for (const auto& name : component_detached) {
+            if (detached_components.count(name)) continue; // already applied
+            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+            if (!mesh) continue;
+            godot::Node* parent = mesh->get_parent();
+            if (!parent) continue;
+            mesh->set_physics_process(false);
+            mesh->set_process(false);
+            parent->remove_child(mesh);
+            detached_components[name] = mesh;
+        }
+
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
@@ -649,6 +673,49 @@ namespace Vital::Engine {
         return true;
     }
 
+    // Pure local application — never broadcasts, never throws. Same
+    // relationship to set_component_visible() that apply_play_animation_layer()
+    // etc. have to their public API counterparts. Called by
+    // Network::_sync_component_visible when mirroring a remote peer's state;
+    // an unhandled exception there would unwind back through Godot's
+    // GDExtensionCallError/MethodBind RPC dispatch and crash the client
+    // instead of just failing the call.
+    //
+    // While `placeholder` is true (mesh subtree not instanced yet — see
+    // hydrate()) there's no mesh tree to search, so the requested state is
+    // only persisted into component_hidden; hydrate() re-applies it to the
+    // real mesh tree once it exists, mirroring how ensure_animation_layer()
+    // replays anim_layers after hydrate.
+    bool Model::apply_component_visible(const std::string& component, bool state) {
+        if (placeholder) {
+            if (Tool::contains_wildcard(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_visible — wildcard '", Tool::to_godot_string(component),
+                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
+                return false;
+            }
+            if (!state) component_hidden.insert(component);
+            else        component_hidden.erase(component);
+            return true;
+        }
+
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+            if (!mesh) return false;
+            mesh->set_visible(state);
+            if (!state) component_hidden.insert(name);
+            else        component_hidden.erase(name);
+            return true;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(); }, exec)) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_component_visible — component '", Tool::to_godot_string(component),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        return true;
+    }
+
     void Model::broadcast_component_visible(const std::string& component, bool state) {
         if (net_id == 0) return;
         auto net_node = Manager::Network::get_singleton()->get_node();
@@ -726,6 +793,89 @@ namespace Vital::Engine {
         broadcast_component_rendered(component, state);
         #endif
         return true;
+    }
+
+    // Pure local application — never broadcasts, never throws. Same
+    // relationship to set_component_rendered() that apply_play_animation_layer()
+    // etc. have to their public API counterparts. Called by
+    // Network::_sync_component_render when mirroring a remote peer's state.
+    //
+    // This is the fix for the second-client crash: set_component_rendered()
+    // throws Tool::Log::error when the component can't be found — correct
+    // for direct API/Lua callers who want immediate feedback, but fatal from
+    // an RPC callback, where an uncaught exception unwinds back through
+    // Godot's GDExtensionCallError/MethodBind dispatch (not exception-safe)
+    // instead of just failing the call. A late-joining peer's state dump
+    // replays every existing model's component-render state as soon as each
+    // net_id registers — but the model can still be a `placeholder` at that
+    // point (mesh subtree not instanced yet, see hydrate()) if this peer
+    // hadn't already cached that model's asset. So while placeholder, this
+    // only persists the requested state into component_detached; hydrate()
+    // re-applies it to the real mesh tree once it exists, mirroring how
+    // ensure_animation_layer() replays anim_layers after hydrate.
+    bool Model::apply_component_rendered(const std::string& component, bool state) {
+        if (placeholder) {
+            if (Tool::contains_wildcard(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_rendered — wildcard '", Tool::to_godot_string(component),
+                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
+                return false;
+            }
+            if (!state) component_detached.insert(component);
+            else        component_detached.erase(component);
+            return true;
+        }
+
+        if (state) {
+            // Reattach: move from detached map back into the scene tree.
+            auto exec = [&](const std::string& name) -> bool {
+                auto it = detached_components.find(name);
+                if (it == detached_components.end()) return true; // already live, no-op
+                godot::MeshInstance3D* mesh = it->second;
+                detached_components.erase(it);
+                component_detached.erase(name);
+                this->add_child(mesh);
+                mesh->set_physics_process(true);
+                mesh->set_process(true);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                std::vector<std::string> keys;
+                keys.reserve(detached_components.size());
+                for (const auto& [name, _] : detached_components) keys.push_back(name);
+                for (const auto& name : keys)
+                    if (Tool::match_wildcard(component, name)) exec(name);
+                return true;
+            }
+            return exec(component);
+        } else {
+            // Detach: remove from scene tree, keep alive in detached_components.
+            auto exec = [&](const std::string& name) -> bool {
+                if (detached_components.count(name)) return true; // already detached, no-op
+                godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+                if (!mesh) return false;
+                godot::Node* parent = mesh->get_parent();
+                if (!parent) return false;
+                mesh->set_physics_process(false);
+                mesh->set_process(false);
+                parent->remove_child(mesh);
+                detached_components[name] = mesh;
+                component_detached.insert(name);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                for (const auto& name : get_components())
+                    if (Tool::match_wildcard(component, name)) exec(name);
+                return true;
+            }
+            if (!exec(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_rendered — component '", Tool::to_godot_string(component),
+                    "' not found in model '", Tool::to_godot_string(model_name), "'");
+                return false;
+            }
+            return true;
+        }
     }
 
     void Model::broadcast_component_rendered(const std::string& component, bool state) {
