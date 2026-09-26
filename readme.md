@@ -1,7 +1,7 @@
 ## Overview
 
 <div align="center">
-  <img src="https://vital-sandbox.com/logo/neon_background_round.png"/>
+  <img src="https://vital-sandbox.com/logo/neon_rays_background_round.png"/>
 
   <sub>Founded & maintained by Aviril, Mario, Tron, Anisa & A-Variakojiene</sub>
   
