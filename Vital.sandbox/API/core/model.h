@@ -231,7 +231,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_components", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(include_all = false)")
+                vm_args(vm, id, "(include_all = false)", true)
                     .optional(2, &Machine::is_bool);
 
                 bool include_all = vm -> is_bool(2) ? vm -> get_bool(2) : false;
