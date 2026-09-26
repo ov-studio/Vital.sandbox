@@ -171,6 +171,12 @@ namespace Vital::Manager {
             // physics_tick_rate/sync_rate — keeps client-side sync_interval and
             // every ISyncable's interp_step from staying at compile-time defaults.
             void apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
+
+            // Buffers a component_visible/component_render sync for a net_id not yet
+            // registered; replay_pending_syncs() applies it via Engine::Model once the
+            // entity registers. See pending_component_visible_syncs / pending_component_render_syncs.
+            void defer_component_visible_sync(uint32_t net_id, const godot::String& component, bool state);
+            void defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state);
             #endif
 
 

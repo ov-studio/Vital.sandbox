@@ -430,8 +430,7 @@ namespace Vital::Engine {
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
             // Entity not registered yet — defer so replay_pending_syncs applies it on spawn.
-            std::lock_guard<std::mutex> lock(mgr->pending_component_visible_mutex);
-            mgr->pending_component_visible_syncs[(uint32_t)net_id].emplace_back(component, state);
+            mgr->defer_component_visible_sync((uint32_t)net_id, component, state);
             return;
         }
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
@@ -468,8 +467,7 @@ namespace Vital::Engine {
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
             // Entity not registered yet — defer so replay_pending_syncs applies it on spawn.
-            std::lock_guard<std::mutex> lock(mgr->pending_component_render_mutex);
-            mgr->pending_component_render_syncs[(uint32_t)net_id].emplace_back(component, state);
+            mgr->defer_component_render_sync((uint32_t)net_id, component, state);
             return;
         }
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));

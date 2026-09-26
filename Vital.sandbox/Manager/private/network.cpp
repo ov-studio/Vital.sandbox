@@ -490,6 +490,16 @@ namespace Vital::Manager {
         pending_transform_syncs[net_id] = { pos, rot, vel, scale };
     }
 
+    void Network::defer_component_visible_sync(uint32_t net_id, const godot::String& component, bool state) {
+        std::lock_guard<std::mutex> lock(pending_component_visible_mutex);
+        pending_component_visible_syncs[net_id].emplace_back(component, state);
+    }
+
+    void Network::defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state) {
+        std::lock_guard<std::mutex> lock(pending_component_render_mutex);
+        pending_component_render_syncs[net_id].emplace_back(component, state);
+    }
+
     // Received via the "_sync_config" RPC, sent by the server the moment we connect.
     // Replaces the compile-time defaults with the server's actual config values so
     // client-side interp uses the same tuning the server was built with.
