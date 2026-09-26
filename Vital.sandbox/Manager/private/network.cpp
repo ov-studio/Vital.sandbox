@@ -305,6 +305,55 @@ namespace Vital::Manager {
                     model->set_component_rendered(Tool::to_std_string(comp), state);
             }
         }
+
+        // 7. Animation-layer state (_sync_anim_layer that arrived before this
+        //    entity registered — most commonly the state-dump RPC send_full_state_to_peer
+        //    sends a late-joiner for every OTHER player's current pose, which can win the
+        //    race against that same player's own _spawn_entity). Applied in arrival order
+        //    via the same private apply_* dispatch _sync_anim_layer itself uses.
+        {
+            std::vector<std::tuple<int, int, godot::String, bool, float, float, float>> entries;
+            {
+                std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
+                auto it = pending_anim_layer_syncs.find(nid);
+                if (it != pending_anim_layer_syncs.end()) {
+                    entries = std::move(it->second);
+                    pending_anim_layer_syncs.erase(it);
+                }
+            }
+            auto model = dynamic_cast<Engine::Model*>(entity);
+            if (model) {
+                for (const auto& [layer, mode, name, loop, speed, weight, blend_time] : entries) {
+                    std::string std_name = Tool::to_std_string(name);
+                    switch (mode) {
+                        case 0: model->apply_play_animation_layer(layer, std_name, loop, speed, weight, blend_time); break;
+                        case 1: model->apply_stop_animation_layer(layer, blend_time); break;
+                        case 2: model->apply_set_animation_layer_weight(layer, weight, blend_time); break;
+                        case 3: model->apply_set_animation_layer_speed(layer, speed); break;
+                        default: break;
+                    }
+                }
+            }
+        }
+
+        // 8. Animation-layer bone filters (_sync_anim_layer_filter that arrived
+        //    before this entity registered).
+        {
+            std::vector<std::tuple<int, bool, std::vector<std::string>>> entries;
+            {
+                std::lock_guard<std::mutex> lock(pending_anim_layer_filter_mutex);
+                auto it = pending_anim_layer_filter_syncs.find(nid);
+                if (it != pending_anim_layer_filter_syncs.end()) {
+                    entries = std::move(it->second);
+                    pending_anim_layer_filter_syncs.erase(it);
+                }
+            }
+            auto model = dynamic_cast<Engine::Model*>(entity);
+            if (model) {
+                for (const auto& [layer, enabled, bones] : entries)
+                    model->apply_set_animation_layer_filter(layer, enabled, bones);
+            }
+        }
     }
     #endif
 
@@ -367,6 +416,14 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(pending_component_render_mutex);
             pending_component_render_syncs.clear();
         }
+        {
+            std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
+            pending_anim_layer_syncs.clear();
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_anim_layer_filter_mutex);
+            pending_anim_layer_filter_syncs.clear();
+        }
     }
     #endif
 
@@ -419,6 +476,22 @@ namespace Vital::Manager {
                 if (it->second == nid) it = pending_reparent_syncs.erase(it);
                 else ++it;
             }
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_component_visible_mutex);
+            pending_component_visible_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_component_render_mutex);
+            pending_component_render_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
+            pending_anim_layer_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_anim_layer_filter_mutex);
+            pending_anim_layer_filter_syncs.erase(nid);
         }
         #endif
     }
@@ -498,6 +571,16 @@ namespace Vital::Manager {
     void Network::defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state) {
         std::lock_guard<std::mutex> lock(pending_component_render_mutex);
         pending_component_render_syncs[net_id].emplace_back(component, state);
+    }
+
+    void Network::defer_anim_layer_sync(uint32_t net_id, int layer, int mode, const godot::String& name, bool loop, float speed, float weight, float blend_time) {
+        std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
+        pending_anim_layer_syncs[net_id].emplace_back(layer, mode, name, loop, speed, weight, blend_time);
+    }
+
+    void Network::defer_anim_layer_filter_sync(uint32_t net_id, int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        std::lock_guard<std::mutex> lock(pending_anim_layer_filter_mutex);
+        pending_anim_layer_filter_syncs[net_id].emplace_back(layer, enabled, bone_paths);
     }
 
     // Received via the "_sync_config" RPC, sent by the server the moment we connect.

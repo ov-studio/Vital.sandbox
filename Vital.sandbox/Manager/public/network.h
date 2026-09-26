@@ -63,6 +63,14 @@ namespace Vital::Manager {
             std::mutex pending_component_visible_mutex;
             std::unordered_map<uint32_t, std::vector<std::pair<godot::String, bool>>> pending_component_render_syncs;
             std::mutex pending_component_render_mutex;
+
+            // anim_layer: net_id → list of (layer, mode, name, loop, speed, weight, blend_time) entries.
+            // anim_layer_filter: net_id → list of (layer, enabled, bone_paths) entries.
+            // Both keyed by net_id; applied in order in replay_pending_syncs when the entity registers.
+            std::unordered_map<uint32_t, std::vector<std::tuple<int, int, godot::String, bool, float, float, float>>> pending_anim_layer_syncs;
+            std::mutex pending_anim_layer_mutex;
+            std::unordered_map<uint32_t, std::vector<std::tuple<int, bool, std::vector<std::string>>>> pending_anim_layer_filter_syncs;
+            std::mutex pending_anim_layer_filter_mutex;
             #endif
             godot::PackedByteArray sync_batch_buf;
 
@@ -177,6 +185,14 @@ namespace Vital::Manager {
             // entity registers. See pending_component_visible_syncs / pending_component_render_syncs.
             void defer_component_visible_sync(uint32_t net_id, const godot::String& component, bool state);
             void defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state);
+
+            // Buffers an animation-layer sync/filter for a net_id not yet registered
+            // (e.g. the state-dump RPCs sent to a late-joiner in send_full_state_to_peer
+            // step 2.7 can arrive before that entity's own _spawn_entity has finished
+            // registering it); replay_pending_syncs() applies them, in arrival order,
+            // once the entity registers. See pending_anim_layer_syncs / pending_anim_layer_filter_syncs.
+            void defer_anim_layer_sync(uint32_t net_id, int layer, int mode, const godot::String& name, bool loop, float speed, float weight, float blend_time);
+            void defer_anim_layer_filter_sync(uint32_t net_id, int layer, bool enabled, const std::vector<std::string>& bone_paths);
             #endif
 
 

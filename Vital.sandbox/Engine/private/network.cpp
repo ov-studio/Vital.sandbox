@@ -349,7 +349,17 @@ namespace Vital::Engine {
         auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        #if defined(VSDK_Client)
+        if (!entity) {
+            // Entity not registered yet — most commonly the late-joiner state-dump
+            // RPC (send_full_state_to_peer step 2.7) racing that same player's own
+            // _spawn_entity. Defer so replay_pending_syncs applies it on spawn.
+            mgr->defer_anim_layer_sync((uint32_t)net_id, layer, mode, name, loop, speed, weight, blend_time);
+            return;
+        }
+        #else
         if (!entity) return;
+        #endif
 
         #if !defined(VSDK_Client)
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
@@ -390,7 +400,18 @@ namespace Vital::Engine {
         auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        #if defined(VSDK_Client)
+        if (!entity) {
+            // Entity not registered yet — defer so replay_pending_syncs applies it on spawn.
+            std::vector<std::string> paths;
+            paths.reserve(bones.size());
+            for (int i = 0; i < bones.size(); ++i) paths.push_back(Tool::to_std_string(bones[i]));
+            mgr->defer_anim_layer_filter_sync((uint32_t)net_id, layer, enabled, paths);
+            return;
+        }
+        #else
         if (!entity) return;
+        #endif
 
         #if !defined(VSDK_Client)
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
