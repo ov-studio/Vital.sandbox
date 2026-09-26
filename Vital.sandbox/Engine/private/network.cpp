@@ -461,8 +461,8 @@ namespace Vital::Engine {
             godot::MeshInstance3D* mesh = model->find_mesh_node(model, name);
             if (!mesh) return false;
             mesh->set_visible(state);
-            if (!state) model->component_visibility[name] = false;
-            else        model->component_visibility.erase(name);
+            if (!state) model->component_hidden.insert(name);
+            else        model->component_hidden.erase(name);
             return true;
         };
         if (Tool::contains_wildcard(comp)) {

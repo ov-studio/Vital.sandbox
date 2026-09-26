@@ -637,8 +637,8 @@ namespace Vital::Engine {
             mesh->set_visible(state);
             // Track non-default (hidden) state for late-join dump.
             // Default is visible, so only record when hidden.
-            if (!state) component_visibility[name] = false;
-            else        component_visibility.erase(name);
+            if (!state) component_hidden.insert(name);
+            else        component_hidden.erase(name);
             return true;
         };
         if (!apply_wildcard(component, [&]{ return get_components(); }, exec))

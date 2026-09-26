@@ -74,11 +74,12 @@ namespace Vital::Engine {
             std::unordered_map<std::string, godot::MeshInstance3D*> detached_components;
 
             // Persistent state for late-join replication.
-            // component_visibility: components explicitly hidden via set_component_visible(false).
-            //   Not set for components that are simply at their default visible state.
+            // component_hidden: components explicitly hidden via set_component_visible(false).
+            //   Stored as a flat set — presence = hidden. Not set for components
+            //   that are simply at their default visible state.
             // component_detached: components currently detached from the scene tree.
             //   Stored as a flat set — presence = detached.
-            std::unordered_map<std::string, bool> component_visibility;
+            std::unordered_set<std::string> component_hidden;
             std::unordered_set<std::string> component_rendered_set;
 
             // Sync state lives in ISyncable base class.
@@ -243,7 +244,7 @@ namespace Vital::Engine {
             void broadcast_component_rendered(const std::string& component, bool state);
 
             // Late-join accessors used by Manager::Network::send_full_state_to_peer.
-            const std::unordered_map<std::string, bool>& get_component_visibility_state() const { return component_visibility; }
+            const std::unordered_set<std::string>& get_component_visibility_state() const { return component_hidden; }
             const std::unordered_set<std::string>& get_component_detached_state() const { return component_rendered_set; }
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
