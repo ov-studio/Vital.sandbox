@@ -36,6 +36,7 @@ namespace Vital::Manager {
         public:
             static constexpr const char* Name = "Network.manager";
             static constexpr uint32_t STATE_DUMP_MAGIC = 0x56535354u;
+            static constexpr double ENET_PEER_PACKET_LOSS_SCALE = 65536.0;
         private:
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
@@ -203,9 +204,9 @@ namespace Vital::Manager {
 
             // ENet peer stats (ms / ratio). Returns -1 if peer is unknown or not connected.
             // Backed by ENetPacketPeer::get_statistic — zero extra traffic.
-            double get_peer_rtt(int peer_id) const;            // mean RTT (PEER_ROUND_TRIP_TIME)
-            double get_peer_last_rtt(int peer_id) const;       // last sample (PEER_LAST_ROUND_TRIP_TIME)
-            double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS)
+            double get_peer_rtt(int peer_id) const;            // mean RTT (PEER_ROUND_TRIP_TIME), in ms
+            double get_peer_last_rtt(int peer_id) const;       // last sample (PEER_LAST_ROUND_TRIP_TIME), in ms
+            double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS), normalized to 0.0-1.0
 
             #if defined(VSDK_Client)
             bool connect_to_server(const std::string& ip, int port, int http_port = -1, bool enable_reconnect = false);

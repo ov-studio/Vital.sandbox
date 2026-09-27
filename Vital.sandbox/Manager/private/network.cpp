@@ -644,7 +644,7 @@ namespace Vital::Manager {
     double Network::get_peer_packet_loss(int peer_id) const {
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return -1.0;
-        return ep->get_statistic(godot::ENetPacketPeer::PEER_PACKET_LOSS);
+        return ep->get_statistic(godot::ENetPacketPeer::PEER_PACKET_LOSS)/ENET_PEER_PACKET_LOSS_SCALE;
     }
 
 
