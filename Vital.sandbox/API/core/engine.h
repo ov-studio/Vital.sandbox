@@ -49,27 +49,6 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
-            #if !defined(VSDK_Client)
-            API::bind(vm, base_scope, "get_peers", [](auto vm, auto& id) -> int {
-                vm -> create_table();
-                int i = 0;
-                for (int peer_id : Manager::Network::get_singleton() -> get_connected_peers()) {
-                    vm -> push_value(peer_id);
-                    vm -> set_table_field(++i, -2);
-                }
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "disconnect_peer", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)")
-                    .require(1, &Machine::is_number);
-
-                auto peer_id = vm -> get_int(1);
-                vm -> push_value(Manager::Network::get_singleton() -> disconnect_peer(peer_id));
-                return 1;
-            });
-            #endif
-
             API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::get_tick());
                 return 1;
@@ -107,6 +86,18 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
+                return 1;
+            });
+            #endif
+
+            #if !defined(VSDK_Client)
+            API::bind(vm, base_scope, "get_peers", [](auto vm, auto& id) -> int {
+                vm -> create_table();
+                int i = 0;
+                for (int peer_id : Manager::Network::get_singleton() -> get_connected_peers()) {
+                    vm -> push_value(peer_id);
+                    vm -> set_table_field(++i, -2);
+                }
                 return 1;
             });
             #endif
@@ -214,6 +205,17 @@ namespace Vital::Sandbox::API {
                 auto path = vm -> get_string(1);
                 base_class::get_singleton() -> capture_screenshot(API::File::get_base(vm, path, true), path);
                 vm -> push_value(true);
+                return 1;
+            });
+            #endif
+
+            #if !defined(VSDK_Client)
+            API::bind(vm, base_scope, "disconnect_peer", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)")
+                    .require(1, &Machine::is_number);
+
+                auto peer_id = vm -> get_int(1);
+                vm -> push_value(Manager::Network::get_singleton() -> disconnect_peer(peer_id));
                 return 1;
             });
             #endif
