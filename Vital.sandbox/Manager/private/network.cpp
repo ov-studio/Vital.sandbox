@@ -1532,6 +1532,14 @@ namespace Vital::Manager {
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
     int  Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
+
+    bool Network::disconnect_peer(int peer_id) {
+        auto ep = _enet_peer_for(peer, peer_id);
+        if (!ep.is_valid()) return false;
+        peer->disconnect_peer(peer_id, false);
+        return true;
+    }
+
     const Config::Server& Network::get_server_config() const { return *server_config; }
     std::string Network::get_server_ip() const { return server_ip; }
     #endif

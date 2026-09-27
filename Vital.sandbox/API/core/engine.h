@@ -49,6 +49,30 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
+            #if !defined(VSDK_Client)
+            API::bind(vm, base_scope, "get_peers", [](auto vm, auto& id) -> int {
+                auto nm = Manager::Network::get_singleton();
+                std::vector<int> peer_ids(nm -> get_connected_peers().begin(), nm -> get_connected_peers().end());
+                std::sort(peer_ids.begin(), peer_ids.end());
+                vm -> create_table();
+                int i = 0;
+                for (int peer_id : peer_ids) {
+                    vm -> push_value(peer_id);
+                    vm -> set_table_field(++i, -2);
+                }
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "disconnect_peer", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)")
+                    .require(1, &Machine::is_number);
+
+                auto peer_id = vm -> get_int(1);
+                vm -> push_value(Manager::Network::get_singleton() -> disconnect_peer(peer_id));
+                return 1;
+            });
+            #endif
+
             API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::get_tick());
                 return 1;

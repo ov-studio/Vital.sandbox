@@ -225,6 +225,7 @@ namespace Vital::Manager {
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
+            bool disconnect_peer(int peer_id);
             const Config::Server& get_server_config() const;
             const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;
