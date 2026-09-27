@@ -85,6 +85,7 @@ namespace Vital::Engine {
                 static constexpr const char* ANSI_DIM = "\033[2m";
                 static constexpr const char* FG_GRAY = "\033[38;2;100;100;110m";
                 static std::string fetch_info();
+                static std::string fetch_players();
                 static std::string ansi_rgb(int r, int g, int b);
                 static std::string ansi_rgb(const Tool::Stack& color);
                 static std::string ansi_rgb_lighten(const Tool::Stack& color, float factor = 0.3f);

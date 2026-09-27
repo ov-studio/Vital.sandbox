@@ -161,6 +161,27 @@ namespace Vital::Engine {
         return oss.str();
     }
 
+    std::string Console::Internal::fetch_players() {
+        auto nm = Manager::Network::get_singleton();
+        std::vector<int> peer_ids(nm -> get_connected_peers().begin(), nm -> get_connected_peers().end());
+        std::sort(peer_ids.begin(), peer_ids.end());
+        std::ostringstream oss;
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format(">   {} — `{}`\n", label, value.empty() ? "—" : value); };
+        oss << fmt::format("Connected Players ({}):\n", peer_ids.size());
+        if (peer_ids.empty()) {
+            oss << "> No players currently connected\n";
+            return oss.str();
+        }
+        for (const int id : peer_ids) {
+            const double rtt  = nm -> get_peer_rtt(id);
+            const double loss = nm -> get_peer_packet_loss(id);
+            oss << fmt::format("• Peer `{}`:\n", id);
+            append_field("Ping", rtt >= 0.0 ? fmt::format("{:.0f}ms", rtt) : "—");
+            append_field("Packet Loss", loss >= 0.0 ? fmt::format("{:.2f}%", loss * 100.0) : "—");
+        }
+        return oss.str();
+    }
+
     std::string Console::Internal::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
         oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
@@ -707,6 +728,7 @@ namespace Vital::Engine {
             if (cmd == "clear") { clear(); return true; }
             #if !defined(VSDK_Client)
             if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
+            if (cmd == "players") { print("sbox", Internal::fetch_players()); return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
             if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
             if (cmd == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
