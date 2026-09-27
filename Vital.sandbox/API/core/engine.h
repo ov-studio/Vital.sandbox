@@ -51,12 +51,9 @@ namespace Vital::Sandbox::API {
 
             #if !defined(VSDK_Client)
             API::bind(vm, base_scope, "get_peers", [](auto vm, auto& id) -> int {
-                auto nm = Manager::Network::get_singleton();
-                std::vector<int> peer_ids(nm -> get_connected_peers().begin(), nm -> get_connected_peers().end());
-                std::sort(peer_ids.begin(), peer_ids.end());
                 vm -> create_table();
                 int i = 0;
-                for (int peer_id : peer_ids) {
+                for (int peer_id : Manager::Network::get_singleton() -> get_connected_peers()) {
                     vm -> push_value(peer_id);
                     vm -> set_table_field(++i, -2);
                 }
