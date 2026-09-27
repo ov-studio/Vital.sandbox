@@ -681,6 +681,19 @@ namespace Vital::Manager {
         }
         // Drop all other packets from peers that haven't completed handshake yet.
         if (!connected_peers.count(sender)) return;
+        #else
+        // Mirror of the server's "quit" handling above: the server sends this right
+        // before it actually disconnects us via Manager::Network::disconnect_peer(),
+        // so we can tell "the server deliberately removed us" apart from a genuine
+        // connection drop/timeout — the ENet-level peer_disconnected signal alone
+        // can't tell those two apart. Without this, _on_server_disconnected() would
+        // see auto_reconnect still enabled and silently reconnect us moments later.
+        if (stack.is_packet(Network::Name)) {
+            if (!stack.array.empty() && stack.array[0].as<std::string>() == "disconnect") {
+                auto_reconnect = false;
+            }
+            return;
+        }
         #endif
 
         if (stack.has("__event") || stack.has("__reply_serial")) {
@@ -1536,6 +1549,7 @@ namespace Vital::Manager {
     bool Network::disconnect_peer(int peer_id) {
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return false;
+        send(Tool::Stack::make_packet(Network::Name, { Tool::StackValue(std::string("disconnect")) }), peer_id);
         peer->disconnect_peer(peer_id, false);
         return true;
     }
