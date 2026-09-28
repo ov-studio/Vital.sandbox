@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_peer_serial", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(peer_id)")
                     .require(1, &Machine::is_number);
 
