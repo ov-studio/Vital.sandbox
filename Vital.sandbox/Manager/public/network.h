@@ -88,6 +88,7 @@ namespace Vital::Manager {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
+            std::unordered_map<int, std::string> peer_serials;
             const Config::Server* server_config = nullptr;
             std::string server_ip;
             #endif
@@ -226,6 +227,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             bool disconnect_peer(int peer_id);
+            std::string get_peer_serial(int peer_id) const;
             const Config::Server& get_server_config() const;
             const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;

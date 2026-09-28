@@ -23,6 +23,7 @@
 #include <Vital.sandbox/API/utility/event.h>
 #include <Vital.sandbox/Tool/version.h>
 #include <Vital.sandbox/Tool/http.h>
+#include <Vital.sandbox/Tool/inspect.h>
 #include <rapidjson/document.h>
 
 
@@ -667,6 +668,7 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         if (stack.is_packet(Network::Name)) {
             if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
+                if (stack.array.size() > 1 && stack.array[1].is<std::string>()) peer_serials[sender] = stack.array[1].as<std::string>();
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
                     log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
@@ -1106,6 +1108,7 @@ namespace Vital::Manager {
         if (!peer.is_valid()) return false;
         unwire_signals();
         connected_peers.clear();
+        peer_serials.clear();
         peer->close();
         peer.unref();
         auto tree = get_scene_tree();
@@ -1518,6 +1521,7 @@ namespace Vital::Manager {
 
     void Network::_on_peer_disconnected(int id) {
         bool was_handshaked = connected_peers.erase(id) > 0;
+        peer_serials.erase(id);
         log("sbox", fmt::format("peer left -> {}  remaining: {}", id, (int)connected_peers.size()));
 
         // Auto-revoke and peer:leave only apply to peers that completed handshake —
@@ -1545,6 +1549,11 @@ namespace Vital::Manager {
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
     int  Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
+
+    std::string Network::get_peer_serial(int peer_id) const {
+        auto it = peer_serials.find(peer_id);
+        return it != peer_serials.end() ? it -> second : std::string();
+    }
 
     bool Network::disconnect_peer(int peer_id) {
         auto ep = _enet_peer_for(peer, peer_id);
@@ -1602,7 +1611,8 @@ namespace Vital::Manager {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
             send_to_server(Tool::Stack::make_packet(Network::Name, { 
-                Tool::StackValue(std::string("ping")) 
+                Tool::StackValue(std::string("ping")),
+                Tool::StackValue(Tool::Inspect::fingerprint())
             }));
         }
         #endif
