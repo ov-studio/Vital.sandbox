@@ -47,7 +47,6 @@ namespace Vital::Engine {
         private:
             std::string model_name;
             int pending_authority = 1;
-            bool remote = false;
             bool placeholder = false;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
@@ -185,7 +184,6 @@ namespace Vital::Engine {
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
-            bool is_remote() const;
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_material_feature(const std::string& component, const std::string& material, int feature);

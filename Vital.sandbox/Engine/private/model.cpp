@@ -388,7 +388,6 @@ namespace Vital::Engine {
 
         placeholder = false;
         pending_authority = authority_peer;
-        remote = true;
         add_child(instance);
         find_node(this, skeleton);
         find_node(this, anim_player);
@@ -523,7 +522,6 @@ namespace Vital::Engine {
     //-------------//
 
     bool Model::is_model_loaded(const std::string& name) { return cache_loaded.find(name) != cache_loaded.end(); }
-    bool Model::is_remote() const { return remote; }
 
     bool Model::is_component_visible(const std::string& component) { return assert_component(component)->is_visible(); }
 
