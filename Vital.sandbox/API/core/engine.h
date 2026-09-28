@@ -207,6 +207,12 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+            
+            API::bind(vm, base_scope, "quit", [](auto vm, auto& id) -> int {
+                base_class::get_singleton() -> shutdown();
+                vm -> push_value(true);
+                return 1;
+            });
             #endif
 
             #if !defined(VSDK_Client)
