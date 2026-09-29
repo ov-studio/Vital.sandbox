@@ -194,7 +194,7 @@ namespace Vital::Engine {
     }
 
     void Shader::postprocess_init() {
-        if (mode != Mode::Postprocess) return;
+        if (mode != Mode::Postprocess) return nullptr;
         // Don't cache the camera here — it may change at runtime.
         // draw_postprocess() resolves and tracks it lazily each frame.
     }

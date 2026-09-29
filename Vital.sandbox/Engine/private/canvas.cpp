@@ -340,7 +340,7 @@ namespace Vital::Engine {
             // we blit it onto the canvas here so shader.cpp stays free of Canvas deps.
             auto tex = shader -> draw_postprocess(position, size);
             if (tex.is_valid())
-                draw_material(position, size, tex, rotation, pivot, color);
+                draw_material(position, size, godot::Ref<godot::Texture2D>(tex), rotation, pivot, color);
             return;
         }
         draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
