@@ -224,11 +224,11 @@ namespace Vital::Engine {
         // and update the near-plane position to match.
         if (current_camera != postprocess_camera) {
             postprocess_camera = current_camera;
-            float near = postprocess_camera->get_near();
+            float cam_near = postprocess_camera->get_near();
             for (auto& pq : postprocess_pool) {
                 if (pq.node->is_inside_tree())
                     pq.node->get_parent()->remove_child(pq.node);
-                pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(near + 0.001f)));
+                pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(cam_near + 0.001f)));
                 postprocess_camera->add_child(pq.node);
             }
         }
