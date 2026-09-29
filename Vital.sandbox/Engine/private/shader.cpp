@@ -73,6 +73,22 @@ namespace Vital::Engine {
 
     std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
         std::string src = raw;
+        if (mode == Shader::Mode::Postprocess) {
+            // Postprocess shaders run as spatial shaders on a full-screen quad
+            // parented to the camera. We inject the required render_mode flags
+            // automatically so authors only write the fragment() body and can
+            // sample DEPTH_TEXTURE, SCREEN_TEXTURE, NORMAL_ROUGHNESS_TEXTURE, etc.
+            if (src.find("shader_type") == std::string::npos)
+                src = "shader_type spatial;\n" + src;
+            // Inject render_mode block after the shader_type line if not already present
+            if (src.find("render_mode") == std::string::npos) {
+                auto st_end = src.find(';');
+                if (st_end != std::string::npos)
+                    src.insert(st_end + 1,
+                        "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
+            }
+            return inject_sentinel(src, true);
+        }
         if (src.find("shader_type") == std::string::npos) {
             std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
             src = "shader_type " + type_name + ";\n" + src;
@@ -82,6 +98,38 @@ namespace Vital::Engine {
 }
 
 namespace Vital::Engine {
+    // Draw_Clone_Pool //
+
+    godot::Ref<godot::ShaderMaterial> Shader::Draw_Clone_Pool::next(
+        godot::Ref<godot::Shader> shader,
+        godot::Ref<godot::ShaderMaterial> source)
+    {
+        uint64_t current_frame = godot::Engine::get_singleton()->get_process_frames();
+        if (current_frame != last_frame) {
+            used = 0;
+            last_frame = current_frame;
+        }
+        if (used >= clones.size()) {
+            godot::Ref<godot::ShaderMaterial> clone;
+            clone.instantiate();
+            clone->set_shader(shader);
+            clones.push_back(clone);
+        }
+        auto& clone = clones[used++];
+        auto list = shader->get_shader_uniform_list();
+        for (int i = 0; i < list.size(); i++) {
+            auto dict = static_cast<godot::Dictionary>(list[i]);
+            godot::StringName name = static_cast<godot::String>(dict.get("name", godot::String()));
+            std::string sname = Tool::to_std_string(godot::String(name));
+            if (sname == Shader::Internal::SENTINEL) continue;
+            godot::Variant v = source->get_shader_parameter(name);
+            if (v.get_type() != godot::Variant::NIL)
+                clone->set_shader_parameter(name, v);
+        }
+        return clone;
+    }
+
+
     // Managers //
     Shader* Shader::create(const std::string& base, const std::string& path, Mode mode) {
         return create_from_raw(Tool::File::read_text(base, path), mode);
@@ -98,14 +146,129 @@ namespace Vital::Engine {
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
         instance -> material -> set_shader(instance -> shader);
+        instance -> postprocess_init();
         return instance;
     }
 
     void Shader::destroy() {
+        postprocess_free();
+        draw_pool.clear();
         surface_materials.clear();
         material.unref();
         shader.unref();
         delete this;
+    }
+
+
+
+    // Postprocess //
+
+    // Builds a minimal full-screen quad (a QuadMesh covering [-1,1] x [-1,1] in
+    // local space) and parents it to the active Camera3D.  The mesh sits just
+    // past the near plane so it is always in front of everything, but its
+    // render_mode flags (unshaded, depth_test_disabled, depth_draw_never,
+    // cull_disabled — injected by build_source) mean it never occludes real
+    // geometry and never writes to the depth buffer.
+    Shader::Postprocess_Quad Shader::postprocess_make_quad() {
+        // Each quad gets its own ShaderMaterial clone so it can hold independent
+        // param values from other quads in the same pool.
+        Postprocess_Quad pq;
+        pq.material.instantiate();
+        pq.material->set_shader(shader);
+
+        godot::Ref<godot::QuadMesh> mesh;
+        mesh.instantiate();
+        mesh->set_size(godot::Vector2(2.0f, 2.0f));
+        mesh->set_surface_override_material(0, pq.material);
+
+        pq.node = memnew(godot::MeshInstance3D);
+        pq.node->set_mesh(mesh);
+        pq.node->set_position(godot::Vector3(0.0f, 0.0f,
+            -(postprocess_camera->get_near() + 0.001f)));
+        pq.node->set_cast_shadows_setting(
+            godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+        pq.node->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
+        pq.node->set_visible(false);
+        postprocess_camera->add_child(pq.node);
+        return pq;
+    }
+
+    void Shader::postprocess_init() {
+        if (mode != Mode::Postprocess) return;
+        // Don't cache the camera here — it may change at runtime.
+        // draw_postprocess() resolves and tracks it lazily each frame.
+    }
+
+    void Shader::postprocess_free() {
+        for (auto& pq : postprocess_pool) {
+            if (pq.node && pq.node->is_inside_tree())
+                pq.node->get_parent()->remove_child(pq.node);
+            if (pq.node) memdelete(pq.node);
+        }
+        postprocess_pool.clear();
+        postprocess_used = 0;
+        postprocess_camera = nullptr;
+    }
+
+    void Shader::draw_postprocess() {
+        if (mode != Mode::Postprocess) return;
+
+        // Resolve the current active camera every frame — it may have changed.
+        auto* tree = godot::Object::cast_to<godot::SceneTree>(
+            godot::Engine::get_singleton()->get_main_loop());
+        if (!tree) return;
+        auto* current_camera = tree->get_root()->get_camera_3d();
+        if (!current_camera) return;
+
+        // If the active camera changed, re-parent all pooled quads to the new one
+        // and update the near-plane position to match.
+        if (current_camera != postprocess_camera) {
+            postprocess_camera = current_camera;
+            float near = postprocess_camera->get_near();
+            for (auto& pq : postprocess_pool) {
+                if (pq.node->is_inside_tree())
+                    pq.node->get_parent()->remove_child(pq.node);
+                pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(near + 0.001f)));
+                postprocess_camera->add_child(pq.node);
+            }
+        }
+
+        uint64_t current_frame = godot::Engine::get_singleton()->get_process_frames();
+
+        // New frame — reset pool cursor and hide all quads from last frame
+        if (current_frame != postprocess_last_frame) {
+            postprocess_last_frame = current_frame;
+            for (size_t i = 0; i < postprocess_used; i++)
+                postprocess_pool[i].node->set_visible(false);
+            postprocess_used = 0;
+        }
+
+        // Get or allocate a quad for this draw call
+        if (postprocess_used >= postprocess_pool.size())
+            postprocess_pool.push_back(postprocess_make_quad());
+
+        auto& pq = postprocess_pool[postprocess_used++];
+
+        // Stamp current param state from shared master material into this quad's clone
+        auto list = shader->get_shader_uniform_list();
+        for (int i = 0; i < list.size(); i++) {
+            auto dict = static_cast<godot::Dictionary>(list[i]);
+            godot::StringName name = static_cast<godot::String>(dict.get("name", godot::String()));
+            std::string sname = Tool::to_std_string(godot::String(name));
+            if (sname == Internal::SENTINEL) continue;
+            godot::Variant v = material->get_shader_parameter(name);
+            if (v.get_type() != godot::Variant::NIL)
+                pq.material->set_shader_parameter(name, v);
+        }
+
+        pq.node->set_visible(true);
+    }
+
+
+
+    godot::Ref<godot::ShaderMaterial> Shader::snapshot_draw_material() {
+        if (mode != Mode::CanvasItem) return material;
+        return draw_pool.next(shader, material);
     }
 
 

@@ -333,7 +333,15 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (!shader) return;
-        draw_material(position, size, shader -> get_material(), rotation, pivot, color);
+        if (shader -> get_mode() == Shader::Mode::Postprocess) {
+            // Postprocess shaders run on a full-screen quad in the 3D pipeline —
+            // there is no canvas item to draw.  Calling draw_postprocess() shows
+            // the quad for this frame (it auto-hides next frame if not called again),
+            // matching the behaviour of a CanvasItem draw call from Lua's perspective.
+            shader -> draw_postprocess();
+            return;
+        }
+        draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
     }
 
     void Canvas::draw_material(
