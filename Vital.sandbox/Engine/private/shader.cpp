@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/shader.h>
+#include <godot_cpp/classes/quad_mesh.hpp>
 #include <algorithm>
 #include <cctype>
 
@@ -179,10 +180,10 @@ namespace Vital::Engine {
         godot::Ref<godot::QuadMesh> mesh;
         mesh.instantiate();
         mesh->set_size(godot::Vector2(2.0f, 2.0f));
-        mesh->set_surface_override_material(0, pq.material);
 
         pq.node = memnew(godot::MeshInstance3D);
         pq.node->set_mesh(mesh);
+        pq.node->set_surface_override_material(0, pq.material);
         pq.node->set_position(godot::Vector3(0.0f, 0.0f,
             -(postprocess_camera->get_near() + 0.001f)));
         pq.node->set_cast_shadows_setting(
