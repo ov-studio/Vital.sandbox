@@ -334,6 +334,7 @@ namespace Vital::Engine {
     ) {
         if (!shader) return;
         if (shader -> get_mode() == Shader::Mode::Postprocess) {
+            // TODO: Improve
             // Postprocess shaders run on a full-screen quad in the 3D pipeline.
             // draw_postprocess returns a ViewportTexture when size is non-zero —
             // we blit it onto the canvas here so shader.cpp stays free of Canvas deps.
