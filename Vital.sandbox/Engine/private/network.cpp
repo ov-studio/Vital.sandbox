@@ -111,8 +111,6 @@ namespace Vital::Engine {
                 object -> net_id = (uint32_t)net_id;
                 object -> pending_authority = authority;
                 object -> sync_authority = authority;
-                object -> remote = true;
-
                 if (it != Engine::Model::cache_loaded.end()) {
                     godot::Node* instance = it -> second -> instantiate();
                     if (instance) object -> add_child(instance);
