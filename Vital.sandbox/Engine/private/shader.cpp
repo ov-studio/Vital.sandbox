@@ -251,14 +251,14 @@ namespace Vital::Engine {
         }
     }
 
-    void Shader::draw_postprocess(godot::Vector2 position, godot::Vector2 size) {
+    godot::Ref<godot::ViewportTexture> Shader::draw_postprocess(godot::Vector2 position, godot::Vector2 size) {
         if (mode != Mode::Postprocess) return;
 
         auto* tree = godot::Object::cast_to<godot::SceneTree>(
             godot::Engine::get_singleton()->get_main_loop());
-        if (!tree) return;
+        if (!tree) return nullptr;
         auto* current_camera = tree->get_root()->get_camera_3d();
-        if (!current_camera) return;
+        if (!current_camera) return nullptr;
 
         // Track camera changes — re-parent fullscreen quads if camera switches
         if (current_camera != postprocess_camera) {
@@ -305,27 +305,23 @@ namespace Vital::Engine {
 
         bool sized = size.x > 0.0f && size.y > 0.0f;
         if (sized) {
-            // RT path: render into SubViewport, blit result onto canvas at position/size
+            // RT path — render quad into SubViewport, return texture for canvas to blit
             postprocess_ensure_rt(pq, size);
             pq.node->set_visible(true);
-            // Blit viewport texture onto canvas via Canvas::draw_material
-            Canvas::get_singleton()->draw_material(
-                position, size,
-                godot::Ref<godot::Texture2D>(pq.sub_viewport->get_texture()),
-                0.0f, godot::Vector2{0, 0}, godot::Color{1, 1, 1, 1});
+            return pq.sub_viewport->get_texture();
         } else {
-            // Fullscreen path: just show the quad directly
+            // Fullscreen path — show quad directly, return nullptr (no blit needed)
             if (pq.sub_viewport) {
-                // This quad was previously used as RT — move back to camera
+                // Quad was previously RT — move back to scene camera
                 if (pq.node->is_inside_tree())
                     pq.node->get_parent()->remove_child(pq.node);
                 float cam_near = postprocess_camera->get_near();
                 pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(cam_near + 0.001f)));
                 postprocess_camera->add_child(pq.node);
-                // Hide the sub_viewport so it doesn't render unnecessarily
                 pq.sub_viewport->set_update_mode(godot::SubViewport::UPDATE_DISABLED);
             }
             pq.node->set_visible(true);
+            return nullptr;
         }
     }
 

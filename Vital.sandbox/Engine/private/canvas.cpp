@@ -335,11 +335,11 @@ namespace Vital::Engine {
         if (!shader) return;
         if (shader -> get_mode() == Shader::Mode::Postprocess) {
             // Postprocess shaders run on a full-screen quad in the 3D pipeline.
-            // If size is non-zero, the result is rendered into a SubViewport and
-            // blitted onto the canvas at position/size — allowing it to be used
-            // inside an RT or composited at any position/size like a normal draw call.
-            // If size is zero, it renders fullscreen directly (original behaviour).
-            shader -> draw_postprocess(position, size);
+            // draw_postprocess returns a ViewportTexture when size is non-zero —
+            // we blit it onto the canvas here so shader.cpp stays free of Canvas deps.
+            auto tex = shader -> draw_postprocess(position, size);
+            if (tex.is_valid())
+                draw_material(position, size, tex, rotation, pivot, color);
             return;
         }
         draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);

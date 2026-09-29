@@ -118,7 +118,9 @@ namespace Vital::Engine {
             // Postprocess draw — called from Canvas::draw_material(Shader*) when
             // mode == Postprocess.  Shows the quad this frame and stamps params.
             // The quad hides itself automatically the next frame if not called again.
-            void draw_postprocess(godot::Vector2 position, godot::Vector2 size);
+            // Returns the SubViewport texture when size is non-zero (RT path);
+            // returns nullptr for fullscreen draws. canvas.cpp handles the blit.
+            godot::Ref<godot::ViewportTexture> draw_postprocess(godot::Vector2 position, godot::Vector2 size);
 
 
             // Getters //
