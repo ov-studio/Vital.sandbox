@@ -194,7 +194,7 @@ namespace Vital::Engine {
     }
 
     void Shader::postprocess_init() {
-        if (mode != Mode::Postprocess) return nullptr;
+        if (mode != Mode::Postprocess) return;
         // Don't cache the camera here — it may change at runtime.
         // draw_postprocess() resolves and tracks it lazily each frame.
     }
@@ -252,7 +252,7 @@ namespace Vital::Engine {
     }
 
     godot::Ref<godot::ViewportTexture> Shader::draw_postprocess(godot::Vector2 position, godot::Vector2 size) {
-        if (mode != Mode::Postprocess) return;
+        if (mode != Mode::Postprocess) return nullptr;
 
         auto* tree = godot::Object::cast_to<godot::SceneTree>(
             godot::Engine::get_singleton()->get_main_loop());
