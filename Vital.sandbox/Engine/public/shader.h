@@ -55,15 +55,21 @@ namespace Vital::Engine {
             struct Postprocess_Quad {
                 godot::MeshInstance3D* node = nullptr;
                 godot::Ref<godot::ShaderMaterial> material;
+                // RT path — only allocated when a non-fullscreen draw is requested.
+                // The SubViewport hosts its own Camera3D that mirrors the scene camera,
+                // the quad renders into it, and the result is blitted onto the canvas.
+                godot::SubViewport* sub_viewport = nullptr;
+                godot::Camera3D* sub_camera = nullptr;
             };
             std::vector<Postprocess_Quad> postprocess_pool;
             size_t postprocess_used = 0;
             uint64_t postprocess_last_frame = UINT64_MAX;
             godot::Camera3D* postprocess_camera = nullptr;  // weak ref, owned by scene
 
-            Postprocess_Quad postprocess_make_quad();       // allocate one quad+material
-            void postprocess_init();                        // called after shader compiles
-            void postprocess_free();                        // called by destroy()
+            Postprocess_Quad postprocess_make_quad();
+            void postprocess_ensure_rt(Postprocess_Quad& pq, godot::Vector2 size);
+            void postprocess_init();
+            void postprocess_free();
 
             // Per-surface material clones. A ShaderMaterial can only hold one
             // texture per uniform, so every surface that needs its own
@@ -112,7 +118,7 @@ namespace Vital::Engine {
             // Postprocess draw — called from Canvas::draw_material(Shader*) when
             // mode == Postprocess.  Shows the quad this frame and stamps params.
             // The quad hides itself automatically the next frame if not called again.
-            void draw_postprocess();
+            void draw_postprocess(godot::Vector2 position, godot::Vector2 size);
 
 
             // Getters //

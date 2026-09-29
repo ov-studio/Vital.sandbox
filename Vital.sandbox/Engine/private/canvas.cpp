@@ -334,11 +334,12 @@ namespace Vital::Engine {
     ) {
         if (!shader) return;
         if (shader -> get_mode() == Shader::Mode::Postprocess) {
-            // Postprocess shaders run on a full-screen quad in the 3D pipeline —
-            // there is no canvas item to draw.  Calling draw_postprocess() shows
-            // the quad for this frame (it auto-hides next frame if not called again),
-            // matching the behaviour of a CanvasItem draw call from Lua's perspective.
-            shader -> draw_postprocess();
+            // Postprocess shaders run on a full-screen quad in the 3D pipeline.
+            // If size is non-zero, the result is rendered into a SubViewport and
+            // blitted onto the canvas at position/size — allowing it to be used
+            // inside an RT or composited at any position/size like a normal draw call.
+            // If size is zero, it renders fullscreen directly (original behaviour).
+            shader -> draw_postprocess(position, size);
             return;
         }
         draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
