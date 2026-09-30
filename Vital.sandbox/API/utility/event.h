@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
                 if (required) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("'options.peer' is required for remote {} on server", caller));
                 return;
             }
-            if (!Manager::Network::get_singleton() -> is_peer_valid(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("{} — peer '{}' is not connected", caller, peer_id));
+            Manager::Network::get_singleton() -> assert_peer(peer_id);
         }
         #endif
 

@@ -232,6 +232,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto peer_id = vm -> get_int(1);
+                Manager::Network::get_singleton() -> assert_peer(peer_id);
                 vm -> push_value(Manager::Network::get_singleton() -> disconnect_peer(peer_id));
                 return 1;
             });

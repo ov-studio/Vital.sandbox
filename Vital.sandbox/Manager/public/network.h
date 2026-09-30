@@ -227,7 +227,8 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             bool disconnect_peer(int peer_id);
-            bool is_peer_valid(int peer_id) const;
+            bool is_peer_valid(int peer_id) const;             // true if peer_id is a handshaked peer
+            void assert_peer(int peer_id) const; // throws 'request-failed' (Lua-catchable) if peer_id is not valid
             std::string get_peer_serial(int peer_id) const;
             const Config::Server& get_server_config() const;
             const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }

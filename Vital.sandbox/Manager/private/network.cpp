@@ -1568,6 +1568,10 @@ namespace Vital::Manager {
         return peer_id > 0 && connected_peers.count(peer_id) > 0;
     }
 
+    void Network::assert_peer(int peer_id) const {
+        if (!is_peer_valid(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("peer '{}' is not connected", peer_id));
+    }
+
     bool Network::disconnect_peer(int peer_id) {
         // Unknown/stale ids must not reach ENetMultiplayerPeer::get_peer() — it
         // prints an engine error for ids missing from its peer map.
