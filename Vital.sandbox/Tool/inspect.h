@@ -90,8 +90,7 @@ namespace Vital::Tool::Inspect {
                     VARIANT v;
                     VariantInit(&v);
                     if (SUCCEEDED(obj -> Get(field.c_str(), 0, &v, nullptr, nullptr))) {
-                        if (v.vt == VT_BSTR && v.bstrVal)
-                            out.emplace_back(v.bstrVal);
+                        if (v.vt == VT_BSTR && v.bstrVal) out.emplace_back(v.bstrVal);
                     }
                     VariantClear(&v);
                     obj -> Release();
@@ -104,49 +103,47 @@ namespace Vital::Tool::Inspect {
 
     inline std::string cpu() {
         #if defined(VSDK_WINDOWS)
-        WMI wmi;
-        auto ids = wmi.query(L"Win32_Processor", L"ProcessorId");
-        if (!ids.empty()) return hash(normalize(std::string(ids[0].begin(), ids[0].end())));
-        #else
-        std::ifstream cpuinfo("/proc/cpuinfo");
-        std::string line;
-        while (std::getline(cpuinfo, line)) {
-            if (line.rfind("Serial", 0) == 0 || line.rfind("model name", 0) == 0)
-                return hash(normalize(line));
-        }
+            WMI wmi;
+            auto ids = wmi.query(L"Win32_Processor", L"ProcessorId");
+            if (!ids.empty()) return hash(normalize(std::string(ids[0].begin(), ids[0].end())));
+            #else
+            std::ifstream cpuinfo("/proc/cpuinfo");
+            std::string line;
+            while (std::getline(cpuinfo, line)) {
+                if (line.rfind("Serial", 0) == 0 || line.rfind("model name", 0) == 0) return hash(normalize(line));
+            }
         #endif
         return {};
     }
 
     inline std::string system() {
         #if defined(VSDK_WINDOWS)
-        WMI wmi;
-        auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
-        auto product = wmi.query(L"Win32_BaseBoard", L"Product");
-        std::string s;
-        if (!vendor.empty()) s += std::string(vendor[0].begin(), vendor[0].end());
-        if (!product.empty()) s += std::string(product[0].begin(), product[0].end());
-        return s.empty() ? std::string{} : hash(normalize(s));
+            WMI wmi;
+            auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
+            auto product = wmi.query(L"Win32_BaseBoard", L"Product");
+            std::string s;
+            if (!vendor.empty()) s += std::string(vendor[0].begin(), vendor[0].end());
+            if (!product.empty()) s += std::string(product[0].begin(), product[0].end());
+            return s.empty() ? std::string{} : hash(normalize(s));
         #else
-        struct utsname u{};
-        uname(&u);
-        return hash(normalize(std::string(u.sysname) + std::string(u.machine)));
+            struct utsname u{};
+            uname(&u);
+            return hash(normalize(std::string(u.sysname) + std::string(u.machine)));
         #endif
     }
 
     inline std::string disk() {
         #if defined(VSDK_WINDOWS)
-        WMI wmi;
-        auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
-        if (!serials.empty()) return hash(normalize(std::string(serials[0].begin(), serials[0].end())));
-        #else
-        for (auto& b : std::filesystem::directory_iterator("/sys/block")) {
-            std::ifstream sn(b.path() / "serial");
-            std::string serial;
-            std::getline(sn, serial);
-            if (!serial.empty())
-                return hash(normalize(serial));
-        }
+            WMI wmi;
+            auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
+            if (!serials.empty()) return hash(normalize(std::string(serials[0].begin(), serials[0].end())));
+            #else
+            for (auto& b : std::filesystem::directory_iterator("/sys/block")) {
+                std::ifstream sn(b.path() / "serial");
+                std::string serial;
+                std::getline(sn, serial);
+                if (!serial.empty()) return hash(normalize(serial));
+            }
         #endif
         return {};
     }
