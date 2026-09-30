@@ -333,7 +333,15 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         if (!shader) return;
-        draw_material(position, size, shader -> get_material(), rotation, pivot, color);
+        if (shader -> get_mode() == Shader::Mode::Postprocess) {
+            // Postprocess shaders render fullscreen on a quad parented to the camera.
+            // Position and size are intentionally ignored — the quad always covers
+            // the entire screen. Use set_param_rt to write results to a rendertarget
+            // if you need to composite the output at a specific size.
+            shader -> draw_postprocess();
+            return;
+        }
+        draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
     }
 
     void Canvas::draw_material(

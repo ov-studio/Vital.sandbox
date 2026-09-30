@@ -73,6 +73,17 @@ namespace Vital::Engine {
 
     std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
         std::string src = raw;
+        if (mode == Shader::Mode::Postprocess) {
+            if (src.find("shader_type") == std::string::npos)
+                src = "shader_type spatial;\n" + src;
+            if (src.find("render_mode") == std::string::npos) {
+                auto st_end = src.find(';');
+                if (st_end != std::string::npos)
+                    src.insert(st_end + 1,
+                        "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
+            }
+            return inject_sentinel(src, true);
+        }
         if (src.find("shader_type") == std::string::npos) {
             std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
             src = "shader_type " + type_name + ";\n" + src;
@@ -82,6 +93,38 @@ namespace Vital::Engine {
 }
 
 namespace Vital::Engine {
+    // Draw_Clone_Pool //
+
+    godot::Ref<godot::ShaderMaterial> Shader::Draw_Clone_Pool::next(
+        godot::Ref<godot::Shader> shader,
+        godot::Ref<godot::ShaderMaterial> source)
+    {
+        uint64_t current_frame = godot::Engine::get_singleton()->get_process_frames();
+        if (current_frame != last_frame) {
+            used = 0;
+            last_frame = current_frame;
+        }
+        if (used >= clones.size()) {
+            godot::Ref<godot::ShaderMaterial> clone;
+            clone.instantiate();
+            clone->set_shader(shader);
+            clones.push_back(clone);
+        }
+        auto& clone = clones[used++];
+        auto list = shader->get_shader_uniform_list();
+        for (int i = 0; i < list.size(); i++) {
+            auto dict = static_cast<godot::Dictionary>(list[i]);
+            godot::StringName name = static_cast<godot::String>(dict.get("name", godot::String()));
+            std::string sname = Tool::to_std_string(godot::String(name));
+            if (sname == Shader::Internal::SENTINEL) continue;
+            godot::Variant v = source->get_shader_parameter(name);
+            if (v.get_type() != godot::Variant::NIL)
+                clone->set_shader_parameter(name, v);
+        }
+        return clone;
+    }
+
+
     // Managers //
     Shader* Shader::create(const std::string& base, const std::string& path, Mode mode) {
         return create_from_raw(Tool::File::read_text(base, path), mode);
@@ -98,14 +141,108 @@ namespace Vital::Engine {
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
         instance -> material -> set_shader(instance -> shader);
+        instance -> postprocess_init();
         return instance;
     }
 
     void Shader::destroy() {
+        postprocess_free();
+        draw_pool.clear();
         surface_materials.clear();
         material.unref();
         shader.unref();
         delete this;
+    }
+
+
+
+    // Postprocess //
+
+    // Builds a minimal full-screen quad (a QuadMesh covering [-1,1] x [-1,1] in
+    // local space) and parents it to the active Camera3D.  The mesh sits just
+    // past the near plane so it is always in front of everything, but its
+    // render_mode flags (unshaded, depth_test_disabled, depth_draw_never,
+    // cull_disabled — injected by build_source) mean it never occludes real
+    // geometry and never writes to the depth buffer.
+    void Shader::postprocess_init() {
+        if (mode != Mode::Postprocess) return;
+        // Quad created lazily on first draw_postprocess() once camera is known
+    }
+
+    void Shader::postprocess_free() {
+        if (pp_quad) {
+            if (pp_quad->is_inside_tree())
+                pp_quad->get_parent()->remove_child(pp_quad);
+            memdelete(pp_quad);
+            pp_quad = nullptr;
+        }
+        pp_camera = nullptr;
+    }
+
+    void Shader::draw_postprocess() {
+        if (mode != Mode::Postprocess) return;
+
+        // Resolve active camera — re-parent quad if it changed
+        auto* tree = godot::Object::cast_to<godot::SceneTree>(
+            godot::Engine::get_singleton()->get_main_loop());
+        if (!tree) return;
+        auto* cam = tree->get_root()->get_camera_3d();
+        if (!cam) return;
+
+        if (cam != pp_camera) {
+            pp_camera = cam;
+            if (pp_quad) {
+                if (pp_quad->is_inside_tree())
+                    pp_quad->get_parent()->remove_child(pp_quad);
+                pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
+                pp_camera->add_child(pp_quad);
+            }
+        }
+
+        // Create quad on first draw
+        if (!pp_quad) {
+            pp_material.instantiate();
+            pp_material->set_shader(shader);
+
+            godot::Ref<godot::QuadMesh> mesh;
+            mesh.instantiate();
+            mesh->set_size(godot::Vector2(2.0f, 2.0f));
+
+            pp_quad = memnew(godot::MeshInstance3D);
+            pp_quad->set_mesh(mesh);
+            pp_quad->set_surface_override_material(0, pp_material);
+            pp_quad->set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+            pp_quad->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
+            pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
+            pp_quad->set_visible(false);
+            pp_camera->add_child(pp_quad);
+        }
+
+        uint64_t frame = godot::Engine::get_singleton()->get_process_frames();
+        if (frame != pp_last_frame) {
+            pp_last_frame = frame;
+            pp_quad->set_visible(false);
+        }
+
+        // Stamp params from master material into quad's material
+        auto list = shader->get_shader_uniform_list();
+        for (int i = 0; i < list.size(); i++) {
+            auto dict = static_cast<godot::Dictionary>(list[i]);
+            godot::StringName name = static_cast<godot::String>(dict.get("name", godot::String()));
+            std::string sname = Tool::to_std_string(godot::String(name));
+            if (sname == Internal::SENTINEL) continue;
+            godot::Variant v = material->get_shader_parameter(name);
+            if (v.get_type() != godot::Variant::NIL)
+                pp_material->set_shader_parameter(name, v);
+        }
+
+        pp_quad->set_visible(true);
+    }
+
+
+    godot::Ref<godot::ShaderMaterial> Shader::snapshot_draw_material() {
+        if (mode != Mode::CanvasItem) return material;
+        return draw_pool.next(shader, material);
     }
 
 

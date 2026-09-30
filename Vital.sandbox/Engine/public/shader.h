@@ -29,19 +29,40 @@ namespace Vital::Engine {
         public:
             enum class Mode {
                 Spatial,
-                CanvasItem
+                CanvasItem,
+                Postprocess  // full-screen quad on camera — gives DEPTH_TEXTURE access
             };
 
             using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
 
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
-                { "CANVAS_ITEM", Mode::CanvasItem },
-                { "SPATIAL",     Mode::Spatial    }
+                { "CANVAS_ITEM",  Mode::CanvasItem  },
+                { "SPATIAL",      Mode::Spatial      },
+                { "POSTPROCESS",  Mode::Postprocess  }
             };
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
             Mode mode = Mode::CanvasItem;
+
+            // Postprocess quad pool — mirrors Draw_Clone_Pool but clones the whole
+            // quad+material pair instead of just the material.  Each draw_postprocess()
+            // call gets its own quad with its own material snapshot so multiple calls
+            // per frame each render with independent params (blur pass A then pass B,
+            // different colors, etc.).  Quads are hidden at frame end and reused next
+            // frame — no allocation after the high-water mark is reached.
+            // Never exposed to Lua — behaves just like CanvasItem from the script side.
+            // Single fullscreen quad parented to the active camera.
+            // Renders via the normal opaque pass — has real DEPTH_TEXTURE access.
+            // For sized output, the Lua script passes an RT via set_param_rt and
+            // the shader writes into it; canvas then draws the RT at any size.
+            godot::MeshInstance3D* pp_quad = nullptr;
+            godot::Ref<godot::ShaderMaterial> pp_material;
+            godot::Camera3D* pp_camera = nullptr;  // weak ref, owned by scene
+            uint64_t pp_last_frame = UINT64_MAX;
+
+            void postprocess_init();
+            void postprocess_free();
 
             // Per-surface material clones. A ShaderMaterial can only hold one
             // texture per uniform, so every surface that needs its own
@@ -49,6 +70,18 @@ namespace Vital::Engine {
             // Parameters set via set_param* are mirrored to all live clones.
             std::vector<godot::Ref<godot::ShaderMaterial>> surface_materials;
             void prune_surface_materials();
+
+            // Per-draw-call clone pool (CanvasItem mode only) — see shader.cpp
+            struct Draw_Clone_Pool {
+                std::vector<godot::Ref<godot::ShaderMaterial>> clones;
+                size_t used = 0;
+                uint64_t last_frame = UINT64_MAX;
+                godot::Ref<godot::ShaderMaterial> next(
+                    godot::Ref<godot::Shader> shader,
+                    godot::Ref<godot::ShaderMaterial> source);
+                void clear() { clones.clear(); used = 0; last_frame = UINT64_MAX; }
+            };
+            Draw_Clone_Pool draw_pool;
 
             struct Internal {
                 struct EntryPoint {
@@ -75,6 +108,11 @@ namespace Vital::Engine {
             static Shader* create_from_raw(const std::string& raw, Mode mode = Mode::CanvasItem);
             void destroy();
 
+            // Postprocess draw — called from Canvas::draw_material(Shader*) when
+            // mode == Postprocess.  Shows the quad this frame and stamps params.
+            // The quad hides itself automatically the next frame if not called again.
+            void draw_postprocess();
+
 
             // Getters //
             Mode get_mode() const;
@@ -82,6 +120,7 @@ namespace Vital::Engine {
             godot::Ref<godot::ShaderMaterial> get_material() const;
             godot::Ref<godot::ShaderMaterial> create_surface_material(godot::Ref<godot::Material> original);
             SurfaceFactory get_surface_factory();
+            godot::Ref<godot::ShaderMaterial> snapshot_draw_material();
 
 
             // Setters //
