@@ -93,12 +93,34 @@ namespace Vital::Manager {
             std::string server_ip;
             #endif
 
+            struct Internal {
+                // Main-thread-only implementations (Godot's MultiplayerAPI is not thread-safe).
+                // Public Network APIs marshal onto the main thread before calling these.
+                public:
+                    // Misc //
+                    static bool send(const Tool::Stack& stack, int peer_id);
+                    static bool broadcast_sync(const godot::PackedByteArray& data);
+                    static bool send_sync_to_server(const godot::PackedByteArray& data);
+                    #if defined(VSDK_Client)
+                    static bool connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect);
+                    static bool reconnect();
+                    static bool disconnect_from_server();
+                    #else
+                    static bool host(Config::Server& config);
+                    static bool close();
+                    static void disconnect_peer(int peer_id);
+                    #endif
+            };
+
+
+            // Helpers //
             static godot::SceneTree* get_scene_tree();
             void create();
             void destroy();
             void wire_signals();
             void unwire_signals();
         public:
+            // Instantiators //
             Network() = default;
             ~Network() = default;
 
@@ -210,9 +232,9 @@ namespace Vital::Manager {
             double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS), normalized to 0.0-1.0
 
             #if defined(VSDK_Client)
-            bool connect_to_server(const std::string& ip, int port, int http_port = -1, bool enable_reconnect = false);
-            bool reconnect();
-            bool disconnect_from_server();
+            void connect_to_server(const std::string& ip, int port, int http_port = -1, bool enable_reconnect = false);
+            void reconnect();
+            void disconnect_from_server();
             void _on_connected_to_server();
             void _on_connection_failed();
             void _on_server_disconnected();
@@ -220,13 +242,13 @@ namespace Vital::Manager {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(Config::Server& config);
-            bool close();
+            void host(Config::Server& config);
+            void close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
-            bool disconnect_peer(int peer_id);
+            void disconnect_peer(int peer_id);
             bool is_peer_valid(int peer_id) const;             // true if peer_id is a handshaked peer
             void assert_peer(int peer_id) const; // throws 'request-failed' (Lua-catchable) if peer_id is not valid
             std::string get_peer_serial(int peer_id) const;
@@ -237,13 +259,13 @@ namespace Vital::Manager {
 
 
             // Shared RPC (channel 0, reliable) //
-            bool send(const Tool::Stack& stack, int peer_id = 0);
-            bool broadcast(const Tool::Stack& stack);
-            bool send_to_server(const Tool::Stack& stack);
+            void send(const Tool::Stack& stack, int peer_id = 0);
+            void broadcast(const Tool::Stack& stack);
+            void send_to_server(const Tool::Stack& stack);
 
             // Sync transport — routed through Godot's RPC layer.
-            bool broadcast_sync(const godot::PackedByteArray& data);      // server -> all clients (unreliable)
-            bool send_sync_to_server(const godot::PackedByteArray& data);  // client -> server (unreliable)
+            void broadcast_sync(const godot::PackedByteArray& data);      // server -> all clients (unreliable)
+            void send_sync_to_server(const godot::PackedByteArray& data);  // client -> server (unreliable)
 
             // Inbound dispatch — called by Engine::Network RPC handlers.
             // Works on any ISyncable type via the net_id registry.

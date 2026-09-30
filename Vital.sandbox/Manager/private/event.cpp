@@ -138,7 +138,8 @@ void vsdk_initialize() {
             #if !defined(VSDK_Client)
                 auto& server_config = Vital::Engine::Core::get_singleton() -> get_server_config();
                 server_config.load();
-                if (!nm -> host(server_config)) return;
+                nm -> host(server_config);
+                if (!nm -> is_connected()) return;
                 Vital::Manager::Asset::get_singleton() -> set_http_port(server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif

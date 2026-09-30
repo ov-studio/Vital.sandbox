@@ -33,7 +33,269 @@
 
 // TODO: Improve
 namespace Vital::Manager {
+    // Helpers //
+    static godot::Ref<godot::ENetPacketPeer> _enet_peer_for(const godot::Ref<godot::ENetMultiplayerPeer>& peer, int peer_id) {
+        if (!peer.is_valid()) return {};
+        if (peer->get_connection_status() != godot::MultiplayerPeer::CONNECTION_CONNECTED) return {};
+        return peer->get_peer(peer_id);
+    }
 
+
+    // Misc //
+    bool Network::Internal::send(const Tool::Stack& stack, int peer_id) {
+        Tool::assert_main_thread("Network::Internal::send");
+        auto nm = Network::get_singleton();
+        if (!nm -> node || !nm -> peer.is_valid()) return false;
+        #if defined(VSDK_Client)
+        if (!nm -> is_connected()) return false;
+        #endif
+        if (peer_id == 0) nm -> node->rpc("_receive", stack.to_dict());
+        else nm -> node->rpc_id(peer_id, "_receive", stack.to_dict());
+        return true;
+    }
+
+    bool Network::Internal::broadcast_sync(const godot::PackedByteArray& data) {
+        Tool::assert_main_thread("Network::Internal::broadcast_sync");
+        auto nm = Network::get_singleton();
+        #if defined(VSDK_Client)
+            return false;
+        #else
+            if (!nm -> node || !nm -> is_connected()) return false;
+            nm -> node->rpc("_sync_entities", data);
+            return true;
+        #endif
+    }
+
+    bool Network::Internal::send_sync_to_server(const godot::PackedByteArray& data) {
+        Tool::assert_main_thread("Network::Internal::send_sync_to_server");
+        auto nm = Network::get_singleton();
+        #if !defined(VSDK_Client)
+            return false;
+        #else
+            if (!nm -> node || !nm -> is_connected()) return false;
+            nm -> node->rpc_id(1, "_sync_client", data);
+            return true;
+        #endif
+    }
+
+    #if defined(VSDK_Client)
+    bool Network::Internal::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
+        Tool::assert_main_thread("Network::Internal::connect_to_server");
+        auto nm = Network::get_singleton();
+        if (http_port > 0) {
+            const std::string info_url = fmt::format("http://{}:{}/info", ip, http_port);
+            try {
+                const std::string body = Tool::HTTP::get(info_url, {}, 3);
+                rapidjson::Document doc;
+                if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("sdk_version") && doc["sdk_version"].IsString()) {
+                    int server_major = -1;
+                    const std::string server_sdk = doc["sdk_version"].GetString();
+                    size_t start = (!server_sdk.empty() && (server_sdk[0] == 'v')) ? 1 : 0;
+                    size_t end = server_sdk.find('.', start);
+                    if (end == std::string::npos) end = server_sdk.size();
+                    try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
+                    catch (...) {}
+
+                    const int client_major = Vital::Tool::Version::SDK.get_major();
+                    if (server_major >= 0 && server_major != client_major) {
+                        nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
+                        Tool::Stack status;
+                        status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
+                        status.object["server_sdk"] = Tool::StackValue(server_sdk);
+                        status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
+                        Tool::Event::emit("network:connect:failed", status);
+                        return false;
+                    }
+                    if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
+                    nm -> log("sbox", fmt::format("version pre-check ok (sdk={})", server_sdk));
+                }
+            }
+            catch (const std::exception& e) { nm -> log("sbox", fmt::format("version pre-check failed ({}): {}", info_url, e.what())); }
+            catch (...) { nm -> log("sbox", fmt::format("version pre-check failed ({}): unknown error", info_url)); }
+        }
+
+        Internal::disconnect_from_server();
+        nm -> create();
+        nm -> peer.instantiate();
+
+        godot::Error err = nm -> peer->create_client(godot::String(ip.c_str()), port, 0, 0, 0);
+        if (err != godot::OK) {
+            nm -> log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
+            nm -> peer.unref();
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("connect-error"));
+            Tool::Event::emit("network:connect:failed", status);
+            return false;
+        }
+
+        auto tree = get_scene_tree();
+        if (!tree) { 
+            nm -> peer.unref(); 
+            return false;
+        }
+
+        tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
+        nm -> wire_signals();
+        nm -> auto_reconnect = enable_reconnect;
+        nm -> reconnect_ip = ip;
+        nm -> reconnect_port = port;
+        nm -> reconnect_http_port = http_port;
+        nm -> reconnect_attempts = 0;
+        nm -> reconnect_timer = 0.0f;
+        nm -> pending_handshake = false;
+        nm -> log("sbox", fmt::format("connecting to {}:{}", ip, port));
+        Tool::Event::emit("network:connect", {});
+        return true;
+    }
+
+    bool Network::Internal::reconnect() {
+        Tool::assert_main_thread("Network::Internal::reconnect");
+        auto nm = Network::get_singleton();
+        if (nm -> reconnect_ip.empty() || nm -> reconnect_port <= 0) {
+            nm -> log("sbox", "reconnect failed — no previous server");
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("no-previous-server"));
+            Tool::Event::emit("network:connect:failed", status);
+            return false;
+        }
+        nm -> log("sbox", fmt::format("reconnecting to {}:{}", nm -> reconnect_ip, nm -> reconnect_port));
+        return Internal::connect_to_server(nm -> reconnect_ip, nm -> reconnect_port, nm -> reconnect_http_port, true);
+    }
+
+    bool Network::Internal::disconnect_from_server() {
+        Tool::assert_main_thread("Network::Internal::disconnect_from_server");
+        auto nm = Network::get_singleton();
+        if (!nm -> peer.is_valid()) return false;
+        nm -> auto_reconnect    = false;
+        nm -> pending_handshake = false;
+        nm -> unwire_signals();
+        Internal::send(Tool::Stack::make_packet(Network::Name, { 
+            Tool::StackValue(std::string("quit")) 
+        }), 1);
+        nm -> peer->close();
+        nm -> peer.unref();
+        auto tree = get_scene_tree();
+        if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
+        nm -> log("sbox", "disconnected");
+        Tool::Event::emit("network:disconnect", {});
+        Engine::Core::get_singleton() -> reset();
+        return true;
+    }
+    #else
+    bool Network::Internal::host(Config::Server& config) {
+        Tool::assert_main_thread("Network::Internal::host");
+        auto nm = Network::get_singleton();
+        if (nm -> is_connected()) {
+            nm -> log("sbox", "already hosting");
+            return false;
+        }
+
+        const int net_port = config.get_network_port();
+        {
+            godot::Ref<godot::UDPServer> probe;
+            probe.instantiate();
+            if (probe->listen(net_port) != godot::OK) {
+                nm -> log("error", fmt::format("Port {} is already in use", net_port));
+                nm -> log("error", "Shutting down in 2.5 seconds...");
+                std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+                std::exit(1);
+                return false;
+            }
+            probe->stop();
+        }
+
+        nm -> server_config = &config;
+        nm -> create();
+        nm -> peer.instantiate();
+
+        // ENet with default channel count (RPC via MultiplayerAPI)
+        godot::Error err = nm -> peer->create_server(net_port, config.get_max_clients(), 0, 0, 0);
+        if (err != godot::OK) {
+            nm -> log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
+            nm -> peer.unref();
+            nm -> server_config = nullptr;
+            return false;
+        }
+        auto tree = get_scene_tree();
+        if (!tree) { nm -> peer.unref(); nm -> server_config = nullptr; return false; }
+        tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
+        nm -> wire_signals();
+        try {
+            const std::string body = Tool::HTTP::get("https://api.vital-sandbox.com/ip", {}, 10);
+            rapidjson::Document doc;
+            if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("ip") && doc["ip"].IsString()) nm -> server_ip = doc["ip"].GetString();
+        }
+        catch (...) {}
+        
+        // Physics tick rate is normally fixed at compile time (project.godot),
+        // which would mean the owner is stuck with whatever rate we shipped.
+        // godot::Engine allows setting it at runtime, and this runs before any
+        // physics has stepped (host() is called on the very first sandbox:process
+        // tick, before resources/bodies exist), so it's safe to apply here —
+        // giving the owner full control over both tick rate and sync rate from
+        // config.yaml alone, with no rebuild required for any value we support.
+        int physics_rate = config.get_physics_tick_rate();
+        godot::Engine::get_singleton()->set_physics_ticks_per_second(physics_rate);
+
+        // sync_rate can't usefully exceed physics_rate — a body's position can't
+        // change more often than physics steps it, so sending faster than that
+        // just re-sends stale data. Clamp and warn if the owner set it higher.
+        int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
+        nm -> sync_interval                               = 1.0f / static_cast<float>(effective_sync_rate);
+        Engine::ISyncable::sync_config.rate             = effective_sync_rate;
+        Engine::ISyncable::sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
+        Engine::ISyncable::sync_config.jitter_margin    = config.get_sync_jitter_margin();
+        Engine::ISyncable::sync_config.snap_threshold   = config.get_sync_snap_threshold();
+        if (effective_sync_rate < config.get_sync_rate()) {
+            nm -> log("warn", fmt::format(
+                "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
+                "capping effective sync rate to {} Hz. Raise physics_tick_rate to send updates faster.",
+                config.get_sync_rate(), physics_rate, effective_sync_rate
+            ));
+        }
+
+        nm -> log("sbox", fmt::format(
+            "Server is live!\n"
+            "> IP — `{}`\n"
+            "> Port — `{}`",
+            nm -> get_server_ip(),
+            nm -> get_server_config().get_network_port()
+        ));
+        Tool::Event::emit("network:host", {});
+        return true;
+    }
+
+    bool Network::Internal::close() {
+        Tool::assert_main_thread("Network::Internal::close");
+        auto nm = Network::get_singleton();
+        if (!nm -> peer.is_valid()) return false;
+        nm -> unwire_signals();
+        nm -> connected_peers.clear();
+        nm -> peer_serials.clear();
+        nm -> peer->close();
+        nm -> peer.unref();
+        auto tree = get_scene_tree();
+        if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
+        nm -> log("sbox", "server closed");
+        Tool::Event::emit("network:close", {});
+        return true;
+    }
+
+    void Network::Internal::disconnect_peer(int peer_id) {
+        Tool::assert_main_thread("Network::Internal::disconnect_peer");
+        auto nm = Network::get_singleton();
+        // Unknown/stale ids must not reach ENetMultiplayerPeer::get_peer() — it
+        // prints an engine error for ids missing from its peer map.
+        if (!nm -> is_peer_valid(peer_id)) { Tool::print("warn", fmt::format("Peer `{}` is not connected", peer_id)); return; }
+        auto ep = _enet_peer_for(nm -> peer, peer_id);
+        if (!ep.is_valid()) return;
+        Internal::send(Tool::Stack::make_packet(Network::Name, { Tool::StackValue(std::string("disconnect")) }), peer_id);
+        nm -> peer -> disconnect_peer(peer_id, false);
+    }
+    #endif
+}
+
+namespace Vital::Manager {
     //--------------------//
     //   Network: Init    //
     //--------------------//
@@ -44,9 +306,9 @@ namespace Vital::Manager {
 
     void Network::teardown() {
         #if defined(VSDK_Client)
-        singleton->disconnect_from_server();
+        Internal::disconnect_from_server();
         #else
-        singleton->close();
+        Internal::close();
         #endif
         singleton->unwire_signals();
         singleton->destroy();
@@ -624,12 +886,6 @@ namespace Vital::Manager {
         return mp.is_valid() ? mp->get_unique_id() : 0;
     }
 
-    static godot::Ref<godot::ENetPacketPeer> _enet_peer_for(const godot::Ref<godot::ENetMultiplayerPeer>& peer, int peer_id) {
-        if (!peer.is_valid()) return {};
-        if (peer->get_connection_status() != godot::MultiplayerPeer::CONNECTION_CONNECTED) return {};
-        return peer->get_peer(peer_id);
-    }
-
     double Network::get_peer_rtt(int peer_id) const {
         #if !defined(VSDK_Client)
         if (!is_peer_valid(peer_id)) return -1.0;
@@ -725,24 +981,12 @@ namespace Vital::Manager {
     // _sync_state) to avoid scene_cache_interface conflicts with the normal
     // MultiplayerAPI path.
 
-    bool Network::broadcast_sync(const godot::PackedByteArray& data) {
-        #if defined(VSDK_Client)
-            return false;
-        #else
-            if (!node || !is_connected()) return false;
-            node->rpc("_sync_entities", data);
-            return true;
-        #endif
+    void Network::broadcast_sync(const godot::PackedByteArray& data) {
+        Engine::Core::get_singleton() -> execute([data]() { Internal::broadcast_sync(data); });
     }
 
-    bool Network::send_sync_to_server(const godot::PackedByteArray& data) {
-        #if !defined(VSDK_Client)
-            return false;
-        #else
-            if (!node || !is_connected()) return false;
-            node->rpc_id(1, "_sync_client", data);
-            return true;
-        #endif
+    void Network::send_sync_to_server(const godot::PackedByteArray& data) {
+        Engine::Core::get_singleton() -> execute([data]() { Internal::send_sync_to_server(data); });
     }
 
     // Called by Engine::Network::_sync_entities (unreliable) and _sync_state (reliable).
@@ -877,101 +1121,16 @@ namespace Vital::Manager {
     //------------------//
 
     #if defined(VSDK_Client)
-    bool Network::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
-        if (http_port > 0) {
-            const std::string info_url = fmt::format("http://{}:{}/info", ip, http_port);
-            try {
-                const std::string body = Tool::HTTP::get(info_url, {}, 3);
-                rapidjson::Document doc;
-                if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("sdk_version") && doc["sdk_version"].IsString()) {
-                    int server_major = -1;
-                    const std::string server_sdk = doc["sdk_version"].GetString();
-                    size_t start = (!server_sdk.empty() && (server_sdk[0] == 'v')) ? 1 : 0;
-                    size_t end = server_sdk.find('.', start);
-                    if (end == std::string::npos) end = server_sdk.size();
-                    try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
-                    catch (...) {}
-
-                    const int client_major = Vital::Tool::Version::SDK.get_major();
-                    if (server_major >= 0 && server_major != client_major) {
-                        log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
-                        Tool::Stack status;
-                        status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
-                        status.object["server_sdk"] = Tool::StackValue(server_sdk);
-                        status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
-                        Tool::Event::emit("network:connect:failed", status);
-                        return false;
-                    }
-                    if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
-                    log("sbox", fmt::format("version pre-check ok (sdk={})", server_sdk));
-                }
-            }
-            catch (const std::exception& e) { log("sbox", fmt::format("version pre-check failed ({}): {}", info_url, e.what())); }
-            catch (...) { log("sbox", fmt::format("version pre-check failed ({}): unknown error", info_url)); }
-        }
-
-        disconnect_from_server();
-        create();
-        peer.instantiate();
-
-        godot::Error err = peer->create_client(godot::String(ip.c_str()), port, 0, 0, 0);
-        if (err != godot::OK) {
-            log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
-            peer.unref();
-            Tool::Stack status;
-            status.object["reason"] = Tool::StackValue(std::string("connect-error"));
-            Tool::Event::emit("network:connect:failed", status);
-            return false;
-        }
-
-        auto tree = get_scene_tree();
-        if (!tree) { 
-            peer.unref(); 
-            return false;
-        }
-
-        tree->get_multiplayer()->set_multiplayer_peer(peer);
-        wire_signals();
-        auto_reconnect = enable_reconnect;
-        reconnect_ip = ip;
-        reconnect_port = port;
-        reconnect_http_port = http_port;
-        reconnect_attempts = 0;
-        reconnect_timer = 0.0f;
-        pending_handshake = false;
-        log("sbox", fmt::format("connecting to {}:{}", ip, port));
-        Tool::Event::emit("network:connect", {});
-        return true;
+    void Network::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
+        Engine::Core::get_singleton() -> execute([ip, port, http_port, enable_reconnect]() { Internal::connect_to_server(ip, port, http_port, enable_reconnect); });
     }
 
-    bool Network::reconnect() {
-        if (reconnect_ip.empty() || reconnect_port <= 0) {
-            log("sbox", "reconnect failed — no previous server");
-            Tool::Stack status;
-            status.object["reason"] = Tool::StackValue(std::string("no-previous-server"));
-            Tool::Event::emit("network:connect:failed", status);
-            return false;
-        }
-        log("sbox", fmt::format("reconnecting to {}:{}", reconnect_ip, reconnect_port));
-        return connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
+    void Network::reconnect() {
+        Engine::Core::get_singleton() -> execute([]() { Internal::reconnect(); });
     }
 
-    bool Network::disconnect_from_server() {
-        if (!peer.is_valid()) return false;
-        auto_reconnect    = false;
-        pending_handshake = false;
-        unwire_signals();
-        send_to_server(Tool::Stack::make_packet(Network::Name, { 
-            Tool::StackValue(std::string("quit")) 
-        }));
-        peer->close();
-        peer.unref();
-        auto tree = get_scene_tree();
-        if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
-        log("sbox", "disconnected");
-        Tool::Event::emit("network:disconnect", {});
-        Engine::Core::get_singleton() -> reset();
-        return true;
+    void Network::disconnect_from_server() {
+        Engine::Core::get_singleton() -> execute([]() { Internal::disconnect_from_server(); });
     }
 
     void Network::_on_connected_to_server() {
@@ -1032,99 +1191,12 @@ namespace Vital::Manager {
     //------------------//
 
     #else
-    bool Network::host(Config::Server& config) {
-        if (is_connected()) {
-            log("sbox", "already hosting");
-            return false;
-        }
-
-        const int net_port = config.get_network_port();
-        {
-            godot::Ref<godot::UDPServer> probe;
-            probe.instantiate();
-            if (probe->listen(net_port) != godot::OK) {
-                log("error", fmt::format("Port {} is already in use", net_port));
-                log("error", "Shutting down in 2.5 seconds...");
-                std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-                std::exit(1);
-                return false;
-            }
-            probe->stop();
-        }
-
-        server_config = &config;
-        create();
-        peer.instantiate();
-
-        // ENet with default channel count (RPC via MultiplayerAPI)
-        godot::Error err = peer->create_server(net_port, config.get_max_clients(), 0, 0, 0);
-        if (err != godot::OK) {
-            log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
-            peer.unref();
-            server_config = nullptr;
-            return false;
-        }
-        auto tree = get_scene_tree();
-        if (!tree) { peer.unref(); server_config = nullptr; return false; }
-        tree->get_multiplayer()->set_multiplayer_peer(peer);
-        wire_signals();
-        try {
-            const std::string body = Tool::HTTP::get("https://api.vital-sandbox.com/ip", {}, 10);
-            rapidjson::Document doc;
-            if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("ip") && doc["ip"].IsString()) server_ip = doc["ip"].GetString();
-        }
-        catch (...) {}
-        
-        // Physics tick rate is normally fixed at compile time (project.godot),
-        // which would mean the owner is stuck with whatever rate we shipped.
-        // godot::Engine allows setting it at runtime, and this runs before any
-        // physics has stepped (host() is called on the very first sandbox:process
-        // tick, before resources/bodies exist), so it's safe to apply here —
-        // giving the owner full control over both tick rate and sync rate from
-        // config.yaml alone, with no rebuild required for any value we support.
-        int physics_rate = config.get_physics_tick_rate();
-        godot::Engine::get_singleton()->set_physics_ticks_per_second(physics_rate);
-
-        // sync_rate can't usefully exceed physics_rate — a body's position can't
-        // change more often than physics steps it, so sending faster than that
-        // just re-sends stale data. Clamp and warn if the owner set it higher.
-        int effective_sync_rate = std::min(config.get_sync_rate(), physics_rate);
-        sync_interval                                     = 1.0f / static_cast<float>(effective_sync_rate);
-        Engine::ISyncable::sync_config.rate             = effective_sync_rate;
-        Engine::ISyncable::sync_config.buffer_delay_max = config.get_sync_buffer_delay_max();
-        Engine::ISyncable::sync_config.jitter_margin    = config.get_sync_jitter_margin();
-        Engine::ISyncable::sync_config.snap_threshold   = config.get_sync_snap_threshold();
-        if (effective_sync_rate < config.get_sync_rate()) {
-            log("warn", fmt::format(
-                "network.sync_rate ({} Hz) exceeds network.physics_tick_rate ({} Hz) in config.yaml — "
-                "capping effective sync rate to {} Hz. Raise physics_tick_rate to send updates faster.",
-                config.get_sync_rate(), physics_rate, effective_sync_rate
-            ));
-        }
-
-        log("sbox", fmt::format(
-            "Server is live!\n"
-            "> IP — `{}`\n"
-            "> Port — `{}`",
-            get_server_ip(),
-            get_server_config().get_network_port()
-        ));
-        Tool::Event::emit("network:host", {});
-        return true;
+    void Network::host(Config::Server& config) {
+        Engine::Core::get_singleton() -> execute([cfg = &config]() { Internal::host(*cfg); });
     }
 
-    bool Network::close() {
-        if (!peer.is_valid()) return false;
-        unwire_signals();
-        connected_peers.clear();
-        peer_serials.clear();
-        peer->close();
-        peer.unref();
-        auto tree = get_scene_tree();
-        if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
-        log("sbox", "server closed");
-        Tool::Event::emit("network:close", {});
-        return true;
+    void Network::close() {
+        Engine::Core::get_singleton() -> execute([]() { Internal::close(); });
     }
 
     // Full state dump for late-joiners.
@@ -1572,15 +1644,8 @@ namespace Vital::Manager {
         if (!is_peer_valid(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("peer '{}' is not connected", peer_id));
     }
 
-    bool Network::disconnect_peer(int peer_id) {
-        // Unknown/stale ids must not reach ENetMultiplayerPeer::get_peer() — it
-        // prints an engine error for ids missing from its peer map.
-        if (!is_peer_valid(peer_id)) return false;
-        auto ep = _enet_peer_for(peer, peer_id);
-        if (!ep.is_valid()) return false;
-        send(Tool::Stack::make_packet(Network::Name, { Tool::StackValue(std::string("disconnect")) }), peer_id);
-        peer->disconnect_peer(peer_id, false);
-        return true;
+    void Network::disconnect_peer(int peer_id) {
+        Engine::Core::get_singleton() -> execute([peer_id]() { Internal::disconnect_peer(peer_id); });
     }
 
     const Config::Server& Network::get_server_config() const { return *server_config; }
@@ -1592,18 +1657,12 @@ namespace Vital::Manager {
     //   Send / Receive   //
     //--------------------//
 
-    bool Network::send(const Tool::Stack& stack, int peer_id) {
-        if (!node || !peer.is_valid()) return false;
-        #if defined(VSDK_Client)
-        if (!is_connected()) return false;
-        #endif
-        if (peer_id == 0) node->rpc("_receive", stack.to_dict());
-        else node->rpc_id(peer_id, "_receive", stack.to_dict());
-        return true;
+    void Network::send(const Tool::Stack& stack, int peer_id) {
+        Engine::Core::get_singleton() -> execute([stack, peer_id]() { Internal::send(stack, peer_id); });
     }
 
-    bool Network::broadcast(const Tool::Stack& stack)      { return send(stack, 0); }
-    bool Network::send_to_server(const Tool::Stack& stack) { return send(stack, 1); }
+    void Network::broadcast(const Tool::Stack& stack)      { send(stack, 0); }
+    void Network::send_to_server(const Tool::Stack& stack) { send(stack, 1); }
 
 
     //----------//
@@ -1622,7 +1681,7 @@ namespace Vital::Manager {
         if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
+                if (reconnect_timer <= 0.0f) Internal::connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
             }
             return;
         }
@@ -1630,10 +1689,10 @@ namespace Vital::Manager {
         if (pending_handshake && is_connected()) {
             pending_handshake = false;
             log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-            send_to_server(Tool::Stack::make_packet(Network::Name, { 
+            Internal::send(Tool::Stack::make_packet(Network::Name, { 
                 Tool::StackValue(std::string("ping")),
                 Tool::StackValue(Tool::Inspect::fingerprint())
-            }));
+            }), 1);
         }
         #endif
 
