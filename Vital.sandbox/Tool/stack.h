@@ -75,15 +75,15 @@ namespace Vital::Tool {
             if constexpr (std::is_pointer_v<T>) return as_raw_ptr<std::remove_pointer_t<T>>();
             else return (std::get<T>(value));
         }
+
         template<typename T>
         std::shared_ptr<T> as_ptr() const {
             if (!is_ptr<T>()) return nullptr;
             return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value));
         }
+
         template<typename T>
         T* as_raw_ptr() const {
-            // Type-check when ptr_type was recorded (StackValue(T*) constructor).
-            // Untyped void* payloads (ptr_type == nullptr) still cast through.
             if (!is_raw_ptr()) return nullptr;
             if (ptr_type && *ptr_type != typeid(T)) return nullptr;
             return static_cast<T*>(std::get<void*>(value));
