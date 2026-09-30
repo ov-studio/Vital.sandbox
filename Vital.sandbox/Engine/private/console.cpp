@@ -730,9 +730,10 @@ namespace Vital::Engine {
             if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
             if (cmd == "players") { print("sbox", Internal::fetch_players()); return true; }
             if (cmd == "kick") {
-                const int peer_id = std::atoi(tokens[1].c_str());
-                if (!Manager::Network::get_singleton() -> is_peer_valid(peer_id)) print("warn", fmt::format("Peer `{}` is not connected", tokens[1]));
-                else Manager::Network::get_singleton() -> disconnect_peer(peer_id);
+                Engine::Core::get_singleton() -> enqueue([this, peer_id = std::atoi(tokens[1].c_str()), arg = tokens[1]]() {
+                    if (!Manager::Network::get_singleton() -> is_peer_valid(peer_id)) print("warn", fmt::format("Peer `{}` is not connected", arg));
+                    else Manager::Network::get_singleton() -> disconnect_peer(peer_id);
+                });
                 return true;
             }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
