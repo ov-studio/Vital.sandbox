@@ -729,13 +729,7 @@ namespace Vital::Engine {
             #if !defined(VSDK_Client)
             if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
             if (cmd == "players") { print("sbox", Internal::fetch_players()); return true; }
-            if (cmd == "kick") {
-                Engine::Core::get_singleton() -> enqueue([this, peer_id = std::atoi(tokens[1].c_str()), arg = tokens[1]]() {
-                    if (!Manager::Network::get_singleton() -> is_peer_valid(peer_id)) print("warn", fmt::format("Peer `{}` is not connected", arg));
-                    else Manager::Network::get_singleton() -> disconnect_peer(peer_id);
-                });
-                return true;
-            }
+            if (cmd == "kick") { Manager::Network::get_singleton() -> disconnect_peer(std::atoi(tokens[1].c_str())); return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
             if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
             if (cmd == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
