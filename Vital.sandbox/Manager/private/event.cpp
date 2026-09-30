@@ -36,16 +36,9 @@ void setup() {
     Vital::Tool::Event::bind("network:connect:failed", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
-    Vital::Tool::Event::bind("network:reconnect", [](Vital::Tool::Stack) {
-        Vital::Tool::print("sbox", "Retrying...");
-    });
-    Vital::Tool::Event::bind("network:reconnect:failed", [](Vital::Tool::Stack) {
-        Vital::Tool::print("sbox", "Gave up reconnecting");
-    });
     Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
-    nm -> set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("network:host", [](Vital::Tool::Stack) {
         Vital::Manager::Masterlist::get_singleton() -> start(Vital::Engine::Core::get_singleton() -> get_server_config());

@@ -79,7 +79,7 @@ namespace Vital::Manager {
     }
 
     #if defined(VSDK_Client)
-    bool Network::Internal::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
+    bool Network::Internal::connect_to_server(const std::string& ip, int port, int http_port) {
         Tool::assert_main_thread("Network::Internal::connect_to_server");
         auto nm = Network::get_singleton();
         if (http_port > 0) {
@@ -136,12 +136,9 @@ namespace Vital::Manager {
 
         tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
         nm -> wire_signals();
-        nm -> auto_reconnect = enable_reconnect;
         nm -> reconnect_ip = ip;
         nm -> reconnect_port = port;
         nm -> reconnect_http_port = http_port;
-        nm -> reconnect_attempts = 0;
-        nm -> reconnect_timer = 0.0f;
         nm -> pending_handshake = false;
         nm -> log("sbox", fmt::format("connecting to {}:{}", ip, port));
         Tool::Event::emit("network:connect", {});
@@ -159,14 +156,13 @@ namespace Vital::Manager {
             return false;
         }
         nm -> log("sbox", fmt::format("reconnecting to {}:{}", nm -> reconnect_ip, nm -> reconnect_port));
-        return Internal::connect_to_server(nm -> reconnect_ip, nm -> reconnect_port, nm -> reconnect_http_port, true);
+        return Internal::connect_to_server(nm -> reconnect_ip, nm -> reconnect_port, nm -> reconnect_http_port);
     }
 
     bool Network::Internal::disconnect_from_server() {
         Tool::assert_main_thread("Network::Internal::disconnect_from_server");
         auto nm = Network::get_singleton();
         if (!nm -> peer.is_valid()) return false;
-        nm -> auto_reconnect    = false;
         nm -> pending_handshake = false;
         nm -> unwire_signals();
         Internal::send(Tool::Stack::make_packet(Network::Name, { 
@@ -289,7 +285,6 @@ namespace Vital::Manager {
         if (!nm -> is_peer_valid(peer_id)) { Tool::print("warn", fmt::format("Peer `{}` is not connected", peer_id)); return; }
         auto ep = _enet_peer_for(nm -> peer, peer_id);
         if (!ep.is_valid()) return;
-        Internal::send(Tool::Stack::make_packet(Network::Name, { Tool::StackValue(std::string("disconnect")) }), peer_id);
         nm -> peer -> disconnect_peer(peer_id, false);
     }
     #endif
@@ -949,18 +944,8 @@ namespace Vital::Manager {
         // Drop all other packets from peers that haven't completed handshake yet.
         if (!connected_peers.count(sender)) return;
         #else
-        // Mirror of the server's "quit" handling above: the server sends this right
-        // before it actually disconnects us via Manager::Network::disconnect_peer(),
-        // so we can tell "the server deliberately removed us" apart from a genuine
-        // connection drop/timeout — the ENet-level peer_disconnected signal alone
-        // can't tell those two apart. Without this, _on_server_disconnected() would
-        // see auto_reconnect still enabled and silently reconnect us moments later.
-        if (stack.is_packet(Network::Name)) {
-            if (!stack.array.empty() && stack.array[0].as<std::string>() == "disconnect") {
-                auto_reconnect = false;
-            }
-            return;
-        }
+        // Internal protocol packets are never forwarded to scripts.
+        if (stack.is_packet(Network::Name)) return;
         #endif
 
         if (stack.has("__event") || stack.has("__reply_serial")) {
@@ -1121,8 +1106,8 @@ namespace Vital::Manager {
     //------------------//
 
     #if defined(VSDK_Client)
-    void Network::connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect) {
-        Engine::Core::get_singleton() -> execute([ip, port, http_port, enable_reconnect]() { Internal::connect_to_server(ip, port, http_port, enable_reconnect); });
+    void Network::connect_to_server(const std::string& ip, int port, int http_port) {
+        Engine::Core::get_singleton() -> execute([ip, port, http_port]() { Internal::connect_to_server(ip, port, http_port); });
     }
 
     void Network::reconnect() {
@@ -1134,7 +1119,6 @@ namespace Vital::Manager {
     }
 
     void Network::_on_connected_to_server() {
-        reconnect_attempts = 0;
         pending_handshake  = true;
         log("sbox", "connected (handshake deferred)");
         Tool::Event::emit("network:connect:success", {});
@@ -1148,7 +1132,6 @@ namespace Vital::Manager {
         Tool::Stack status;
         status.object["reason"] = Tool::StackValue(std::string("timed-out"));
         Tool::Event::emit("network:connect:failed", status);
-        if (auto_reconnect) _schedule_reconnect();
     }
 
     void Network::_on_server_disconnected() {
@@ -1160,27 +1143,6 @@ namespace Vital::Manager {
         if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
         Tool::Event::emit("network:server:disconnect", {});
         Engine::Core::get_singleton() -> reset();
-        if (auto_reconnect) _schedule_reconnect();
-    }
-
-    void Network::set_reconnect_config(int max_attempts, float delay_seconds) {
-        reconnect_max = max_attempts;
-        reconnect_delay = delay_seconds;
-    }
-
-    void Network::_schedule_reconnect() {
-        if (reconnect_attempts >= reconnect_max) {
-            log("sbox", "max reconnect attempts reached");
-            auto_reconnect = false;
-            Tool::Stack status;
-            status.object["reason"] = Tool::StackValue(std::string("max-retries"));
-            Tool::Event::emit("network:reconnect:failed", status);
-            return;
-        }
-        reconnect_attempts++;
-        reconnect_timer = reconnect_delay;
-        log("sbox", fmt::format("retry in {}s  attempt {}/{}", reconnect_delay, reconnect_attempts, reconnect_max));
-        Tool::Event::emit("network:reconnect", {});
     }
 
     std::string Network::get_server_ip() const { return reconnect_ip; }
@@ -1677,14 +1639,6 @@ namespace Vital::Manager {
 
     void Network::poll(double delta) {
         #if defined(VSDK_Client)
-        // Reconnect timer
-        if (auto_reconnect && !is_connected() && !is_connecting()) {
-            if (reconnect_timer > 0.0f) {
-                reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f) Internal::connect_to_server(reconnect_ip, reconnect_port, reconnect_http_port, true);
-            }
-            return;
-        }
         // Handshake
         if (pending_handshake && is_connected()) {
             pending_handshake = false;

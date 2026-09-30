@@ -739,7 +739,7 @@ namespace Vital::Engine {
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #else
-            if (cmd == "connect") { Manager::Network::get_singleton() -> connect_to_server(tokens[1], std::atoi(tokens[2].c_str()), -1, true); return true; }
+            if (cmd == "connect") { Manager::Network::get_singleton() -> connect_to_server(tokens[1], std::atoi(tokens[2].c_str())); return true; }
             if (cmd == "reconnect") { Manager::Network::get_singleton() -> reconnect(); return true; }
             if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
             if (cmd == "status") { print("sbox", Internal::fetch_status()); return true; }

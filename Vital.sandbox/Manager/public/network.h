@@ -77,15 +77,10 @@ namespace Vital::Manager {
 
             float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::Config{}.rate);
             #if defined(VSDK_Client)
-            bool auto_reconnect = false;
             bool pending_handshake = false;
             std::string reconnect_ip;
             int reconnect_port = 0;
             int reconnect_http_port = -1;
-            int reconnect_attempts = 0;
-            int reconnect_max = 5;
-            float reconnect_delay = 3.0f;
-            float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
             std::unordered_map<int, std::string> peer_serials;
@@ -102,7 +97,7 @@ namespace Vital::Manager {
                     static bool broadcast_sync(const godot::PackedByteArray& data);
                     static bool send_sync_to_server(const godot::PackedByteArray& data);
                     #if defined(VSDK_Client)
-                    static bool connect_to_server(const std::string& ip, int port, int http_port, bool enable_reconnect);
+                    static bool connect_to_server(const std::string& ip, int port, int http_port);
                     static bool reconnect();
                     static bool disconnect_from_server();
                     #else
@@ -232,14 +227,12 @@ namespace Vital::Manager {
             double get_peer_packet_loss(int peer_id) const;    // loss ratio (PEER_PACKET_LOSS), normalized to 0.0-1.0
 
             #if defined(VSDK_Client)
-            void connect_to_server(const std::string& ip, int port, int http_port = -1, bool enable_reconnect = false);
+            void connect_to_server(const std::string& ip, int port, int http_port = -1);
             void reconnect();
             void disconnect_from_server();
             void _on_connected_to_server();
             void _on_connection_failed();
             void _on_server_disconnected();
-            void set_reconnect_config(int max_attempts, float delay_seconds);
-            void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
             void host(Config::Server& config);
