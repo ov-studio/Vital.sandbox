@@ -74,13 +74,8 @@ namespace Vital::Engine {
     std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
         std::string src = raw;
         if (mode == Shader::Mode::Postprocess) {
-            // Postprocess shaders run as spatial shaders on a full-screen quad
-            // parented to the camera. We inject the required render_mode flags
-            // automatically so authors only write the fragment() body and can
-            // sample DEPTH_TEXTURE, SCREEN_TEXTURE, NORMAL_ROUGHNESS_TEXTURE, etc.
             if (src.find("shader_type") == std::string::npos)
                 src = "shader_type spatial;\n" + src;
-            // Inject render_mode block after the shader_type line if not already present
             if (src.find("render_mode") == std::string::npos) {
                 auto st_end = src.find(';');
                 if (st_end != std::string::npos)
@@ -169,129 +164,67 @@ namespace Vital::Engine {
     // render_mode flags (unshaded, depth_test_disabled, depth_draw_never,
     // cull_disabled — injected by build_source) mean it never occludes real
     // geometry and never writes to the depth buffer.
-    Shader::Postprocess_Quad Shader::postprocess_make_quad() {
-        // Each quad gets its own ShaderMaterial clone so it can hold independent
-        // param values from other quads in the same pool.
-        Postprocess_Quad pq;
-        pq.material.instantiate();
-        pq.material->set_shader(shader);
-
-        godot::Ref<godot::QuadMesh> mesh;
-        mesh.instantiate();
-        mesh->set_size(godot::Vector2(2.0f, 2.0f));
-
-        pq.node = memnew(godot::MeshInstance3D);
-        pq.node->set_mesh(mesh);
-        pq.node->set_surface_override_material(0, pq.material);
-        pq.node->set_position(godot::Vector3(0.0f, 0.0f,
-            -(postprocess_camera->get_near() + 0.001f)));
-        pq.node->set_cast_shadows_setting(
-            godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
-        pq.node->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
-        pq.node->set_visible(false);
-        postprocess_camera->add_child(pq.node);
-        return pq;
-    }
-
     void Shader::postprocess_init() {
         if (mode != Mode::Postprocess) return;
-        // Don't cache the camera here — it may change at runtime.
-        // draw_postprocess() resolves and tracks it lazily each frame.
+        // Quad created lazily on first draw_postprocess() once camera is known
     }
 
     void Shader::postprocess_free() {
-        for (auto& pq : postprocess_pool) {
-            if (pq.node && pq.node->is_inside_tree())
-                pq.node->get_parent()->remove_child(pq.node);
-            if (pq.node) memdelete(pq.node);
-            if (pq.sub_viewport && pq.sub_viewport->is_inside_tree())
-                pq.sub_viewport->get_parent()->remove_child(pq.sub_viewport);
-            if (pq.sub_viewport) memdelete(pq.sub_viewport);
-            // sub_camera is a child of sub_viewport, freed with it
+        if (pp_quad) {
+            if (pp_quad->is_inside_tree())
+                pp_quad->get_parent()->remove_child(pp_quad);
+            memdelete(pp_quad);
+            pp_quad = nullptr;
         }
-        postprocess_pool.clear();
-        postprocess_used = 0;
-        postprocess_camera = nullptr;
+        pp_camera = nullptr;
     }
 
-    // Lazily create (or resize) the SubViewport + Camera3D for a non-fullscreen draw.
-    void Shader::postprocess_ensure_rt(Postprocess_Quad& pq, godot::Vector2 size) {
+    void Shader::draw_postprocess() {
+        if (mode != Mode::Postprocess) return;
+
+        // Resolve active camera — re-parent quad if it changed
         auto* tree = godot::Object::cast_to<godot::SceneTree>(
             godot::Engine::get_singleton()->get_main_loop());
         if (!tree) return;
+        auto* cam = tree->get_root()->get_camera_3d();
+        if (!cam) return;
 
-        godot::Vector2i isize = godot::Vector2i((int)size.x, (int)size.y);
-
-        if (!pq.sub_viewport) {
-            // Move the quad node from the scene camera into its own SubViewport.
-            if (pq.node->is_inside_tree())
-                pq.node->get_parent()->remove_child(pq.node);
-
-            pq.sub_viewport = memnew(godot::SubViewport);
-            pq.sub_viewport->set_size(isize);
-            pq.sub_viewport->set_transparent_background(true);
-            pq.sub_viewport->set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
-            pq.sub_viewport->set_disable_3d(false);
-
-            // Mirror the scene camera so depth/normals match
-            pq.sub_camera = memnew(godot::Camera3D);
-            pq.sub_viewport->add_child(pq.sub_camera);
-            pq.sub_viewport->add_child(pq.node);
-            tree->get_root()->add_child(pq.sub_viewport);
-        } else if (pq.sub_viewport->get_size() != isize) {
-            pq.sub_viewport->set_size(isize);
-        }
-
-        // Sync sub_camera to match the active scene camera each frame
-        if (postprocess_camera) {
-            pq.sub_camera->set_global_transform(postprocess_camera->get_global_transform());
-            pq.sub_camera->set_fov(postprocess_camera->get_fov());
-            pq.sub_camera->set_near(postprocess_camera->get_near());
-            pq.sub_camera->set_far(postprocess_camera->get_far());
-        }
-    }
-
-    godot::Ref<godot::ViewportTexture> Shader::draw_postprocess(godot::Vector2 position, godot::Vector2 size) {
-        if (mode != Mode::Postprocess) return nullptr;
-
-        auto* tree = godot::Object::cast_to<godot::SceneTree>(
-            godot::Engine::get_singleton()->get_main_loop());
-        if (!tree) return nullptr;
-        auto* current_camera = tree->get_root()->get_camera_3d();
-        if (!current_camera) return nullptr;
-
-        // Track camera changes — re-parent fullscreen quads if camera switches
-        if (current_camera != postprocess_camera) {
-            postprocess_camera = current_camera;
-            float cam_near = postprocess_camera->get_near();
-            for (auto& pq : postprocess_pool) {
-                if (!pq.sub_viewport) {
-                    // Only re-parent fullscreen quads (RT quads live in sub_viewport)
-                    if (pq.node->is_inside_tree())
-                        pq.node->get_parent()->remove_child(pq.node);
-                    pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(cam_near + 0.001f)));
-                    postprocess_camera->add_child(pq.node);
-                }
+        if (cam != pp_camera) {
+            pp_camera = cam;
+            if (pp_quad) {
+                if (pp_quad->is_inside_tree())
+                    pp_quad->get_parent()->remove_child(pp_quad);
+                pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
+                pp_camera->add_child(pp_quad);
             }
         }
 
-        uint64_t current_frame = godot::Engine::get_singleton()->get_process_frames();
+        // Create quad on first draw
+        if (!pp_quad) {
+            pp_material.instantiate();
+            pp_material->set_shader(shader);
 
-        // New frame — reset pool cursor and hide all quads from last frame
-        if (current_frame != postprocess_last_frame) {
-            postprocess_last_frame = current_frame;
-            for (size_t i = 0; i < postprocess_used; i++)
-                postprocess_pool[i].node->set_visible(false);
-            postprocess_used = 0;
+            godot::Ref<godot::QuadMesh> mesh;
+            mesh.instantiate();
+            mesh->set_size(godot::Vector2(2.0f, 2.0f));
+
+            pp_quad = memnew(godot::MeshInstance3D);
+            pp_quad->set_mesh(mesh);
+            pp_quad->set_surface_override_material(0, pp_material);
+            pp_quad->set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+            pp_quad->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
+            pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
+            pp_quad->set_visible(false);
+            pp_camera->add_child(pp_quad);
         }
 
-        // Get or allocate a quad for this draw call
-        if (postprocess_used >= postprocess_pool.size())
-            postprocess_pool.push_back(postprocess_make_quad());
+        uint64_t frame = godot::Engine::get_singleton()->get_process_frames();
+        if (frame != pp_last_frame) {
+            pp_last_frame = frame;
+            pp_quad->set_visible(false);
+        }
 
-        auto& pq = postprocess_pool[postprocess_used++];
-
-        // Stamp current param state into this quad's own material clone
+        // Stamp params from master material into quad's material
         auto list = shader->get_shader_uniform_list();
         for (int i = 0; i < list.size(); i++) {
             auto dict = static_cast<godot::Dictionary>(list[i]);
@@ -300,31 +233,11 @@ namespace Vital::Engine {
             if (sname == Internal::SENTINEL) continue;
             godot::Variant v = material->get_shader_parameter(name);
             if (v.get_type() != godot::Variant::NIL)
-                pq.material->set_shader_parameter(name, v);
+                pp_material->set_shader_parameter(name, v);
         }
 
-        bool sized = size.x > 0.0f && size.y > 0.0f;
-        if (sized) {
-            // RT path — render quad into SubViewport, return texture for canvas to blit
-            postprocess_ensure_rt(pq, size);
-            pq.node->set_visible(true);
-            return pq.sub_viewport->get_texture();
-        } else {
-            // Fullscreen path — show quad directly, return nullptr (no blit needed)
-            if (pq.sub_viewport) {
-                // Quad was previously RT — move back to scene camera
-                if (pq.node->is_inside_tree())
-                    pq.node->get_parent()->remove_child(pq.node);
-                float cam_near = postprocess_camera->get_near();
-                pq.node->set_position(godot::Vector3(0.0f, 0.0f, -(cam_near + 0.001f)));
-                postprocess_camera->add_child(pq.node);
-                pq.sub_viewport->set_update_mode(godot::SubViewport::UPDATE_DISABLED);
-            }
-            pq.node->set_visible(true);
-            return nullptr;
-        }
+        pp_quad->set_visible(true);
     }
-
 
 
     godot::Ref<godot::ShaderMaterial> Shader::snapshot_draw_material() {

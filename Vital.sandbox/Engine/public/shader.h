@@ -52,22 +52,15 @@ namespace Vital::Engine {
             // different colors, etc.).  Quads are hidden at frame end and reused next
             // frame — no allocation after the high-water mark is reached.
             // Never exposed to Lua — behaves just like CanvasItem from the script side.
-            struct Postprocess_Quad {
-                godot::MeshInstance3D* node = nullptr;
-                godot::Ref<godot::ShaderMaterial> material;
-                // RT path — only allocated when a non-fullscreen draw is requested.
-                // The SubViewport hosts its own Camera3D that mirrors the scene camera,
-                // the quad renders into it, and the result is blitted onto the canvas.
-                godot::SubViewport* sub_viewport = nullptr;
-                godot::Camera3D* sub_camera = nullptr;
-            };
-            std::vector<Postprocess_Quad> postprocess_pool;
-            size_t postprocess_used = 0;
-            uint64_t postprocess_last_frame = UINT64_MAX;
-            godot::Camera3D* postprocess_camera = nullptr;  // weak ref, owned by scene
+            // Single fullscreen quad parented to the active camera.
+            // Renders via the normal opaque pass — has real DEPTH_TEXTURE access.
+            // For sized output, the Lua script passes an RT via set_param_rt and
+            // the shader writes into it; canvas then draws the RT at any size.
+            godot::MeshInstance3D* pp_quad = nullptr;
+            godot::Ref<godot::ShaderMaterial> pp_material;
+            godot::Camera3D* pp_camera = nullptr;  // weak ref, owned by scene
+            uint64_t pp_last_frame = UINT64_MAX;
 
-            Postprocess_Quad postprocess_make_quad();
-            void postprocess_ensure_rt(Postprocess_Quad& pq, godot::Vector2 size);
             void postprocess_init();
             void postprocess_free();
 
@@ -118,9 +111,7 @@ namespace Vital::Engine {
             // Postprocess draw — called from Canvas::draw_material(Shader*) when
             // mode == Postprocess.  Shows the quad this frame and stamps params.
             // The quad hides itself automatically the next frame if not called again.
-            // Returns the SubViewport texture when size is non-zero (RT path);
-            // returns nullptr for fullscreen draws. canvas.cpp handles the blit.
-            godot::Ref<godot::ViewportTexture> draw_postprocess(godot::Vector2 position, godot::Vector2 size);
+            void draw_postprocess();
 
 
             // Getters //

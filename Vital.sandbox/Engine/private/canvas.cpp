@@ -334,13 +334,11 @@ namespace Vital::Engine {
     ) {
         if (!shader) return;
         if (shader -> get_mode() == Shader::Mode::Postprocess) {
-            // TODO: Improve
-            // Postprocess shaders run on a full-screen quad in the 3D pipeline.
-            // draw_postprocess returns a ViewportTexture when size is non-zero —
-            // we blit it onto the canvas here so shader.cpp stays free of Canvas deps.
-            auto tex = shader -> draw_postprocess(position, size);
-            if (tex.is_valid())
-                draw_material(position, size, godot::Ref<godot::Texture2D>(tex), rotation, pivot, color);
+            // Postprocess shaders render fullscreen on a quad parented to the camera.
+            // Position and size are intentionally ignored — the quad always covers
+            // the entire screen. Use set_param_rt to write results to a rendertarget
+            // if you need to composite the output at a specific size.
+            shader -> draw_postprocess();
             return;
         }
         draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
