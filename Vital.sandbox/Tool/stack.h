@@ -60,13 +60,27 @@ namespace Vital::Tool {
 
         // Checkers //
         template<typename T>
-        bool is() const { return std::holds_alternative<T>(value); }
-        bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
+        bool is() const { 
+            return std::holds_alternative<T>(value); 
+        }
+        
+        bool is_ptr() const { 
+            return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; 
+        }
+        
         template<typename T>
-        bool is_ptr() const { return is_ptr() && ptr_type && *ptr_type == typeid(T); }
-        bool is_raw_ptr() const { return std::holds_alternative<void*>(value) && std::get<void*>(value) != nullptr; }
+        bool is_ptr() const { 
+            return is_ptr() && ptr_type && *ptr_type == typeid(T); 
+        }
+
+        bool is_raw_ptr() const { 
+            return std::holds_alternative<void*>(value) && std::get<void*>(value) != nullptr; 
+        }
+
         template<typename T>
-        bool is_raw_ptr() const { return is_raw_ptr() && ptr_type && *ptr_type == typeid(T); }
+        bool is_raw_ptr() const { 
+            return is_raw_ptr() && ptr_type && *ptr_type == typeid(T); 
+        }
 
 
         // Accessors //
