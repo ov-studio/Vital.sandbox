@@ -631,18 +631,27 @@ namespace Vital::Manager {
     }
 
     double Network::get_peer_rtt(int peer_id) const {
+        #if !defined(VSDK_Client)
+        if (!is_peer_valid(peer_id)) return -1.0;
+        #endif
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return -1.0;
         return ep->get_statistic(godot::ENetPacketPeer::PEER_ROUND_TRIP_TIME);
     }
 
     double Network::get_peer_last_rtt(int peer_id) const {
+        #if !defined(VSDK_Client)
+        if (!is_peer_valid(peer_id)) return -1.0;
+        #endif
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return -1.0;
         return ep->get_statistic(godot::ENetPacketPeer::PEER_LAST_ROUND_TRIP_TIME);
     }
 
     double Network::get_peer_packet_loss(int peer_id) const {
+        #if !defined(VSDK_Client)
+        if (!is_peer_valid(peer_id)) return -1.0;
+        #endif
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return -1.0;
         return ep->get_statistic(godot::ENetPacketPeer::PEER_PACKET_LOSS)/ENET_PEER_PACKET_LOSS_SCALE;
@@ -1555,7 +1564,14 @@ namespace Vital::Manager {
         return it != peer_serials.end() ? it -> second : std::string();
     }
 
+    bool Network::is_peer_valid(int peer_id) const {
+        return peer_id > 0 && connected_peers.count(peer_id) > 0;
+    }
+
     bool Network::disconnect_peer(int peer_id) {
+        // Unknown/stale ids must not reach ENetMultiplayerPeer::get_peer() — it
+        // prints an engine error for ids missing from its peer map.
+        if (!is_peer_valid(peer_id)) return false;
         auto ep = _enet_peer_for(peer, peer_id);
         if (!ep.is_valid()) return false;
         send(Tool::Stack::make_packet(Network::Name, { Tool::StackValue(std::string("disconnect")) }), peer_id);
