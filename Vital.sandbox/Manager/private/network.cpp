@@ -40,6 +40,14 @@ namespace Vital::Manager {
         return peer->get_peer(peer_id);
     }
 
+    // ENet is only serviced from the main thread, so a script that hogs it (e.g. creating thousands of
+    // textures in one loop) stops acks/pings from going out, and the other side would drop us after ENet's
+    // default ~5s minimum timeout. Keep the tolerance wide enough that a long freeze isn't read as a dead link.
+    static void _apply_peer_timeout(const godot::Ref<godot::ENetPacketPeer>& ep) {
+        if (!ep.is_valid()) return;
+        ep->set_timeout(32, 30000, 60000);   // limit (ENet default), min ms, max ms
+    }
+
 
     // Misc //
     bool Network::Internal::send(const Tool::Stack& stack, int peer_id) {
@@ -1119,6 +1127,7 @@ namespace Vital::Manager {
     }
 
     void Network::_on_connected_to_server() {
+        _apply_peer_timeout(_enet_peer_for(peer, 1));
         pending_handshake  = true;
         log("sbox", "connected (handshake deferred)");
         Tool::Event::emit("network:connect:success", {});
@@ -1245,6 +1254,7 @@ namespace Vital::Manager {
     }
 
     void Network::_on_peer_connected(int id) {
+        _apply_peer_timeout(_enet_peer_for(peer, id));
         log("sbox", fmt::format("peer connecting -> {} (awaiting handshake)", id));
 
         // 0. Tell the joining peer our real sync rate. Reliable + channel 0, sent
