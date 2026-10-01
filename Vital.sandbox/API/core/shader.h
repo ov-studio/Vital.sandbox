@@ -228,50 +228,33 @@ namespace Vital::Sandbox::API {
                     .require(3, [](Machine* vm, int idx) {
                         return vm -> is_bool(idx)
                             || vm -> is_number(idx)
-                            || vm -> is_vector2(idx) 
-                            || vm -> is_vector3(idx);
+                            || vm -> is_vector2(idx)
+                            || vm -> is_vector3(idx)
+                            || vm -> is_color(idx)
+                            || vm_module::is_userdata<API::Image::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx);
                     });
 
                 auto name = vm -> get_string(2);
-                godot::Variant value;
-                if (vm -> is_number(3))  value = vm -> get_float(3);
-                else if (vm -> is_bool(3))    value = vm -> get_bool(3);
-                else if (vm -> is_vector2(3)) value = vm -> get_vector2(3);
-                else if (vm -> is_vector3(3)) value = vm -> get_vector3(3);
-                vm -> push_value(self -> shader -> set_param(name, value));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_param_color", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, color)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_color);
-
-                auto name = vm -> get_string(2);
-                auto color = vm -> get_color(3);
-                vm -> push_value(self -> shader -> set_param(name, godot::Variant(color)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_param_texture", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, texture)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Image::Instance>(vm, idx); });
-
-                auto name = vm -> get_string(2);
-                auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
-                vm -> push_value(self -> shader -> set_param_texture(name, image -> get_node() -> get_canvas_texture()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_param_rt", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, rendertarget)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
-
-                auto name = vm -> get_string(2);
-                auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                vm -> push_value(self -> shader -> set_param_viewport_texture(name, rendertarget -> get_node() -> get_texture()));
+                if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
+                    auto rt = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, rt -> get_node() -> get_texture()));
+                } 
+                else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
+                    auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
+                    vm -> push_value(self -> shader -> set_param_texture(name, image -> get_node() -> get_canvas_texture()));
+                } 
+                else if (vm -> is_color(3)) {
+                    vm -> push_value(self -> shader -> set_param(name, godot::Variant(vm -> get_color(3))));
+                } 
+                else {
+                    godot::Variant value;
+                    if      (vm -> is_number(3))   value = vm -> get_float(3);
+                    else if (vm -> is_bool(3))     value = vm -> get_bool(3);
+                    else if (vm -> is_vector2(3))  value = vm -> get_vector2(3);
+                    else if (vm -> is_vector3(3))  value = vm -> get_vector3(3);
+                    vm -> push_value(self -> shader -> set_param(name, value));
+                }
                 return 1;
             });
 
