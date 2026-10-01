@@ -90,6 +90,7 @@ namespace Vital::Engine {
     void Canvas::_process(double delta) {
         Engine::Texture::flush();
         Manager::Sandbox::get_singleton() -> draw(this);
+        Shader::end_frame_postprocess();
         pool.end_frame(delta);
     }
 

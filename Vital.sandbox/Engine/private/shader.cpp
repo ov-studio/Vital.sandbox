@@ -167,9 +167,14 @@ namespace Vital::Engine {
     void Shader::postprocess_init() {
         if (mode != Mode::Postprocess) return;
         // Quad created lazily on first draw_postprocess() once camera is known
+        postprocess_registry.push_back(this);
     }
 
     void Shader::postprocess_free() {
+        postprocess_registry.erase(
+            std::remove(postprocess_registry.begin(), postprocess_registry.end(), this),
+            postprocess_registry.end()
+        );
         if (pp_quad) {
             if (pp_quad->is_inside_tree())
                 pp_quad->get_parent()->remove_child(pp_quad);
@@ -237,6 +242,20 @@ namespace Vital::Engine {
         }
 
         pp_quad->set_visible(true);
+    }
+
+
+    // Hides postprocess quads that were not drawn this frame. Without this a
+    // quad stays visible forever once the script stops calling draw_material
+    // (e.g. a toggle key), so the effect could never be turned off.
+    void Shader::end_frame_postprocess() {
+        if (postprocess_registry.empty()) return;
+        uint64_t frame = godot::Engine::get_singleton()->get_process_frames();
+        for (auto* pp : postprocess_registry) {
+            if (!pp || !pp->pp_quad) continue;
+            if (pp->pp_last_frame != frame && pp->pp_quad->is_visible())
+                pp->pp_quad->set_visible(false);
+        }
     }
 
 

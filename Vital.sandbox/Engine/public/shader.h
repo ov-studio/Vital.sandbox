@@ -64,6 +64,11 @@ namespace Vital::Engine {
             void postprocess_init();
             void postprocess_free();
 
+            // Registry of every live Postprocess shader so the canvas can hide
+            // quads that were not drawn this frame (i.e. the script stopped
+            // calling draw_material on them, e.g. toggled off with a key).
+            inline static std::vector<Shader*> postprocess_registry;
+
             // Per-surface material clones. A ShaderMaterial can only hold one
             // texture per uniform, so every surface that needs its own
             // original texture (albedo/normal/...) gets its own clone.
@@ -112,6 +117,10 @@ namespace Vital::Engine {
             // mode == Postprocess.  Shows the quad this frame and stamps params.
             // The quad hides itself automatically the next frame if not called again.
             void draw_postprocess();
+
+            // Called once per frame by Canvas::_process AFTER scripts have drawn.
+            // Hides every postprocess quad that was not drawn during this frame.
+            static void end_frame_postprocess();
 
 
             // Getters //
