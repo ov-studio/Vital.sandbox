@@ -56,10 +56,14 @@ namespace Vital::Engine {
             // Renders via the normal opaque pass — has real DEPTH_TEXTURE access.
             // For sized output, the Lua script passes an RT via set_param_rt and
             // the shader writes into it; canvas then draws the RT at any size.
-            godot::MeshInstance3D* pp_quad = nullptr;
+            // The quad is a child of the active Camera3D, so Godot frees it
+            // whenever that camera is freed (scene restart, camera swap...).
+            // We therefore NEVER hold raw node pointers: only ObjectIDs that are
+            // re-validated through ObjectDB every time they are used.
+            godot::ObjectID pp_quad_id;
             godot::Ref<godot::ShaderMaterial> pp_material;
-            godot::Camera3D* pp_camera = nullptr;  // weak ref, owned by scene
             uint64_t pp_last_frame = UINT64_MAX;
+            godot::MeshInstance3D* pp_get_quad() const;
 
             void postprocess_init();
             void postprocess_free();

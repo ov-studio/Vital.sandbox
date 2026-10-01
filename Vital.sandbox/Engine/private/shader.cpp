@@ -170,64 +170,68 @@ namespace Vital::Engine {
         postprocess_registry.push_back(this);
     }
 
+    godot::MeshInstance3D* Shader::pp_get_quad() const {
+        if (!pp_quad_id.is_valid()) return nullptr;
+        return godot::Object::cast_to<godot::MeshInstance3D>(godot::ObjectDB::get_instance(pp_quad_id));
+    }
+
     void Shader::postprocess_free() {
         postprocess_registry.erase(
             std::remove(postprocess_registry.begin(), postprocess_registry.end(), this),
             postprocess_registry.end()
         );
-        if (pp_quad) {
-            if (pp_quad->is_inside_tree())
-                pp_quad->get_parent()->remove_child(pp_quad);
-            memdelete(pp_quad);
-            pp_quad = nullptr;
+        if (auto* quad = pp_get_quad()) {
+            if (auto* parent = quad->get_parent()) parent->remove_child(quad);
+            quad->queue_free();
         }
-        pp_camera = nullptr;
+        pp_quad_id = godot::ObjectID();
+        pp_material.unref();
     }
 
     void Shader::draw_postprocess() {
         if (mode != Mode::Postprocess) return;
 
-        // Resolve active camera — re-parent quad if it changed
         auto* tree = godot::Object::cast_to<godot::SceneTree>(
             godot::Engine::get_singleton()->get_main_loop());
         if (!tree) return;
-        auto* cam = tree->get_root()->get_camera_3d();
-        if (!cam) return;
+        auto* root = tree->get_root();
+        if (!root) return;
 
-        if (cam != pp_camera) {
-            pp_camera = cam;
-            if (pp_quad) {
-                if (pp_quad->is_inside_tree())
-                    pp_quad->get_parent()->remove_child(pp_quad);
-                pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
-                pp_camera->add_child(pp_quad);
-            }
+        // Resolved fresh every call: whatever camera is active RIGHT NOW gets the
+        // effect, so camera swaps / scene restarts need no script involvement.
+        auto* cam = root->get_camera_3d();
+        auto* quad = pp_get_quad();   // null if never created OR freed together with its old camera
+        if (!cam) {
+            if (quad) quad->set_visible(false);
+            return;
         }
 
-        // Create quad on first draw
-        if (!pp_quad) {
+        if (!pp_material.is_valid()) {
             pp_material.instantiate();
             pp_material->set_shader(shader);
+        }
 
+        if (!quad) {
             godot::Ref<godot::QuadMesh> mesh;
             mesh.instantiate();
             mesh->set_size(godot::Vector2(2.0f, 2.0f));
 
-            pp_quad = memnew(godot::MeshInstance3D);
-            pp_quad->set_mesh(mesh);
-            pp_quad->set_surface_override_material(0, pp_material);
-            pp_quad->set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
-            pp_quad->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
-            pp_quad->set_position(godot::Vector3(0, 0, -(pp_camera->get_near() + 0.001f)));
-            pp_quad->set_visible(false);
-            pp_camera->add_child(pp_quad);
+            quad = memnew(godot::MeshInstance3D);
+            quad->set_mesh(mesh);
+            quad->set_surface_override_material(0, pp_material);
+            quad->set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+            quad->set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
+            quad->set_visible(false);
+            pp_quad_id = godot::ObjectID(quad->get_instance_id());
         }
 
-        uint64_t frame = godot::Engine::get_singleton()->get_process_frames();
-        if (frame != pp_last_frame) {
-            pp_last_frame = frame;
-            pp_quad->set_visible(false);
+        // Follow the active camera (also covers a new camera reusing the old address)
+        if (quad->get_parent() != cam) {
+            if (auto* old_parent = quad->get_parent()) old_parent->remove_child(quad);
+            cam->add_child(quad);
         }
+        // Updated every frame in case the camera's near clip changes
+        quad->set_position(godot::Vector3(0, 0, -(cam->get_near() + 0.001f)));
 
         // Stamp params from master material into quad's material
         auto list = shader->get_shader_uniform_list();
@@ -241,9 +245,9 @@ namespace Vital::Engine {
                 pp_material->set_shader_parameter(name, v);
         }
 
-        pp_quad->set_visible(true);
+        pp_last_frame = godot::Engine::get_singleton()->get_process_frames();
+        quad->set_visible(true);
     }
-
 
     // Hides postprocess quads that were not drawn this frame. Without this a
     // quad stays visible forever once the script stops calling draw_material
@@ -252,9 +256,9 @@ namespace Vital::Engine {
         if (postprocess_registry.empty()) return;
         uint64_t frame = godot::Engine::get_singleton()->get_process_frames();
         for (auto* pp : postprocess_registry) {
-            if (!pp || !pp->pp_quad) continue;
-            if (pp->pp_last_frame != frame && pp->pp_quad->is_visible())
-                pp->pp_quad->set_visible(false);
+            if (!pp || pp->pp_last_frame == frame) continue;
+            auto* quad = pp->pp_get_quad();   // validated; safe if the camera (and quad) were freed
+            if (quad && quad->is_visible()) quad->set_visible(false);
         }
     }
 
