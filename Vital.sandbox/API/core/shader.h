@@ -19,7 +19,7 @@
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/API/core/model.h>
-#include <Vital.sandbox/API/core/viewport.h>
+#include <Vital.sandbox/API/core/display.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/utility/file.h>
 
@@ -234,7 +234,7 @@ namespace Vital::Sandbox::API {
                             || vm -> is_color(idx)
                             || vm_module::is_userdata<API::Image::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
-                            || vm_module::is_userdata<API::Viewport::Instance>(vm, idx);
+                            || vm_module::is_userdata<API::Display::Instance>(vm, idx);
                     });
 
                 auto name = vm -> get_string(2);
