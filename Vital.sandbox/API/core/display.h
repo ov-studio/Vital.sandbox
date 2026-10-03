@@ -29,6 +29,7 @@ namespace Vital::Sandbox::API {
 
         struct Instance : vm_instance<Instance> {
             using Owner = Display;
+            bool last_frame = false;
 
             godot::Ref<godot::ViewportTexture> get_texture() const {
                 return base_class::get_singleton() -> get_texture();
@@ -45,15 +46,21 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_texture", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(last_frame = false)")
+                    .optional(1, &Machine::is_bool);
+
+                auto last_frame = vm -> is_bool(1) ? vm -> get_bool(1) : false;
                 std::shared_ptr<Instance> instance;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
-                    if (!registry.buffer.empty()) {
-                        auto it = registry.buffer.begin();
-                        if (it -> second && it->second -> is_alive()) instance = it -> second;
+                    for (auto& [key, value] : registry.buffer) {
+                        if (value && value -> is_alive() && value -> last_frame == last_frame) {
+                            instance = value;
+                            break;
+                        }
                     }
                 }
-                if (!instance) Instance::make(vm, true);
+                if (!instance) Instance::make(vm, true) -> last_frame = last_frame;
                 else instance -> push_self(vm);
                 return 1;
             });
