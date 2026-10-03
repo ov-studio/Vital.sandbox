@@ -67,15 +67,15 @@ namespace Vital::Engine {
 
     // Helpers //
     std::pair<Canvas::Draw_Pool*, godot::RID> Canvas::get_target() {
-        auto rt = Engine::Rendertarget::get_active();
-        if (rt) return {&rt -> get_pool(), rt -> get_canvas_item()};
+        auto rendertarget = Engine::Rendertarget::get_active();
+        if (rendertarget) return {&rendertarget -> get_pool(), rendertarget -> get_canvas_item()};
         auto self = Canvas::get_singleton();
         return {&self -> pool, self -> get_canvas_item()};
     }
 
     void Canvas::notify_drawn() {
-        auto rt = Engine::Rendertarget::get_active();
-        if (rt) rt -> notify_drawn();
+        auto rendertarget = Engine::Rendertarget::get_active();
+        if (rendertarget) rendertarget -> notify_drawn();
     }
 
 
@@ -317,12 +317,12 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
-        Rendertarget* rt,
+        Rendertarget* rendertarget,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_material(position, size, godot::Ref<godot::Texture2D>(rt -> get_texture()), rotation, pivot, color);
+        draw_material(position, size, godot::Ref<godot::Texture2D>(rendertarget -> get_texture()), rotation, pivot, color);
     }
 
     void Canvas::draw_material(

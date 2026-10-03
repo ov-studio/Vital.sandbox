@@ -62,7 +62,7 @@ namespace Vital::Engine {
 
 
             // Setters //
-            static void set_active(Rendertarget* rt = nullptr, bool clear = false, bool instant = false);
+            static void set_active(Rendertarget* rendertarget = nullptr, bool clear = false, bool instant = false);
     };
 }
 #endif

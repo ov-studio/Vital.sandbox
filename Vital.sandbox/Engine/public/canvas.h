@@ -121,7 +121,7 @@ namespace Vital::Engine {
             void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
-                Rendertarget* rt,
+                Rendertarget* rendertarget,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}

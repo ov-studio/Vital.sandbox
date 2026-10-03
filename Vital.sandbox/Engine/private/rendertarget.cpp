@@ -41,16 +41,16 @@ namespace Vital::Engine {
     
     // Managers //
     Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
-        auto rt = memnew(Rendertarget);
-        rt -> viewport = memnew(godot::SubViewport);
-        rt -> viewport -> set_size(size);
-        rt -> viewport -> set_disable_3d(true);
-        rt -> viewport -> set_transparent_background(transparent);
-        rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
-        rt -> viewport -> add_child(rt);
-        Engine::Canvas::get_singleton() -> add_child(rt -> viewport);
-        rt -> set_process(true);
-        return rt;
+        auto rendertarget = memnew(Rendertarget);
+        rendertarget -> viewport = memnew(godot::SubViewport);
+        rendertarget -> viewport -> set_size(size);
+        rendertarget -> viewport -> set_disable_3d(true);
+        rendertarget -> viewport -> set_transparent_background(transparent);
+        rendertarget -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
+        rendertarget -> viewport -> add_child(rendertarget);
+        Engine::Canvas::get_singleton() -> add_child(rendertarget -> viewport);
+        rendertarget -> set_process(true);
+        return rendertarget;
     }
 
     void Rendertarget::destroy() {
@@ -105,10 +105,10 @@ namespace Vital::Engine {
 
 
     // Setters //
-    void Rendertarget::set_active(Rendertarget* rt, bool clear, bool instant) {
-        active = rt;
-        if (!rt) return;
-        rt -> clear(clear, instant);
+    void Rendertarget::set_active(Rendertarget* rendertarget, bool clear, bool instant) {
+        active = rendertarget;
+        if (!rendertarget) return;
+        rendertarget -> clear(clear, instant);
     }
 }
 #endif
