@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: core: viewport.h
+     Script: API: core: viewtarget.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Viewport APIs
+     Desc: Viewtarget APIs
 ----------------------------------------------------------------*/
 
 
@@ -15,12 +15,12 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/viewtarget.h>
 
 
-///////////////////////////
-// Vital: API: Viewport //
-///////////////////////////
+/////////////////////////////
+// Vital: API: Viewtarget //
+/////////////////////////////
 
 // TODO: Improve
 namespace Vital::Sandbox::API {
@@ -40,6 +40,11 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Viewport>(vm);
 
+            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_singleton() -> get_resolution());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_texture", [](auto vm, auto& id) -> int {
                 std::shared_ptr<Instance> inst;
                 {
@@ -53,15 +58,7 @@ namespace Vital::Sandbox::API {
                 else inst -> push_self(vm);
                 return 1;
             });
-        }
 
-        static void methods(Machine* vm) {
-            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_singleton() -> get_resolution());
-                return 1;
-            });
-
-            #if defined(VSDK_Client)
             API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
@@ -71,7 +68,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            #endif
         }
 
         static void clean(const std::string& env) {
