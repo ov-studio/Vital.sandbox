@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
+#include <Vital.sandbox/API/core/viewport.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
@@ -157,6 +158,7 @@ namespace Vital::Sandbox::API {
                             || vm_module::is_userdata<API::Image::Instance>(vm, idx)
                             || vm_module::is_userdata<API::SVG::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::Viewport::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Shader::Instance>(vm, idx);
                     })
                     .optional(4, &Machine::is_number)
@@ -182,6 +184,10 @@ namespace Vital::Sandbox::API {
                 else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
                     auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_material(position, size, rendertarget -> get_node(), rotation, pivot, color);
+                }
+                else if (vm_module::is_userdata<API::Viewport::Instance>(vm, 3)) {
+                    auto viewport = vm_module::get_userdata_object<API::Viewport::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, viewport -> get_texture(), rotation, pivot, color);
                 }
                 else {
                     auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
