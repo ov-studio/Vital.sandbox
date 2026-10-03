@@ -39,7 +39,7 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Vehicle_Wheel>(true);
     #if defined(VSDK_Client)
     godot::ClassDB::register_class<Vital::Engine::Canvas>(true);
-    godot::ClassDB::register_class<Vital::Engine::Viewtarget>(true);
+    godot::ClassDB::register_class<Vital::Engine::Display>(true);
     godot::ClassDB::register_class<Vital::Engine::Monitor>(true);
     godot::ClassDB::register_class<Vital::Engine::Camera>(true);
     godot::ClassDB::register_class<Vital::Engine::Webview>(true);
