@@ -187,8 +187,8 @@ namespace Vital::Sandbox::API {
                     base_class::get_singleton() -> draw_material(position, size, rendertarget -> get_node(), rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<API::Viewport::Instance>(vm, 3)) {
-                    auto viewport = vm_module::get_userdata_object<API::Viewport::Instance>(vm, 3);
-                    base_class::get_singleton() -> draw_material(position, size, viewport -> get_texture(), rotation, pivot, color);
+                    auto viewtarget = vm_module::get_userdata_object<API::Viewport::Instance>(vm, 3);
+                    base_class::get_singleton() -> draw_material(position, size, viewtarget -> get_texture(), rotation, pivot, color);
                 }
                 else {
                     auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
