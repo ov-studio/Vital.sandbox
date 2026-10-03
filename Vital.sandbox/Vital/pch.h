@@ -67,6 +67,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/rendering_device.hpp> 
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/udp_server.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
@@ -115,6 +116,8 @@
 #include <godot_cpp/classes/canvas_texture.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/rd_texture_format.hpp>
+#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/image_texture3d.hpp>
