@@ -302,6 +302,24 @@ namespace Vital::Engine {
         Canvas::notify_drawn();
     }
 
+    void Canvas::draw_rid(
+        godot::Vector2 position,
+        godot::Vector2 size,
+        godot::RID texture,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
+        if (!texture.is_valid()) return;
+        auto piv = size*0.5f + pivot;
+        auto [pool, parent] = get_target();
+        auto rs = godot::RenderingServer::get_singleton();
+        godot::RID item = pool -> next(parent);
+        rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
+        rs -> canvas_item_add_texture_rect(item, godot::Rect2(-piv, size), texture, false, color);
+        Canvas::notify_drawn();
+    }
+
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
