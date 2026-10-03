@@ -17,6 +17,7 @@
 
 #include <Vital.sandbox/API/core/engine.h>
 #include <Vital.sandbox/API/core/canvas.h>
+#include <Vital.sandbox/API/core/viewport.h>
 #include <Vital.sandbox/API/core/database.h>
 #include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
@@ -90,6 +91,7 @@ namespace Vital::Sandbox::API {
             // Core //
             vm_module::make_api<Engine>(),
             vm_module::make_api<Canvas>(),
+            vm_module::make_api<Viewport>(),
             vm_module::make_api<Database>(),
             vm_module::make_api<Database_Query>(),
             vm_module::make_api<Discord>(),
