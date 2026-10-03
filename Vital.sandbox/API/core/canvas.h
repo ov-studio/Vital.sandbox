@@ -16,7 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
-#include <Vital.sandbox/API/core/viewport.h>
+#include <Vital.sandbox/API/core/display.h>
 #include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
@@ -159,7 +159,7 @@ namespace Vital::Sandbox::API {
                             || vm_module::is_userdata<API::Image::Instance>(vm, idx)
                             || vm_module::is_userdata<API::SVG::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
-                            || vm_module::is_userdata<API::Viewport::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::Display::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Shader::Instance>(vm, idx);
                     })
                     .optional(4, &Machine::is_number)
