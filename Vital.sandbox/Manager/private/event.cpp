@@ -70,6 +70,7 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("core:ready", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
         Vital::Engine::Canvas::get_singleton();
+        Vital::Engine::Viewtarget::get_singleton();
         Vital::Engine::Monitor::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
@@ -83,6 +84,7 @@ void vsdk_initialize() {
         #if defined(VSDK_Client)
         Vital::Engine::Splash::free_singleton();
         Vital::Engine::Canvas::free_singleton();
+        Vital::Engine::Viewtarget::free_singleton();
         Vital::Engine::Monitor::free_singleton();
         Vital::Manager::Discord::free_singleton();
         #endif
