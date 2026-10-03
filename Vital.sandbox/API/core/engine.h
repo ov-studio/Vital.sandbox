@@ -79,11 +79,6 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
-            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_singleton() -> get_resolution());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
@@ -209,16 +204,6 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
-            API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path)")
-                    .require(1, &Machine::is_string);
-
-                auto path = vm -> get_string(1);
-                base_class::get_singleton() -> capture_screenshot(API::File::get_base(vm, path, true), path);
-                vm -> push_value(true);
-                return 1;
-            });
-            
             API::bind(vm, base_scope, "quit", [](auto vm, auto& id) -> int {
                 base_class::get_singleton() -> shutdown();
                 vm -> push_value(true);
