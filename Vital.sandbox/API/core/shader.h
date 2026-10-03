@@ -116,9 +116,9 @@ namespace Vital::Sandbox::API {
 
             // For each affected model: clear removed surfaces, then replay survivors.
             std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-            for (auto& [mid, inst] : Model::registry.buffer) {
-                if (!inst || !inst -> is_alive()) continue;
-                auto* model = inst -> get_node();
+            for (auto& [index, instance] : Model::registry.buffer) {
+                if (!instance || !instance -> is_alive()) continue;
+                auto* model = instance -> get_node();
                 if (!model) continue;
 
                 bool affected = false;
@@ -322,7 +322,7 @@ namespace Vital::Sandbox::API {
 
                     Registration reg { env, model_pattern, component, material, self.get() };
                     std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                    for (auto& [mid, instance] : Model::registry.buffer) {
+                    for (auto& [index, instance] : Model::registry.buffer) {
                         if (!instance || !instance -> is_alive()) continue;
                         auto* model = instance -> get_node();
                         if (!model) continue;
@@ -399,9 +399,9 @@ namespace Vital::Sandbox::API {
                     );
 
                     std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                    for (auto& [mid, inst] : Model::registry.buffer) {
-                        if (!inst || !inst -> is_alive()) continue;
-                        auto* model = inst -> get_node();
+                    for (auto& [index, instance] : Model::registry.buffer) {
+                        if (!instance || !instance -> is_alive()) continue;
+                        auto* model = instance -> get_node();
                         if (!model) continue;
 
                         // Clear the surface back to no-override, then replay every surviving
@@ -442,9 +442,9 @@ namespace Vital::Sandbox::API {
                 );
 
                 std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                for (auto& [mid, inst] : Model::registry.buffer) {
-                    if (!inst || !inst -> is_alive()) continue;
-                    auto* model = inst -> get_node();
+                for (auto& [index, instance] : Model::registry.buffer) {
+                    if (!instance || !instance -> is_alive()) continue;
+                    auto* model = instance -> get_node();
                     if (!model) continue;
 
                     bool affected = false;
