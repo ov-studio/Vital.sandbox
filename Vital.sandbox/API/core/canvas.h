@@ -188,8 +188,8 @@ namespace Vital::Sandbox::API {
                 }
                 else if (vm_module::is_userdata<API::Display::Instance>(vm, 3)) {
                     auto viewtarget = vm_module::get_userdata_object<API::Display::Instance>(vm, 3);
-                    if (viewtarget -> last_frame) base_class::get_singleton() -> draw_rid(position, size, Engine::Display::get_singleton() -> get_last_frame_texture(), rotation, pivot, color);
-                    else base_class::get_singleton() -> draw_material(position, size, Engine::Display::get_singleton() -> get_screen_material(), rotation, pivot, color);
+                    if (viewtarget -> last_frame) base_class::get_singleton() -> draw_rid(position, size, Vital::Engine::Display::get_singleton() -> get_last_frame_texture(), rotation, pivot, color);
+                    else base_class::get_singleton() -> draw_material(position, size, Vital::Engine::Display::get_singleton() -> get_screen_material(), rotation, pivot, color);
                 }
                 else {
                     auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 3);
