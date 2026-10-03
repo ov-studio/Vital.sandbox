@@ -54,8 +54,8 @@ namespace Vital::Sandbox::API {
                         if (it->second && it->second->is_alive()) inst = it->second;
                     }
                 }
-                if (!inst) inst = Instance::init(nullptr, false);
-                inst->push(vm);
+                if (!inst) Instance::make(vm, true);
+                else inst -> push_self(vm);
                 return 1;
             });
         }
