@@ -33,10 +33,6 @@ namespace Vital::Sandbox::API {
             godot::Ref<godot::ViewportTexture> get_texture() const {
                 return Vital::Engine::Core::get_singleton() ->get_scene_root()->get_texture();
             }
-
-            // Screen is a global singleton — destroy() is a no-op.
-            // Scripts cannot meaningfully destroy the main viewport texture.
-            void clean() {}
         };
         inline static vm_registry<Instance> registry;
 
