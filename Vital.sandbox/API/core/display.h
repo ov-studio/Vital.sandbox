@@ -18,11 +18,10 @@
 #include <Vital.sandbox/Engine/public/display.h>
 
 
-/////////////////////////
+//////////////////////////
 // Vital: API: Display //
-/////////////////////////
+//////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Display : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "display"};
