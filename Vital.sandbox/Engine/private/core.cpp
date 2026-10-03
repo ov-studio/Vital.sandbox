@@ -281,20 +281,8 @@ namespace Vital::Engine {
         get_environment();
     }
 
-    godot::Vector2 Core::get_resolution() {
-        return get_display_server() -> window_get_size();
-    }
-
     std::string Core::get_http_url(const std::string& path) const {
         return http_server.get_url(path);
-    }
-
-    void Core::capture_screenshot(const std::string& base, const std::string& path) {
-        auto target = Tool::to_godot_string(base + "/" + path);
-        auto image = get_scene_root() -> get_texture() -> get_image();
-        godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
-        if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to capture screenshot");
-        if (image -> save_png(target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("failed to save screenshot"));
     }
     #else
     Config::Server& Core::get_server_config() {
