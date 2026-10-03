@@ -25,13 +25,15 @@
 // TODO: Improve
 namespace Vital::Sandbox::API {
     struct Viewport : vm_module {
-        inline static const std::vector<std::string> base_scope = {"core", "viewport"};
+        inline static const std::vector<std::string> base_scope = {"core", "viewtarget"};
+        using base_class = Vital::Engine::Viewtarget;
 
         struct Instance : vm_instance<Instance> {
             using Owner = Viewport;
 
             godot::Ref<godot::ViewportTexture> get_texture() const {
                 return Vital::Engine::Core::get_singleton() ->get_scene_root()->get_texture();
+                return base_class::get_singleton() -> get_texture();
             }
         };
         inline static vm_registry<Instance> registry;
@@ -56,7 +58,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(Vital::Engine::Core::get_singleton() -> get_resolution());
+                vm -> push_value(base_class::get_singleton() -> get_resolution());
                 return 1;
             });
 
@@ -66,7 +68,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                Vital::Engine::Core::get_singleton() -> capture_screenshot(API::File::get_base(vm, path, true), path);
+                base_class::get_singleton() -> screenshot(API::File::get_base(vm, path, true), path);
                 vm -> push_value(true);
                 return 1;
             });
