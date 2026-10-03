@@ -248,8 +248,8 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> shader -> set_param_viewport_texture(name, rendertarget -> get_node() -> get_texture()));
                 }
                 else if (vm_module::is_userdata<API::Display::Instance>(vm, 3)) {
-                    auto viewtarget = vm_module::get_userdata_object<API::Display::Instance>(vm, 3);
-                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, viewtarget -> get_texture()));
+                    // The root viewport can't be sampled while it renders, bind the last frame copy instead
+                    vm -> push_value(self -> shader -> set_param_rid(name, Engine::Display::get_singleton() -> pin_last_frame_texture()));
                 } 
                 else if (vm -> is_color(3)) {
                     auto color = vm -> get_color(3);

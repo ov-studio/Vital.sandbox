@@ -138,6 +138,7 @@ namespace Vital::Engine {
 
             // Setters //
             bool set_param(const std::string& name, const godot::Variant& value);
+            bool set_param_rid(const std::string& name, godot::RID texture);
             bool set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture);
             bool set_param_viewport_texture(const std::string& name, godot::Ref<godot::ViewportTexture> texture);
     };

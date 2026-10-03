@@ -51,28 +51,53 @@ namespace Vital::Engine {
     }
 
 
-    // Returns an empty ref until the first copy landed (nothing is drawn meanwhile).
-    // Copies only happen on frames where this was requested.
-    godot::RID Display::get_last_frame_texture() {
+    // Last frame //
+    void Display::ensure_last_frame_texture() {
+        auto rs = godot::RenderingServer::get_singleton();
         if (!last_frame_connected) {
-            godot::RenderingServer::get_singleton() -> connect("frame_post_draw", godot::Callable(this, "_on_frame_post_draw"));
+            rs -> connect("frame_post_draw", godot::Callable(this, "_on_frame_post_draw"));
             last_frame_connected = true;
         }
+        if (!last_frame_texture.is_valid()) last_frame_texture = rs -> texture_2d_placeholder_create();
+        last_frame_idle = 0;
         last_frame_requested = true;
+    }
+
+    // Empty until a copy exists. Copies only happen on frames where this was requested.
+    godot::RID Display::get_last_frame_texture() {
+        ensure_last_frame_texture();
         return last_frame_ready ? last_frame_texture : godot::RID();
     }
 
+    godot::RID Display::pin_last_frame_texture() {
+        ensure_last_frame_texture();
+        last_frame_pinned = true;
+        return last_frame_texture;
+    }
+
     void Display::_on_frame_post_draw() {
-        if (!last_frame_requested.exchange(false)) return;
-        viewport_rid = Core::get_scene_root() -> get_viewport_rid();
-        godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_copy_last_frame"));
+        if (last_frame_requested.exchange(false) || last_frame_pinned) {
+            last_frame_idle = 0;
+            viewport_rid = Core::get_scene_root() -> get_viewport_rid();
+            copy_target = last_frame_texture;
+            godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_copy_last_frame"));
+            return;
+        }
+        // Not requested this frame: never serve an old frame when requested again later
+        last_frame_ready = false;
+        if (!last_frame_texture.is_valid() || ++last_frame_idle < LAST_FRAME_IDLE_LIMIT) return;
+        // Idle for a while: release the GPU memory, it is recreated on the next request
+        godot::RID texture = last_frame_texture;
+        last_frame_texture = godot::RID();
+        last_frame_idle = 0;
+        godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_release_last_frame").bind(texture));
     }
 
     // Runs on the render thread
     void Display::_copy_last_frame() {
         auto rs = godot::RenderingServer::get_singleton();
         auto rd = rs -> get_rendering_device();
-        if (!rd) return;
+        if (!rd || !copy_target.is_valid()) return;
         godot::RID source = rs -> texture_get_rd_texture(rs -> viewport_get_texture(viewport_rid));
         if (!source.is_valid()) return;
         auto source_format = rd -> texture_get_format(source);
@@ -93,11 +118,9 @@ namespace Vital::Engine {
             view.instantiate();
             godot::RID created = rd -> texture_create(format, view);
             if (!created.is_valid()) return;
-            godot::RID wrapped = rs -> texture_rd_create(created);
-            last_frame_ready = false;
-            if (last_frame_texture.is_valid()) rs -> free_rid(last_frame_texture);
+            // Swaps the content, copy_target keeps its RID (the wrapper RID passed in is consumed)
+            rs -> texture_replace(copy_target, rs -> texture_rd_create(created));
             if (last_frame_rid.is_valid()) rd -> free_rid(last_frame_rid);
-            last_frame_texture = wrapped;
             last_frame_rid = created;
             last_frame_size = size;
         }
@@ -105,10 +128,21 @@ namespace Vital::Engine {
         last_frame_ready = true;
     }
 
+    // Runs on the render thread
+    void Display::_release_last_frame(godot::RID texture) {
+        auto rs = godot::RenderingServer::get_singleton();
+        if (texture.is_valid()) rs -> free_rid(texture);
+        auto rd = rs -> get_rendering_device();
+        if (rd && last_frame_rid.is_valid()) rd -> free_rid(last_frame_rid);
+        last_frame_rid = godot::RID();
+        last_frame_size = godot::Vector2i();
+    }
+
     void Display::free_last_frame() {
         last_frame_ready = false;
         auto rs = godot::RenderingServer::get_singleton();
         if (!rs) return;
+        rs -> force_sync(); // let any queued copy finish before the textures go away
         if (last_frame_texture.is_valid()) rs -> free_rid(last_frame_texture);
         auto rd = rs -> get_rendering_device();
         if (rd && last_frame_rid.is_valid()) rd -> free_rid(last_frame_rid);

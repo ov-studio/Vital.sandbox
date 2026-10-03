@@ -403,6 +403,14 @@ namespace Vital::Engine {
         return true;
     }
 
+    bool Shader::set_param_rid(const std::string& name, godot::RID texture) {
+        if (!material.is_valid() || name == Internal::SENTINEL || !texture.is_valid()) return false;
+        material -> set_shader_parameter(godot::StringName(name.c_str()), godot::Variant(texture));
+        prune_surface_materials();
+        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(name.c_str()), godot::Variant(texture));
+        return true;
+    }
+    
     bool Shader::set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture) {
         if (!material.is_valid() || name == Internal::SENTINEL) return false;
         material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
