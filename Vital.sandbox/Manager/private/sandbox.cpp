@@ -90,7 +90,7 @@ namespace Vital::Manager {
                     if (Manager::Network::get_singleton() -> is_connected()) {
                         handled = true;
                         auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
-                        Engine::Viewtarget::get_singleton() -> capture_screenshot(Tool::get_directory("screenshots"), path);
+                        Engine::Viewtarget::get_singleton() -> screenshot(Tool::get_directory("screenshots"), path);
                         log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
                     }
                 }
