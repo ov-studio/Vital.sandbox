@@ -247,9 +247,9 @@ namespace Vital::Sandbox::API {
                     auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
                     vm -> push_value(self -> shader -> set_param_viewport_texture(name, rendertarget -> get_node() -> get_texture()));
                 }
-                else if (vm_module::is_userdata<API::Viewport::Instance>(vm, 3)) {
-                    auto viewport = vm_module::get_userdata_object<API::Viewport::Instance>(vm, 3);
-                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, viewport -> get_texture()));
+                else if (vm_module::is_userdata<API::Display::Instance>(vm, 3)) {
+                    auto viewtarget = vm_module::get_userdata_object<API::Display::Instance>(vm, 3);
+                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, viewtarget -> get_texture()));
                 } 
                 else if (vm -> is_color(3)) {
                     auto color = vm -> get_color(3);
