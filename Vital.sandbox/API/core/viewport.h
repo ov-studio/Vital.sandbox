@@ -32,7 +32,6 @@ namespace Vital::Sandbox::API {
             using Owner = Viewport;
 
             godot::Ref<godot::ViewportTexture> get_texture() const {
-                return Vital::Engine::Core::get_singleton() ->get_scene_root()->get_texture();
                 return base_class::get_singleton() -> get_texture();
             }
         };
