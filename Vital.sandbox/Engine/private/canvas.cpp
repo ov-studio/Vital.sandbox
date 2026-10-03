@@ -328,6 +328,17 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
+        const godot::Ref<godot::ViewportTexture>& texture,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
+        draw_material(position, size, godot::Ref<godot::Texture2D>(texture), rotation, pivot, color);
+    }
+    
+    void Canvas::draw_material(
+        godot::Vector2 position,
+        godot::Vector2 size,
         Shader* shader,
         float rotation,
         godot::Vector2 pivot,
