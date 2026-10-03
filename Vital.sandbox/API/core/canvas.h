@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/API/core/viewport.h>
+#include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
