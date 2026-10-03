@@ -34,8 +34,6 @@ namespace Vital::Sandbox::API {
                 return Vital::Engine::Core::get_singleton() ->get_scene_root()->get_texture();
             }
 
-            bool is_alive() const { return true; }
-
             // Screen is a global singleton — destroy() is a no-op.
             // Scripts cannot meaningfully destroy the main viewport texture.
             void clean() {}
