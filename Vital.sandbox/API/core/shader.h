@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/viewport.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/utility/file.h>
 
@@ -232,20 +233,27 @@ namespace Vital::Sandbox::API {
                             || vm -> is_vector3(idx)
                             || vm -> is_color(idx)
                             || vm_module::is_userdata<API::Image::Instance>(vm, idx)
-                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx);
+                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
+                            || vm_module::is_userdata<API::Viewport::Instance>(vm, idx);
                     });
 
                 auto name = vm -> get_string(2);
-                if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
-                    auto rt = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
-                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, rt -> get_node() -> get_texture()));
-                } 
-                else if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
+
+                if (vm_module::is_userdata<API::Image::Instance>(vm, 3)) {
                     auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 3);
                     vm -> push_value(self -> shader -> set_param_texture(name, image -> get_node() -> get_canvas_texture()));
+                }
+                else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 3)) {
+                    auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, rendertarget -> get_node() -> get_texture()));
+                }
+                else if (vm_module::is_userdata<API::Viewport::Instance>(vm, 3)) {
+                    auto viewport = vm_module::get_userdata_object<API::Viewport::Instance>(vm, 3);
+                    vm -> push_value(self -> shader -> set_param_viewport_texture(name, viewport -> get_texture()));
                 } 
                 else if (vm -> is_color(3)) {
-                    vm -> push_value(self -> shader -> set_param(name, godot::Variant(vm -> get_color(3))));
+                    auto color = vm -> get_color(3);
+                    vm -> push_value(self -> shader -> set_param(name, godot::Variant(color)));
                 } 
                 else {
                     godot::Variant value;
