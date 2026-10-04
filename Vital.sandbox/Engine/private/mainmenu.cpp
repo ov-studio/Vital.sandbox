@@ -51,7 +51,7 @@ namespace Vital::Engine {
 
         if (!webview) {
             Engine::Webview::Options options;
-            options.z_index = Engine::Webview::system_z_floor;
+            options.z_index = Engine::Webview::system_z_floor + 1;
             options.fullscreen = true;
             options.transparent = true;
             options.incognito = true;

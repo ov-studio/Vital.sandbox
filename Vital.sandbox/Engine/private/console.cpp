@@ -337,7 +337,7 @@ namespace Vital::Engine {
     Console::Console() {
         #if defined(VSDK_Client)
             Engine::Webview::Options options;
-            options.z_index = Engine::Webview::system_z_floor + 1;
+            options.z_index = Engine::Webview::system_z_floor + 2;
             options.fullscreen = true;
             options.transparent = true;
             options.incognito = true;

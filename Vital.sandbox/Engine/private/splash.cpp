@@ -78,7 +78,7 @@ namespace Vital::Engine {
 
     void Splash::show() {
         Engine::Webview::Options options;
-        options.z_index = Engine::Webview::system_z_floor + 2;
+        options.z_index = Engine::Webview::system_z_floor + 3;
         options.fullscreen = true;
         options.transparent = true;
         options.incognito = true;
