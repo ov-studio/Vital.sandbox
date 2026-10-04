@@ -37,9 +37,14 @@ namespace Vital::Engine {
         options.overlay = false;
         webview = Engine::Webview::create(options);
         webview -> set_position({0, 0});
-        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+        });
+
+        Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
+            Engine::Core::get_singleton() -> enqueue([this]() {
+                webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
+            });
         });
     }
 
