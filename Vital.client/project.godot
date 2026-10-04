@@ -22,6 +22,13 @@ boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 
+
+[display]
+
+window/size/borderless=true
+window/size/transparent=false
+window/per_pixel_transparency/allowed=false
+
 [debug]
 
 file_logging/enable_file_logging=true
