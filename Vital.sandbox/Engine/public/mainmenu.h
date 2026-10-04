@@ -40,6 +40,7 @@ namespace Vital::Engine {
             // Managers //
             bool is_ready();
             bool is_visible();
+            void ready();
             void show();
             void hide();
 

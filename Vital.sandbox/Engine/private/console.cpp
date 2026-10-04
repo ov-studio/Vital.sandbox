@@ -610,7 +610,7 @@ namespace Vital::Engine {
     }
 
     bool Console::is_visible() {
-        return webview ? webview -> is_visible() : false;
+        return webview -> is_visible();
     }
     #endif
 

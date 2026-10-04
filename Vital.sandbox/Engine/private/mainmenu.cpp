@@ -57,18 +57,21 @@ namespace Vital::Engine {
     }
 
     bool MainMenu::is_visible() {
-        return webview ? webview -> is_visible() : false;
+        return webview -> is_visible();
     }
 
-    void MainMenu::show() {
-        if (!webview || webview -> is_visible()) return;
-        webview -> set_visible(true);
-        Sandbox::API::Input::push_sandbox_ui_visible();
+    void MainMenu::ready() {
         webview_ready.store(true);
     }
 
+    void MainMenu::show() {
+        if (is_visible()) return;
+        webview -> set_visible(true);
+        Sandbox::API::Input::push_sandbox_ui_visible();
+    }
+
     void MainMenu::hide() {
-        if (!webview || !webview -> is_visible()) return;
+        if (!is_visible()) return;
         webview -> set_visible(false);
         Sandbox::API::Input::pop_sandbox_ui_visible();
     }
@@ -80,7 +83,8 @@ namespace Vital::Engine {
         document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
-        if (action == "hide") hide();
+        if (action == "ready") ready();
+        else if (action == "hide") hide();
     }
 }
 #endif
