@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Engine/public/monitor.h>
 #include <Vital.sandbox/Engine/public/network.h>
 #include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/camera.h>
