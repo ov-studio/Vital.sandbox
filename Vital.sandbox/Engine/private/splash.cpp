@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/API/utility/input.h>
 
@@ -108,6 +109,7 @@ namespace Vital::Engine {
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
+        else if (action == "prehide") Engine::MainMenu::get_singleton() -> show();
         else if (action == "hide") hide();
     }
 }
