@@ -57,22 +57,20 @@ namespace Vital::Engine {
     }
 
     bool MainMenu::is_visible() {
-        return shown.load() && webview && webview -> is_visible();
+        return webview ? webview -> is_visible() : false;
     }
 
     void MainMenu::show() {
-        if (shown.load()) return;
+        if (!webview || webview -> is_visible()) return;
         webview -> set_visible(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
-        shown.store(true);
         webview_ready.store(true);
     }
 
     void MainMenu::hide() {
-        if (!shown.load()) return;
-        if (webview) webview -> set_visible(false);
+        if (!webview || !webview -> is_visible()) return;
+        webview -> set_visible(false);
         Sandbox::API::Input::pop_sandbox_ui_visible();
-        shown.store(false);
     }
 
 

@@ -28,7 +28,6 @@ namespace Vital::Engine {
         private:
             Webview* webview = nullptr;
             std::atomic<bool> webview_ready { false };
-            std::atomic<bool> shown { false };
 
 
             // Instantiators //
