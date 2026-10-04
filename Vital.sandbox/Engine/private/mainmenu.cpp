@@ -26,7 +26,21 @@
 namespace Vital::Engine {
     // Instantiators //
     MainMenu::MainMenu() {
-        // Created lazily on first show() so splash can stay lightweight.
+        Engine::Webview::Options options;
+        options.z_index = Engine::Webview::system_z_floor + 1;
+        options.fullscreen = true;
+        options.transparent = true;
+        options.incognito = true;
+        options.autoplay = false;
+        options.zoomable = false;
+        options.forward_input = false;
+        options.overlay = false;
+        webview = Engine::Webview::create(options);
+        webview -> set_position({0, 0});
+        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
+        webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
+            if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+        });
     }
 
     MainMenu::~MainMenu() {
@@ -48,25 +62,6 @@ namespace Vital::Engine {
 
     void MainMenu::show() {
         if (shown.load()) return;
-
-        if (!webview) {
-            Engine::Webview::Options options;
-            options.z_index = Engine::Webview::system_z_floor + 1;
-            options.fullscreen = true;
-            options.transparent = true;
-            options.incognito = true;
-            options.autoplay = false;
-            options.zoomable = false;
-            options.forward_input = false;
-            options.overlay = false;
-            webview = Engine::Webview::create(options);
-            webview -> set_position({0, 0});
-            webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
-            webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
-                if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
-            });
-        }
-
         webview -> set_visible(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
         shown.store(true);

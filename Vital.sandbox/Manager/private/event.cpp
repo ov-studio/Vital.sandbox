@@ -63,6 +63,7 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
         Vital::Engine::Splash::get_singleton();
+        Vital::Engine::MainMenu::get_singleton();
         #endif
         Vital::Engine::Console::get_singleton();
     });
