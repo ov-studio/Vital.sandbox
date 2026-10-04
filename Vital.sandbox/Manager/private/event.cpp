@@ -83,6 +83,7 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("core:free", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
         Vital::Engine::Splash::free_singleton();
+        Vital::Engine::MainMenu::free_singleton();
         Vital::Engine::Canvas::free_singleton();
         Vital::Engine::Display::free_singleton();
         Vital::Engine::Monitor::free_singleton();
