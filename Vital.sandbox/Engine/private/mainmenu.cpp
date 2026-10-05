@@ -215,6 +215,7 @@ namespace Vital::Engine {
             copy.AddMember("max_width", mon.x, a);
             copy.AddMember("max_height", mon.y, a);
             envelope.AddMember("settings", copy, a);
+            envelope.AddMember("username", rapidjson::Value(Tool::get_username().c_str(), a), a);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             envelope.Accept(writer);
