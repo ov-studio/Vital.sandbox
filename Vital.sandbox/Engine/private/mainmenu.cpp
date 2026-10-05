@@ -306,7 +306,16 @@ namespace Vital::Engine {
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
         else if (action == "hide") hide();
-        else if (action == "drag") Core::get_display_server() -> window_start_drag();
+        else if (action == "drag") {
+            auto* ds = Core::get_display_server();
+            const auto mode = ds -> window_get_mode();
+            // No move-drag in exclusive or borderless-native fullscreen.
+            if (mode == godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+                || mode == godot::DisplayServer::WINDOW_MODE_FULLSCREEN) {
+                return;
+            }
+            ds -> window_start_drag();
+        }
         else if (action == "exit") Core::get_singleton() -> shutdown();
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
