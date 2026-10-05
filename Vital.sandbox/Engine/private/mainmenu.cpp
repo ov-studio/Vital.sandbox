@@ -76,6 +76,20 @@ namespace Vital::Engine {
             catch (...) { /* ignore write failures */ }
         }
 
+        godot::Vector2i monitor_size() {
+            auto* ds = Core::get_display_server();
+            if (!ds) return godot::Vector2i(1920, 1080);
+            // Use the largest connected screen so multi-monitor setups still list valid sizes.
+            godot::Vector2i best(0, 0);
+            const int count = ds -> get_screen_count();
+            for (int i = 0; i < count; i++) {
+                const godot::Vector2i s = ds -> screen_get_size(i);
+                if (s.x * s.y > best.x * best.y) best = s;
+            }
+            if (best.x <= 0 || best.y <= 0) best = ds -> screen_get_size(ds -> window_get_current_screen());
+            return best;
+        }
+
         void apply_settings(const rapidjson::Value& settings) {
             auto* ds = Core::get_display_server();
             if (!ds) return;
@@ -97,8 +111,11 @@ namespace Vital::Engine {
                 const auto x = res.find('x');
                 if (x != std::string::npos) {
                     try {
-                        const int w = std::stoi(res.substr(0, x));
-                        const int h = std::stoi(res.substr(x + 1));
+                        int w = std::stoi(res.substr(0, x));
+                        int h = std::stoi(res.substr(x + 1));
+                        const auto mon = monitor_size();
+                        if (w > mon.x) w = mon.x;
+                        if (h > mon.y) h = mon.y;
                         if (w > 0 && h > 0) {
                             const auto mode = ds -> window_get_mode();
                             if (mode != godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -132,6 +149,9 @@ namespace Vital::Engine {
             auto& a = envelope.GetAllocator();
             envelope.AddMember("action", "settings", a);
             rapidjson::Value copy(settings, a);
+            const auto mon = monitor_size();
+            copy.AddMember("max_width", mon.x, a);
+            copy.AddMember("max_height", mon.y, a);
             envelope.AddMember("settings", copy, a);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
