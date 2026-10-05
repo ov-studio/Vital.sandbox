@@ -317,6 +317,13 @@ namespace Vital::Engine {
             ds -> window_start_drag();
         }
         else if (action == "exit") Core::get_singleton() -> shutdown();
+        else if (action == "open_url") {
+            // Opens in the OS default browser. Web links only: never hand arbitrary schemes/paths to the shell.
+            if (!document.HasMember("url") || !document["url"].IsString()) return;
+            const std::string url = document["url"].GetString();
+            if (url.rfind("https://", 0) != 0 && url.rfind("http://", 0) != 0) return;
+            godot::OS::get_singleton() -> shell_open(Tool::to_godot_string(url));
+        }
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
             auto merged = default_settings();
