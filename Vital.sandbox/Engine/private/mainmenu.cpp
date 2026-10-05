@@ -96,67 +96,78 @@ namespace Vital::Engine {
             auto* ds = Core::get_display_server();
             if (!ds) return;
 
+            // Skip re-applying window chrome when only volume/draw-distance change (slider spam).
+            static std::string last_resolution;
+            static std::string last_window_mode;
+
+            bool mode_changed = false;
             if (settings.HasMember("window_mode") && settings["window_mode"].IsString()) {
                 const std::string mode = settings["window_mode"].GetString();
-                if (mode == "fullscreen") {
-                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
-                }
-                else {
-                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
-                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                if (mode != last_window_mode) {
+                    last_window_mode = mode;
+                    mode_changed = true;
+                    if (mode == "fullscreen") {
+                        ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
+                    }
+                    else {
+                        ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
+                        ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                    }
                 }
             }
 
             if (settings.HasMember("resolution") && settings["resolution"].IsString()) {
                 const std::string res = settings["resolution"].GetString();
-                const auto x = res.find('x');
-                if (x != std::string::npos) {
-                    try {
-                        int w = std::stoi(res.substr(0, x));
-                        int h = std::stoi(res.substr(x + 1));
-                        const auto mon = monitor_size();
-                        if (w > mon.x) w = mon.x;
-                        if (h > mon.y) h = mon.y;
-                        if (w > 0 && h > 0) {
-                            const auto mode = ds -> window_get_mode();
-                            if (mode != godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-                                const godot::Vector2i size(w, h);
-                                const int screen = ds -> window_get_current_screen();
-                                const godot::Vector2i screen_size = ds -> screen_get_size(screen);
-                                const godot::Vector2i current = ds -> window_get_size();
-                                const godot::Vector2i pos(
-                                    (screen_size.x - size.x) / 2,
-                                    (screen_size.y - size.y) / 2
-                                );
+                if (res != last_resolution || mode_changed) {
+                    last_resolution = res;
+                    const auto x = res.find('x');
+                    if (x != std::string::npos) {
+                        try {
+                            int w = std::stoi(res.substr(0, x));
+                            int h = std::stoi(res.substr(x + 1));
+                            const auto mon = monitor_size();
+                            if (w > mon.x) w = mon.x;
+                            if (h > mon.y) h = mon.y;
+                            if (w > 0 && h > 0) {
+                                const auto mode = ds -> window_get_mode();
+                                if (mode != godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+                                    const godot::Vector2i size(w, h);
+                                    const int screen = ds -> window_get_current_screen();
+                                    const godot::Vector2i screen_size = ds -> screen_get_size(screen);
+                                    const godot::Vector2i current = ds -> window_get_size();
+                                    const godot::Vector2i pos(
+                                        (screen_size.x - size.x) / 2,
+                                        (screen_size.y - size.y) / 2
+                                    );
 
-                                // Native-size borderless is sticky on Windows — drop chrome, resize, restore next tick.
-                                const bool at_native = (
-                                    current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
-                                ) || (
-                                    current.x >= mon.x - 2 && current.y >= mon.y - 2
-                                );
-                                const bool shrinking = size.x < current.x || size.y < current.y;
+                                    const bool at_native = (
+                                        current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
+                                    ) || (
+                                        current.x >= mon.x - 2 && current.y >= mon.y - 2
+                                    );
+                                    const bool shrinking = size.x < current.x || size.y < current.y;
 
-                                ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, false);
-                                ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
-                                ds -> window_set_size(size);
-                                ds -> window_set_position(pos);
+                                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, false);
+                                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
+                                    ds -> window_set_size(size);
+                                    ds -> window_set_position(pos);
 
-                                auto* core = Core::get_singleton();
-                                if (core && at_native && shrinking) {
-                                    core -> enqueue([ds, size, pos]() {
-                                        ds -> window_set_size(size);
-                                        ds -> window_set_position(pos);
+                                    auto* core = Core::get_singleton();
+                                    if (core && at_native && shrinking) {
+                                        core -> enqueue([ds, size, pos]() {
+                                            ds -> window_set_size(size);
+                                            ds -> window_set_position(pos);
+                                            ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                                        });
+                                    }
+                                    else {
                                         ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
-                                    });
-                                }
-                                else {
-                                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                                    }
                                 }
                             }
                         }
+                        catch (...) { /* bad resolution string */ }
                     }
-                    catch (...) { /* bad resolution string */ }
                 }
             }
 
