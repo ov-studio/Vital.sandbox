@@ -27,6 +27,8 @@
 //////////////////////////////
 
 namespace Vital::Engine {
+    std::atomic<float> MainMenu::draw_distance_mult { 1.0f };
+
     namespace {
         // TODO: Move to internal namespace like resource
         constexpr const char* settings_file = "client_settings.json";
@@ -80,7 +82,6 @@ namespace Vital::Engine {
         godot::Vector2i monitor_size() {
             auto* ds = Core::get_display_server();
             if (!ds) return godot::Vector2i(1920, 1080);
-            // Use the largest connected screen so multi-monitor setups still list valid sizes.
             godot::Vector2i best(0, 0);
             const int count = ds -> get_screen_count();
             for (int i = 0; i < count; i++) {
@@ -101,7 +102,6 @@ namespace Vital::Engine {
                     ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
                 }
                 else {
-                    // Always borderless — custom HUD title bar owns window chrome.
                     ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
                     ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
                 }
@@ -129,9 +129,7 @@ namespace Vital::Engine {
                                     (screen_size.y - size.y) / 2
                                 );
 
-                                // Borderless at native monitor size is treated as fullscreen by
-                                // Windows; same-frame size changes are ignored. Drop borderless,
-                                // force WINDOWED, set size, then restore borderless next tick.
+                                // Native-size borderless is sticky on Windows — drop chrome, resize, restore next tick.
                                 const bool at_native = (
                                     current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
                                 ) || (
@@ -170,20 +168,11 @@ namespace Vital::Engine {
                 );
             }
 
-
-            // Client draw-distance multiplier on the active camera's far plane.
-            // Base far is captured once (Lua/default), then scaled by this multiplier.
             if (settings.HasMember("draw_distance_mult") && settings["draw_distance_mult"].IsNumber()) {
-                static float base_far = -1.0f;
                 const float mult = std::clamp(static_cast<float>(settings["draw_distance_mult"].GetDouble()), 0.1f, 2.0f);
-                if (auto* cam = Camera::get_active()) {
-                    if (base_far < 0.0f) base_far = cam -> get_far();
-                    if (base_far < 1.0f) base_far = 4000.0f;
-                    cam -> set_far(base_far * mult);
-                }
+                MainMenu::set_draw_distance_mult(mult);
             }
 
-            // Master volume as linear 0..1 → bus dB
             if (settings.HasMember("volume") && settings["volume"].IsNumber()) {
                 if (auto* as = Core::get_audio_server()) {
                     double linear = std::clamp(settings["volume"].GetDouble(), 0.0, 1.0);
@@ -191,7 +180,7 @@ namespace Vital::Engine {
                     if (idx < 0) idx = 0;
                     const float db = (linear <= 0.0001)
                         ? -80.0f
-                        : godot::Math::linear_to_db(static_cast<float>(linear));
+                        : godot::Math::linear2db(static_cast<float>(linear));
                     as -> set_bus_volume_db(idx, db);
                 }
             }
@@ -234,6 +223,7 @@ namespace Vital::Engine {
 
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
+                apply_settings(load_settings());
                 //webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
                 webview -> load_url("http://localhost:5173/"); // TODO: SWAP FOR ABOVE IN PRODUCTION
             });
@@ -259,7 +249,6 @@ namespace Vital::Engine {
 
     void MainMenu::ready() {
         webview_ready.store(true);
-        // Push current settings into the UI so the settings panel matches disk.
         if (webview) webview -> emit(settings_to_json(load_settings()));
     }
 
@@ -275,6 +264,19 @@ namespace Vital::Engine {
         Sandbox::API::Input::pop_sandbox_ui_visible();
     }
 
+    float MainMenu::get_draw_distance_mult() {
+        return draw_distance_mult.load();
+    }
+
+    void MainMenu::set_draw_distance_mult(float mult) {
+        mult = std::clamp(mult, 0.1f, 2.0f);
+        const float prev = draw_distance_mult.exchange(mult);
+        if (auto* cam = Camera::get_active()) {
+            const float logical = (prev > 0.0001f) ? (cam -> get_far() / prev) : cam -> get_far();
+            cam -> set_far(logical * mult);
+        }
+    }
+
 
     // Events //
     void MainMenu::on_message(godot::String message) {
@@ -288,7 +290,6 @@ namespace Vital::Engine {
         else if (action == "exit") Core::get_singleton() -> shutdown();
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
-            // Merge onto defaults so partial payloads stay valid.
             auto merged = default_settings();
             const auto& incoming = document["settings"];
             for (auto it = incoming.MemberBegin(); it != incoming.MemberEnd(); ++it) {
