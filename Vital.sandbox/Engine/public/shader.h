@@ -36,8 +36,8 @@ namespace Vital::Engine {
             using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
 
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
-                { "CANVAS_ITEM",  Mode::CanvasItem   },
-                { "SPATIAL",      Mode::Spatial      },
+                { "CANVAS_ITEM",  Mode::CanvasItem    },
+                { "SPATIAL",      Mode::Spatial       },
                 { "POST_PROCESS",  Mode::Postprocess  }
             };
         private:

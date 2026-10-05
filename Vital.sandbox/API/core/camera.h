@@ -285,8 +285,8 @@ namespace Vital::Sandbox::API {
 
                 // TODO: Improve
                 // Apply client multiplier so settings stick after Lua sets far on join.
-                auto z_far = vm -> get_float(2) * Vital::Engine::MainMenu::get_draw_distance_mult();
-                self -> camera -> set_far(z_far);
+                auto z_far = vm -> get_float(2);
+                self -> camera -> set_far(z_far*Vital::Engine::MainMenu::get_draw_distance_mult());
                 vm -> push_value(true);
                 return 1;
             });
