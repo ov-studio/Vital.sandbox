@@ -90,6 +90,7 @@ namespace Vital::Engine {
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
         else if (action == "hide") hide();
+        else if (action == "drag") Core::get_display_server() -> window_start_drag();
     }
 }
 #endif
