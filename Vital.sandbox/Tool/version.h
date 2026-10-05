@@ -58,6 +58,29 @@ namespace Vital::Tool {
                 return v;
             }
 
+            // Parses "v1.2.3" / "1.2.3-label" (the release tag format). Returns false when malformed.
+            // TODO: Utilize to_string for it??
+            static bool parse(const std::string& input, Info& out) {
+                std::string v = input;
+                if (!v.empty() && (v.front() == 'v' || v.front() == 'V')) v.erase(0, 1);
+                if (v.empty()) return false;
+                std::string label;
+                const size_t dash = v.find('-');
+                if (dash != std::string::npos) { label = v.substr(dash + 1); v.erase(dash); }
+                int parts[3] = { 0, 0, 0 };
+                size_t start = 0;
+                for (int i = 0; i < 3 && start <= v.size(); i++) {
+                    const size_t dot = v.find('.', start);
+                    const std::string token = v.substr(start, dot == std::string::npos ? std::string::npos : dot - start);
+                    if (token.empty() || !std::all_of(token.begin(), token.end(), ::isdigit)) return false;
+                    try { parts[i] = std::stoi(token); } catch (...) { return false; }
+                    if (dot == std::string::npos) break;
+                    start = dot + 1;
+                }
+                out = Info{ parts[0], parts[1], parts[2], label };
+                return true;
+            }
+
             int get_major() const { return major; }
             int get_minor() const { return minor; }
             int get_patch() const { return patch; }

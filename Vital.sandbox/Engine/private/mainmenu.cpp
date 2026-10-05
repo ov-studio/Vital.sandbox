@@ -19,6 +19,9 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/Tool/file.h>
+#include <Vital.sandbox/Tool/http.h>
+#include <Vital.sandbox/Tool/thread.h>
+#include <Vital.sandbox/Tool/version.h>
 #include <algorithm>
 
 
@@ -205,6 +208,53 @@ namespace Vital::Engine {
             }
         }
 
+        // Update check: compares the running Vital.sandbox / Vital.kit against their latest GitHub release.
+        constexpr const char* sandbox_src = "https://api.github.com/repos/ov-studio/Vital.sandbox/releases/latest";
+        constexpr const char* sandbox_releases = "https://github.com/ov-studio/Vital.sandbox/releases";
+        constexpr const char* kit_releases = "https://github.com/ov-studio/Vital.kit/releases";
+        std::mutex update_mutex;
+        std::string update_json;
+        std::atomic<bool> update_started { false };
+
+        std::string fetch_sandbox_tag() {
+            try {
+                rapidjson::Document doc;
+                doc.Parse(Tool::HTTP::get(sandbox_src).c_str());
+                if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("tag_name") && doc["tag_name"].IsString()) return doc["tag_name"].GetString();
+            }
+            catch (...) { /* offline / rate limited: no update info */ }
+            return "";
+        }
+
+        bool is_outdated(const std::string& local, const std::string& remote) {
+            if (local.empty() || remote.empty()) return false;
+            Tool::Version::Info a{}, b{};
+            if (Tool::Version::Info::parse(local, a) && Tool::Version::Info::parse(remote, b)) return a < b;
+            return local != remote;
+        }
+
+        // Only outdated components are listed; an empty list means "up to date" (or unknown) and the UI hides the button.
+        std::string update_to_json(const std::vector<std::array<std::string, 4>>& updates) {
+            rapidjson::Document envelope;
+            envelope.SetObject();
+            auto& a = envelope.GetAllocator();
+            envelope.AddMember("action", "update", a);
+            rapidjson::Value list(rapidjson::kArrayType);
+            for (const auto& u : updates) {
+                rapidjson::Value item(rapidjson::kObjectType);
+                item.AddMember("name", rapidjson::Value(u[0].c_str(), a), a);
+                item.AddMember("current", rapidjson::Value(u[1].c_str(), a), a);
+                item.AddMember("latest", rapidjson::Value(u[2].c_str(), a), a);
+                item.AddMember("url", rapidjson::Value(u[3].c_str(), a), a);
+                list.PushBack(item, a);
+            }
+            envelope.AddMember("updates", list, a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            envelope.Accept(writer);
+            return buffer.GetString();
+        }
+
         std::string settings_to_json(const rapidjson::Value& settings) {
             rapidjson::Document envelope;
             envelope.SetObject();
@@ -270,6 +320,42 @@ namespace Vital::Engine {
     void MainMenu::ready() {
         webview_ready.store(true);
         if (webview) webview -> emit(settings_to_json(load_settings()));
+        {
+            std::lock_guard<std::mutex> lock(update_mutex);
+            if (!update_json.empty()) {
+                if (webview) webview -> emit(update_json);
+                return;
+            }
+        }
+        if (update_started.exchange(true)) return;
+        Tool::Thread::create([this](Tool::Thread*) {
+            std::vector<std::array<std::string, 4>> updates;
+            bool reached = false;
+
+            // Vital.sandbox: CI-injected SDK version vs latest release tag. Untagged dev builds (0.0.0) are skipped.
+            const auto& sdk = Tool::Version::SDK;
+            const std::string sandbox_tag = fetch_sandbox_tag();
+            if (!sandbox_tag.empty()) reached = true;
+            if (!(sdk.major == 0 && sdk.minor == 0 && sdk.patch == 0) && is_outdated(sdk.to_string(), sandbox_tag)) {
+                updates.push_back({ "Vital.sandbox", sdk.to_string(), sandbox_tag, sandbox_releases });
+            }
+
+            // Vital.kit: cached kit version vs latest release tag (same source Kit::ensure uses).
+            const std::string kit_tag = std::get<0>(Manager::Kit::fetch_release());
+            if (!kit_tag.empty()) reached = true;
+            const std::string kit_local = Manager::Kit::get_version();
+            if (is_outdated(kit_local, kit_tag)) {
+                updates.push_back({ "Vital.kit", kit_local, kit_tag, kit_releases });
+            }
+
+            if (!reached) { update_started.store(false); return; } // offline: retry on the next ready()
+            const std::string json = update_to_json(updates);
+            {
+                std::lock_guard<std::mutex> lock(update_mutex);
+                update_json = json;
+            }
+            if (webview) webview -> emit(json);
+        });
     }
 
     void MainMenu::show() {
