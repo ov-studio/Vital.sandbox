@@ -69,7 +69,7 @@ namespace Vital::Engine {
         void save_settings(const rapidjson::Value& settings) {
             try {
                 rapidjson::StringBuffer buffer;
-                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
                 settings.Accept(writer);
                 Tool::File::write_text(settings_base(), settings_file, buffer.GetString());
             }
