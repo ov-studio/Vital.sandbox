@@ -120,9 +120,27 @@ namespace Vital::Engine {
                             const auto mode = ds -> window_get_mode();
                             if (mode != godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
                                 const godot::Vector2i size(w, h);
-                                ds -> window_set_size(size);
                                 const int screen = ds -> window_get_current_screen();
                                 const godot::Vector2i screen_size = ds -> screen_get_size(screen);
+                                const godot::Vector2i current = ds -> window_get_size();
+
+                                // Borderless at native monitor size is treated like fullscreen on
+                                // Windows — a single window_set_size to a smaller res is ignored.
+                                // Force windowed+borderless and nudge size so the OS drops that state.
+                                ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
+                                ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                                const bool at_native = (
+                                    current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
+                                ) || (
+                                    current.x >= mon.x - 2 && current.y >= mon.y - 2
+                                );
+                                if (at_native && (size.x < screen_size.x || size.y < screen_size.y)) {
+                                    ds -> window_set_size(godot::Vector2i(
+                                        std::max(size.x - 1, 640),
+                                        std::max(size.y - 1, 360)
+                                    ));
+                                }
+                                ds -> window_set_size(size);
                                 ds -> window_set_position(godot::Vector2i(
                                     (screen_size.x - size.x) / 2,
                                     (screen_size.y - size.y) / 2
