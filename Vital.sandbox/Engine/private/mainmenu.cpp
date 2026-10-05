@@ -44,7 +44,7 @@ namespace Vital::Engine {
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 //webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
-                webview -> load_url("http://localhost:5173/"); // TODO: CHANGE LATER
+                webview -> load_url("http://localhost:5173/"); // TODO: SWAP FOR ABOVE IN PRODUCTION
             });
         });
     }
