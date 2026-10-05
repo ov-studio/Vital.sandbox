@@ -100,73 +100,81 @@ namespace Vital::Engine {
             static std::string last_resolution;
             static std::string last_window_mode;
 
-            bool mode_changed = false;
+            std::string mode_str = last_window_mode.empty() ? "borderless" : last_window_mode;
             if (settings.HasMember("window_mode") && settings["window_mode"].IsString()) {
-                const std::string mode = settings["window_mode"].GetString();
-                if (mode != last_window_mode) {
-                    last_window_mode = mode;
-                    mode_changed = true;
-                    if (mode == "fullscreen") {
-                        ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
-                    }
-                    else {
-                        ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
-                        ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
-                    }
-                }
+                mode_str = settings["window_mode"].GetString();
             }
 
+            std::string res_str = last_resolution;
             if (settings.HasMember("resolution") && settings["resolution"].IsString()) {
-                const std::string res = settings["resolution"].GetString();
-                if (res != last_resolution || mode_changed) {
-                    last_resolution = res;
-                    const auto x = res.find('x');
-                    if (x != std::string::npos) {
-                        try {
-                            int w = std::stoi(res.substr(0, x));
-                            int h = std::stoi(res.substr(x + 1));
-                            const auto mon = monitor_size();
-                            if (w > mon.x) w = mon.x;
-                            if (h > mon.y) h = mon.y;
-                            if (w > 0 && h > 0) {
-                                const auto mode = ds -> window_get_mode();
-                                if (mode != godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-                                    const godot::Vector2i size(w, h);
-                                    const int screen = ds -> window_get_current_screen();
-                                    const godot::Vector2i screen_size = ds -> screen_get_size(screen);
-                                    const godot::Vector2i current = ds -> window_get_size();
-                                    const godot::Vector2i pos(
-                                        (screen_size.x - size.x) / 2,
-                                        (screen_size.y - size.y) / 2
-                                    );
+                res_str = settings["resolution"].GetString();
+            }
 
-                                    const bool at_native = (
-                                        current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
-                                    ) || (
-                                        current.x >= mon.x - 2 && current.y >= mon.y - 2
-                                    );
-                                    const bool shrinking = size.x < current.x || size.y < current.y;
+            const bool mode_changed = (mode_str != last_window_mode);
+            const bool res_changed = (res_str != last_resolution);
+            if (!mode_changed && !res_changed) {
+                // Still apply vsync / draw / volume below.
+            }
+            else {
+                last_window_mode = mode_str;
+                last_resolution = res_str;
 
-                                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, false);
-                                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
-                                    ds -> window_set_size(size);
-                                    ds -> window_set_position(pos);
+                const auto mon = monitor_size();
+                int w = 0, h = 0;
+                const auto x = res_str.find('x');
+                if (x != std::string::npos) {
+                    try {
+                        w = std::stoi(res_str.substr(0, x));
+                        h = std::stoi(res_str.substr(x + 1));
+                    }
+                    catch (...) { w = h = 0; }
+                }
+                if (w > mon.x) w = mon.x;
+                if (h > mon.y) h = mon.y;
+                if (w <= 0 || h <= 0) { w = mon.x; h = mon.y; }
 
-                                    auto* core = Core::get_singleton();
-                                    if (core && at_native && shrinking) {
-                                        core -> enqueue([ds, size, pos]() {
-                                            ds -> window_set_size(size);
-                                            ds -> window_set_position(pos);
-                                            ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
-                                        });
-                                    }
-                                    else {
-                                        ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
-                                    }
-                                }
-                            }
-                        }
-                        catch (...) { /* bad resolution string */ }
+                const int screen = ds -> window_get_current_screen();
+                const godot::Vector2i screen_size = ds -> screen_get_size(screen);
+                const godot::Vector2i screen_pos = ds -> screen_get_position(screen);
+                const bool native = (w >= screen_size.x - 2 && h >= screen_size.y - 2);
+
+                if (mode_str == "fullscreen") {
+                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
+                }
+                else if (native) {
+                    // Borderless at monitor size: use non-exclusive fullscreen so the
+                    // client fills the display cleanly (no HUD clip / taskbar fight).
+                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_FULLSCREEN);
+                }
+                else {
+                    // Smaller bordered-less window: size + center on the current monitor.
+                    const godot::Vector2i size(w, h);
+                    const godot::Vector2i current = ds -> window_get_size();
+                    const godot::Vector2i pos(
+                        screen_pos.x + (screen_size.x - size.x) / 2,
+                        screen_pos.y + (screen_size.y - size.y) / 2
+                    );
+                    const bool at_native = (
+                        current.x >= screen_size.x - 2 && current.y >= screen_size.y - 2
+                    );
+                    const bool shrinking = size.x < current.x || size.y < current.y;
+
+                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, false);
+                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
+                    ds -> window_set_size(size);
+                    ds -> window_set_position(pos);
+
+                    auto* core = Core::get_singleton();
+                    if (core && at_native && shrinking) {
+                        core -> enqueue([ds, size, pos]() {
+                            ds -> window_set_size(size);
+                            ds -> window_set_position(pos);
+                            ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
+                        });
+                    }
+                    else {
+                        ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
                     }
                 }
             }
