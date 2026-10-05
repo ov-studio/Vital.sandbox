@@ -38,7 +38,7 @@ namespace Vital::Engine {
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
                 { "CANVAS_ITEM",  Mode::CanvasItem   },
                 { "SPATIAL",      Mode::Spatial      },
-                { "POSTPROCESS",  Mode::Postprocess  }
+                { "POST_PROCESS",  Mode::Postprocess  }
             };
         private:
             godot::Ref<godot::Shader> shader;
