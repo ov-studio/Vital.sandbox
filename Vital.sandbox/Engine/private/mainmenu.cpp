@@ -15,9 +15,11 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/mainmenu.h>
+#include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/Tool/file.h>
+#include <algorithm>
 
 
 //////////////////////////////
@@ -167,6 +169,43 @@ namespace Vital::Engine {
                         ? godot::DisplayServer::VSYNC_ENABLED
                         : godot::DisplayServer::VSYNC_DISABLED
                 );
+            }
+
+            // Quality preset → viewport MSAA (cheap, always available)
+            if (settings.HasMember("quality") && settings["quality"].IsString()) {
+                if (auto* root = Core::get_scene_root()) {
+                    const std::string q = settings["quality"].GetString();
+                    godot::Viewport::MSAA msaa = godot::Viewport::MSAA_DISABLED;
+                    if (q == "medium") msaa = godot::Viewport::MSAA_2X;
+                    else if (q == "high") msaa = godot::Viewport::MSAA_4X;
+                    root -> set_msaa_3d(msaa);
+                    root -> set_msaa_2d(msaa);
+                }
+            }
+
+            // Client draw-distance multiplier on the active camera's far plane.
+            // Base far is captured once (Lua/default), then scaled by this multiplier.
+            if (settings.HasMember("draw_distance_mult") && settings["draw_distance_mult"].IsNumber()) {
+                static float base_far = -1.0f;
+                const float mult = std::clamp(static_cast<float>(settings["draw_distance_mult"].GetDouble()), 0.1f, 2.0f);
+                if (auto* cam = Camera::get_active()) {
+                    if (base_far < 0.0f) base_far = cam -> get_far();
+                    if (base_far < 1.0f) base_far = 4000.0f;
+                    cam -> set_far(base_far * mult);
+                }
+            }
+
+            // Master volume as linear 0..1 → bus dB
+            if (settings.HasMember("volume") && settings["volume"].IsNumber()) {
+                if (auto* as = Core::get_audio_server()) {
+                    double linear = std::clamp(settings["volume"].GetDouble(), 0.0, 1.0);
+                    int idx = as -> get_bus_index(godot::StringName("Master"));
+                    if (idx < 0) idx = 0;
+                    const float db = (linear <= 0.0001)
+                        ? -80.0f
+                        : godot::Math::linear_to_db(static_cast<float>(linear));
+                    as -> set_bus_volume_db(idx, db);
+                }
             }
         }
 
