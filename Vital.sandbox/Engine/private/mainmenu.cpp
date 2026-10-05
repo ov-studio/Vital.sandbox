@@ -43,7 +43,8 @@ namespace Vital::Engine {
 
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
-                webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
+                //webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
+                webview -> load_url("http://localhost:5173/"); // TODO: CHANGE LATER
             });
         });
     }
@@ -90,7 +91,8 @@ namespace Vital::Engine {
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
         else if (action == "hide") hide();
-        else if (action == "drag") Core::get_display_server() -> window_start_drag();
+        else if (action == "drag") Engine::Core::get_display_server() -> window_start_drag();
+        else if (action == "exit") Engine::Core::get_singleton() -> shutdown();
     }
 }
 #endif
