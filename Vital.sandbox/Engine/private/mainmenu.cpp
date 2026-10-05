@@ -85,13 +85,10 @@ namespace Vital::Engine {
                 if (mode == "fullscreen") {
                     ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
                 }
-                else if (mode == "borderless") {
+                else {
+                    // Always borderless — custom HUD title bar owns window chrome.
                     ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
                     ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, true);
-                }
-                else {
-                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_WINDOWED);
-                    ds -> window_set_flag(godot::DisplayServer::WINDOW_FLAG_BORDERLESS, false);
                 }
             }
 
