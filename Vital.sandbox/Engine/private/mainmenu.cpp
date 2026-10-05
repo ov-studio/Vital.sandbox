@@ -42,7 +42,6 @@ namespace Vital::Engine {
             doc.AddMember("resolution", "1600x900", a);
             doc.AddMember("window_mode", "borderless", a);
             doc.AddMember("vsync", true, a);
-            doc.AddMember("quality", "medium", a);
             doc.AddMember("draw_distance_mult", 1.0, a);
             doc.AddMember("volume", 0.8, a);
             return doc;
@@ -171,17 +170,6 @@ namespace Vital::Engine {
                 );
             }
 
-            // Quality preset → viewport MSAA (cheap, always available)
-            if (settings.HasMember("quality") && settings["quality"].IsString()) {
-                if (auto* root = Core::get_scene_root()) {
-                    const std::string q = settings["quality"].GetString();
-                    godot::Viewport::MSAA msaa = godot::Viewport::MSAA_DISABLED;
-                    if (q == "medium") msaa = godot::Viewport::MSAA_2X;
-                    else if (q == "high") msaa = godot::Viewport::MSAA_4X;
-                    root -> set_msaa_3d(msaa);
-                    root -> set_msaa_2d(msaa);
-                }
-            }
 
             // Client draw-distance multiplier on the active camera's far plane.
             // Base far is captured once (Lua/default), then scaled by this multiplier.
