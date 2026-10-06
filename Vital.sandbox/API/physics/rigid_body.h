@@ -418,7 +418,6 @@ namespace Vital::Sandbox::API {
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
             vm -> scope_set_enum(base_scope, "center_of_mass_mode", center_of_mass_mode_registry);
             vm -> scope_set_enum(base_scope, "damp_mode", damp_mode_registry);
-            vm -> scope_set_enum(base_scope, "axis", API::Physics_Body::axis_registry);
         }
 
         static void clean(const std::string& env) {
