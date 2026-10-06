@@ -43,6 +43,7 @@ namespace Vital::Engine {
             bool is_ready();
             bool is_visible();
             void ready();
+            void check_updates();
             void show();
             void hide();
 

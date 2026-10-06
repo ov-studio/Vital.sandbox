@@ -212,9 +212,16 @@ namespace Vital::Engine {
         constexpr const char* sandbox_src = "https://api.github.com/repos/ov-studio/Vital.sandbox/releases/latest";
         constexpr const char* sandbox_releases = "https://github.com/ov-studio/Vital.sandbox/releases";
         constexpr const char* kit_releases = "https://github.com/ov-studio/Vital.kit/releases";
+        constexpr int64_t update_cooldown_ms = 10 * 60 * 1000; // min delay between checks (GitHub API is rate limited per IP)
+        constexpr int64_t update_retry_ms = 60 * 1000;         // shorter delay after a failed (offline) check
         std::mutex update_mutex;
-        std::string update_json;
-        std::atomic<bool> update_started { false };
+        std::string update_json;                               // last result, re-sent when the UI reloads
+        std::atomic<bool> update_running { false };
+        std::atomic<int64_t> update_next { 0 };                // earliest time (steady clock, ms) of the next check
+
+        int64_t now_ms() {
+            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        }
 
         std::string fetch_sandbox_tag() {
             try {
@@ -326,22 +333,20 @@ namespace Vital::Engine {
         if (webview) webview -> emit(settings_to_json(load_settings()));
         {
             std::lock_guard<std::mutex> lock(update_mutex);
-            if (!update_json.empty()) {
-                if (webview) webview -> emit(update_json);
-                return;
-            }
+            if (!update_json.empty() && webview) webview -> emit(update_json);
         }
-        if (update_started.exchange(true)) return;
+        check_updates();
+    }
+
+    // Throttled: runs at most once per cooldown, never concurrently, and never blocks the main thread.
+    void MainMenu::check_updates() {
+        if (is_dev_build()) return; // dev builds: no update info (sandbox or kit)
+        const int64_t now = now_ms();
+        if (now < update_next.load()) return;
+        if (update_running.exchange(true)) return;
+        update_next.store(now + update_cooldown_ms);
         Tool::Thread::create([this](Tool::Thread*) {
             std::vector<std::array<std::string, 4>> updates;
-
-            // Dev builds: no update info at all (sandbox or kit).
-            if (is_dev_build()) {
-                std::lock_guard<std::mutex> lock(update_mutex);
-                update_json = update_to_json(updates);
-                return;
-            }
-
             bool reached = false;
 
             // Vital.sandbox: running version (to_string, e.g. v1.2.3) vs latest release tag.
@@ -360,13 +365,16 @@ namespace Vital::Engine {
                 updates.push_back({ "Vital.kit", kit_local, kit_tag, kit_releases });
             }
 
-            if (!reached) { update_started.store(false); return; } // offline: retry on the next ready()
-            const std::string json = update_to_json(updates);
-            {
-                std::lock_guard<std::mutex> lock(update_mutex);
-                update_json = json;
+            if (reached) {
+                const std::string json = update_to_json(updates);
+                {
+                    std::lock_guard<std::mutex> lock(update_mutex);
+                    update_json = json;
+                }
+                if (webview) webview -> emit(json);
             }
-            if (webview) webview -> emit(json);
+            else update_next.store(now_ms() + update_retry_ms); // offline: retry sooner
+            update_running.store(false);
         });
     }
 
@@ -374,6 +382,7 @@ namespace Vital::Engine {
         if (is_visible()) return;
         webview -> set_visible(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
+        check_updates();
     }
 
     void MainMenu::hide() {
