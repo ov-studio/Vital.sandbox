@@ -334,7 +334,6 @@ namespace Vital::Engine {
         if (update_started.exchange(true)) return;
         Tool::Thread::create([this](Tool::Thread*) {
             std::vector<std::array<std::string, 4>> updates;
-            bool reached = false;
 
             // Dev builds: no update info at all (sandbox or kit).
             if (is_dev_build()) {
@@ -342,6 +341,8 @@ namespace Vital::Engine {
                 update_json = update_to_json(updates);
                 return;
             }
+
+            bool reached = false;
 
             // Vital.sandbox: running version (to_string, e.g. v1.2.3) vs latest release tag.
             const auto& sdk = Tool::Version::SDK;
