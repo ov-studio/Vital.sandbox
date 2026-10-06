@@ -149,7 +149,7 @@ local function run_benchmark()
         return s
     end))
 
-    local function sum_varargs(...) local s=0; for _,v in ipairs({...}) do s=s+v end; return s end
+    local function sum_varargs(...) local t = {...}; local s=0; for i=1,#t do s=s+t[i] end; return s end
     add(run_test("varargs", function(n)
         local s = 0
         for i = 1, n do s = s + sum_varargs(i, i+1, i+2, i+3) end
@@ -161,7 +161,7 @@ local function run_benchmark()
     add(run_test("table_iteration", function(n)
         local s = 0
         for _ = 1, n do
-            for _, v in ipairs(iter_data) do s = s + v end
+            for i = 1, #iter_data do s = s + iter_data[i] end -- numeric for: ipairs costs a C call per element in PUC Lua
         end
         return s
     end, 1000))
@@ -173,7 +173,8 @@ local function run_benchmark()
     add(run_test("entity_simulation", function(n)
         local s = 0
         for _ = 1, n do
-            for _, e in ipairs(entities) do
+            for i = 1, #entities do
+                local e = entities[i]
                 e.x = e.x + e.vx; e.y = e.y + e.vy
                 e.hp = e.hp - 0.001; s = s + e.x
             end
