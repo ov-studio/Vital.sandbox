@@ -67,38 +67,8 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Physics_Body::methods<Instance, Physics_Body::Type::Rigid>(vm);
 
-            vm_module::bind_method<Instance>(vm, "get_mass", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_mass());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_gravity_scale", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> get_gravity_scale());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_linear_velocity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_linear_velocity());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_angular_velocity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_angular_velocity());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_linear_damp", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_linear_damp());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_angular_damp", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_angular_damp());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_sleeping", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_sleeping());
                 return 1;
             });
 
@@ -119,11 +89,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_contact_count", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> get_contact_count());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_using_continuous_collision_detection", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_using_continuous_collision_detection());
                 return 1;
             });
 
@@ -156,72 +121,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_mass", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mass)", true)
-                    .require(2, &Machine::is_number);
-
-                auto mass = vm -> get_float(2);
-                self -> body -> set_mass(mass);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::Syncable::bind_method<Instance>(vm, "set_gravity_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(scale)", true)
                     .require(2, &Machine::is_number);
 
                 auto scale = vm -> get_float(2);
                 self -> body -> set_gravity_scale(scale);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_linear_velocity", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(velocity)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto velocity = vm -> get_vector3(2);
-                self -> body -> set_linear_velocity(velocity);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_angular_velocity", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(velocity)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto velocity = vm -> get_vector3(2);
-                self -> body -> set_angular_velocity(velocity);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_linear_damp", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(damp)", true)
-                    .require(2, &Machine::is_number);
-
-                auto damp = vm -> get_float(2);
-                self -> body -> set_linear_damp(damp);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_angular_damp", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(damp)", true)
-                    .require(2, &Machine::is_number);
-
-                auto damp = vm -> get_float(2);
-                self -> body -> set_angular_damp(damp);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_sleeping", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)", true)
-                    .require(2, &Machine::is_bool);
-
-                auto state = vm -> get_bool(2);
-                self -> body -> set_sleeping(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -256,16 +161,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_use_continuous_collision_detection", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)", true)
-                    .require(2, &Machine::is_bool);
-
-                auto state = vm -> get_bool(2);
-                self -> body -> set_use_continuous_collision_detection(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::Syncable::bind_method<Instance>(vm, "set_lock_rotation_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -286,66 +181,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_freeze_mode", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, freeze_mode_registry);
-
-                auto mode = static_cast<base_class::FreezeMode>(vm -> get_int(2));
-                self -> body -> set_freeze_mode(mode);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "apply_central_impulse", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(impulse)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto impulse = vm -> get_vector3(2);
-                self -> body -> apply_central_impulse(impulse);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "apply_impulse", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(impulse, position = {0, 0, 0})", true)
-                    .require(2, &Machine::is_vector3)
-                    .optional(3, &Machine::is_vector3);
-
-                auto impulse = vm -> get_vector3(2);
-                auto position = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(0, 0, 0);
-                self -> body -> apply_impulse(impulse, position);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::Syncable::bind_method<Instance>(vm, "apply_torque_impulse", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(impulse)", true)
                     .require(2, &Machine::is_vector3);
 
                 auto impulse = vm -> get_vector3(2);
                 self -> body -> apply_torque_impulse(impulse);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "apply_central_force", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(force)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto force = vm -> get_vector3(2);
-                self -> body -> apply_central_force(force);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "apply_force", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(force, position = {0, 0, 0})", true)
-                    .require(2, &Machine::is_vector3)
-                    .optional(3, &Machine::is_vector3);
-
-                auto force = vm -> get_vector3(2);
-                auto position = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(0, 0, 0);
-                self -> body -> apply_force(force, position);
                 vm -> push_value(true);
                 return 1;
             });
