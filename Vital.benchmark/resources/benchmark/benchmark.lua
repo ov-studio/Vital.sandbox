@@ -161,7 +161,7 @@ local function run_benchmark()
     add(run_test("table_iteration", function(n)
         local s = 0
         for _ = 1, n do
-            for i = 1, #iter_data do s = s + iter_data[i] end -- numeric for: ipairs costs a C call per element in PUC Lua
+            for i = 1, #iter_data do s = s + iter_data[i] end
         end
         return s
     end, 1000))
