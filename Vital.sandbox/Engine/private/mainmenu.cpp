@@ -226,11 +226,15 @@ namespace Vital::Engine {
             return "";
         }
 
+        // Same rule Kit::ensure() uses: any difference from the latest release tag means "not the latest".
         bool is_outdated(const std::string& local, const std::string& remote) {
-            if (local.empty() || remote.empty()) return false;
-            Tool::Version::Info a{}, b{};
-            if (Tool::Version::Info::parse(local, a) && Tool::Version::Info::parse(remote, b)) return a < b;
-            return local != remote;
+            return !local.empty() && !remote.empty() && local != remote;
+        }
+
+        // Untagged local builds (CI never injected a version) never show the update button.
+        bool is_dev_build() {
+            const auto& sdk = Tool::Version::SDK;
+            return sdk.major == 0 && sdk.minor == 0 && sdk.patch == 0 && sdk.label == "dev";
         }
 
         // Only outdated components are listed; an empty list means "up to date" (or unknown) and the UI hides the button.
@@ -332,11 +336,18 @@ namespace Vital::Engine {
             std::vector<std::array<std::string, 4>> updates;
             bool reached = false;
 
-            // Vital.sandbox: CI-injected SDK version vs latest release tag. Untagged dev builds (0.0.0) are skipped.
+            // Dev builds: no update info at all (sandbox or kit).
+            if (is_dev_build()) {
+                std::lock_guard<std::mutex> lock(update_mutex);
+                update_json = update_to_json(updates);
+                return;
+            }
+
+            // Vital.sandbox: running version (to_string, e.g. v1.2.3) vs latest release tag.
             const auto& sdk = Tool::Version::SDK;
             const std::string sandbox_tag = fetch_sandbox_tag();
             if (!sandbox_tag.empty()) reached = true;
-            if (!(sdk.major == 0 && sdk.minor == 0 && sdk.patch == 0) && is_outdated(sdk.to_string(), sandbox_tag)) {
+            if (is_outdated(sdk.to_string(), sandbox_tag)) {
                 updates.push_back({ "Vital.sandbox", sdk.to_string(), sandbox_tag, sandbox_releases });
             }
 
