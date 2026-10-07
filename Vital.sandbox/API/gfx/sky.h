@@ -85,7 +85,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_rotation", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
+                auto rotation = base_class::get_environment() -> get_sky_rotation();
+                vm -> push_value(godot::Vector3(godot::Math::rad_to_deg(rotation.x), godot::Math::rad_to_deg(rotation.y), godot::Math::rad_to_deg(rotation.z)));
                 return 1;
             });
 
@@ -118,8 +119,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
-                auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_sky_custom_fov(value);
+                auto fov = vm -> get_float(1);
+                base_class::get_environment() -> set_sky_custom_fov(fov);
                 vm -> push_value(true);
                 return 1;
             });
@@ -128,8 +129,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(rotation)")
                     .require(1, &Machine::is_vector3);
 
-                auto value = vm -> get_vector3(1);
-                base_class::get_environment() -> set_sky_rotation(value);
+                auto rotation = vm -> get_vector3(1);
+                base_class::get_environment() -> set_sky_rotation(godot::Vector3(godot::Math::deg_to_rad(rotation.x), godot::Math::deg_to_rad(rotation.y), godot::Math::deg_to_rad(rotation.z)));
                 vm -> push_value(true);
                 return 1;
             });
@@ -138,8 +139,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(size)")
                     .require_enum(1, radiance_size_registry);
 
-                auto value = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
-                base_class::get_sky() -> set_radiance_size(value);
+                auto size = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
+                base_class::get_sky() -> set_radiance_size(size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -148,8 +149,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)")
                     .require_enum(1, process_mode_registry);
 
-                auto value = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
-                base_class::get_sky() -> set_process_mode(value);
+                auto mode = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
+                base_class::get_sky() -> set_process_mode(mode);
                 vm -> push_value(true);
                 return 1;
             });

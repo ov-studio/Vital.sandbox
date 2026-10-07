@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_floor_max_angle", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_floor_max_angle());
+                vm -> push_value(godot::Math::rad_to_deg(self -> body -> get_floor_max_angle()));
                 return 1;
             });
 
@@ -201,11 +201,11 @@ namespace Vital::Sandbox::API {
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_floor_max_angle", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(radians)", true)
+                vm_args(vm, id, "(angle)", true)
                     .require(2, &Machine::is_number);
 
-                auto radians = vm -> get_float(2);
-                self -> body -> set_floor_max_angle(radians);
+                auto angle = vm -> get_float(2);
+                self -> body -> set_floor_max_angle(godot::Math::deg_to_rad(angle));
                 vm -> push_value(true);
                 return 1;
             });

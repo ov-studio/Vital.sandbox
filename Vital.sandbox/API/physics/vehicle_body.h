@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_steering", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_steering());
+                vm -> push_value(godot::Math::rad_to_deg(self -> body -> get_steering()));
                 return 1;
             });
 
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number);
 
                 auto steering = vm -> get_float(2);
-                self -> body -> set_steering(steering);
+                self -> body -> set_steering(godot::Math::deg_to_rad(steering));
                 vm -> push_value(true);
                 return 1;
             });
