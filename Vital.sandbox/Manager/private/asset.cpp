@@ -206,6 +206,7 @@ namespace Vital::Manager {
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
+            res.set_header("Access-Control-Allow-Origin", "*");
             res.set_content(buffer.GetString(), "application/json");
         });
 
