@@ -432,6 +432,13 @@ namespace Vital::Engine {
             if (url.rfind("https://", 0) != 0 && url.rfind("http://", 0) != 0) return;
             godot::OS::get_singleton() -> shell_open(Tool::to_godot_string(url));
         }
+        else if (action == "connect") {
+            if (!document.HasMember("ip") || !document["ip"].IsString()) return;
+            if (!document.HasMember("port") || !document["port"].IsInt()) return;
+            const int port = document["port"].GetInt();
+            const int http_port = (document.HasMember("http_port") && document["http_port"].IsInt()) ? document["http_port"].GetInt() : -1;
+            Manager::Network::get_singleton() -> connect_to_server(document["ip"].GetString(), port, http_port);
+        }
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
             auto merged = default_settings();
