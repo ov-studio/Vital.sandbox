@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Manager/public/kit.h>
+#include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Tool/http.h>
