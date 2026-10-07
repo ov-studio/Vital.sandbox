@@ -96,7 +96,7 @@ func _on_native_event(name: String, payload: Dictionary) -> void:
 			var obj: Dictionary = arr[0].get("object", {})
 			_lua_version = obj.get("lua_version", "unknown")
 			var cfg = obj.get("config", null)
-			if cfg is Dictionary: _config = cfg
+			if cfg is Dictionary: _config = cfg["object"] if cfg.has("object") else cfg
 		return
 	if name != LUA_COMPLETE_EVENT or _lua_done:
 		return
