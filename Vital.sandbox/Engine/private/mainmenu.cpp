@@ -433,8 +433,7 @@ namespace Vital::Engine {
             godot::OS::get_singleton() -> shell_open(Tool::to_godot_string(url));
         }
         else if (action == "connect") {
-            if (!document.HasMember("ip") || !document["ip"].IsString()) return;
-            if (!document.HasMember("port") || !document["port"].IsInt()) return;
+            if (!document.HasMember("ip") || !document.HasMember("port")) return;
             const int port = document["port"].GetInt();
             const int http_port = (document.HasMember("http_port") && document["http_port"].IsInt()) ? document["http_port"].GetInt() : -1;
             Manager::Network::get_singleton() -> connect_to_server(document["ip"].GetString(), port, http_port);
