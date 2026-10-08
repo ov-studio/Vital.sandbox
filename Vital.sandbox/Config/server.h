@@ -106,25 +106,15 @@ namespace Vital::Config {
             std::string get_server_name() const { return get_str("server", "name", "Vital.sandbox Server"); }
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
-
-            // TODO: Simplify?
             std::vector<std::string> get_server_tags() const {
                 std::vector<std::string> result;
                 if (!loaded || !yaml.has("server")) return result;
                 const auto& section = yaml.get_root()["server"];
-                if (!section.is_map() || !section.has_child("tags")) return result;
-                const auto list = section["tags"];
-                if (!list.is_seq()) return result;
-                for (ryml::ConstNodeRef node : list) {
-                    if (result.size() >= 5) break;
+                if (!section.is_map() || !section.has_child("tags") || !section["tags"].is_seq()) return result;
+                for (ryml::ConstNodeRef node : section["tags"]) {
                     std::string tag;
                     node >> tag;
-                    const auto first = tag.find_first_not_of(" \t");
-                    if (first == std::string::npos) continue;
-                    tag = tag.substr(first, tag.find_last_not_of(" \t") - first + 1);
-                    if (tag.size() > 24) tag.resize(24);
-                    std::transform(tag.begin(), tag.end(), tag.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-                    if (std::find(result.begin(), result.end(), tag) == result.end()) result.push_back(tag);
+                    result.push_back(tag);
                 }
                 return result;
             }
