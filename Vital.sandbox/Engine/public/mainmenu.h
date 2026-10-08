@@ -31,6 +31,7 @@ namespace Vital::Engine {
             std::atomic<bool> webview_ready { false };
             static std::atomic<float> draw_distance_mult;
             std::atomic<bool> scan_running { false };
+            std::atomic<bool> masterlist_running { false };
 
 
             // Instantiators //
@@ -46,6 +47,7 @@ namespace Vital::Engine {
             void ready();
             void check_updates();
             void scan_local_servers();
+            void fetch_masterlist();
             void send_connection();
             void show();
             void hide();
