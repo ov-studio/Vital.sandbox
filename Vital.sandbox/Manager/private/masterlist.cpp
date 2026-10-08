@@ -28,8 +28,32 @@
 // Vital: Manager: Masterlist //
 /////////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     // Helpers //
+    // Keeps only tags from the premade catalog (Vital.kit config/masterlist.json `tags`) and warns about the rest,
+    // so a typo in config.yaml is visible instead of silently never showing up in the browser.
+    void Masterlist::filter_tags(rapidjson::Document& document, rapidjson::Document::AllocatorType& alloc) const {
+        if (!document.HasMember("tags") || !document["tags"].IsArray()) return;
+        const auto* catalog = Kit::fetch_json_node("config/masterlist", "tags");
+        if (!catalog || !catalog -> IsArray()) return;
+        rapidjson::Value allowed(rapidjson::kArrayType);
+        std::string dropped;
+        for (const auto& tag : document["tags"].GetArray()) {
+            if (!tag.IsString()) continue;
+            const std::string value = tag.GetString();
+            bool known = false;
+            for (const auto& entry : catalog -> GetArray()) {
+                if (entry.IsString() && value == entry.GetString()) { known = true; break; }
+            }
+            if (known) allowed.PushBack(rapidjson::Value(value.c_str(), alloc), alloc);
+            else dropped += (dropped.empty() ? "" : ", ") + value;
+        }
+        document.RemoveMember("tags");
+        document.AddMember(rapidjson::StringRef("tags"), allowed, alloc);
+        if (!dropped.empty()) log("warn", fmt::format("unknown server tags ignored — {} (see Vital.kit config/masterlist.json for the list)", dropped));
+    }
+
     void Masterlist::send_heartbeat() const {
         if (!server_config) return;
         auto nm = Network::get_singleton();
@@ -37,6 +61,7 @@ namespace Vital::Manager {
         document.SetObject();
         auto& alloc = document.GetAllocator();
         server_config -> write_public_info(document, alloc);
+        filter_tags(document, alloc);
         document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("ip"), rapidjson::Value(nm -> get_server_ip().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("players"), rapidjson::Value(nm -> get_peer_count()), alloc);
