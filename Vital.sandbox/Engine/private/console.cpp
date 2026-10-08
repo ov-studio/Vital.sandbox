@@ -853,7 +853,7 @@ namespace Vital::Engine {
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
         document.Parse(Tool::to_std_string(message).c_str());
-        if (document.HasParseError() || !document.HasMember("action")) return;
+        if (document.HasParseError() || !document.IsObject() || !document.HasMember("action") || !document["action"].IsString()) return;
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
         else if (action == "clear") clear(true);

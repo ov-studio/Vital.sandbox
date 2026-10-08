@@ -93,7 +93,7 @@ namespace Vital::Manager::Kit {
         };
 
         auto validate_files = [&](const rapidjson::Document& checksum_doc) -> bool {
-            if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("warn", "checksum ~ invalid | reason ~ missing files"); return false; }
+            if (!checksum_doc.IsObject() || !checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("warn", "checksum ~ invalid | reason ~ missing files"); return false; }
             const auto& files = checksum_doc["files"];
             const int total = static_cast<int>(files.MemberCount());
             int checked = 0;

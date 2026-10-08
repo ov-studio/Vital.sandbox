@@ -147,8 +147,9 @@ namespace Vital::Manager::Kit {
         std::vector<std::pair<std::string, std::string>> result;
         const std::string path = "module/" + name;
         auto& document = Internal::fetch_json(path + "/manifest");
-        if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
+        if (document.HasParseError() || !document.IsObject() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
+            if (!i.IsString()) continue;
             std::string src = i.GetString();
             result.emplace_back(src, std::string(Internal::fetch_content(fmt::format("{}/{}", path, src))));
         }
@@ -168,7 +169,7 @@ namespace Vital::Manager::Kit {
                 if (doc.HasMember("tag_name") && doc["tag_name"].IsString()) tag = doc["tag_name"].GetString();
                 if (doc.HasMember("assets") && doc["assets"].IsArray()) {
                     for (auto& asset : doc["assets"].GetArray()) {
-                        if (!asset.HasMember("name") || !asset.HasMember("browser_download_url")) continue;
+                        if (!asset.IsObject() || !asset.HasMember("name") || !asset["name"].IsString() || !asset.HasMember("browser_download_url") || !asset["browser_download_url"].IsString()) continue;
                         std::string asset_name = asset["name"].GetString();
                         std::string asset_url = asset["browser_download_url"].GetString();
                         if (asset_name == "checksum.json") checksum_url = asset_url;
