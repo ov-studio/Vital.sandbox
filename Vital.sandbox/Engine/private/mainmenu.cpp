@@ -350,6 +350,10 @@ namespace Vital::Engine {
             auto& a = doc.GetAllocator();
             doc.AddMember("action", "init", a);
             doc.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), a), a);
+            int refresh = 15; // TODO: no need of callback maybe since config always supposed to exist?
+            try { refresh = std::max(5, Manager::Kit::fetch_json_value("config/masterlist", "refresh").as<int32_t>()); }
+            catch (...) { /* keep default */ }
+            doc.AddMember("masterlist_refresh", refresh, a);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             doc.Accept(writer);
