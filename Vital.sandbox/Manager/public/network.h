@@ -234,6 +234,7 @@ namespace Vital::Manager {
             void _on_connection_failed();
             void _on_server_disconnected();
             std::string get_server_ip() const;
+            int get_server_port() const;
             #else
             void host(Config::Server& config);
             void close();

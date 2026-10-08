@@ -21,6 +21,7 @@
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Tool/http.h>
+#include <Vital.sandbox/Tool/localserver.h>
 #include <Vital.sandbox/Tool/thread.h>
 #include <Vital.sandbox/Tool/version.h>
 #include <algorithm>
@@ -303,6 +304,11 @@ namespace Vital::Engine {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
 
+        // Keep the menu's Connect/Disconnect button in sync with the real connection state.
+        for (const char* name : { "network:connect", "network:connect:success", "network:connect:failed", "network:disconnect", "network:server:disconnect" }) {
+            Tool::Event::bind(name, [this](Tool::Stack) { send_connection(); });
+        }
+
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 apply_settings(load_settings());
@@ -336,7 +342,58 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(update_mutex);
             if (!update_json.empty() && webview) webview -> emit(update_json);
         }
+        send_connection();
         check_updates();
+    }
+
+    // Pushes { action: "connection", state, ip, port }: state is "idle" | "connecting" | "connected".
+    void MainMenu::send_connection() {
+        if (!webview || !webview_ready.load()) return;
+        auto* nm = Manager::Network::get_singleton();
+        const char* state = nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "idle");
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+        doc.AddMember("action", "connection", a);
+        doc.AddMember("state", rapidjson::Value(state, a), a);
+        doc.AddMember("ip", rapidjson::Value(nm -> get_server_ip().c_str(), a), a);
+        doc.AddMember("port", nm -> get_server_port(), a);
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        doc.Accept(writer);
+        webview -> emit(buffer.GetString());
+    }
+
+    // Lists servers running on this machine: every registry entry is verified against its own /info,
+    // so any port works and servers that crashed (stale entries) never show up. Runs off the main thread.
+    void MainMenu::scan_local_servers() {
+        if (!webview || scan_running.exchange(true)) return;
+        Tool::Thread::create([this](Tool::Thread*) {
+            rapidjson::Document out;
+            out.SetObject();
+            auto& a = out.GetAllocator();
+            out.AddMember("action", "localservers", a);
+            rapidjson::Value servers(rapidjson::kArrayType);
+            for (const auto& entry : Tool::LocalServer::list()) {
+                try {
+                    rapidjson::Document info;
+                    info.Parse(Tool::HTTP::get("http://127.0.0.1:" + std::to_string(entry.http_port) + "/info", {}, 2).c_str());
+                    if (info.HasParseError() || !info.IsObject()) continue;
+                    // Registry entry and server must agree, else the file is stale and the port was reused by something else
+                    if (!info.HasMember("port") || !info.HasMember("http_port") || !info["port"].IsInt() || !info["http_port"].IsInt()) continue;
+                    if (info["port"].GetInt() != entry.port || info["http_port"].GetInt() != entry.http_port) continue;
+                    rapidjson::Value item(info, a);
+                    servers.PushBack(item, a);
+                }
+                catch (...) { /* not answering: stale or starting up */ }
+            }
+            out.AddMember("servers", servers, a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            out.Accept(writer);
+            if (webview) webview -> emit(buffer.GetString());
+            scan_running.store(false);
+        });
     }
 
     // Throttled: runs at most once per cooldown, never concurrently, and never blocks the main thread.
@@ -439,6 +496,8 @@ namespace Vital::Engine {
             const int http_port = (document.HasMember("http_port") && document["http_port"].IsInt()) ? document["http_port"].GetInt() : -1;
             Manager::Network::get_singleton() -> connect_to_server(document["ip"].GetString(), port, http_port);
         }
+        else if (action == "localservers") scan_local_servers();
+        else if (action == "disconnect") Manager::Network::get_singleton() -> disconnect_from_server();
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
             auto merged = default_settings();

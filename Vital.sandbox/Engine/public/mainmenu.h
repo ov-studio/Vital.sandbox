@@ -30,6 +30,7 @@ namespace Vital::Engine {
             Webview* webview = nullptr;
             std::atomic<bool> webview_ready { false };
             static std::atomic<float> draw_distance_mult;
+            std::atomic<bool> scan_running { false };
 
 
             // Instantiators //
@@ -44,6 +45,8 @@ namespace Vital::Engine {
             bool is_visible();
             void ready();
             void check_updates();
+            void scan_local_servers();
+            void send_connection();
             void show();
             void hide();
 

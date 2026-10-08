@@ -24,6 +24,7 @@
 
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/masterlist.h>
+#include <Vital.sandbox/Tool/localserver.h>
 #endif
 
 void setup() {
@@ -139,6 +140,8 @@ void vsdk_initialize() {
                 if (!nm -> is_connected()) return;
                 Vital::Manager::Asset::get_singleton() -> set_http_port(server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
+                // Announce to clients on this machine (main menu lists these), whatever ports the config picked
+                Vital::Tool::LocalServer::publish(server_config.get_network_port(), server_config.get_http_port());
             #endif
         }
 

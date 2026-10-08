@@ -24,6 +24,7 @@
 #include <Vital.sandbox/Tool/version.h>
 #include <Vital.sandbox/Tool/http.h>
 #include <Vital.sandbox/Tool/inspect.h>
+#include <Vital.sandbox/Tool/localserver.h>
 #include <rapidjson/document.h>
 
 
@@ -281,6 +282,7 @@ namespace Vital::Manager {
         auto tree = get_scene_tree();
         if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
         nm -> log("sbox", "server closed");
+        Tool::LocalServer::retract_published(nm -> get_server_config().get_network_port());
         Tool::Event::emit("network:close", {});
         return true;
     }
@@ -1155,6 +1157,7 @@ namespace Vital::Manager {
     }
 
     std::string Network::get_server_ip() const { return reconnect_ip; }
+    int Network::get_server_port() const { return reconnect_port; }
 
 
     //------------------//
