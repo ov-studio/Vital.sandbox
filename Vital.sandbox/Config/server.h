@@ -16,6 +16,10 @@
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Tool/version.h>
 #include <rapidjson/document.h>
+// TODO: ?>?
+#include <algorithm>
+#include <cctype>
+#include <vector>
 
 
 ////////////////////////////
@@ -104,6 +108,28 @@ namespace Vital::Config {
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
 
+            // TODO: Simplify?
+            std::vector<std::string> get_server_tags() const {
+                std::vector<std::string> result;
+                if (!loaded || !yaml.has("server")) return result;
+                const auto& section = yaml.get_root()["server"];
+                if (!section.is_map() || !section.has_child("tags")) return result;
+                const auto list = section["tags"];
+                if (!list.is_seq()) return result;
+                for (ryml::ConstNodeRef node : list) {
+                    if (result.size() >= 5) break;
+                    std::string tag;
+                    node >> tag;
+                    const auto first = tag.find_first_not_of(" \t");
+                    if (first == std::string::npos) continue;
+                    tag = tag.substr(first, tag.find_last_not_of(" \t") - first + 1);
+                    if (tag.size() > 24) tag.resize(24);
+                    std::transform(tag.begin(), tag.end(), tag.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    if (std::find(result.begin(), result.end(), tag) == result.end()) result.push_back(tag);
+                }
+                return result;
+            }
+
 
             // Network //
             int get_network_port() const { return get_int("network", "port", 7777); }
@@ -157,6 +183,9 @@ namespace Vital::Config {
                 obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_clients()), alloc);
                 obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
+                rapidjson::Value tags(rapidjson::kArrayType);
+                for (const auto& tag : get_server_tags()) tags.PushBack(rapidjson::Value(tag.c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("tags"), tags, alloc);
             }
     };
 }
