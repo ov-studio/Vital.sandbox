@@ -8,6 +8,11 @@ server:
   version: "1.0.0"
   description: "A Vital.sandbox server"
 
+  # Genre tags for the server browser (max 5), e.g. tags: [roleplay, freeroam, economy].
+  # Pick from the valid tags only; anything else is ignored.
+  # Full list: https://vital-sandbox.com/docs/server/config#server
+  tags: []
+
 
 # Network
 network:
