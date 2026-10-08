@@ -49,6 +49,7 @@ namespace Vital::Engine {
             void send_connection();
             void show();
             void hide();
+            void toggle();
 
             // Client draw-distance multiplier (1.0 = Lua value as-is).
             // set_far_clip applies it; get_far_clip divides it out.

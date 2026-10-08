@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Engine/public/display.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 
 
 //////////////////////////////
@@ -85,6 +86,12 @@ namespace Vital::Manager {
                 if (keycode == resolve("config/console", "bind")) {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();
+                }
+                // TODO: Update
+                else if (keycode == godot::Key::KEY_ESCAPE && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::Core::get_singleton() -> is_sandbox_ui_visible()) {
+                    // Menu is hidden (nothing else open): Esc brings it back
+                    handled = true;
+                    Engine::MainMenu::get_singleton() -> toggle();
                 }
                 else if ((keycode == resolve("config/screenshot", "bind"))) {
                     if (Manager::Network::get_singleton() -> is_connected()) {

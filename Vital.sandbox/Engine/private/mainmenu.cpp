@@ -439,8 +439,20 @@ namespace Vital::Engine {
     void MainMenu::show() {
         if (is_visible()) return;
         webview -> set_visible(true);
+        webview -> set_focussed(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
         check_updates();
+    }
+
+    // Esc in-game: shows the menu (it fades in on its own), or asks the UI to fade out and hide itself.
+    // Only meaningful while connected: otherwise there is no game behind the menu to reveal.
+    void MainMenu::toggle() {
+        if (!is_ready() || !Manager::Network::get_singleton() -> is_connected()) return;
+        if (!is_visible()) {
+            show();
+            return;
+        }
+        if (webview) webview -> emit("{\"action\":\"fadeout\"}");
     }
 
     void MainMenu::hide() {
@@ -496,6 +508,7 @@ namespace Vital::Engine {
             const int http_port = (document.HasMember("http_port") && document["http_port"].IsInt()) ? document["http_port"].GetInt() : -1;
             Manager::Network::get_singleton() -> connect_to_server(document["ip"].GetString(), port, http_port);
         }
+        else if (action == "escape") toggle();
         else if (action == "localservers") scan_local_servers();
         else if (action == "disconnect") Manager::Network::get_singleton() -> disconnect_from_server();
         else if (action == "settings_update") {
