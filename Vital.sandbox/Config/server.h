@@ -168,7 +168,7 @@ namespace Vital::Config {
             // Masterlist //
             bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
             std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
-            std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://vital.site/api/masterlist"); }
+            std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://api.vital-sandbox.com/masterlist"); }
 
             
             // Shared public identity — used by /info and masterlist heartbeat
