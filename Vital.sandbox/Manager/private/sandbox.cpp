@@ -87,9 +87,8 @@ namespace Vital::Manager {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();
                 }
-                // TODO: Update
-                else if (keycode == godot::Key::KEY_ESCAPE && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::Core::get_singleton() -> is_sandbox_ui_visible()) {
-                    // Menu is hidden (nothing else open): Esc brings it back
+                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::Core::get_singleton() -> is_sandbox_ui_visible()) {
+                    // Menu is hidden (nothing else open): its bind (kit config/mainmenu.json) brings it back
                     handled = true;
                     Engine::MainMenu::get_singleton() -> toggle();
                 }

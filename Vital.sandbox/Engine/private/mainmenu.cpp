@@ -342,6 +342,19 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(update_mutex);
             if (!update_json.empty() && webview) webview -> emit(update_json);
         }
+        {
+            // Menu toggle key comes from Vital.kit (config/mainmenu.json), same source the engine-side key handler uses
+            const auto bind = Manager::Kit::fetch_json_value("config/mainmenu", "bind");
+            rapidjson::Document doc;
+            doc.SetObject();
+            auto& a = doc.GetAllocator();
+            doc.AddMember("action", "init", a);
+            doc.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), a), a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+            if (webview) webview -> emit(buffer.GetString());
+        }
         send_connection();
         check_updates();
     }
