@@ -377,6 +377,38 @@ namespace Vital::Engine {
         webview -> emit(buffer.GetString());
     }
 
+    // Fetches the public masterlist (url from Vital.kit config/masterlist.json) off the main thread and hands
+    // the page { action: "masterlist", ok, servers }. The host does the request because the API only allows
+    // CORS from the site's own origin.
+    void MainMenu::fetch_masterlist() {
+        if (!webview || masterlist_running.exchange(true)) return;
+        Tool::Thread::create([this](Tool::Thread*) {
+            rapidjson::Document body;
+            bool ok = false;
+            try {
+                const std::string url = Manager::Kit::fetch_json_value("config/masterlist", "url").as<std::string>();
+                if (url.rfind("https://", 0) == 0 || url.rfind("http://", 0) == 0) {
+                    body.Parse(Tool::HTTP::get(url, {}, 8).c_str());
+                    ok = !body.HasParseError() && body.IsArray();
+                }
+            }
+            catch (...) { /* offline / unavailable: the page keeps its last list and shows the error state */ }
+
+            rapidjson::Document out;
+            out.SetObject();
+            auto& a = out.GetAllocator();
+            out.AddMember("action", "masterlist", a);
+            out.AddMember("ok", ok, a);
+            if (ok) out.AddMember("servers", rapidjson::Value(body, a), a);
+            else out.AddMember("servers", rapidjson::Value(rapidjson::kArrayType), a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            out.Accept(writer);
+            if (webview) webview -> emit(buffer.GetString());
+            masterlist_running.store(false);
+        });
+    }
+
     // Lists servers running on this machine: every registry entry is verified against its own /info,
     // so any port works and servers that crashed (stale entries) never show up. Runs off the main thread.
     void MainMenu::scan_local_servers() {
@@ -523,6 +555,7 @@ namespace Vital::Engine {
         }
         else if (action == "escape") toggle();
         else if (action == "localservers") scan_local_servers();
+        else if (action == "masterlist") fetch_masterlist();
         else if (action == "disconnect") Manager::Network::get_singleton() -> disconnect_from_server();
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
