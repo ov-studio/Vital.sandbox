@@ -13,13 +13,8 @@
 //////////////
 
 #pragma once
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
+#include <Vital.sandbox/Tool/index.h>
 #include <cstdlib>
-#include <mutex>
 #include <set>
 #include <rapidjson/document.h>
 
