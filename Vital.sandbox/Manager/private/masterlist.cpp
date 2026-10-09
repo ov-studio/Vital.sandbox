@@ -90,11 +90,11 @@ namespace Vital::Manager {
         state = true;
         send_heartbeat();
         auto interval = Manager::Kit::fetch_json_value("config/masterlist", "interval").as<int32_t>();
-        if (interval <= 0) interval = 300;
+        if (interval <= 0) interval = 300 * 1000;
         heartbeat_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() { send_heartbeat(); });
-        }, interval * 1000, 0);
-        log("sbox", fmt::format("reporting to masterlist every {}s", interval));
+        }, interval, 0);
+        log("sbox", fmt::format("reporting to masterlist every {}s", interval / 1000));
     }
 
     void Masterlist::stop() {
@@ -125,14 +125,14 @@ namespace Vital::Manager {
         if (debounce_timer) return;
 
         auto interval = Manager::Kit::fetch_json_value("config/masterlist", "debounce").as<int32_t>();
-        if (interval <= 0) interval = 5;
+        if (interval <= 0) interval = 5 * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() {
                 send_heartbeat();
                 std::lock_guard<std::mutex> inner_lock(debounce_mutex);
                 debounce_timer = nullptr;
             });
-        }, interval * 1000, 1);
+        }, interval, 1);
     }
 }
 #endif
