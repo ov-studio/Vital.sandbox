@@ -350,10 +350,7 @@ namespace Vital::Engine {
             auto& a = doc.GetAllocator();
             doc.AddMember("action", "init", a);
             doc.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), a), a);
-            int refresh = 15; // TODO: no need of callback maybe since config always supposed to exist?
-            try { refresh = std::max(5, Manager::Kit::fetch_json_value("config/masterlist", "refresh").as<int32_t>()); }
-            catch (...) { /* keep default */ }
-            doc.AddMember("masterlist_refresh", refresh, a);
+            doc.AddMember("masterlist_refresh", Manager::Kit::fetch_json_value("config/masterlist", "refresh").as<int32_t>(), a);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             doc.Accept(writer);
@@ -381,7 +378,7 @@ namespace Vital::Engine {
         webview -> emit(buffer.GetString());
     }
 
-    // Fetches the public masterlist (url from Vital.kit config/masterlist.json) off the main thread and hands
+    // Fetches the public masterlist (Config::Server::masterlist_default_url) off the main thread and hands
     // the page { action: "masterlist", ok, servers }. The host does the request because the API only allows
     // CORS from the site's own origin.
     void MainMenu::fetch_masterlist() {
@@ -390,11 +387,8 @@ namespace Vital::Engine {
             rapidjson::Document body;
             bool ok = false;
             try {
-                const std::string url = Manager::Kit::fetch_json_value("config/masterlist", "url").as<std::string>();
-                if (url.rfind("https://", 0) == 0 || url.rfind("http://", 0) == 0) {
-                    body.Parse(Tool::HTTP::get(url, {}, 8).c_str());
-                    ok = !body.HasParseError() && body.IsArray();
-                }
+                body.Parse(Tool::HTTP::get(Config::Server::masterlist_default_url, {}, 8).c_str());
+                ok = !body.HasParseError() && body.IsArray();
             }
             catch (...) { /* offline / unavailable: the page keeps its last list and shows the error state */ }
 
