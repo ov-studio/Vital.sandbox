@@ -106,6 +106,8 @@ namespace Vital::Config {
             std::string get_server_name() const { return get_str("server", "name", "Vital.sandbox Server"); }
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
+            std::string get_server_logo() const { return get_str("server", "logo", ""); }
+            std::string get_server_banner() const { return get_str("server", "banner", ""); }
             std::vector<std::string> get_server_tags() const {
                 std::vector<std::string> result;
                 if (!loaded || !yaml.has("server")) return result;
@@ -122,8 +124,8 @@ namespace Vital::Config {
 
             // Network //
             int get_network_port() const { return get_int("network", "port", 7777); }
-            int get_max_clients() const { return get_int("network", "max_peers", 32); }
             int get_http_port() const { return get_int("http", "port", 7778); }
+            int get_max_clients() const { return get_int("network", "max_peers", 32); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
 
 
@@ -167,6 +169,8 @@ namespace Vital::Config {
                 obj.AddMember(rapidjson::StringRef("version"), rapidjson::Value(get_server_version().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("description"), rapidjson::Value(get_server_description().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("logo"), rapidjson::Value(get_server_logo().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("banner"), rapidjson::Value(get_server_banner().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_clients()), alloc);
