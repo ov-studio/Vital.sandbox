@@ -167,18 +167,19 @@ namespace Vital::Config {
             void write_public_info(rapidjson::Value& obj, rapidjson::Document::AllocatorType& alloc) const {
                 obj.AddMember(rapidjson::StringRef("name"), rapidjson::Value(get_server_name().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("version"), rapidjson::Value(get_server_version().c_str(), alloc), alloc);
-                obj.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("description"), rapidjson::Value(get_server_description().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("logo"), rapidjson::Value(get_server_logo().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("banner"), rapidjson::Value(get_server_banner().c_str(), alloc), alloc);
+                rapidjson::Value tags(rapidjson::kArrayType);
+                for (const auto& tag : get_server_tags()) tags.PushBack(rapidjson::Value(tag.c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("tags"), tags, alloc);
+
+                obj.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_peers()), alloc);
                 obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
-                rapidjson::Value tags(rapidjson::kArrayType);
-                for (const auto& tag : get_server_tags()) tags.PushBack(rapidjson::Value(tag.c_str(), alloc), alloc);
-                obj.AddMember(rapidjson::StringRef("tags"), tags, alloc);
             }
     };
 }
