@@ -214,7 +214,7 @@ namespace Vital::Manager {
         nm -> peer.instantiate();
 
         // ENet with default channel count (RPC via MultiplayerAPI)
-        godot::Error err = nm -> peer->create_server(net_port, config.get_max_clients(), 0, 0, 0);
+        godot::Error err = nm -> peer->create_server(net_port, config.get_max_peers(), 0, 0, 0);
         if (err != godot::OK) {
             nm -> log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
             nm -> peer.unref();

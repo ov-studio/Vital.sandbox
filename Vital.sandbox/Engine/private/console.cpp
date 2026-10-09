@@ -156,7 +156,7 @@ namespace Vital::Engine {
         append_field("Port", std::to_string(cfg.get_network_port()));
         append_field("HTTP Port", std::to_string(cfg.get_http_port()));
         oss << "• Stats:\n";
-        append_ratio("Players", nm -> get_peer_count(), cfg.get_max_clients());
+        append_ratio("Players", nm -> get_peer_count(), cfg.get_max_peers());
         append_ratio("Resources", rm -> get_resource_count(Manager::Resource::State::Running), rm -> get_resource_count(Manager::Resource::State::Loaded));
         return oss.str();
     }

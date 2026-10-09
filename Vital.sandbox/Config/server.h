@@ -91,7 +91,7 @@ namespace Vital::Config {
                 oss << "• Network:\n";
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
-                append_field(oss, "Max Peers", std::to_string(get_max_clients()));
+                append_field(oss, "Max Peers", std::to_string(get_max_peers()));
                 append_field(oss, "Sync Rate", std::to_string(get_sync_rate()) + " Hz");
                 append_field(oss, "Physics Tick Rate", std::to_string(get_physics_tick_rate()) + " Hz");
                 oss << "• Sync:\n";
@@ -125,7 +125,7 @@ namespace Vital::Config {
             // Network //
             int get_network_port() const { return get_int("network", "port", 7777); }
             int get_http_port() const { return get_int("http", "port", 7778); }
-            int get_max_clients() const { return get_int("network", "max_peers", 32); }
+            int get_max_peers() const { return get_int("network", "max_peers", 32); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
 
 
@@ -173,7 +173,7 @@ namespace Vital::Config {
                 obj.AddMember(rapidjson::StringRef("banner"), rapidjson::Value(get_server_banner().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
-                obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_clients()), alloc);
+                obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_peers()), alloc);
                 obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
                 rapidjson::Value tags(rapidjson::kArrayType);
