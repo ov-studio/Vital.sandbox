@@ -28,32 +28,8 @@
 // Vital: Manager: Masterlist //
 /////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     // Helpers //
-    // Keeps only tags from the premade catalog (Vital.kit config/masterlist.json `tags`) and warns about the rest,
-    // so a typo in config.yaml is visible instead of silently never showing up in the browser.
-    void Masterlist::filter_tags(rapidjson::Document& document, rapidjson::Document::AllocatorType& alloc) const {
-        if (!document.HasMember("tags") || !document["tags"].IsArray()) return;
-        const auto* catalog = Kit::fetch_json_node("config/masterlist", "tags");
-        if (!catalog || !catalog -> IsArray()) return;
-        rapidjson::Value allowed(rapidjson::kArrayType);
-        std::string dropped;
-        for (const auto& tag : document["tags"].GetArray()) {
-            if (!tag.IsString()) continue;
-            const std::string value = tag.GetString();
-            bool known = false;
-            for (const auto& entry : catalog -> GetArray()) {
-                if (entry.IsString() && value == entry.GetString()) { known = true; break; }
-            }
-            if (known) allowed.PushBack(rapidjson::Value(value.c_str(), alloc), alloc);
-            else dropped += (dropped.empty() ? "" : ", ") + value;
-        }
-        document.RemoveMember("tags");
-        document.AddMember(rapidjson::StringRef("tags"), allowed, alloc);
-        if (!dropped.empty()) log("warn", fmt::format("unknown server tags ignored — {} (see Vital.kit config/masterlist.json for the list)", dropped));
-    }
-
     void Masterlist::send_heartbeat() const {
         if (!server_config) return;
         auto nm = Network::get_singleton();
@@ -61,7 +37,6 @@ namespace Vital::Manager {
         document.SetObject();
         auto& alloc = document.GetAllocator();
         server_config -> write_public_info(document, alloc);
-        filter_tags(document, alloc);
         document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("ip"), rapidjson::Value(nm -> get_server_ip().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("players"), rapidjson::Value(nm -> get_peer_count()), alloc);
@@ -69,7 +44,17 @@ namespace Vital::Manager {
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.Accept(writer);
-        try { Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15); }
+        try {
+            rapidjson::Document reply;
+            reply.Parse(Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15).c_str());
+            if (!reply.HasParseError() && reply.IsObject() && reply.HasMember("ignoredTags") && reply["ignoredTags"].IsArray() && !reply["ignoredTags"].Empty()) {
+                std::string ignored;
+                for (const auto& tag : reply["ignoredTags"].GetArray()) {
+                    if (tag.IsString()) ignored += (ignored.empty() ? "" : ", ") + std::string(tag.GetString());
+                }
+                log("warn", fmt::format("unknown server tags ignored — {} (valid tags: https://vital-sandbox.com/docs/server/config#server)", ignored));
+            }
+        }
         catch (const std::exception& e) { log("warn", fmt::format("heartbeat failed — {}", e.what())); }
         catch (...) { log("warn", "heartbeat failed — unknown error"); }
     }

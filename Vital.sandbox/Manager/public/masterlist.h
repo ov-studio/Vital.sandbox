@@ -41,7 +41,6 @@ namespace Vital::Manager {
 
 
             // Helpers //
-            void filter_tags(rapidjson::Document& document, rapidjson::Document::AllocatorType& alloc) const;
             void send_heartbeat() const;
             void send_offline() const;
         public:
