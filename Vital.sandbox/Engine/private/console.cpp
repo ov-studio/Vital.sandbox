@@ -54,17 +54,10 @@ namespace Vital::Engine {
     }
 
     std::string Console::Internal::fetch_version() {
-        return fmt::format(
-            "Version:\n"
-            "> Vital.sandbox: `{}`\n"
-            "> Vital.kit: `{}`\n"
-            "> Vital.wry: `{}`\n"
-            "> Vital.godot: `{}`\n",
-            Tool::Version::get("sdk"),
-            Tool::Version::get("kit"),
-            Tool::Version::get("wry"),
-            Tool::Version::get("godot")
-        );
+        std::ostringstream oss;
+        oss << "Version:\n";
+        for (const auto& [label, value] : Tool::Version::get_all()) oss << fmt::format("> {}: `{}`\n", label, value);
+        return oss.str();
     }
 
     std::string Console::Internal::fetch_help() {

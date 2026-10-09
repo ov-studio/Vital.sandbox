@@ -351,6 +351,14 @@ namespace Vital::Engine {
             doc.AddMember("action", "init", a);
             doc.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), a), a);
             doc.AddMember("masterlist_refresh", Manager::Kit::fetch_json_value("config/masterlist", "refresh").as<int32_t>(), a);
+            rapidjson::Value versions(rapidjson::kArrayType);
+            for (const auto& [label, value] : Tool::Version::get_all()) {
+                rapidjson::Value item(rapidjson::kObjectType);
+                item.AddMember("label", rapidjson::Value(label.c_str(), a), a);
+                item.AddMember("value", rapidjson::Value(value.c_str(), a), a);
+                versions.PushBack(item, a);
+            }
+            doc.AddMember("versions", versions, a);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             doc.Accept(writer);

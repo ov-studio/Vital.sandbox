@@ -95,5 +95,14 @@ namespace Vital::Tool {
             if (key == "godot") return VSDK_GODOT_VERSION;
             return "unknown";
         }
+
+        inline std::vector<std::pair<std::string, std::string>> get_all() {
+            return {
+                { "Vital.sandbox", get("sdk")   },
+                { "Vital.kit",     get("kit")   },
+                { "Vital.wry",     get("wry")   },
+                { "Vital.godot",   get("godot") }
+            };
+        }
     }
 }
