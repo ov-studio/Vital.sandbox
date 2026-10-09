@@ -378,16 +378,13 @@ namespace Vital::Engine {
         webview -> emit(buffer.GetString());
     }
 
-    // Fetches the public masterlist (Config::Server::masterlist_default_url) off the main thread and hands
-    // the page { action: "masterlist", ok, servers }. The host does the request because the API only allows
-    // CORS from the site's own origin.
     void MainMenu::fetch_masterlist() {
         if (!webview || masterlist_running.exchange(true)) return;
         Tool::Thread::create([this](Tool::Thread*) {
             rapidjson::Document body;
             bool ok = false;
             try {
-                body.Parse(Tool::HTTP::get(Config::Server::masterlist_default_url, {}, 8).c_str());
+                body.Parse(Tool::HTTP::get("https://api.vital-sandbox.com/masterlist", {}, 8).c_str());
                 ok = !body.HasParseError() && body.IsArray();
             }
             catch (...) { /* offline / unavailable: the page keeps its last list and shows the error state */ }
