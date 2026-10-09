@@ -8,6 +8,10 @@ server:
   version: "1.0.0"
   description: "A Vital.sandbox server"
 
+  # Optional images for the server browser (https:// URLs). Empty = plain colour fallback.
+  logo: ""    # square, shown as the server icon
+  banner: ""  # wide, shown as the card / featured cover
+
   # Genre tags for the server browser (max 5), e.g. tags: [roleplay, freeroam, economy].
   # Pick from the valid tags only; anything else is ignored.
   # Full list: https://vital-sandbox.com/docs/server/config#server
