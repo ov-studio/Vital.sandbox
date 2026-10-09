@@ -81,23 +81,34 @@ namespace Vital::Config {
                 auto append_field = [](std::ostringstream& oss, const std::string& label, const std::string& value) {
                     oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value);
                 };
+                
                 std::ostringstream oss;
                 oss << fmt::format("Config: {}\n", loaded ? "Server config loaded successfully" : "Failed to load server config (using defaults)");
                 oss << "• Server:\n";
                 append_field(oss, "Name", get_server_name());
                 append_field(oss, "Version", get_server_version());
-                append_field(oss, "Website", get_website());
-                append_field(oss, "Discord", get_discord());
+                append_field(oss, "Description", get_server_description());
+                append_field(oss, "Logo", get_server_logo());
+                append_field(oss, "Banner", get_server_banner());
+                std::string tags;
+                for (const auto& tag : get_server_tags()) tags += (tags.empty() ? "" : ", ") + tag;
+                append_field(oss, "Tags", tags);
+
                 oss << "• Network:\n";
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
                 append_field(oss, "Max Peers", std::to_string(get_max_peers()));
                 append_field(oss, "Sync Rate", std::to_string(get_sync_rate()) + " Hz");
                 append_field(oss, "Physics Tick Rate", std::to_string(get_physics_tick_rate()) + " Hz");
+
                 oss << "• Sync:\n";
                 append_field(oss, "Buffer Delay Max", fmt::format("{:.0f}ms", get_sync_buffer_delay_max() * 1000.0f));
                 append_field(oss, "Jitter Margin",    fmt::format("{:.2f}x", get_sync_jitter_margin()));
                 append_field(oss, "Snap Threshold",   fmt::format("{:.1f}u", get_sync_snap_threshold()));
+
+                oss << "• Social:\n";
+                append_field(oss, "Website", get_website());
+                append_field(oss, "Discord", get_discord());
                 return oss.str();
             }
 
@@ -178,6 +189,7 @@ namespace Vital::Config {
                 obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_peers()), alloc);
+
                 obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
             }
