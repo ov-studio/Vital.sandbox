@@ -41,7 +41,7 @@ namespace Vital::Tool::LocalServer {
     }
 
     inline std::filesystem::path get_path(int port) {
-        return get_directory() / (std::to_string(port) + ".json");
+        return get_directory() / fmt::format("{}.json", port);
     }
 
     inline void retract(int port) {
