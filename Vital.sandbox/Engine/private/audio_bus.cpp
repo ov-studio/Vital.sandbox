@@ -23,7 +23,7 @@
 namespace Vital::Engine {
     // Helpers //
     const std::string& Audio_Bus::create_bus(const std::string& prefix) {
-        bus_name = prefix + std::to_string(reinterpret_cast<uintptr_t>(this));
+        bus_name = fmt::format("{}{}", prefix, reinterpret_cast<uintptr_t>(this));
         Engine::Core::get_audio_server() -> add_bus();
         bus_index = Engine::Core::get_audio_server() -> get_bus_count() - 1;
         Engine::Core::get_audio_server() -> set_bus_name(bus_index, Tool::to_godot_string(bus_name));
