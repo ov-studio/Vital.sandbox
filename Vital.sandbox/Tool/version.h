@@ -53,8 +53,8 @@ namespace Vital::Tool {
             std::string label;
 
             std::string to_string() const {
-                std::string v = "v" + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
-                if (!label.empty()) v += "-" + label;
+                std::string v = fmt::format("v{}.{}.{}", major, minor, patch);
+                if (!label.empty()) v += fmt::format("-{}", label);
                 return v;
             }
 
