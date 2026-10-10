@@ -43,34 +43,34 @@ namespace Vital::Engine {
 
     // Events //
     void Area::on_body_entered(godot::Node3D* body) {
-        Tool::Event::emit("area:body_entered:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ body }));
+        Tool::Event::emit(fmt::format("area:body_entered:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ body }));
     }
 
     void Area::on_body_exited(godot::Node3D* body) {
-        Tool::Event::emit("area:body_exited:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ body }));
+        Tool::Event::emit(fmt::format("area:body_exited:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ body }));
     }
 
     void Area::on_area_entered(godot::Area3D* area) {
-        Tool::Event::emit("area:area_entered:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area) }));
+        Tool::Event::emit(fmt::format("area:area_entered:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area) }));
     }
 
     void Area::on_area_exited(godot::Area3D* area) {
-        Tool::Event::emit("area:area_exited:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area) }));
+        Tool::Event::emit(fmt::format("area:area_exited:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area) }));
     }
 
     void Area::on_body_shape_entered(godot::RID, godot::Node3D* body, int body_shape_index, int local_shape_index) {
-        Tool::Event::emit("area:body_shape_entered:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ body, body_shape_index, local_shape_index }));
+        Tool::Event::emit(fmt::format("area:body_shape_entered:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ body, body_shape_index, local_shape_index }));
     }
 
     void Area::on_body_shape_exited(godot::RID, godot::Node3D* body, int body_shape_index, int local_shape_index) {
-        Tool::Event::emit("area:body_shape_exited:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ body, body_shape_index, local_shape_index }));
+        Tool::Event::emit(fmt::format("area:body_shape_exited:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ body, body_shape_index, local_shape_index }));
     }
 
     void Area::on_area_shape_entered(godot::RID, godot::Area3D* area, int area_shape_index, int local_shape_index) {
-        Tool::Event::emit("area:area_shape_entered:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area), area_shape_index, local_shape_index }));
+        Tool::Event::emit(fmt::format("area:area_shape_entered:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area), area_shape_index, local_shape_index }));
     }
 
     void Area::on_area_shape_exited(godot::RID, godot::Area3D* area, int area_shape_index, int local_shape_index) {
-        Tool::Event::emit("area:area_shape_exited:" + std::to_string(reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area), area_shape_index, local_shape_index }));
+        Tool::Event::emit(fmt::format("area:area_shape_exited:{}", reinterpret_cast<uint64_t>(this)), Tool::Stack({ static_cast<godot::Node3D*>(area), area_shape_index, local_shape_index }));
     }
 }
