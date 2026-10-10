@@ -55,7 +55,7 @@ namespace Vital::Manager::Kit {
             auto it = json_cache.find(name);
             if (it != json_cache.end()) return it -> second;
             rapidjson::Document document;
-            document.Parse(fetch_content(name + ".json").c_str());
+            document.Parse(fetch_content(fmt::format("{}.json", name)).c_str());
             if (document.HasParseError()) {
                 static rapidjson::Document empty_doc;
                 return empty_doc;
@@ -145,8 +145,8 @@ namespace Vital::Manager::Kit {
     inline std::vector<std::pair<std::string, std::string>> fetch_module(const std::string& name) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         std::vector<std::pair<std::string, std::string>> result;
-        const std::string path = "module/" + name;
-        auto& document = Internal::fetch_json(path + "/manifest");
+        const std::string path = fmt::format("module/{}", name);
+        auto& document = Internal::fetch_json(fmt::format("{}/manifest", path));
         if (document.HasParseError() || !document.IsObject() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             if (!i.IsString()) continue;
