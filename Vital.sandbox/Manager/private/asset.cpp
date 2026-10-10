@@ -324,7 +324,7 @@ namespace Vital::Manager {
             }
 
             bool hash_matches = false;
-            const std::string local_path = Tool::get_directory() + "/" + path;
+            const std::string local_path = fmt::format("{}/{}", Tool::get_directory(), path);
             try {
                 if (std::filesystem::exists(local_path)) hash_matches = (hash_file(local_path) == hash);
             }
