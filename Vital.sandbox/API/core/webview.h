@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                 instance -> webview -> set_handler(type, [instance, type](base_class::Payload payload) {
                     if (!Instance::find_unlocked(instance)) return;
                     auto webview = Tool::StackValue(instance);
-                    auto signal = "webview:" + type;
+                    auto signal = fmt::format("webview:{}", type);
                     std::visit([&](auto&& value) {
                         using V = std::decay_t<decltype(value)>;
                         if constexpr (std::is_same_v<V, std::monostate>) Manager::Sandbox::get_singleton() -> signal(signal, webview);
