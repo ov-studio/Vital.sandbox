@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(Manager::Network::get_singleton() -> get_fps_limit());
                 return 1;
             });
-            
+
             #if defined(VSDK_Client)
             API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
@@ -165,7 +165,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(limit)")
                     .require(1, &Machine::is_number);
 
-                Manager::Network::get_singleton() -> set_fps_limit(vm -> get_int(1));
+                auto limit = vm -> get_int(1);
+                Manager::Network::get_singleton() -> set_fps_limit(limit);
                 vm -> push_value(true);
                 return 1;
             });
