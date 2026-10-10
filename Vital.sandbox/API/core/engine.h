@@ -64,6 +64,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_device", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_device());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_timestamp", [](auto vm, auto& id) -> int {
                 auto timestamp = Tool::get_timestamp();
                 vm -> create_table();

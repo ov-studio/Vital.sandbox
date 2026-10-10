@@ -81,6 +81,10 @@ namespace Vital::Tool {
         #endif
     }
 
+    inline const std::string get_device() {
+        return Tool::to_std_string(godot::OS::get_singleton() -> get_name().to_lower());
+    }
+
     #if defined(VSDK_Client)
     inline std::string get_username() {
         godot::String username;
