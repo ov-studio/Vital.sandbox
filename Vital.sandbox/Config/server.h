@@ -91,15 +91,15 @@ namespace Vital::Config {
                 append_field(oss, "Logo", get_server_logo());
                 append_field(oss, "Banner", get_server_banner());
                 std::string tags;
-                for (const auto& tag : get_server_tags()) tags += (tags.empty() ? "" : ", ") + tag;
+                for (const auto& tag : get_server_tags()) tags += fmt::format("{}{}", tags.empty() ? "" : ", ", tag);
                 append_field(oss, "Tags", tags);
 
                 oss << "• Network:\n";
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
                 append_field(oss, "Max Peers", std::to_string(get_max_peers()));
-                append_field(oss, "Sync Rate", std::to_string(get_sync_rate()) + " Hz");
-                append_field(oss, "Physics Tick Rate", std::to_string(get_physics_tick_rate()) + " Hz");
+                append_field(oss, "Sync Rate", fmt::format("{} Hz", get_sync_rate()));
+                append_field(oss, "Physics Tick Rate", fmt::format("{} Hz", get_physics_tick_rate()));
 
                 oss << "• Sync:\n";
                 append_field(oss, "Buffer Delay Max", fmt::format("{:.0f}ms", get_sync_buffer_delay_max() * 1000.0f));
