@@ -19,9 +19,9 @@
 #include <rapidjson/document.h>
 
 
-/////////////////////////////////
-// Vital: Tool: LocalServer   //
-/////////////////////////////////
+///////////////////////////////
+// Vital: Tool: LocalServer //
+///////////////////////////////
 
 // TODO: Improve
 // Servers running on this machine announce themselves by writing a tiny JSON file
