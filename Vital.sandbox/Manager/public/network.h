@@ -76,6 +76,20 @@ namespace Vital::Manager {
             godot::PackedByteArray sync_batch_buf;
 
             float sync_interval = 1.0f / static_cast<float>(Engine::ISyncable::Config{}.rate);
+
+            // FPS limit (0 = no limit).
+            // Server: the cap enforced on every connected client; replayed to late-joiners.
+            // Client: fps_limit_server is the server-enforced cap (dropped on leaving the server),
+            //         fps_limit_client is the local override. The engine's max_fps is always the
+            //         stricter of the two, so a client can go lower than the server but never higher.
+            #if defined(VSDK_Client)
+            int fps_limit_server = 0;
+            int fps_limit_client = 0;
+            void apply_fps_limit();
+            #else
+            int fps_limit = 0;
+            #endif
+
             #if defined(VSDK_Client)
             bool pending_handshake = false;
             std::string reconnect_ip;
@@ -96,6 +110,7 @@ namespace Vital::Manager {
                     static bool send(const Tool::Stack& stack, int peer_id);
                     static bool broadcast_sync(const godot::PackedByteArray& data);
                     static bool send_sync_to_server(const godot::PackedByteArray& data);
+                    static void set_fps_limit(int limit);
                     #if defined(VSDK_Client)
                     static bool connect_to_server(const std::string& ip, int port, int http_port);
                     static bool reconnect();
@@ -199,6 +214,10 @@ namespace Vital::Manager {
             // every ISyncable's interp_step from staying at compile-time defaults.
             void apply_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
 
+            // Called from Engine::Network::_sync_fps_limit with the server's current FPS cap
+            // (0 = none). Re-applied whenever the server changes it at runtime.
+            void apply_server_fps_limit(int limit);
+
             // Buffers a component_visible/component_render sync for a net_id not yet
             // registered; replay_pending_syncs() applies it via Engine::Model once the
             // entity registers. See pending_component_visible_syncs / pending_component_render_syncs.
@@ -250,6 +269,16 @@ namespace Vital::Manager {
             const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;
             #endif
+
+
+            // FPS limit (0 = no limit; negative values are treated as 0) //
+            // Server: sets the cap for every connected client, now and in future.
+            // Client: sets the local override, which is still clamped under the server's cap.
+            void set_fps_limit(int limit);
+
+            // Server: the cap currently enforced on clients.
+            // Client: the effective cap actually applied (stricter of server cap and local override).
+            int get_fps_limit() const;
 
 
             // Shared RPC (channel 0, reliable) //

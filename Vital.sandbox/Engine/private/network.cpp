@@ -46,6 +46,7 @@ namespace Vital::Engine {
         rpc_config("_destroy_entity", reliable);
         rpc_config("_sync_state", reliable);
         rpc_config("_sync_config", reliable);
+        rpc_config("_sync_fps_limit", reliable);
         rpc_config("_set_authority", reliable);
         rpc_config("_sync_shape", reliable);
         rpc_config("_reparent_entity", reliable);
@@ -93,6 +94,15 @@ namespace Vital::Engine {
     void Network::_sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold) {
         #if defined(VSDK_Client)
         Manager::Network::get_singleton() -> apply_sync_config(rate, buffer_delay_max, jitter_margin, snap_threshold);
+        #endif
+    }
+
+    void Network::_sync_fps_limit(int limit) {
+        #if defined(VSDK_Client)
+        // RPC mode is ANY_PEER, so only trust the server (peer 1) to set the cap.
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        if (!tree || tree -> get_multiplayer() -> get_remote_sender_id() != 1) return;
+        Manager::Network::get_singleton() -> apply_server_fps_limit(limit);
         #endif
     }
 

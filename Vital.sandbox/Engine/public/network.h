@@ -36,6 +36,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_state", "data"), &Network::_sync_state);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_client", "data"), &Network::_sync_client);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_config", "rate", "buffer_delay_max", "jitter_margin", "snap_threshold"), &Network::_sync_config);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_fps_limit", "limit"), &Network::_sync_fps_limit);
                 godot::ClassDB::bind_method(godot::D_METHOD("_wake_sync"), &Network::_wake_sync);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_shape", "net_id", "shape_type", "params"), &Network::_sync_shape);
                 godot::ClassDB::bind_method(godot::D_METHOD("_reparent_entity", "net_id", "parent_net_id"), &Network::_reparent_entity);
@@ -71,6 +72,7 @@ namespace Vital::Engine {
             void _sync_state(godot::PackedByteArray data);
             void _sync_client(godot::PackedByteArray data);
             void _sync_config(int rate, float buffer_delay_max, float jitter_margin, float snap_threshold);
+            void _sync_fps_limit(int limit);
             void _wake_sync();
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             static void apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params);

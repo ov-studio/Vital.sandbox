@@ -87,6 +87,23 @@ namespace Vital::Manager {
         #endif
     }
 
+    void Network::Internal::set_fps_limit(int limit) {
+        Tool::assert_main_thread("Network::Internal::set_fps_limit");
+        auto nm = Network::get_singleton();
+        limit = std::max(limit, 0);
+        #if defined(VSDK_Client)
+        nm -> fps_limit_client = limit;
+        nm -> apply_fps_limit();
+        #else
+        if (nm -> fps_limit == limit) return;
+        nm -> fps_limit = limit;
+        // Reliable broadcast to everyone already connected; peers joining later
+        // are sent the current value from _on_peer_connected.
+        if (nm -> node && nm -> is_connected()) nm -> node->rpc("_sync_fps_limit", limit);
+        nm -> log("sbox", fmt::format("fps limit -> {}", limit > 0 ? fmt::format("{} FPS", limit) : "unlimited"));
+        #endif
+    }
+
     #if defined(VSDK_Client)
     bool Network::Internal::connect_to_server(const std::string& ip, int port, int http_port) {
         Tool::assert_main_thread("Network::Internal::connect_to_server");
@@ -328,6 +345,9 @@ namespace Vital::Manager {
         destroy_all_syncables();
         Engine::Model::cleanup_spawned();
         Manager::Asset::get_singleton() -> clear();
+        // Leaving a server drops its FPS cap; only the client's own override remains.
+        fps_limit_server = 0;
+        apply_fps_limit();
     }
     #endif
 
@@ -869,6 +889,18 @@ namespace Vital::Manager {
         log("sbox", fmt::format("sync config confirmed by server -> {} Hz, delay_max={:.0f}ms, jitter={:.2f}x, snap={:.1f}u",
             rate, buffer_delay_max * 1000.0f, jitter_margin, snap_threshold));
     }
+
+    // Pushes the effective limit (see get_fps_limit) to the engine.
+    void Network::apply_fps_limit() {
+        godot::Engine::get_singleton() -> set_max_fps(get_fps_limit());
+    }
+
+    // Received via the "_sync_fps_limit" RPC: on connect, and again whenever the server changes it.
+    void Network::apply_server_fps_limit(int limit) {
+        fps_limit_server = std::max(limit, 0);
+        apply_fps_limit();
+        log("sbox", fmt::format("fps limit set by server -> {}", fps_limit_server > 0 ? fmt::format("{} FPS", fps_limit_server) : "unlimited"));
+    }
     #endif
 
 
@@ -1271,6 +1303,9 @@ namespace Vital::Manager {
             get_server_config().get_sync_jitter_margin(),
             get_server_config().get_sync_snap_threshold());
 
+        // 0b. Same for the FPS cap, so late-joiners start under the current limit.
+        if (node) node->rpc_id(id, "_sync_fps_limit", fps_limit);
+
         // 1. Flush pending so newly created models are in sync_models before we iterate.
         //    (send_full_state_to_peer does this too, but we need the list for spawns first.)
         {
@@ -1638,6 +1673,21 @@ namespace Vital::Manager {
 
     void Network::broadcast(const Tool::Stack& stack)      { send(stack, 0); }
     void Network::send_to_server(const Tool::Stack& stack) { send(stack, 1); }
+
+    void Network::set_fps_limit(int limit) {
+        Engine::Core::get_singleton() -> execute([limit]() { Internal::set_fps_limit(limit); });
+    }
+
+    int Network::get_fps_limit() const {
+        #if defined(VSDK_Client)
+        // 0 means "no limit" on either side, so it only wins when both are 0;
+        // otherwise the stricter (lower) of the two applies.
+        return fps_limit_server <= 0 ? fps_limit_client
+            : (fps_limit_client <= 0 ? fps_limit_server : std::min(fps_limit_server, fps_limit_client));
+        #else
+        return fps_limit;
+        #endif
+    }
 
 
     //----------//
