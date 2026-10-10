@@ -32,24 +32,24 @@ namespace Vital::Engine {
 
         const std::vector<EntryPoint> entry_points = is_spatial ? 
             std::vector<EntryPoint>{
-                { "void fragment()", "ROUGHNESS *= " + std::string(SENTINEL) + ";\n" },
-                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL) + ";\n" } 
+                { "void fragment()", fmt::format("ROUGHNESS *= {};\n", SENTINEL) },
+                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL) } 
             } : 
             std::vector<EntryPoint>{
-                { "void fragment()", "COLOR.a *= " + std::string(SENTINEL) + ";\n" },
-                { "void vertex()",   "VERTEX *= " + std::string(SENTINEL) + ";\n" } 
+                { "void fragment()", fmt::format("COLOR.a *= {};\n", SENTINEL) },
+                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL) } 
             };
 
         std::string result = src;
         auto st_end = result.find(';');
-        if (st_end != std::string::npos) result.insert(st_end + 1, "\n" + decl);
-        else result = decl + result;
+        if (st_end != std::string::npos) result.insert(st_end + 1, fmt::format("\n{}", decl));
+        else result = fmt::format("{}{}", decl, result);
         for (const auto& ep : entry_points) {
             std::size_t pos = 0;
             while ((pos = result.find(ep.signature, pos)) != std::string::npos) {
                 auto brace = result.find('{', pos + ep.signature.size());
                 if (brace == std::string::npos) break;
-                result.insert(brace + 1, "\n" + ep.usage);
+                result.insert(brace + 1, fmt::format("\n{}", ep.usage));
                 pos = brace + 1 + ep.usage.size();
             }
         }
@@ -75,7 +75,7 @@ namespace Vital::Engine {
         std::string src = raw;
         if (mode == Shader::Mode::Postprocess) {
             if (src.find("shader_type") == std::string::npos)
-                src = "shader_type spatial;\n" + src;
+                src = fmt::format("shader_type spatial;\n{}", src);
             if (src.find("render_mode") == std::string::npos) {
                 auto st_end = src.find(';');
                 if (st_end != std::string::npos)
@@ -86,7 +86,7 @@ namespace Vital::Engine {
         }
         if (src.find("shader_type") == std::string::npos) {
             std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
-            src = "shader_type " + type_name + ";\n" + src;
+            src = fmt::format("shader_type {};\n{}", type_name, src);
         }
         return inject_sentinel(src, mode == Shader::Mode::Spatial);
     }
