@@ -189,8 +189,8 @@ namespace Vital::Manager {
             bool first = true;
             for (auto& [path, entry] : registered_assets) {
                 if (!first) body += ",";
-                body += "{\"path\":\"" + path + "\",\"hash\":\"" + entry.hash + "\"";
-                if (!entry.group.empty()) body += ",\"group\":\"" + entry.group + "\"";
+                body += fmt::format("{{\"path\":\"{}\",\"hash\":\"{}\"", path, entry.hash);
+                if (!entry.group.empty()) body += fmt::format(",\"group\":\"{}\"", entry.group);
                 body += "}";
                 first = false;
             }
