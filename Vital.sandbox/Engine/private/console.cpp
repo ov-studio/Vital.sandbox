@@ -198,7 +198,7 @@ namespace Vital::Engine {
             if (content[i] == '`') {
                 size_t end = content.find('`', i + 1);
                 if (end != std::string::npos) {
-                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + content.substr(i + 1, end - i - 1) + mode_color;
+                    result += fmt::format("{}{}{}", ansi_rgb_lighten(mode_rgb, 0.35f), content.substr(i + 1, end - i - 1), mode_color);
                     i = end + 1;
                     continue;
                 }
@@ -210,7 +210,7 @@ namespace Vital::Engine {
 
     std::string Console::Internal::format_line(const Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
         const std::string mode_color = ansi_rgb(mode_rgb);
-        const std::string marker = ANSI_BOLD + mode_color + "│ " + ANSI_RESET;
+        const std::string marker = fmt::format("{}{}│ {}", ANSI_BOLD, mode_color, ANSI_RESET);
         const std::string indent_str(18 + mode_label.size(), ' ');
         std::ostringstream oss;
         std::string content = line;
