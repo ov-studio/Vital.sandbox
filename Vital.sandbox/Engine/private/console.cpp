@@ -108,7 +108,7 @@ namespace Vital::Engine {
             const std::size_t len = std::strlen(e.prefix);
             if (line.rfind(e.prefix, 0) != 0) continue;
             mode    = e.mode;
-            message = std::string(e.label) + ": " + (e.strip ? line.substr(len) : line);
+            message = fmt::format("{}: {}", e.label, e.strip ? line.substr(len) : line);
             break;
         }
         if (mode.empty()) return;
@@ -527,7 +527,7 @@ namespace Vital::Engine {
         log_running = true;
         log_thread = std::thread([this]() {
             auto udd = godot::OS::get_singleton() -> get_user_data_dir();
-            std::string log_path = Tool::to_std_string(udd) + "/logs/godot.log";
+            std::string log_path = fmt::format("{}/logs/godot.log", Tool::to_std_string(udd));
             std::ifstream file;
             std::streampos last_pos = 0;
             while (log_running) {
