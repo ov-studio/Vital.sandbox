@@ -144,7 +144,7 @@ namespace Vital::Tool::HTTP {
             std::string get_url(const std::string& path = "") const {
                 std::string base = fmt::format("http://{}:{}", bind_address, port);
                 if (path.empty()) return base;
-                return base + (path.front() == '/' ? path : "/" + path);
+                return path.front() == '/' ? fmt::format("{}{}", base, path) : fmt::format("{}/{}", base, path);
             }
         private:
             bool is_port_taken(int check_port) const {
