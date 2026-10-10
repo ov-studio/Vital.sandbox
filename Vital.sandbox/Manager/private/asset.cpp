@@ -356,7 +356,7 @@ namespace Vital::Manager {
         active_downloads[path] = dl;
 
         const std::string local_base = Tool::get_directory();
-        const std::string local_path = local_base + "/" + path;
+        const std::string local_path = fmt::format("{}/{}", local_base, path);
 
         // Capture generation per group at dispatch time. If the group is cancelled
         // before this download completes, the generation will have been bumped and
