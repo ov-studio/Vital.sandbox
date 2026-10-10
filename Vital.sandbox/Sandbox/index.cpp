@@ -43,7 +43,7 @@ namespace Vital::Sandbox {
             Tool::assert_main_thread("Machine::bind");
             scope_set(scope);
             vm_module::push_owned<vm_bind>(state, std::move(exec));
-            vm_module::push_owned<std::string>(state, vm_module::scope_id(scope) + "." + name);
+            vm_module::push_owned<std::string>(state, fmt::format("{}.{}", vm_module::scope_id(scope), name));
             lua_pushcclosure(state, [](vm_state* state) -> int {
                 auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                 auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
