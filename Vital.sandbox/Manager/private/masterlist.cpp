@@ -46,7 +46,7 @@ namespace Vital::Manager {
         document.Accept(writer);
         try {
             rapidjson::Document reply;
-            reply.Parse(Tool::HTTP::post(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 15).c_str());
+            reply.Parse(Tool::HTTP::post(fmt::format("{}/heartbeat", server_config -> get_masterlist_url()), buffer.GetString(), {}, 15).c_str());
             if (!reply.HasParseError() && reply.IsObject() && reply.HasMember("ignoredTags") && reply["ignoredTags"].IsArray() && !reply["ignoredTags"].Empty()) {
                 std::string ignored;
                 for (const auto& tag : reply["ignoredTags"].GetArray()) {
@@ -68,7 +68,7 @@ namespace Vital::Manager {
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.Accept(writer);
-        try { Tool::HTTP::del(server_config -> get_masterlist_url() + "/heartbeat", buffer.GetString(), {}, 10); }
+        try { Tool::HTTP::del(fmt::format("{}/heartbeat", server_config -> get_masterlist_url()), buffer.GetString(), {}, 10); }
         catch (const std::exception& e) { log("warn", fmt::format("deregister failed — {}", e.what())); }
     }
 
