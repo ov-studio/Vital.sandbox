@@ -288,7 +288,7 @@ namespace Vital::Manager {
         int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
 
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
-        const std::string base_url = "http://" + server_ip + ":" + std::to_string(http_port);
+        const std::string base_url = fmt::format("http://{}:{}", server_ip, http_port);
 
         // Build per-group pending counts for this manifest batch before processing,
         // so _on_file_ready can reliably detect when the last asset in a group lands.
