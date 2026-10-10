@@ -260,7 +260,7 @@ namespace Vital::Engine {
         };
 
         auto emit_code_block = [&](std::ostringstream& out, const std::vector<std::string>& lines) {
-            for (const auto& l : lines) out << format_line(mode_rgb, ts_str, mode_badge, "> `" + l + "`", true);
+            for (const auto& l : lines) out << format_line(mode_rgb, ts_str, mode_badge, fmt::format("> `{}`", l), true);
         };
 
         std::ostringstream oss;
