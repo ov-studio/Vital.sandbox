@@ -245,9 +245,9 @@ namespace Vital::Manager {
             msg.object["http_port"] = Tool::StackValue((int32_t)http_server.get_port());
             int i = 0;
             for (auto& [path, entry] : registered_assets) {
-                msg.object["asset_path_" + std::to_string(i)] = Tool::StackValue(path);
-                msg.object["asset_hash_" + std::to_string(i)] = Tool::StackValue(entry.hash);
-                msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
+                msg.object[fmt::format("asset_path_{}", i)] = Tool::StackValue(path);
+                msg.object[fmt::format("asset_hash_{}", i)] = Tool::StackValue(entry.hash);
+                msg.object[fmt::format("asset_group_{}", i)] = Tool::StackValue(entry.group);
                 i++;
             }
             nm -> send(msg, pid);
@@ -295,8 +295,8 @@ namespace Vital::Manager {
         // We only count assets that actually need resolution (not already downloading).
         std::unordered_map<std::string, int> batch_counts;
         for (int i = 0; i < count; i++) {
-            const std::string path  = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
-            const std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+            const std::string path  = arguments.object.at(fmt::format("asset_path_{}", i)).as<std::string>();
+            const std::string group = arguments.object.count(fmt::format("asset_group_{}", i)) ? arguments.object.at(fmt::format("asset_group_{}", i)).as<std::string>() : "";
             if (group.empty()) continue;
             if (active_downloads.count(path)) {
                 // Already in flight — attach our group and it will decrement when done.
@@ -314,9 +314,9 @@ namespace Vital::Manager {
         int to_download = 0;
 
         for (int i = 0; i < count; i++) {
-            const std::string path  = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
-            const std::string hash  = arguments.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
-            const std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+            const std::string path  = arguments.object.at(fmt::format("asset_path_{}", i)).as<std::string>();
+            const std::string hash  = arguments.object.at(fmt::format("asset_hash_{}", i)).as<std::string>();
+            const std::string group = arguments.object.count(fmt::format("asset_group_{}", i)) ? arguments.object.at(fmt::format("asset_group_{}", i)).as<std::string>() : "";
 
             if (active_downloads.count(path)) {
                 in_progress++;
@@ -366,7 +366,7 @@ namespace Vital::Manager {
 
         dl -> thread = std::thread([this, dl, path, expected_hash, base_url, local_path, group, dispatch_gens]() {
             std::string response_body;
-            try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl -> cancelled); }
+            try { response_body = Tool::HTTP::get(fmt::format("{}/asset?path={}", base_url, path), {}, 60, true, &dl -> cancelled); }
             catch (const std::exception& e) {
                 log("error", fmt::format("download failed — {}\n│ reason: {}", path, e.what()));
                 _on_download_failed(path);
