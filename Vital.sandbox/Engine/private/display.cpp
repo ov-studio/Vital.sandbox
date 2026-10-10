@@ -153,7 +153,7 @@ namespace Vital::Engine {
 
     // Misc //
     void Display::screenshot(const std::string& base, const std::string& path) {
-        auto target = Tool::to_godot_string(base + "/" + path);
+        auto target = Tool::to_godot_string(fmt::format("{}/{}", base, path));
         auto image = get_texture() -> get_image();
         godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
         if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to capture screenshot");
