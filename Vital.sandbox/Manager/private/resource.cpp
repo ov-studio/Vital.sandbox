@@ -547,7 +547,7 @@ namespace Vital::Manager {
         if (was_running) {
             vm -> clear_environment_id(name);
             #if defined(VSDK_Client)
-            Manager::Asset::get_singleton()->clear_spawn_queue_prefix(":" + name + "/");
+            Manager::Asset::get_singleton()->clear_spawn_queue_prefix(fmt::format(":{}/", name));
             #endif
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
