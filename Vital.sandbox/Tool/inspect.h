@@ -76,7 +76,7 @@ namespace Vital::Tool::Inspect {
             std::vector<std::wstring> query(const std::wstring& cls, const std::wstring& field) {
                 std::vector<std::wstring> out;
                 IEnumWbemClassObject* en = nullptr;
-                std::wstring q = L"SELECT " + field + L" FROM " + cls;
+                std::wstring q = fmt::format(L"SELECT {} FROM {}", field, cls);
                 if (FAILED(services -> ExecQuery(
                     bstr_t(L"WQL"),
                     bstr_t(q.c_str()),
