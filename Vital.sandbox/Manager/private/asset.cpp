@@ -102,7 +102,7 @@ namespace Vital::Manager {
             return;
         }
         try {
-            const std::string full_path = Tool::get_directory() + "/" + path;
+            const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
             registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
@@ -155,7 +155,7 @@ namespace Vital::Manager {
             const std::string path = req.get_param_value("path");
             if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
 
-            const std::string full_path = Tool::get_directory() + "/" + path;
+            const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
             std::ifstream file(full_path, std::ios::binary | std::ios::ate);
             if (!file) { res.status = 500; res.set_content("File read error", "text/plain"); return; }
 
