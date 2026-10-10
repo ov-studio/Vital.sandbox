@@ -452,7 +452,7 @@ namespace Vital::Manager {
         group_generations[group]++;
         // Drop stale placeholder spawns for this resource so a rapid restart
         // does not try to hydrate destroyed nodes or block fresh ones.
-        clear_spawn_queue_prefix(":" + group + "/");
+        clear_spawn_queue_prefix(fmt::format(":{}/", group));
         if (flagged > 0) log("sbox", fmt::format("cancelled group `{}` — {} download(s) stopped", group, flagged));
         else log("sbox", fmt::format("cancelled group `{}` — spawn queue cleared", group));
     }
