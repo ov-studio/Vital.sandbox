@@ -26,10 +26,7 @@
 // TODO: Improve
 namespace Vital::Engine {
     std::string Shader::Internal::inject_sentinel(const std::string& src, bool is_spatial) {
-        const std::string decl =
-            "uniform float " + std::string(SENTINEL) +
-            " : hint_range(1.0, 1.0) = 1.0;\n";
-
+        const std::string decl = fmt::format("uniform float {} : hint_range(1.0, 1.0) = 1.0;\n", SENTINEL);
         const std::vector<EntryPoint> entry_points = is_spatial ? 
             std::vector<EntryPoint>{
                 { "void fragment()", fmt::format("ROUGHNESS *= {};\n", SENTINEL) },
