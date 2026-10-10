@@ -425,7 +425,7 @@ namespace Vital::Engine {
             for (const auto& entry : Tool::LocalServer::list()) {
                 try {
                     rapidjson::Document info;
-                    info.Parse(Tool::HTTP::get("http://127.0.0.1:" + std::to_string(entry.http_port) + "/info", {}, 2).c_str());
+                    info.Parse(Tool::HTTP::get(fmt::format("http://127.0.0.1:{}/info", entry.http_port), {}, 2).c_str());
                     if (info.HasParseError() || !info.IsObject()) continue;
                     // Registry entry and server must agree, else the file is stale and the port was reused by something else
                     if (!info.HasMember("port") || !info.HasMember("http_port") || !info["port"].IsInt() || !info["http_port"].IsInt()) continue;
