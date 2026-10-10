@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <fmt/core.h>
 
 
 ////////////

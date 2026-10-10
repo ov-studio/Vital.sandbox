@@ -56,7 +56,13 @@
 #endif
 
 
-// Externals //
+// FMT //
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/xchar.h>
+
+
+// Godot //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/core/class_db.hpp>
