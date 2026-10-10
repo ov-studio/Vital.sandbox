@@ -122,7 +122,7 @@ namespace Vital::Tool {
     template<typename... Args>
     inline std::string get_directory(Args&&... args) {
         std::string base = Tool::to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
-        ((base += "/" + std::string(std::forward<Args>(args))), ...);
+        ((base += fmt::format("/{}", std::forward<Args>(args))), ...);
         return base;
     }
 
