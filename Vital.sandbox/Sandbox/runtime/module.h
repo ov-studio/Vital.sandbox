@@ -115,7 +115,7 @@ namespace Vital::Sandbox {
                 using exec_type = std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>;
                 push_owned<exec_type>(vm -> get_state(), std::move(exec));
                 push_owned<std::string>(vm -> get_state(), scope_id(T::Owner::base_scope));
-                push_owned<std::string>(vm -> get_state(), "self<" + scope_id(T::Owner::base_scope) + ">:" + name);
+                push_owned<std::string>(vm -> get_state(), fmt::format("self<{}>:{}", scope_id(T::Owner::base_scope), name));
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                     auto fn = static_cast<exec_type*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
