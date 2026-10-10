@@ -80,10 +80,10 @@ namespace Vital::Sandbox {
                     auto e = param.find_last_not_of(" \t");
                     param = (s == std::string::npos) ? "" : param.substr(s, e - s + 1);
                 }
-                if (params.empty()) return prefix + "()";
-                std::string result = prefix + "(\n";
+                if (params.empty()) return fmt::format("{}()", prefix);
+                std::string result = fmt::format("{}(\n", prefix);
                 for (size_t i = 0; i < params.size(); i++) {
-                    result += "\t" + params[i];
+                    result += fmt::format("\t{}", params[i]);
                     if (i != params.size() - 1) result += ",";
                     result += "\n";
                 }
