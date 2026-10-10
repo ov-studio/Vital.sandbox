@@ -142,7 +142,7 @@ namespace Vital::Tool::HTTP {
             }
 
             std::string get_url(const std::string& path = "") const {
-                std::string base = "http://" + bind_address + ":" + std::to_string(port);
+                std::string base = fmt::format("http://{}:{}", bind_address, port);
                 if (path.empty()) return base;
                 return base + (path.front() == '/' ? path : "/" + path);
             }
