@@ -136,7 +136,7 @@ namespace Vital::Manager {
             return true;
         }
         auto token_directory = Tool::get_directory("data", "discord");
-        auto token_file = std::to_string(application_id) + ".token";
+        auto token_file = fmt::format("{}.token", application_id);
         std::string token_value = Tool::File::exists(token_directory, token_file) ? Tool::File::read_text(token_directory, token_file) : "";
         if (!token_value.empty()) {
             client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
