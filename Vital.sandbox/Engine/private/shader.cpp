@@ -80,15 +80,12 @@ namespace Vital::Engine {
                 auto st_end = src.find(';');
                 if (st_end != std::string::npos) src.insert(st_end + 1, "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
             }
-            return inject_sentinel(src, Mode::Postprocess);
         }
-        else {
-            if (src.find("shader_type") == std::string::npos) {
-                std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
-                src = fmt::format("shader_type {};\n{}", type_name, src);
-            }
-            return inject_sentinel(src, mode);
+        else if (src.find("shader_type") == std::string::npos) {
+            std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
+            src = fmt::format("shader_type {};\n{}", type_name, src);
         }
+        return inject_sentinel(src, mode);
     }
 }
 
