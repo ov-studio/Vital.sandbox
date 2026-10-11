@@ -30,16 +30,18 @@ namespace Vital::Engine {
             enum class Mode {
                 Spatial,
                 CanvasItem,
-                Postprocess  // full-screen quad on camera — gives DEPTH_TEXTURE access
+                Postprocess,
+                Particles
+            };
+
+            inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
+                { "CANVAS_ITEM",   Mode::CanvasItem   },
+                { "SPATIAL",       Mode::Spatial      },
+                { "POST_PROCESS",  Mode::Postprocess  },
+                { "PARTICLES",     Mode::Particles    }
             };
 
             using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
-
-            inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
-                { "CANVAS_ITEM",  Mode::CanvasItem    },
-                { "SPATIAL",      Mode::Spatial       },
-                { "POST_PROCESS",  Mode::Postprocess  }
-            };
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
@@ -102,7 +104,7 @@ namespace Vital::Engine {
 
                 
                 // Helpers //
-                static std::string inject_sentinel(const std::string& src, bool is_spatial);
+                static std::string inject_sentinel(const std::string& src, Mode mode);
                 static bool validate_compiled(godot::Ref<godot::Shader>& shader);
                 static std::string build_source(const std::string& raw, Mode mode);
             };
