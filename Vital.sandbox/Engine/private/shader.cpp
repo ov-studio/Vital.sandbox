@@ -34,12 +34,6 @@ namespace Vital::Engine {
                 { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL)    }
             };
         }
-        else if (mode == Mode::Particles) {
-            entry_points = {
-                { "void start()",   fmt::format("VELOCITY *= {};\n", SENTINEL) },
-                { "void process()", fmt::format("VELOCITY *= {};\n", SENTINEL) }
-            };
-        }
         else {
             entry_points = {
                 { "void fragment()", fmt::format("COLOR.a *= {};\n", SENTINEL) },
@@ -81,21 +75,20 @@ namespace Vital::Engine {
     std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
         std::string src = raw;
         if (mode == Shader::Mode::Postprocess) {
-            if (src.find("shader_type") == std::string::npos)
-                src = fmt::format("shader_type spatial;\n{}", src);
+            if (src.find("shader_type") == std::string::npos) src = fmt::format("shader_type spatial;\n{}", src);
             if (src.find("render_mode") == std::string::npos) {
                 auto st_end = src.find(';');
-                if (st_end != std::string::npos)
-                    src.insert(st_end + 1,
-                        "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
+                if (st_end != std::string::npos) src.insert(st_end + 1, "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
             }
             return inject_sentinel(src, Mode::Postprocess);
         }
-        if (src.find("shader_type") == std::string::npos) {
-            std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : (mode == Shader::Mode::Particles) ? "particles" : "canvas_item";
-            src = fmt::format("shader_type {};\n{}", type_name, src);
+        else {
+            if (src.find("shader_type") == std::string::npos) {
+                std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
+                src = fmt::format("shader_type {};\n{}", type_name, src);
+            }
+            return inject_sentinel(src, mode);
         }
-        return inject_sentinel(src, mode);
     }
 }
 
