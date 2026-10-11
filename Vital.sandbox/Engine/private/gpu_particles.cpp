@@ -32,6 +32,12 @@ namespace Vital::Engine {
     }
 
 
+    void GPU_Particles::clear_shader() {
+        draw_shader.unref();
+        set_material_override(godot::Ref<godot::Material>());
+    }
+
+
     // Managers //
     GPU_Particles* GPU_Particles::create() {
         auto particles = memnew(GPU_Particles);
