@@ -312,27 +312,27 @@ namespace Vital::Sandbox::API {
             // Process getters //
             {
                 vm_module::bind_method<Instance>(vm, "get_direction", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_direction());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_direction());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_spread", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_spread());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_spread());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_flatness", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_flatness());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_flatness());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_gravity());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_gravity());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_color());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_color());
                     return 1;
                 });
 
@@ -341,24 +341,24 @@ namespace Vital::Sandbox::API {
                         .require_enum(2, param_registry);
 
                     auto param = static_cast<process_material::Parameter>(vm -> get_int(2));
-                    auto params = process_params(self);
+                    auto params = self -> particles -> get_process_params();
                     vm -> push_value(params -> get_param_min(param));
                     vm -> push_value(params -> get_param_max(param));
                     return 2;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_emission_shape", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(static_cast<int>(process_params(self) -> get_emission_shape()));
+                    vm -> push_value(static_cast<int>(self -> particles -> get_process_params() -> get_emission_shape()));
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_lifetime_randomness", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_lifetime_randomness());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_lifetime_randomness());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "is_turbulence_enabled", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(process_params(self) -> get_turbulence_enabled());
+                    vm -> push_value(self -> particles -> get_process_params() -> get_turbulence_enabled());
                     return 1;
                 });
             }
@@ -369,7 +369,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(direction)", true)
                         .require(2, &Machine::is_vector3);
 
-                    process_params(self) -> set_direction(vm -> get_vector3(2));
+                    self -> particles -> get_process_params() -> set_direction(vm -> get_vector3(2));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -378,7 +378,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(degrees)", true)
                         .require(2, &Machine::is_number);
 
-                    process_params(self) -> set_spread(godot::Math::clamp(vm -> get_float(2), 0.0f, 180.0f));
+                    self -> particles -> get_process_params() -> set_spread(godot::Math::clamp(vm -> get_float(2), 0.0f, 180.0f));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -387,7 +387,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(amount)", true)
                         .require(2, &Machine::is_number);
 
-                    process_params(self) -> set_flatness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                    self -> particles -> get_process_params() -> set_flatness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -396,7 +396,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(gravity)", true)
                         .require(2, &Machine::is_vector3);
 
-                    process_params(self) -> set_gravity(vm -> get_vector3(2));
+                    self -> particles -> get_process_params() -> set_gravity(vm -> get_vector3(2));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -405,7 +405,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(color)", true)
                         .require(2, &Machine::is_color);
 
-                    process_params(self) -> set_color(vm -> get_color(2));
+                    self -> particles -> get_process_params() -> set_color(vm -> get_color(2));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -420,7 +420,7 @@ namespace Vital::Sandbox::API {
                     auto param = static_cast<process_material::Parameter>(vm -> get_int(2));
                     auto min = vm -> get_float(3);
                     auto max = vm -> is_number(4) ? vm -> get_float(4) : min;
-                    auto params = process_params(self);
+                    auto params = self -> particles -> get_process_params();
                     params -> set_param_min(param, std::min(min, max));
                     params -> set_param_max(param, std::max(min, max));
                     vm -> push_value(true);
@@ -431,7 +431,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(ratio)", true)
                         .require(2, &Machine::is_number);
 
-                    process_params(self) -> set_lifetime_randomness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                    self -> particles -> get_process_params() -> set_lifetime_randomness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
                     vm -> push_value(true);
                     return 1;
                 });
@@ -446,7 +446,7 @@ namespace Vital::Sandbox::API {
                         .optional(5, &Machine::is_number);
 
                     auto shape = static_cast<process_material::EmissionShape>(vm -> get_int(2));
-                    auto params = process_params(self);
+                    auto params = self -> particles -> get_process_params();
                     params -> set_emission_shape(shape);
                     if (shape == process_material::EMISSION_SHAPE_BOX) {
                         params -> set_emission_box_extents(vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(1, 1, 1));
@@ -469,7 +469,7 @@ namespace Vital::Sandbox::API {
                         .optional(3, &Machine::is_number)
                         .optional(4, &Machine::is_number);
 
-                    auto params = process_params(self);
+                    auto params = self -> particles -> get_process_params();
                     params -> set_turbulence_enabled(vm -> get_bool(2));
                     if (vm -> is_number(3)) params -> set_turbulence_noise_strength(vm -> get_float(3));
                     if (vm -> is_number(4)) params -> set_turbulence_noise_scale(vm -> get_float(4));
@@ -483,14 +483,12 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_color)
                         .require(3, &Machine::is_color);
 
-                    process_params(self);
                     self -> particles -> set_color_ramp(vm -> get_color(2), vm -> get_color(3));
                     vm -> push_value(true);
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "reset_color_ramp", [](auto vm, auto self, auto& id) -> int {
-                    process_params(self);
                     self -> particles -> reset_color_ramp();
                     vm -> push_value(true);
                     return 1;
@@ -502,14 +500,12 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_number)
                         .require(3, &Machine::is_number);
 
-                    process_params(self);
                     self -> particles -> set_scale_curve(std::max(0.0f, vm -> get_float(2)), std::max(0.0f, vm -> get_float(3)));
                     vm -> push_value(true);
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "reset_scale_curve", [](auto vm, auto self, auto& id) -> int {
-                    process_params(self);
                     self -> particles -> reset_scale_curve();
                     vm -> push_value(true);
                     return 1;
@@ -610,7 +606,7 @@ namespace Vital::Sandbox::API {
 
             // Shaders //
             {
-                // Draw shader: SPATIAL shader controlling how each particle looks, replaces the built-in material
+                // SPATIAL shader controlling how each particle looks, replaces the built-in material
                 vm_module::bind_method<Instance>(vm, "set_shader", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(shader)", true)
                         .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Shader::Instance>(vm, idx); });
@@ -630,29 +626,6 @@ namespace Vital::Sandbox::API {
 
                 vm_module::bind_method<Instance>(vm, "has_shader", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> particles -> has_draw_shader());
-                    return 1;
-                });
-
-                // Process shader: PARTICLES shader controlling how each particle moves, replaces the built-in process params
-                vm_module::bind_method<Instance>(vm, "set_process_shader", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(shader)", true)
-                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Shader::Instance>(vm, idx); });
-
-                    auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 2) -> get_node();
-                    if (shader -> get_mode() != Vital::Engine::Shader::Mode::Particles) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the PARTICLES mode");
-                    self -> particles -> set_process_shader(shader -> create_surface_material(godot::Ref<godot::Material>()));
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "reset_process_shader", [](auto vm, auto self, auto& id) -> int {
-                    self -> particles -> set_process_shader(godot::Ref<godot::ShaderMaterial>());
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "has_process_shader", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> particles -> has_process_shader());
                     return 1;
                 });
             }
