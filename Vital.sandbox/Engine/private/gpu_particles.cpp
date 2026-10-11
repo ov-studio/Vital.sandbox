@@ -83,10 +83,6 @@ namespace Vital::Engine {
         return draw_shader.is_valid();
     }
 
-    bool GPU_Particles::has_process_shader() const {
-        return process_shader.is_valid();
-    }
-
     bool GPU_Particles::is_trail_mode() const {
         return trail_mode;
     }
@@ -128,12 +124,6 @@ namespace Vital::Engine {
     void GPU_Particles::set_draw_shader(const godot::Ref<godot::ShaderMaterial>& shader_material) {
         draw_shader = shader_material;
         set_material_override(shader_material);
-    }
-
-    void GPU_Particles::set_process_shader(const godot::Ref<godot::ShaderMaterial>& shader_material) {
-        process_shader = shader_material;
-        if (shader_material.is_valid()) set_process_material(shader_material);
-        else set_process_material(process);
     }
 
     void GPU_Particles::set_color_ramp(const godot::Color& from, const godot::Color& to) {
