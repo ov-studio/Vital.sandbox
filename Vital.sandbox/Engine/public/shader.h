@@ -34,8 +34,8 @@ namespace Vital::Engine {
             };
 
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
-                { "CANVAS_ITEM",   Mode::CanvasItem    },
-                { "SPATIAL",       Mode::Spatial       },
+                { "CANVAS_ITEM",   Mode::CanvasItem   },
+                { "SPATIAL",       Mode::Spatial      },
                 { "POST_PROCESS",  Mode::Postprocess  }
             };
 
