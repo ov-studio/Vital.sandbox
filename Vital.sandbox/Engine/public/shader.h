@@ -30,15 +30,13 @@ namespace Vital::Engine {
             enum class Mode {
                 Spatial,
                 CanvasItem,
-                Postprocess,
-                Particles
+                Postprocess
             };
 
             inline static const std::vector<std::pair<std::string, Mode>> mode_registry = {
-                { "CANVAS_ITEM",   Mode::CanvasItem   },
-                { "SPATIAL",       Mode::Spatial      },
-                { "POST_PROCESS",  Mode::Postprocess  },
-                { "PARTICLES",     Mode::Particles    }
+                { "CANVAS_ITEM",   Mode::CanvasItem    },
+                { "SPATIAL",       Mode::Spatial       },
+                { "POST_PROCESS",  Mode::Postprocess  }
             };
 
             using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
