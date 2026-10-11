@@ -97,14 +97,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // Built-in process params are detached from the emitter while a process
-        // shader is active, so writing to them would silently do nothing
-        template<typename T>
-        static godot::Ref<process_material> process_params(const T& self) {
-            if (self -> particles -> has_process_shader()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "built-in process params are unavailable while a process shader is active, call reset_process_shader first");
-            return self -> particles -> get_process_params();
-        }
-
         static void bind(Machine* vm) {
             vm_module::register_type<GPU_Particles>(vm);
 
