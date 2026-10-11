@@ -545,22 +545,6 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_texture", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(image)", true)
-                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Image::Instance>(vm, idx); });
-
-                    auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 2);
-                    self -> particles -> set_draw_texture(image -> get_node() -> get_texture());
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "reset_texture", [](auto vm, auto self, auto& id) -> int {
-                    self -> particles -> set_draw_texture(godot::Ref<godot::Texture2D>());
-                    vm -> push_value(true);
-                    return 1;
-                });
-
                 vm_module::bind_method<Instance>(vm, "set_billboard", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(state)", true)
                         .require(2, &Machine::is_bool);
@@ -606,22 +590,48 @@ namespace Vital::Sandbox::API {
                 });
             }
 
-            // Shaders //
+            // Material //
             {
-                // SPATIAL shader controlling how each particle looks, replaces the built-in material
-                vm_module::bind_method<Instance>(vm, "set_shader", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(shader)", true)
-                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Shader::Instance>(vm, idx); });
+                // set_material(material)
+                // material — image, svg, rendertarget or a file path: shown through the built-in material
+                //            (billboard, blend mode, unshaded and the particle color keep working)
+                //            SPATIAL shader: replaces the built-in material, draw it however you like
+                vm_module::bind_method<Instance>(vm, "set_material", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(material)", true)
+                        .require(2, [](Machine* vm, int idx) {
+                            return vm -> is_string(idx)
+                                || vm_module::is_userdata<API::Image::Instance>(vm, idx)
+                                || vm_module::is_userdata<API::SVG::Instance>(vm, idx)
+                                || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
+                                || vm_module::is_userdata<API::Shader::Instance>(vm, idx);
+                        });
 
-                    auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 2) -> get_node();
-                    if (shader -> get_mode() != Vital::Engine::Shader::Mode::Spatial) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the SPATIAL mode");
-                    self -> particles -> set_draw_shader(shader -> create_surface_material(godot::Ref<godot::Material>()));
+                    if (vm -> is_string(2)) {
+                        self -> particles -> set_material(vm -> get_string(2));
+                    }
+                    else if (vm_module::is_userdata<API::Image::Instance>(vm, 2)) {
+                        auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 2);
+                        self -> particles -> set_material(image -> get_node());
+                    }
+                    else if (vm_module::is_userdata<API::SVG::Instance>(vm, 2)) {
+                        auto svg = vm_module::get_userdata_object<API::SVG::Instance>(vm, 2);
+                        self -> particles -> set_material(svg -> get_node());
+                    }
+                    else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, 2)) {
+                        auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 2);
+                        self -> particles -> set_material(rendertarget -> get_node());
+                    }
+                    else {
+                        auto shader = vm_module::get_userdata_object<API::Shader::Instance>(vm, 2);
+                        self -> particles -> set_material(shader -> get_node());
+                    }
                     vm -> push_value(true);
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "reset_shader", [](auto vm, auto self, auto& id) -> int {
-                    self -> particles -> set_draw_shader(godot::Ref<godot::ShaderMaterial>());
+                // Back to the plain built-in material
+                vm_module::bind_method<Instance>(vm, "reset_material", [](auto vm, auto self, auto& id) -> int {
+                    self -> particles -> reset_material();
                     vm -> push_value(true);
                     return 1;
                 });
