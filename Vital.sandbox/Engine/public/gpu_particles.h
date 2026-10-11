@@ -43,7 +43,6 @@ namespace Vital::Engine {
             godot::Ref<godot::StandardMaterial3D> material;
             godot::Ref<godot::ParticleProcessMaterial> process;
             godot::Ref<godot::ShaderMaterial> draw_shader;
-            godot::Ref<godot::ShaderMaterial> process_shader;
             bool billboard = true;
             bool trail_mode = false;
 
@@ -65,7 +64,6 @@ namespace Vital::Engine {
 
             // Checkers //
             bool has_draw_shader() const;
-            bool has_process_shader() const;
             bool is_trail_mode() const;
             bool is_billboard() const;
 
@@ -81,7 +79,6 @@ namespace Vital::Engine {
             void set_draw_texture(const godot::Ref<godot::Texture2D>& texture);
             void set_billboard(bool state);
             void set_draw_shader(const godot::Ref<godot::ShaderMaterial>& shader_material);
-            void set_process_shader(const godot::Ref<godot::ShaderMaterial>& shader_material);
             void set_color_ramp(const godot::Color& from, const godot::Color& to);
             void reset_color_ramp();
             void set_scale_curve(float from, float to);
