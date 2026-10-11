@@ -118,18 +118,47 @@ namespace Vital::Engine {
         if (ribbon.is_valid()) ribbon -> set_size(size.x);
     }
 
-    void GPU_Particles::set_draw_texture(const godot::Ref<godot::Texture2D>& texture) {
-        material -> set_texture(godot::BaseMaterial3D::TEXTURE_ALBEDO, texture);
-    }
-
     void GPU_Particles::set_billboard(bool state) {
         billboard = state;
         apply_billboard();
     }
 
-    void GPU_Particles::set_draw_shader(const godot::Ref<godot::ShaderMaterial>& shader_material) {
-        draw_shader = shader_material;
-        set_material_override(shader_material);
+    void GPU_Particles::set_material(const godot::Ref<godot::Texture2D>& texture) {
+        // A texture is shown through the built-in material, so it replaces any shader
+        clear_shader();
+        material -> set_texture(godot::BaseMaterial3D::TEXTURE_ALBEDO, texture);
+    }
+
+    void GPU_Particles::set_material(Texture* texture) {
+        if (!texture) return;
+        texture -> heartbeat();
+        set_material(godot::Ref<godot::Texture2D>(texture -> get_texture()));
+    }
+
+    void GPU_Particles::set_material(Rendertarget* rendertarget) {
+        if (!rendertarget) return;
+        set_material(godot::Ref<godot::Texture2D>(rendertarget -> get_texture()));
+    }
+
+    void GPU_Particles::set_material(Shader* shader) {
+        if (!shader) return;
+        if (shader -> get_mode() != Shader::Mode::Spatial) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the SPATIAL mode");
+        draw_shader = shader -> create_surface_material(godot::Ref<godot::Material>());
+        set_material_override(draw_shader);
+    }
+
+    void GPU_Particles::set_material(const std::string& path) {
+        try {
+            auto texture = Texture::get_from_reference(path);
+            if (!texture) texture = Image::create(path, path);
+            set_material(texture);
+        }
+        catch (...) { std::rethrow_exception(std::current_exception()); }
+    }
+
+    void GPU_Particles::reset_material() {
+        clear_shader();
+        material -> set_texture(godot::BaseMaterial3D::TEXTURE_ALBEDO, godot::Ref<godot::Texture2D>());
     }
 
     void GPU_Particles::set_color_ramp(const godot::Color& from, const godot::Color& to) {
