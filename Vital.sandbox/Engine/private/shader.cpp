@@ -25,17 +25,27 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    std::string Shader::Internal::inject_sentinel(const std::string& src, bool is_spatial) {
+    std::string Shader::Internal::inject_sentinel(const std::string& src, Mode mode) {
         const std::string decl = fmt::format("uniform float {} : hint_range(1.0, 1.0) = 1.0;\n", SENTINEL);
-        const std::vector<EntryPoint> entry_points = is_spatial ? 
-            std::vector<EntryPoint>{
+        std::vector<EntryPoint> entry_points;
+        if (mode == Mode::Spatial || mode == Mode::Postprocess) {
+            entry_points = {
                 { "void fragment()", fmt::format("ROUGHNESS *= {};\n", SENTINEL) },
-                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL) } 
-            } : 
-            std::vector<EntryPoint>{
-                { "void fragment()", fmt::format("COLOR.a *= {};\n", SENTINEL) },
-                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL) } 
+                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL)    }
             };
+        }
+        else if (mode == Mode::Particles) {
+            entry_points = {
+                { "void start()",   fmt::format("VELOCITY *= {};\n", SENTINEL) },
+                { "void process()", fmt::format("VELOCITY *= {};\n", SENTINEL) }
+            };
+        }
+        else {
+            entry_points = {
+                { "void fragment()", fmt::format("COLOR.a *= {};\n", SENTINEL) },
+                { "void vertex()",   fmt::format("VERTEX *= {};\n", SENTINEL)  }
+            };
+        }
 
         std::string result = src;
         auto st_end = result.find(';');
@@ -79,13 +89,13 @@ namespace Vital::Engine {
                     src.insert(st_end + 1,
                         "\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never;\n");
             }
-            return inject_sentinel(src, true);
+            return inject_sentinel(src, Mode::Postprocess);
         }
         if (src.find("shader_type") == std::string::npos) {
-            std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
+            std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : (mode == Shader::Mode::Particles) ? "particles" : "canvas_item";
             src = fmt::format("shader_type {};\n{}", type_name, src);
         }
-        return inject_sentinel(src, mode == Shader::Mode::Spatial);
+        return inject_sentinel(src, mode);
     }
 }
 
