@@ -15,6 +15,10 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/Engine/public/image.h>
+#include <Vital.sandbox/Engine/public/rendertarget.h>
+#include <Vital.sandbox/Engine/public/shader.h>
 #include <godot_cpp/classes/gpu_particles3d.hpp>
 #include <godot_cpp/classes/particle_process_material.hpp>
 #include <godot_cpp/classes/quad_mesh.hpp>
@@ -46,9 +50,9 @@ namespace Vital::Engine {
             bool billboard = true;
             bool trail_mode = false;
 
-            
             // Helpers //
             void apply_billboard();
+            void clear_shader();
 
 
             // Instantiators //
@@ -76,9 +80,17 @@ namespace Vital::Engine {
 
             // Setters //
             void set_draw_size(const godot::Vector2& size);
-            void set_draw_texture(const godot::Ref<godot::Texture2D>& texture);
             void set_billboard(bool state);
-            void set_draw_shader(const godot::Ref<godot::ShaderMaterial>& shader_material);
+
+            // Material: a texture (image / svg / path / rendertarget) is shown through the
+            // built-in material, a SPATIAL shader replaces the built-in material entirely
+            void set_material(Texture* texture);
+            void set_material(Rendertarget* rendertarget);
+            void set_material(Shader* shader);
+            void set_material(const std::string& path);
+            void set_material(const godot::Ref<godot::Texture2D>& texture);
+            void reset_material();
+
             void set_color_ramp(const godot::Color& from, const godot::Color& to);
             void reset_color_ramp();
             void set_scale_curve(float from, float to);
