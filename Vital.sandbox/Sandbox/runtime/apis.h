@@ -54,6 +54,9 @@
 #include <Vital.sandbox/API/light/spot_light.h>
 #include <Vital.sandbox/API/light/area_light.h>
 
+// TODO: Improve
+#include <Vital.sandbox/API/particle/gpu_particles.h>
+
 #include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/antialiasing.h>
@@ -129,6 +132,9 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Point_Light>(),
             vm_module::make_api<Spot_Light>(),
             vm_module::make_api<Area_Light>(),
+
+            // Particle //
+            vm_module::make_api<GPU_Particles>(),
 
             // GFX //
             vm_module::make_api<Environment>(),
