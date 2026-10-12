@@ -15,10 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Tool/version.h>
-#include <rapidjson/document.h>
-// TODO: ?>?
-#include <algorithm>
-#include <vector>
 
 
 ////////////////////////////
