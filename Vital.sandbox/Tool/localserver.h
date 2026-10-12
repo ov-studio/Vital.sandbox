@@ -15,8 +15,13 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <mutex>
 #include <set>
+#include <vector>
 #include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 
 
 ///////////////////////////////
@@ -35,58 +40,48 @@ namespace Vital::Tool::LocalServer {
         int http_port = 0;
     };
 
+    namespace detail {
+        inline std::mutex mutex;
+        inline std::set<int> ports;
+    }
+
     inline std::filesystem::path get_directory() {
         std::error_code ec;
         return std::filesystem::temp_directory_path(ec) / "vital.sandbox" / "servers";
     }
 
     inline std::filesystem::path get_path(int port) {
-        return get_directory() / fmt::format("{}.json", port);
+        return get_directory() / (std::to_string(port) + ".json");
     }
 
-    inline void retract(int port) {
+    // Called from Network::Internal::close()
+    inline void retract_published(int port) {
+        std::lock_guard<std::mutex> lock(detail::mutex);
         std::error_code ec;
         std::filesystem::remove(get_path(port), ec);
-    }
-
-    inline std::set<int>& published() {
-        static std::set<int> ports;
-        return ports;
-    }
-
-    inline std::mutex& published_mutex() {
-        static std::mutex m;
-        return m;
+        detail::ports.erase(port);
     }
 
     inline void retract_all() {
-        std::lock_guard<std::mutex> lock(published_mutex());
-        for (int port : published()) retract(port);
-        published().clear();
+        std::lock_guard<std::mutex> lock(detail::mutex);
+        std::error_code ec;
+        for (int port : detail::ports) std::filesystem::remove(get_path(port), ec);
+        detail::ports.clear();
     }
 
     inline bool publish(int port, int http_port) {
         std::error_code ec;
         std::filesystem::create_directories(get_directory(), ec);
         if (ec) return false;
-        std::ofstream file(get_path(port), std::ios::trunc);
-        if (!file) return false;
+        std::ofstream file(get_path(port));
         file << "{\"port\":" << port << ",\"http_port\":" << http_port << "}";
         file.close();
-        static bool registered = false;
-        std::lock_guard<std::mutex> lock(published_mutex());
-        published().insert(port);
-        if (!registered) {
-            registered = true;
-            std::atexit([]() { retract_all(); });
-        }
+        if (file.fail()) return false;
+        static const bool hooked = (std::atexit(retract_all), true);
+        (void)hooked;
+        std::lock_guard<std::mutex> lock(detail::mutex);
+        detail::ports.insert(port);
         return true;
-    }
-
-    inline void retract_published(int port) {
-        std::lock_guard<std::mutex> lock(published_mutex());
-        retract(port);
-        published().erase(port);
     }
 
     inline std::vector<Entry> list() {
@@ -97,14 +92,14 @@ namespace Vital::Tool::LocalServer {
         for (const auto& item : it) {
             if (item.path().extension() != ".json") continue;
             std::ifstream file(item.path());
-            if (!file) continue;
-            std::stringstream buffer;
-            buffer << file.rdbuf();
+            rapidjson::IStreamWrapper stream(file);
             rapidjson::Document doc;
-            doc.Parse(buffer.str().c_str());
-            if (doc.HasParseError() || !doc.IsObject()) continue;
-            if (!doc.HasMember("port") || !doc["port"].IsInt() || !doc.HasMember("http_port") || !doc["http_port"].IsInt()) continue;
-            entries.push_back({ doc["port"].GetInt(), doc["http_port"].GetInt() });
+            doc.ParseStream(stream);
+            if (!doc.IsObject()) continue;
+            auto port = doc.FindMember("port");
+            auto http = doc.FindMember("http_port");
+            if (port == doc.MemberEnd() || !port->value.IsInt() || http == doc.MemberEnd() || !http->value.IsInt()) continue;
+            entries.push_back({ port->value.GetInt(), http->value.GetInt() });
         }
         return entries;
     }
