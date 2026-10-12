@@ -197,3 +197,38 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/callable_custom.hpp>
+
+// Godot: Audio Effects //
+#include <godot_cpp/classes/audio_effect_chorus.hpp>
+#include <godot_cpp/classes/audio_effect_delay.hpp>
+#include <godot_cpp/classes/audio_effect_distortion.hpp>
+#include <godot_cpp/classes/audio_effect_amplify.hpp>
+#include <godot_cpp/classes/audio_effect_compressor.hpp>
+#include <godot_cpp/classes/audio_effect_limiter.hpp>
+#include <godot_cpp/classes/audio_effect_hard_limiter.hpp>
+#include <godot_cpp/classes/audio_effect_panner.hpp>
+#include <godot_cpp/classes/audio_effect_phaser.hpp>
+#include <godot_cpp/classes/audio_effect_pitch_shift.hpp>
+#include <godot_cpp/classes/audio_effect_stereo_enhance.hpp>
+#include <godot_cpp/classes/audio_effect_filter.hpp>
+#include <godot_cpp/classes/audio_effect_low_pass_filter.hpp>
+#include <godot_cpp/classes/audio_effect_high_pass_filter.hpp>
+#include <godot_cpp/classes/audio_effect_band_pass_filter.hpp>
+#include <godot_cpp/classes/audio_effect_notch_filter.hpp>
+#include <godot_cpp/classes/audio_effect_band_limit_filter.hpp>
+#include <godot_cpp/classes/audio_effect_low_shelf_filter.hpp>
+#include <godot_cpp/classes/audio_effect_high_shelf_filter.hpp>
+#include <godot_cpp/classes/audio_effect_eq.hpp>
+#include <godot_cpp/classes/audio_effect_eq6.hpp>
+#include <godot_cpp/classes/audio_effect_eq10.hpp>
+#include <godot_cpp/classes/audio_effect_eq21.hpp>
+
+// Godot: GPU Particles //
+#include <godot_cpp/classes/gpu_particles3d.hpp>
+#include <godot_cpp/classes/particle_process_material.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/ribbon_trail_mesh.hpp>
+#include <godot_cpp/classes/gradient.hpp>
+#include <godot_cpp/classes/gradient_texture1_d.hpp>
+#include <godot_cpp/classes/curve.hpp>
+#include <godot_cpp/classes/curve_texture.hpp>
