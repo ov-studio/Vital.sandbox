@@ -24,7 +24,6 @@
 #include <Vital.sandbox/Tool/localserver.h>
 #include <Vital.sandbox/Tool/thread.h>
 #include <Vital.sandbox/Tool/version.h>
-#include <algorithm>
 
 
 //////////////////////////////
