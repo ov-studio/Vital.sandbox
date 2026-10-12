@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Tool/index.h>
 
 
-////////////
-// Vital //
-////////////
+///////////////////////
+// Vital: Tool: Log //
+///////////////////////
 
 namespace Vital::Tool::Log {
     enum class Type : std::size_t { 
