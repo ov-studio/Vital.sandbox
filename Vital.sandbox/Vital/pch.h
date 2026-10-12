@@ -65,51 +65,51 @@
 #endif
 
 
-// FMT //
+// Vendor: FMT //
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/xchar.h>
 
 
-// RapidJSON //
+// Vendor: RapidJSON //
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/istreamwrapper.h>
 
 
-// RapidYAML //
+// Vendor: RapidYAML //
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 
 
-// SOCI  //
+// Vendor: SOCI  //
 #if !defined(VSDK_Client)
 #include <soci/soci.h>
 #include <soci/mysql/soci-mysql.h>
 #endif
 
 
-// HTTPLib //
+// Vendor: HTTPLib //
 #include <httplib.h>
 
 
-// OpenSSL //
+// Vendor: OpenSSL //
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 
 
-// ZSTD //
+// Vendor: ZSTD //
 #include <zstd.h>
 
 
-// LibZip //
+// Vendor: LibZip //
 #include <zip.h>
 
 
-// Discord SDK //
+// Vendor: Discord SDK //
 #if defined(VSDK_Client)
 #include <discord-sdk/include/discordpp.h>
 #endif
