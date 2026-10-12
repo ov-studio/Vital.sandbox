@@ -82,6 +82,39 @@
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 
+
+// SOCI  //
+#if !defined(VSDK_Client)
+#include <soci/soci.h>
+#include <soci/mysql/soci-mysql.h>
+#endif
+
+
+// HTTPLib //
+#include <httplib.h>
+
+
+// OpenSSL //
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+
+
+// ZSTD //
+#include <zstd.h>
+
+
+// LibZip //
+#include <zip.h>
+
+
+// Discord SDK //
+#if defined(VSDK_Client)
+#include <discord-sdk/include/discordpp.h>
+#endif
+
+
 // Godot: Core //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/core/memory.hpp>
