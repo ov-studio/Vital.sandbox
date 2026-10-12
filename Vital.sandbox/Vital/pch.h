@@ -55,6 +55,7 @@
 #if defined(VSDK_MACOS) || defined(VSDK_LINUX)
 #include <termios.h>
 #include <unistd.h>
+#include <sys/utsname.h>
 #endif
 
 
