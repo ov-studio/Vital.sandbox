@@ -40,7 +40,7 @@ namespace Vital::Tool::LocalServer {
         int http_port = 0;
     };
 
-    namespace detail {
+    namespace Internal {
         inline std::mutex mutex;
         inline std::set<int> ports;
     }
@@ -54,19 +54,18 @@ namespace Vital::Tool::LocalServer {
         return get_directory() / (std::to_string(port) + ".json");
     }
 
-    // Called from Network::Internal::close()
     inline void retract_published(int port) {
-        std::lock_guard<std::mutex> lock(detail::mutex);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
         std::error_code ec;
         std::filesystem::remove(get_path(port), ec);
-        detail::ports.erase(port);
+        Internal::ports.erase(port);
     }
 
     inline void retract_all() {
-        std::lock_guard<std::mutex> lock(detail::mutex);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
         std::error_code ec;
-        for (int port : detail::ports) std::filesystem::remove(get_path(port), ec);
-        detail::ports.clear();
+        for (int port : Internal::ports) std::filesystem::remove(get_path(port), ec);
+        Internal::ports.clear();
     }
 
     inline bool publish(int port, int http_port) {
@@ -79,8 +78,8 @@ namespace Vital::Tool::LocalServer {
         if (file.fail()) return false;
         static const bool hooked = (std::atexit(retract_all), true);
         (void)hooked;
-        std::lock_guard<std::mutex> lock(detail::mutex);
-        detail::ports.insert(port);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        Internal::ports.insert(port);
         return true;
     }
 
