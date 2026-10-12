@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/log.h>
-#include <httplib.h>
 
 
 ////////////////////////
