@@ -14,8 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/log.h>
-#include <ryml.hpp>
-#include <ryml_std.hpp>
 
 
 ////////////////////////
