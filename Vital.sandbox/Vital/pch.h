@@ -78,6 +78,10 @@
 #include <rapidjson/istreamwrapper.h>
 
 
+// RapidYAML //
+#include <ryml.hpp>
+#include <ryml_std.hpp>
+
 // Godot: Core //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/core/memory.hpp>
