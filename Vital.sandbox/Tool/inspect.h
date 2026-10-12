@@ -130,7 +130,7 @@ namespace Vital::Tool::Inspect {
             WMI wmi;
             auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
             if (!serials.empty()) return hash(normalize(std::string(serials[0].begin(), serials[0].end())));
-            #else
+        #else
             for (auto& b : std::filesystem::directory_iterator("/sys/block")) {
                 std::ifstream sn(b.path() / "serial");
                 std::string serial;
