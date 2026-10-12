@@ -15,7 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
-#include <functional>
 
 
 ///////////////////////////
