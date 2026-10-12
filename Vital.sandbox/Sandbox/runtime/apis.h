@@ -54,7 +54,6 @@
 #include <Vital.sandbox/API/light/spot_light.h>
 #include <Vital.sandbox/API/light/area_light.h>
 
-// TODO: Improve
 #include <Vital.sandbox/API/particle/gpu_particles.h>
 
 #include <Vital.sandbox/API/gfx/environment.h>
