@@ -14,13 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/crypto.h>
-#if defined(VSDK_WINDOWS)
-    #include <windows.h>
-    #include <comdef.h>
-    #include <wbemidl.h>
-#else
-    #include <sys/utsname.h>
-#endif
 
 
 ///////////////////////////
