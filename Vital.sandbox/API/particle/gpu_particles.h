@@ -21,6 +21,7 @@
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+#include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/shader.h>
 
 
@@ -638,6 +639,34 @@ namespace Vital::Sandbox::API {
 
                 vm_module::bind_method<Instance>(vm, "has_shader", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> particles -> has_draw_shader());
+                    return 1;
+                });
+
+                // set_mesh(model, component = all)
+                // Draws every particle as the model's mesh instead of a quad. Without a component all of the model's
+                // components are used (max 4, one draw pass each). The model keeps existing, destroy or hide it if
+                // it is only a mesh source. Billboarding turns off, size comes from the SCALE param.
+                // The mesh keeps its own materials unless set_material is used
+                vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(model, component = all)", true)
+                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })
+                        .optional(3, &Machine::is_string);
+
+                    auto model = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
+                    self -> particles -> set_mesh(model -> get_node(), vm -> is_string(3) ? vm -> get_string(3) : "");
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                // Back to the quad
+                vm_module::bind_method<Instance>(vm, "reset_mesh", [](auto vm, auto self, auto& id) -> int {
+                    self -> particles -> reset_mesh();
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "has_mesh", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> particles -> has_mesh());
                     return 1;
                 });
             }

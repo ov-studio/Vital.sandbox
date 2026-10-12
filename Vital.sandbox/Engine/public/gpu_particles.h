@@ -19,8 +19,11 @@
 #include <Vital.sandbox/Engine/public/image.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/shader.h>
+#include <Vital.sandbox/Engine/public/model.h>
 #include <godot_cpp/classes/gpu_particles3d.hpp>
 #include <godot_cpp/classes/particle_process_material.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/quad_mesh.hpp>
 #include <godot_cpp/classes/ribbon_trail_mesh.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
@@ -47,12 +50,15 @@ namespace Vital::Engine {
             godot::Ref<godot::StandardMaterial3D> material;
             godot::Ref<godot::ParticleProcessMaterial> process;
             godot::Ref<godot::ShaderMaterial> draw_shader;
+            std::vector<godot::Ref<godot::Mesh>> meshes;
+            bool textured = false;
             bool billboard = true;
             bool trail_mode = false;
 
             // Helpers //
             void apply_billboard();
-            void clear_shader();
+            void apply_draw_passes();
+            void apply_material();
 
 
             // Instantiators //
@@ -68,6 +74,7 @@ namespace Vital::Engine {
 
             // Checkers //
             bool has_draw_shader() const;
+            bool has_mesh() const;
             bool is_trail_mode() const;
             bool is_billboard() const;
 
@@ -90,6 +97,10 @@ namespace Vital::Engine {
             void set_material(const std::string& path);
             void set_material(const godot::Ref<godot::Texture2D>& texture);
             void reset_material();
+
+            // Mesh: replaces the quad with the meshes of a model (up to MAX_DRAW_PASSES)
+            void set_mesh(Model* model, const std::string& component = "");
+            void reset_mesh();
 
             void set_color_ramp(const godot::Color& from, const godot::Color& to);
             void reset_color_ramp();

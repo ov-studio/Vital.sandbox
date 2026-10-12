@@ -32,9 +32,28 @@ namespace Vital::Engine {
     }
 
 
-    void GPU_Particles::clear_shader() {
-        draw_shader.unref();
-        set_material_override(godot::Ref<godot::Material>());
+    void GPU_Particles::apply_draw_passes() {
+        // Trail wins over custom meshes, which win over the default quad
+        if (trail_mode) {
+            set_draw_passes(1);
+            set_draw_pass_mesh(0, ribbon);
+        }
+        else if (!meshes.empty()) {
+            set_draw_passes((int32_t)meshes.size());
+            for (int i = 0; i < (int)meshes.size(); i++) set_draw_pass_mesh(i, meshes[i]);
+        }
+        else {
+            set_draw_passes(1);
+            set_draw_pass_mesh(0, quad);
+        }
+    }
+
+    void GPU_Particles::apply_material() {
+        // Quad and ribbon carry the built-in material themselves. Custom meshes keep
+        // their own materials unless a texture was set, then the built-in material is forced
+        if (draw_shader.is_valid()) set_material_override(draw_shader);
+        else if (!trail_mode && !meshes.empty() && textured) set_material_override(material);
+        else set_material_override(godot::Ref<godot::Material>());
     }
 
 
@@ -89,6 +108,10 @@ namespace Vital::Engine {
         return draw_shader.is_valid();
     }
 
+    bool GPU_Particles::has_mesh() const {
+        return !meshes.empty();
+    }
+
     bool GPU_Particles::is_trail_mode() const {
         return trail_mode;
     }
@@ -125,8 +148,10 @@ namespace Vital::Engine {
 
     void GPU_Particles::set_material(const godot::Ref<godot::Texture2D>& texture) {
         // A texture is shown through the built-in material, so it replaces any shader
-        clear_shader();
+        draw_shader.unref();
+        textured = texture.is_valid();
         material -> set_texture(godot::BaseMaterial3D::TEXTURE_ALBEDO, texture);
+        apply_material();
     }
 
     void GPU_Particles::set_material(Texture* texture) {
@@ -144,7 +169,7 @@ namespace Vital::Engine {
         if (!shader) return;
         if (shader -> get_mode() != Shader::Mode::Spatial) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the SPATIAL mode");
         draw_shader = shader -> create_surface_material(godot::Ref<godot::Material>());
-        set_material_override(draw_shader);
+        apply_material();
     }
 
     void GPU_Particles::set_material(const std::string& path) {
@@ -157,8 +182,46 @@ namespace Vital::Engine {
     }
 
     void GPU_Particles::reset_material() {
-        clear_shader();
+        draw_shader.unref();
+        textured = false;
         material -> set_texture(godot::BaseMaterial3D::TEXTURE_ALBEDO, godot::Ref<godot::Texture2D>());
+        apply_material();
+    }
+
+    void GPU_Particles::set_mesh(Model* model, const std::string& component) {
+        if (!model) return;
+        std::vector<godot::Ref<godot::Mesh>> collected;
+        if (!component.empty()) {
+            auto node = model -> find_mesh_node(model, component);
+            if (!node) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model -> get_model_name()));
+            if (node -> get_mesh().is_valid()) collected.push_back(node -> get_mesh());
+        }
+        else {
+            for (const auto& path : model -> get_components()) {
+                if ((int)collected.size() >= godot::GPUParticles3D::MAX_DRAW_PASSES) break;
+                auto node = model -> find_mesh_node(model, path);
+                if (node && node -> get_mesh().is_valid()) collected.push_back(node -> get_mesh());
+            }
+        }
+        if (collected.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("model '{}' has no meshes to use (not loaded yet?)", model -> get_model_name()));
+
+        // Trail meshes and custom meshes are mutually exclusive draw passes
+        if (trail_mode) set_trail(false, 0.0);
+        meshes = collected;
+
+        // Real 3D meshes are not billboards, set_billboard(true) turns it back on
+        billboard = false;
+        apply_billboard();
+        apply_draw_passes();
+        apply_material();
+    }
+
+    void GPU_Particles::reset_mesh() {
+        meshes.clear();
+        billboard = true;
+        apply_billboard();
+        apply_draw_passes();
+        apply_material();
     }
 
     void GPU_Particles::set_color_ramp(const godot::Color& from, const godot::Color& to) {
@@ -208,7 +271,8 @@ namespace Vital::Engine {
             trail_mode = true;
             material -> set_flag(godot::BaseMaterial3D::FLAG_PARTICLE_TRAILS_MODE, true);
             apply_billboard();
-            set_draw_pass_mesh(0, ribbon);
+            apply_draw_passes();
+            apply_material();
             set_transform_align(godot::GPUParticles3D::TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
             set_trail_lifetime(lifetime);
             set_trail_enabled(true);
@@ -218,7 +282,8 @@ namespace Vital::Engine {
             trail_mode = false;
             material -> set_flag(godot::BaseMaterial3D::FLAG_PARTICLE_TRAILS_MODE, false);
             apply_billboard();
-            set_draw_pass_mesh(0, quad);
+            apply_draw_passes();
+            apply_material();
             set_transform_align(godot::GPUParticles3D::TRANSFORM_ALIGN_DISABLED);
         }
     }
