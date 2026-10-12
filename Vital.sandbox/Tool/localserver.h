@@ -14,12 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <cstdlib>
-#include <filesystem>
-#include <fstream>
-#include <mutex>
-#include <set>
-#include <vector>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
