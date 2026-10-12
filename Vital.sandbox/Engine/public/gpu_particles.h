@@ -20,14 +20,6 @@
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Engine/public/model.h>
-#include <godot_cpp/classes/gpu_particles3d.hpp>
-#include <godot_cpp/classes/particle_process_material.hpp>
-#include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/ribbon_trail_mesh.hpp>
-#include <godot_cpp/classes/gradient.hpp>
-#include <godot_cpp/classes/gradient_texture1_d.hpp>
-#include <godot_cpp/classes/curve.hpp>
-#include <godot_cpp/classes/curve_texture.hpp>
 
 
 ///////////////////////////////////
