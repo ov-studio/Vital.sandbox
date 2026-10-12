@@ -32,6 +32,7 @@
 
 namespace Vital::Engine {
     std::atomic<float> MainMenu::draw_distance_mult { 1.0f };
+    std::atomic<float> MainMenu::particle_distance_mult { 1.0f };
 
     namespace {
         // TODO: Move to internal namespace like resource
@@ -49,6 +50,7 @@ namespace Vital::Engine {
             doc.AddMember("window_mode", "borderless", a);
             doc.AddMember("vsync", true, a);
             doc.AddMember("draw_distance_mult", 1.0, a);
+            doc.AddMember("particle_distance_mult", 1.0, a);
             doc.AddMember("volume", 0.8, a);
             return doc;
         }
@@ -194,6 +196,10 @@ namespace Vital::Engine {
             if (settings.HasMember("draw_distance_mult") && settings["draw_distance_mult"].IsNumber()) {
                 const float mult = std::clamp(static_cast<float>(settings["draw_distance_mult"].GetDouble()), 0.1f, 2.0f);
                 MainMenu::set_draw_distance_mult(mult);
+            }
+
+            if (settings.HasMember("particle_distance_mult") && settings["particle_distance_mult"].IsNumber()) {
+                MainMenu::set_particle_distance_mult(static_cast<float>(settings["particle_distance_mult"].GetDouble()));
             }
 
             if (settings.HasMember("volume") && settings["volume"].IsNumber()) {
@@ -519,6 +525,16 @@ namespace Vital::Engine {
             const float logical = (prev > 0.0001f) ? (cam -> get_far() / prev) : cam -> get_far();
             cam -> set_far(logical * mult);
         }
+    }
+
+    float MainMenu::get_particle_distance_mult() {
+        return particle_distance_mult.load();
+    }
+
+    // Same 0.1 floor as the draw distance, so the slider's 0% still shows nearby particles.
+    // 0 would also be a trap: Godot reads a visibility range of 0 as "no limit".
+    void MainMenu::set_particle_distance_mult(float mult) {
+        particle_distance_mult.store(std::clamp(mult, 0.1f, 2.0f));
     }
 
 

@@ -42,11 +42,13 @@ namespace Vital::Engine {
             bool textured = false;
             bool billboard = true;
             bool trail_mode = false;
+            float distance_range = 0.0f; // Applied cull distance, 0 = no limit
 
             // Helpers //
             void apply_billboard();
             void apply_draw_passes();
             void apply_material();
+            void sync_distance();
 
 
             // Instantiators //
@@ -54,6 +56,10 @@ namespace Vital::Engine {
             ~GPU_Particles() override = default;
             static void _bind_methods() {}
         public:
+            // Hooks //
+            void _process(double delta) override;
+
+
             // Managers //
             static GPU_Particles* create();
             void destroy();

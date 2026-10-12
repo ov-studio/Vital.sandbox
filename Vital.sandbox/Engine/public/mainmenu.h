@@ -30,6 +30,7 @@ namespace Vital::Engine {
             Webview* webview = nullptr;
             std::atomic<bool> webview_ready { false };
             static std::atomic<float> draw_distance_mult;
+            static std::atomic<float> particle_distance_mult;
             std::atomic<bool> scan_running { false };
             std::atomic<bool> masterlist_running { false };
 
@@ -57,6 +58,11 @@ namespace Vital::Engine {
             // set_far_clip applies it; get_far_clip divides it out.
             static float get_draw_distance_mult();
             static void set_draw_distance_mult(float mult);
+
+            // Client particle-distance multiplier on the active camera far plane (1.0 = no extra limit).
+            // GPU_Particles reads it every frame, so nothing needs pushing when it changes.
+            static float get_particle_distance_mult();
+            static void set_particle_distance_mult(float mult);
 
 
             // Events //

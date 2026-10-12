@@ -15,6 +15,8 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/gpu_particles.h>
+#include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 
 
 ///////////////////////////////////
@@ -23,7 +25,38 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    namespace {
+        // Far plane of the active camera (already includes the draw distance), looked up once per frame for all emitters
+        float get_reference_clip() {
+            static uint64_t frame = UINT64_MAX;
+            static float clip = 0.0f;
+            const uint64_t current = godot::Engine::get_singleton() -> get_process_frames();
+            if (current != frame) {
+                frame = current;
+                auto* camera = Camera::get_active();
+                clip = camera ? camera -> get_far() : 0.0f;
+            }
+            return clip;
+        }
+    }
+
+
     // Helpers //
+    // Particle distance setting: past (camera far x multiplier) Godot stops rendering the emitter.
+    // At 100% the range is switched off, so the far plane stays the only limit.
+    void GPU_Particles::sync_distance() {
+        const float mult = MainMenu::get_particle_distance_mult();
+        float range = 0.0f;
+        if (mult < 1.0f) {
+            const float clip = get_reference_clip();
+            if (clip <= 0.0f) return; // no camera yet: keep the current range
+            range = clip*mult;
+        }
+        if (range == distance_range) return;
+        distance_range = range;
+        set_visibility_range_end(range);
+    }
+
     void GPU_Particles::apply_billboard() {
         // Trail meshes orient themselves from the particle transform, so
         // material billboarding is forced off while trail mode is active
@@ -53,6 +86,12 @@ namespace Vital::Engine {
         if (draw_shader.is_valid()) set_material_override(draw_shader);
         else if (!trail_mode && !meshes.empty() && textured) set_material_override(material);
         else set_material_override(godot::Ref<godot::Material>());
+    }
+
+
+    // Hooks //
+    void GPU_Particles::_process(double) {
+        sync_distance();
     }
 
 
@@ -86,6 +125,9 @@ namespace Vital::Engine {
         // The default AABB is tiny: particles travelling outside of it get culled
         particles -> set_visibility_aabb(godot::AABB(godot::Vector3(-10, -10, -10), godot::Vector3(20, 20, 20)));
         particles -> set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+
+        // Keeps the particle distance setting applied (see sync_distance)
+        particles -> set_process(true);
 
         Engine::Core::get_singleton() -> add_child(particles);
         return particles;
