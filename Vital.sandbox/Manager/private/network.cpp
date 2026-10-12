@@ -25,7 +25,6 @@
 #include <Vital.sandbox/Tool/http.h>
 #include <Vital.sandbox/Tool/inspect.h>
 #include <Vital.sandbox/Tool/localserver.h>
-#include <rapidjson/document.h>
 
 
 //////////////////////////////
