@@ -14,9 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 
 
 //////////////////////////
