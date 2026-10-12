@@ -16,8 +16,6 @@
 #pragma once
 #include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/stack.h>
-#include <soci/soci.h>
-#include <soci/mysql/soci-mysql.h>
 
 
 ////////////////////////////
