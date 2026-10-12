@@ -14,10 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/log.h>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-#include <openssl/bio.h>
-#include <openssl/buffer.h>
 
 
 //////////////////////////
