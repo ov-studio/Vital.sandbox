@@ -15,30 +15,6 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <godot_cpp/classes/audio_effect_reverb.hpp>
-#include <godot_cpp/classes/audio_effect_chorus.hpp>
-#include <godot_cpp/classes/audio_effect_delay.hpp>
-#include <godot_cpp/classes/audio_effect_distortion.hpp>
-#include <godot_cpp/classes/audio_effect_amplify.hpp>
-#include <godot_cpp/classes/audio_effect_compressor.hpp>
-#include <godot_cpp/classes/audio_effect_limiter.hpp>
-#include <godot_cpp/classes/audio_effect_hard_limiter.hpp>
-#include <godot_cpp/classes/audio_effect_panner.hpp>
-#include <godot_cpp/classes/audio_effect_phaser.hpp>
-#include <godot_cpp/classes/audio_effect_pitch_shift.hpp>
-#include <godot_cpp/classes/audio_effect_stereo_enhance.hpp>
-#include <godot_cpp/classes/audio_effect_filter.hpp>
-#include <godot_cpp/classes/audio_effect_low_pass_filter.hpp>
-#include <godot_cpp/classes/audio_effect_high_pass_filter.hpp>
-#include <godot_cpp/classes/audio_effect_band_pass_filter.hpp>
-#include <godot_cpp/classes/audio_effect_notch_filter.hpp>
-#include <godot_cpp/classes/audio_effect_band_limit_filter.hpp>
-#include <godot_cpp/classes/audio_effect_low_shelf_filter.hpp>
-#include <godot_cpp/classes/audio_effect_high_shelf_filter.hpp>
-#include <godot_cpp/classes/audio_effect_eq.hpp>
-#include <godot_cpp/classes/audio_effect_eq6.hpp>
-#include <godot_cpp/classes/audio_effect_eq10.hpp>
-#include <godot_cpp/classes/audio_effect_eq21.hpp>
 
 
 ///////////////////////////////
