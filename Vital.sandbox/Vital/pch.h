@@ -293,3 +293,4 @@
 #include <godot_cpp/classes/gradient_texture1_d.hpp>
 #include <godot_cpp/classes/curve.hpp>
 #include <godot_cpp/classes/curve_texture.hpp>
+
