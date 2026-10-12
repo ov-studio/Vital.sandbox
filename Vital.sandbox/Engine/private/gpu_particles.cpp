@@ -15,7 +15,6 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/gpu_particles.h>
-#include <algorithm>
 
 
 ///////////////////////////////////
