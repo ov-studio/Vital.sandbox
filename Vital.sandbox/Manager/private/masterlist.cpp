@@ -19,9 +19,6 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #include <Vital.sandbox/Tool/http.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 
 
 /////////////////////////////////
