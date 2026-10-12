@@ -14,15 +14,12 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
 
 
 ///////////////////////////////
 // Vital: Tool: LocalServer //
 ///////////////////////////////
 
-// TODO: Improve
 // Servers running on this machine announce themselves by writing a tiny JSON file
 // (one per network port) into a shared temp directory; the client's main menu lists
 // that directory and verifies each entry against the server's /info endpoint.
