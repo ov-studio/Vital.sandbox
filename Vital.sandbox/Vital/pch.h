@@ -83,17 +83,6 @@
 #include <ryml_std.hpp>
 
 
-// Vendor: SOCI  //
-#if !defined(VSDK_Client)
-#include <soci/soci.h>
-#include <soci/mysql/soci-mysql.h>
-#endif
-
-
-// Vendor: HTTPLib //
-#include <httplib.h>
-
-
 // Vendor: OpenSSL //
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -107,6 +96,17 @@
 
 // Vendor: LibZip //
 #include <zip.h>
+
+
+// Vendor: HTTPLib //
+#include <httplib.h>
+
+
+// Vendor: SOCI  //
+#if !defined(VSDK_Client)
+#include <soci/soci.h>
+#include <soci/mysql/soci-mysql.h>
+#endif
 
 
 // Vendor: Discord SDK //
