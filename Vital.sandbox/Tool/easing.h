@@ -23,7 +23,9 @@
 namespace Vital::Tool::Easing {
     inline constexpr double PI = 3.14159265358979323846;
 
-    inline double linear(double progress) { return progress; }
+    inline double linear(double progress) { 
+        return progress;
+    }
 
     namespace Sine {
         inline double in(double progress) {
