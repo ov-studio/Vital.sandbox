@@ -71,49 +71,111 @@
 #include <rapidjson/istreamwrapper.h>
 
 
-// Godot //
+// Godot: Core //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/core/class_db.hpp>
+
+
+// Godot: Variant //
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_vector3_array.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/callable_custom.hpp>
+
+
+// Godot: System //
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/performance.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/editor_interface.hpp>
+
+
+// Godot: Servers //
 #include <godot_cpp/classes/rendering_server.hpp>
-#include <godot_cpp/classes/rendering_device.hpp> 
+#include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/udp_server.hpp>
-#include <godot_cpp/classes/editor_interface.hpp>
+#include <godot_cpp/classes/physics_server3d.hpp>
+
+
+// Godot: Scene //
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/classes/visual_instance3d.hpp>
+#include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/color_rect.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
+#include <godot_cpp/classes/viewport_texture.hpp>
+
+
+// Godot: Camera //
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/camera_attributes_practical.hpp>
-#include <godot_cpp/classes/control.hpp>
+
+
+// Godot: Environment & Sky //
+#include <godot_cpp/classes/environment.hpp>
+#include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/classes/sky.hpp>
 #include <godot_cpp/classes/panorama_sky_material.hpp>
 #include <godot_cpp/classes/procedural_sky_material.hpp>
 #include <godot_cpp/classes/physical_sky_material.hpp>
+
+
+// Godot: Input //
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
+
+
+// Godot: GLTF //
 #include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/classes/gltf_document.hpp>
+
+
+// Godot: Meshes & Materials //
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/quad_mesh.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/geometry_instance3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
+
+
+// Godot: Textures & Images //
+#include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/canvas_texture.hpp>
+#include <godot_cpp/classes/texture.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/rd_texture_format.hpp>
+#include <godot_cpp/classes/rd_texture_view.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/image_texture3d.hpp>
+
+
+// Godot: Fonts //
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/font_file.hpp>
+
+
+// Godot: Animation //
 #include <godot_cpp/classes/skeleton3d.hpp>
 #include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/animation_player.hpp>
@@ -126,21 +188,9 @@
 #include <godot_cpp/classes/animation_node_blend2.hpp>
 #include <godot_cpp/classes/animation_node_time_scale.hpp>
 #include <godot_cpp/classes/animation_node_output.hpp>
-#include <godot_cpp/classes/color_rect.hpp>
-#include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/canvas_texture.hpp>
-#include <godot_cpp/classes/texture.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/rd_texture_format.hpp>
-#include <godot_cpp/classes/rd_texture_view.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/image_texture3d.hpp>
-#include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/sub_viewport.hpp>
-#include <godot_cpp/classes/viewport_texture.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/font_file.hpp>
+
+
+// Godot: Audio //
 #include <godot_cpp/classes/audio_server.hpp>
 #include <godot_cpp/classes/audio_stream.hpp>
 #include <godot_cpp/classes/audio_stream_player2d.hpp>
@@ -148,57 +198,11 @@
 #include <godot_cpp/classes/audio_stream_wav.hpp>
 #include <godot_cpp/classes/audio_stream_ogg_vorbis.hpp>
 #include <godot_cpp/classes/audio_stream_mp3.hpp>
-#include <godot_cpp/classes/audio_effect.hpp>
-#include <godot_cpp/classes/audio_effect_reverb.hpp>
-#include <godot_cpp/classes/directional_light3d.hpp>
-#include <godot_cpp/classes/omni_light3d.hpp>
-#include <godot_cpp/classes/spot_light3d.hpp>
-#include <godot_cpp/classes/area_light3d.hpp>
-#include <godot_cpp/classes/collision_object3d.hpp>
-#include <godot_cpp/classes/physics_body3d.hpp>
-#include <godot_cpp/classes/rigid_body3d.hpp>
-#include <godot_cpp/classes/static_body3d.hpp>
-#include <godot_cpp/classes/character_body3d.hpp>
-#include <godot_cpp/classes/animatable_body3d.hpp>
-#include <godot_cpp/classes/area3d.hpp>
-#include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/shape3d.hpp>
-#include <godot_cpp/classes/box_shape3d.hpp>
-#include <godot_cpp/classes/sphere_shape3d.hpp>
-#include <godot_cpp/classes/capsule_shape3d.hpp>
-#include <godot_cpp/classes/cylinder_shape3d.hpp>
-#include <godot_cpp/classes/world_boundary_shape3d.hpp>
-#include <godot_cpp/classes/separation_ray_shape3d.hpp>
-#include <godot_cpp/classes/convex_polygon_shape3d.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
-#include <godot_cpp/classes/kinematic_collision3d.hpp>
-#include <godot_cpp/classes/physics_server3d.hpp>
-#include <godot_cpp/classes/physics_material.hpp>
-#include <godot_cpp/classes/vehicle_body3d.hpp>
-#include <godot_cpp/classes/vehicle_wheel3d.hpp>
-#include <godot_cpp/classes/physics_direct_space_state3d.hpp>
-#include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
-#include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
-#include <godot_cpp/classes/physics_point_query_parameters3d.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
-#include <godot_cpp/variant/packed_vector3_array.hpp>
-#include <godot_cpp/classes/environment.hpp>
-#include <godot_cpp/classes/world_environment.hpp>
-#include <godot_cpp/classes/multiplayer_api.hpp>
-#include <godot_cpp/classes/multiplayer_peer.hpp>
-#include <godot_cpp/classes/multiplayer_spawner.hpp>
-#include <godot_cpp/classes/multiplayer_synchronizer.hpp>
-#include <godot_cpp/classes/e_net_packet_peer.hpp>
-#include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
-#include <godot_cpp/classes/scene_replication_config.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/variant.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/callable_custom.hpp>
+
 
 // Godot: Audio Effects //
+#include <godot_cpp/classes/audio_effect.hpp>
+#include <godot_cpp/classes/audio_effect_reverb.hpp>
 #include <godot_cpp/classes/audio_effect_chorus.hpp>
 #include <godot_cpp/classes/audio_effect_delay.hpp>
 #include <godot_cpp/classes/audio_effect_distortion.hpp>
@@ -222,6 +226,52 @@
 #include <godot_cpp/classes/audio_effect_eq6.hpp>
 #include <godot_cpp/classes/audio_effect_eq10.hpp>
 #include <godot_cpp/classes/audio_effect_eq21.hpp>
+
+
+// Godot: Lights //
+#include <godot_cpp/classes/directional_light3d.hpp>
+#include <godot_cpp/classes/omni_light3d.hpp>
+#include <godot_cpp/classes/spot_light3d.hpp>
+#include <godot_cpp/classes/area_light3d.hpp>
+
+
+// Godot: Physics //
+#include <godot_cpp/classes/collision_object3d.hpp>
+#include <godot_cpp/classes/physics_body3d.hpp>
+#include <godot_cpp/classes/rigid_body3d.hpp>
+#include <godot_cpp/classes/static_body3d.hpp>
+#include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/animatable_body3d.hpp>
+#include <godot_cpp/classes/area3d.hpp>
+#include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/shape3d.hpp>
+#include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/sphere_shape3d.hpp>
+#include <godot_cpp/classes/capsule_shape3d.hpp>
+#include <godot_cpp/classes/cylinder_shape3d.hpp>
+#include <godot_cpp/classes/world_boundary_shape3d.hpp>
+#include <godot_cpp/classes/separation_ray_shape3d.hpp>
+#include <godot_cpp/classes/convex_polygon_shape3d.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+#include <godot_cpp/classes/kinematic_collision3d.hpp>
+#include <godot_cpp/classes/physics_material.hpp>
+#include <godot_cpp/classes/vehicle_body3d.hpp>
+#include <godot_cpp/classes/vehicle_wheel3d.hpp>
+#include <godot_cpp/classes/physics_direct_space_state3d.hpp>
+#include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
+#include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
+#include <godot_cpp/classes/physics_point_query_parameters3d.hpp>
+
+
+// Godot: Multiplayer //
+#include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/multiplayer_peer.hpp>
+#include <godot_cpp/classes/multiplayer_spawner.hpp>
+#include <godot_cpp/classes/multiplayer_synchronizer.hpp>
+#include <godot_cpp/classes/e_net_packet_peer.hpp>
+#include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
+#include <godot_cpp/classes/scene_replication_config.hpp>
+
 
 // Godot: GPU Particles //
 #include <godot_cpp/classes/gpu_particles3d.hpp>
