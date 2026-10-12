@@ -47,6 +47,7 @@ namespace Vital::Tool::LocalServer {
         return get_directory() / (std::to_string(port) + ".json");
     }
 
+    #if !defined(VSDK_Client)
     inline void retract_published(int port) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         std::error_code ec;
@@ -75,7 +76,7 @@ namespace Vital::Tool::LocalServer {
         Internal::ports.insert(port);
         return true;
     }
-
+    #else
     inline std::vector<Entry> list() {
         std::vector<Entry> entries;
         std::error_code ec;
@@ -95,4 +96,5 @@ namespace Vital::Tool::LocalServer {
         }
         return entries;
     }
+    #endif
 }
