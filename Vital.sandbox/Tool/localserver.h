@@ -31,10 +31,12 @@ namespace Vital::Tool::LocalServer {
         int http_port = 0;
     };
 
+    #if !defined(VSDK_Client)
     namespace Internal {
         inline std::mutex mutex;
         inline std::set<int> ports;
     }
+    #endif
 
     inline std::filesystem::path get_directory() {
         std::error_code ec;
