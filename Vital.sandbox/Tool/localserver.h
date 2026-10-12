@@ -76,6 +76,7 @@ namespace Vital::Tool::LocalServer {
         Internal::ports.insert(port);
         return true;
     }
+    
     #else
     inline std::vector<Entry> list() {
         std::vector<Entry> entries;
