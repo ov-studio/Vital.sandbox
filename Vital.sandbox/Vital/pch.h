@@ -64,6 +64,13 @@
 #include <fmt/xchar.h>
 
 
+// RapidJSON //
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/istreamwrapper.h>
+
+
 // Godot //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/core/memory.hpp>
