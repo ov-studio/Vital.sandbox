@@ -52,6 +52,12 @@
 #include <stdexcept>
 #include <initializer_list>
 
+#if defined(VSDK_WINDOWS)
+#include <windows.h>
+#include <comdef.h>
+#include <wbemidl.h>
+#endif
+
 #if defined(VSDK_MACOS) || defined(VSDK_LINUX)
 #include <termios.h>
 #include <unistd.h>
