@@ -90,8 +90,7 @@ namespace Vital::Sandbox::API {
 
             #if defined(VSDK_Client)
             API::bind(vm, base_scope, "get_peer_id", [](auto vm, auto& id) -> int {
-                auto network = Manager::Network::get_singleton();
-                vm -> push_value(network -> is_connected() ? network -> get_peer_id() : 0);
+                vm -> push_value(Manager::Network::get_singleton() -> get_peer_id());
                 return 1;
             });
             
