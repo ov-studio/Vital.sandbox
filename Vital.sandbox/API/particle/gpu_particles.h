@@ -106,6 +106,20 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
                 instance -> particles = base_class::create();
+
+                // Signals: "particle:emit" and "particle:finished", both carry the emitter.
+                // Weak reference so a pending signal never keeps a destroyed emitter alive
+                std::weak_ptr<Instance> weak = instance;
+                auto wire = [weak](const char* name) {
+                    return [weak, name]() {
+                        auto self = weak.lock();
+                        if (!self || !Instance::find_unlocked(self) || !self -> is_alive()) return;
+                        Manager::Sandbox::get_singleton() -> signal(name, Tool::StackValue(self));
+                    };
+                };
+                instance -> particles -> set_emit_handler(wire("particle:emit"));
+                instance -> particles -> set_finished_handler(wire("particle:finished"));
+
                 instance -> store(true);
                 return 1;
             });
@@ -121,8 +135,9 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                // Fires "particle:emit" when this starts an emission cycle
                 vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
-                    self -> particles -> set_emitting(true);
+                    self -> particles -> emit();
                     vm -> push_value(true);
                     return 1;
                 });
@@ -133,13 +148,15 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                // Fires "particle:emit", the new cycle starts straight away
                 vm_module::bind_method<Instance>(vm, "restart", [](auto vm, auto self, auto& id) -> int {
-                    self -> particles -> restart();
+                    self -> particles -> restart_emission();
                     vm -> push_value(true);
                     return 1;
                 });
 
-                // Emits a single cycle, call destroy() afterwards (lifetime / speed_scale seconds) for fire and forget effects
+                // Emits a single cycle. Fires "particle:emit" now and "particle:finished" once every particle is gone,
+                // destroy() the emitter from that signal for fire and forget effects
                 vm_module::bind_method<Instance>(vm, "burst", [](auto vm, auto self, auto& id) -> int {
                     self -> particles -> burst();
                     vm -> push_value(true);
