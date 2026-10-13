@@ -204,6 +204,14 @@ namespace Vital::Engine {
         if (!pp_material.is_valid()) {
             pp_material.instantiate();
             pp_material->set_shader(shader);
+            // The quad reads the screen/depth texture, which Godot only fills with OPAQUE geometry, so it is
+            // sorted with the transparent objects and sits right at the near plane = the nearest of them.
+            // Transparent lists draw far -> near, so by default it is drawn LAST and paints its opaque-only
+            // copy of the screen over every transparent object already drawn (GPU particles, trails, glass...).
+            // Lowest render priority makes it draw FIRST instead: it still sees all opaque depth, and everything
+            // transparent is then drawn on top of the result. The quad never writes depth (depth_draw_never), so
+            // those objects keep depth testing against the real scene.
+            pp_material->set_render_priority(godot::Material::RENDER_PRIORITY_MIN);
         }
 
         if (!quad) {
