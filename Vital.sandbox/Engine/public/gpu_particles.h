@@ -44,7 +44,14 @@ namespace Vital::Engine {
             bool trail_mode = false;
             float distance_range = 0.0f; // Applied cull distance, 0 = no limit
 
+            // Signals: the sandbox layer wires these (see API/particle/gpu_particles.h)
+            std::function<void()> emit_handler;
+            std::function<void()> finished_handler;
+            bool was_emitting = false;     // Last observed emitting state, used to detect emission starts
+
             // Helpers //
+            void notify_emit();
+            void notify_finished();
             void apply_billboard();
             void apply_draw_passes();
             void apply_material();
@@ -54,15 +61,26 @@ namespace Vital::Engine {
             // Instantiators //
             GPU_Particles() = default;
             ~GPU_Particles() override = default;
-            static void _bind_methods() {}
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &GPU_Particles::on_finished);
+            }
         public:
             // Hooks //
             void _process(double delta) override;
 
 
+            // Events //
+            // on_finished is the target of Godot's GPUParticles3D "finished" signal
+            void on_finished();
+            void set_emit_handler(std::function<void()> handler);
+            void set_finished_handler(std::function<void()> handler);
+
+
             // Managers //
             static GPU_Particles* create();
             void destroy();
+            void emit();
+            void restart_emission();
             void burst();
 
 

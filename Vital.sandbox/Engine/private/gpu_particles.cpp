@@ -57,6 +57,18 @@ namespace Vital::Engine {
         set_visibility_range_end(range);
     }
 
+    // Signals //
+    // An emission cycle started: fires "particle:emit"
+    void GPU_Particles::notify_emit() {
+        was_emitting = true;
+        if (emit_handler) emit_handler();
+    }
+
+    // Every particle of a one-shot cycle is gone: fires "particle:finished"
+    void GPU_Particles::notify_finished() {
+        if (finished_handler) finished_handler();
+    }
+
     void GPU_Particles::apply_billboard() {
         // Trail meshes orient themselves from the particle transform, so
         // material billboarding is forced off while trail mode is active
@@ -92,6 +104,26 @@ namespace Vital::Engine {
     // Hooks //
     void GPU_Particles::_process(double) {
         sync_distance();
+
+        // Emission started by anything that bypasses emit/burst/restart_emission (set_emitting from the
+        // engine, preprocess, a one-shot restarting itself): picked up on the rising edge
+        const bool emitting = is_emitting();
+        if (emitting && !was_emitting) notify_emit();
+        was_emitting = emitting;
+    }
+
+
+    // Events //
+    void GPU_Particles::on_finished() {
+        notify_finished();
+    }
+
+    void GPU_Particles::set_emit_handler(std::function<void()> handler) {
+        emit_handler = std::move(handler);
+    }
+
+    void GPU_Particles::set_finished_handler(std::function<void()> handler) {
+        finished_handler = std::move(handler);
     }
 
 
@@ -126,21 +158,40 @@ namespace Vital::Engine {
         particles -> set_visibility_aabb(godot::AABB(godot::Vector3(-10, -10, -10), godot::Vector3(20, 20, 20)));
         particles -> set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 
-        // Keeps the particle distance setting applied (see sync_distance)
+        // Keeps the particle distance setting applied (see sync_distance) and watches for emission starts
         particles -> set_process(true);
+
+        // Godot's own "finished" signal: only emitted by one-shot emitters, once every particle is gone
+        particles -> connect("finished", godot::Callable(particles, "_on_finished"));
 
         Engine::Core::get_singleton() -> add_child(particles);
         return particles;
     }
 
     void GPU_Particles::destroy() {
+        // No signal may fire once the emitter is on its way out
+        emit_handler = nullptr;
+        finished_handler = nullptr;
         queue_free();
+    }
+
+    void GPU_Particles::emit() {
+        // Already emitting: nothing started, so no signal
+        const bool running = is_emitting();
+        set_emitting(true);
+        if (!running) notify_emit();
+    }
+
+    void GPU_Particles::restart_emission() {
+        restart();
+        notify_emit();
     }
 
     void GPU_Particles::burst() {
         set_one_shot(true);
         restart();
         set_emitting(true);
+        notify_emit();
     }
 
 
