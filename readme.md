@@ -31,31 +31,31 @@
 
 Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime that touches every system in the engine and actively expanding — [Roadmap](https://vital-sandbox.com/roadmap).
 
+- **Console**: Runtime console with structured logging and built-in client / server commands
+- **Resources**: Isolated per-resource Lua environments with dependency resolution, start / stop / restart control, and cross-resource exports
+- **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua, with compressed, hash-verified downloads
+- **Display**: Resolution query, live scene texture, and screenshot capture
+- **Database**: Async database access with query support (server-side)
+- **Discord**: Native Discord integration (client-side)
+- **Models**: Load, instantiate, transform, and animate 3D model assets at runtime
+- **Camera**: FOV, clip planes, projection modes, depth of field, auto exposure, and ray projection
+- **Webview**: Embedded webview rendering (client-side)
 - **UI primitives**: Canvas, SVG, image, font, and texture APIs
 - **Rendering**: Control scenes, shaders, rendertargets, and draw calls directly from script
 - **Shaders**: GLSL compilation from file or raw source, with full uniform control and model / rendertarget binding
-- **Models**: Load, instantiate, transform, and animate 3D model assets at runtime
-- **Camera**: FOV, clip planes, projection modes, depth of field, auto exposure, and ray projection
-- **Particles**: GPU particle emitters with emission shapes, trails, custom materials, mesh particles, and emit / finished signals
-- **Display**: Resolution query, live scene texture, and screenshot capture
 - **Audio**: 2D and 3D audio sources with effect bus support
-- **Crypto**: Built-in cryptographic utilities
-- **Networking**: Built-in async networking primitives for multiplayer-ready games, with ENet transport, reliable RPC, and entity replication with client interpolation and late-join sync
+- **Utilities**: Lua math, string, and table libraries enriched with sandbox-native helpers, plus timers, promises, easing curves, file access, HTTP, and compression
 - **Threading**: True multi-threading support with promise-based coordination
-- **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua, with compressed, hash-verified downloads
-- **Resources**: Isolated per-resource Lua environments with dependency resolution, start / stop / restart control, and cross-resource exports
+- **Crypto**: Built-in cryptographic utilities
 - **Event system**: Heartbeats, priority-ordered listeners, built-in engine signals, and reactive patterns that scale cleanly
 - **Input**: Key and mouse state, cursor control, key binds, and command handlers
-- **Console**: Runtime console with structured logging and built-in client / server commands
-- **Utilities**: Lua math, string, and table libraries enriched with sandbox-native helpers, plus timers, promises, easing curves, file access, HTTP, and compression
 - **Performance monitors**: Native and custom monitor registration, querying, and listing
-- **Database**: Async database access with query support (server-side)
-- **Webview**: Embedded webview rendering (client-side)
-- **Discord**: Native Discord integration (client-side)
-- **GFX pipeline**: Full environment control — fog, volumetric fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, SDFGI, antialiasing, color grading, and more
 - **Lighting**: Directional, point, spot, and area lights with full scripting control
+- **GFX pipeline**: Full environment control — fog, volumetric fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, SDFGI, antialiasing, color grading, and more
+- **Particles**: GPU particle emitters with emission shapes, trails, custom materials, mesh particles, and emit / finished signals
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, spaces, and space queries (raycast, point / shape intersection, cast motion)
 - **Physics debugger**: Per-shape and global collision wireframe visualizer, with color-coded local vs. replicated shapes
+- **Networking**: Built-in async networking primitives for multiplayer-ready games, with ENet transport, reliable RPC, and entity replication with client interpolation and late-join sync
 
 ## Structure
 
