@@ -135,20 +135,7 @@ namespace Vital::Sandbox::API {
                     }
                     auto node = self -> get_node();
                     Vital::Engine::Dimension::set(node, dimension);
-                    // Replicated: the server broadcasts to all clients. A client that owns the entity
-                    // (Syncable::bind_method already rejected everyone else) sends it to the server
-                    // (rpc_id(1)), where Network::_sync_dimension validates the sender, applies and relays.
-                    if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
-                        auto network = Vital::Manager::Network::get_singleton();
-                        auto net_node = network ? network -> get_node() : nullptr;
-                        if (net_node && syncable -> get_net_id() != 0) {
-                            #if !defined(VSDK_Client)
-                            net_node -> rpc("_sync_dimension", (int)syncable -> get_net_id(), (int)dimension);
-                            #else
-                            net_node -> rpc_id(1, "_sync_dimension", (int)syncable -> get_net_id(), (int)dimension);
-                            #endif
-                        }
-                    }
+                    if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
                     vm -> push_value(true);
                     return 1;
                 });

@@ -20,6 +20,7 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     class Network;
 }
@@ -159,6 +160,7 @@ namespace Vital::Engine {
             virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) = 0;
             virtual void on_sync_process(double delta);
             virtual void reset_sync_state();
+            void sync_dimension(int dimension);
             #if !defined(VSDK_Client)
             void force_transform_broadcast();
             void flush_pending_force_transform();

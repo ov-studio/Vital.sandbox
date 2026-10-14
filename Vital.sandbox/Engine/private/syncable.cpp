@@ -219,6 +219,22 @@ namespace Vital::Engine {
     }
     #endif
 
+    // Replicates a dimension change of this entity. Server: broadcast to all clients.
+    // Client: send to the server (rpc_id(1)), where Network::_sync_dimension validates that the
+    // sender is this entity's authority, applies and relays. Authority itself is enforced by the
+    // caller (Syncable::bind_method). Client-local entities (net_id == 0) are never replicated.
+    void ISyncable::sync_dimension(int dimension) {
+        if (!is_replicated()) return;
+        auto network = Manager::Network::get_singleton();
+        auto net_node = network ? network -> get_node() : nullptr;
+        if (!net_node) return;
+        #if !defined(VSDK_Client)
+        net_node -> rpc("_sync_dimension", (int)net_id, dimension);
+        #else
+        net_node -> rpc_id(1, "_sync_dimension", (int)net_id, dimension);
+        #endif
+    }
+
     bool ISyncable::has_sync_moved(const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& scale) const {
         constexpr float MOVE_EPSILON = 0.001f;
         return (
