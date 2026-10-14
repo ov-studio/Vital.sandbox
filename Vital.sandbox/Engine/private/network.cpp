@@ -519,19 +519,36 @@ namespace Vital::Engine {
         #endif
     }
 
-    // _sync_dimension: server → all clients. Server broadcasts from set_dimension / set_parent
-    // (see API::Node_3D, ISyncable::apply_parent); clients apply, or defer until the entity registers.
+    // _sync_dimension
+    // Server → all clients: server broadcasts from set_dimension / set_parent (see API::Node_3D,
+    //   ISyncable::apply_parent); clients apply, or defer until the entity registers.
+    // Authority client → server: sent via rpc_id(1, ...) from set_dimension. The server accepts it only
+    //   from the entity's sync authority, applies it (so server physics moves too), then relays it to
+    //   every client (same pattern as _sync_anim_layer).
     void Network::_sync_dimension(int net_id, int dimension) {
-        #if defined(VSDK_Client)
         auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        #if defined(VSDK_Client)
         if (!entity) {
             mgr->defer_dimension_sync((uint32_t)net_id, dimension);
             return;
         }
         auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
         if (node) Engine::Dimension::set(node, dimension);
+        #else
+        if (!entity) return;
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        if (sender != 0 && (sender != entity->get_sync_authority() || dimension < 0)) {
+            godot::UtilityFunctions::push_warning("_sync_dimension: rejected — sender ", sender,
+                " may not set dimension ", dimension, " for net_id=", net_id);
+            return;
+        }
+        auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
+        if (node) Engine::Dimension::set(node, dimension);
+        auto net_node = mgr->get_node();
+        if (net_node) net_node->rpc("_sync_dimension", net_id, dimension);
         #endif
     }
 
