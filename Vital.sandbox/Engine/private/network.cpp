@@ -519,12 +519,13 @@ namespace Vital::Engine {
         #endif
     }
 
-    // _sync_dimension
-    // Server → all clients: server broadcasts from set_dimension / set_parent (see API::Node_3D,
-    //   ISyncable::apply_parent); clients apply, or defer until the entity registers.
-    // Authority client → server: sent via rpc_id(1, ...) from set_dimension. The server accepts it only
-    //   from the entity's sync authority, applies it (so server physics moves too), then relays it to
-    //   every client (same pattern as _sync_anim_layer).
+    // _sync_dimension (reliable, ANY_PEER):
+    //   server → all clients: broadcast from set_dimension / set_parent (see API::Node_3D,
+    //     ISyncable::apply_parent); clients apply, or defer until the entity registers.
+    //   authority client → server: the owner of a replicated entity reports its own set_dimension.
+    //     The server only trusts the entity's sync authority, rejects the INHERIT sentinel (a
+    //     server-side value, never client-settable), applies, then relays to every client.
+    //     The owner receives its own echo too; applying the same value again is idempotent.
     void Network::_sync_dimension(int net_id, int dimension) {
         auto mgr = Manager::Network::get_singleton();
         if (!mgr) return;
@@ -540,13 +541,19 @@ namespace Vital::Engine {
         if (!entity) return;
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
         int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
-        if (sender != 0 && (sender != entity->get_sync_authority() || dimension < 0)) {
+        if (sender != 0 && sender != entity->get_sync_authority()) {
             godot::UtilityFunctions::push_warning("_sync_dimension: rejected — sender ", sender,
-                " may not set dimension ", dimension, " for net_id=", net_id);
+                " is not the sync authority for net_id=", net_id);
+            return;
+        }
+        if (sender != 0 && dimension < 0) {
+            godot::UtilityFunctions::push_warning("_sync_dimension: rejected — invalid dimension ", dimension,
+                " from sender ", sender, " for net_id=", net_id);
             return;
         }
         auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
-        if (node) Engine::Dimension::set(node, dimension);
+        if (!node) return;
+        Engine::Dimension::set(node, dimension);
         auto net_node = mgr->get_node();
         if (net_node) net_node->rpc("_sync_dimension", net_id, dimension);
         #endif
