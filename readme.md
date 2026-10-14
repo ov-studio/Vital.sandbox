@@ -55,6 +55,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **Particles**: GPU particle emitters with emission shapes, trails, custom materials, mesh particles, and emit / finished signals
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, spaces, and space queries (raycast, point / shape intersection, cast motion)
 - **Physics debugger**: Per-shape and global collision wireframe visualizer, with color-coded local vs. replicated shapes
+- **Virtual dimensions**: Up to 65,535 fully isolated dimensions — entities only render for cameras in the same dimension, with separate physics, collisions, triggers, and dimension-aware space queries, plus server-side replication
 - **Networking**: Built-in async networking primitives for multiplayer-ready games, with ENet transport, reliable RPC, and entity replication with client interpolation and late-join sync
 
 ## Structure
