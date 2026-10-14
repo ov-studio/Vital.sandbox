@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Manager/public/network.h>
 
 
@@ -21,6 +22,7 @@
 // Vital: Engine: ISyncable //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
         buffer[offset]   =  value        & 0xFF;
@@ -416,7 +418,11 @@ namespace Vital::Engine {
                 target = parent_node;
             }
         }
+        auto previous = Dimension::get(self_node);
         if (self_node -> get_parent() != target) self_node -> reparent(target, true);
+        // Detached keeps its dimension, attached follows its parent
+        int captured_dimension = (target == core) ? previous : Dimension::INHERIT;
+        Dimension::set(self_node, captured_dimension);
         sync_parent_net_id = parent_net_id;
         sync_last_pos = get_sync_position(); 
         sync_last_rot = get_sync_rotation();
@@ -426,9 +432,10 @@ namespace Vital::Engine {
         uint32_t captured_net_id    = net_id;
         uint32_t captured_parent_id = parent_net_id;
         godot::ObjectID captured_oid = godot::ObjectID(self_node -> get_instance_id());
-        core -> enqueue([captured_net_id, captured_parent_id, captured_oid]() {
+        core -> enqueue([captured_net_id, captured_parent_id, captured_oid, captured_dimension]() {
             auto net_node = Manager::Network::get_singleton() -> get_node();
             if (net_node) net_node -> rpc("_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
+            if (net_node) net_node -> rpc("_sync_dimension", (int)captured_net_id, captured_dimension);
             godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
             auto node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;

@@ -17,6 +17,8 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
+#include <algorithm>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
@@ -555,6 +557,26 @@ namespace Vital::Manager {
             }
         }
 
+        // 4b. Dimension (_sync_dimension that arrived before this entity registered).
+        //     assign, not set: a replayed parent must not wipe a child's own override.
+        {
+            int dimension = 0;
+            bool found = false;
+            {
+                std::lock_guard<std::mutex> lock(pending_dimension_mutex);
+                auto it = pending_dimension_syncs.find(nid);
+                if (it != pending_dimension_syncs.end()) {
+                    dimension = it->second;
+                    pending_dimension_syncs.erase(it);
+                    found = true;
+                }
+            }
+            if (found) {
+                auto dim_node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
+                if (dim_node) Engine::Dimension::assign(dim_node, dimension);
+            }
+        }
+
         // 5. Component visibility overrides (_sync_component_visible that arrived
         //    before this entity registered — applied in order so last write wins).
         {
@@ -704,6 +726,10 @@ namespace Vital::Manager {
             pending_component_render_syncs.clear();
         }
         {
+            std::lock_guard<std::mutex> lock(pending_dimension_mutex);
+            pending_dimension_syncs.clear();
+        }
+        {
             std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
             pending_anim_layer_syncs.clear();
         }
@@ -771,6 +797,10 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(pending_component_render_mutex);
             pending_component_render_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_dimension_mutex);
+            pending_dimension_syncs.erase(nid);
         }
         {
             std::lock_guard<std::mutex> lock(pending_anim_layer_mutex);
@@ -858,6 +888,11 @@ namespace Vital::Manager {
     void Network::defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state) {
         std::lock_guard<std::mutex> lock(pending_component_render_mutex);
         pending_component_render_syncs[net_id].emplace_back(component, state);
+    }
+
+    void Network::defer_dimension_sync(uint32_t net_id, int dimension) {
+        std::lock_guard<std::mutex> lock(pending_dimension_mutex);
+        pending_dimension_syncs[net_id] = dimension;
     }
 
     void Network::defer_anim_layer_sync(uint32_t net_id, int layer, int mode, const godot::String& name, bool loop, float speed, float weight, float blend_time) {
@@ -1530,6 +1565,28 @@ namespace Vital::Manager {
                 uint32_t parent_net_id = model->get_parent_net_id();
                 if (parent_net_id == 0) continue;  // parented to Core, no replay needed
                 node->rpc_id(id, "_reparent_entity", (int)e->get_net_id(), (int)parent_net_id);
+            }
+        }
+
+        // 2.6b. Replay explicit dimensions so late-joiners see the same dimension
+        //       state. Parents first: the client's set clears descendants' overrides.
+        //       Entities without their own override inherit, so nothing to send.
+        if (node) {
+            std::vector<std::pair<int, Engine::ISyncable*>> entries;
+            {
+                std::lock_guard<std::mutex> lock(sync_models_mutex);
+                for (auto e : sync_models) {
+                    auto dim_node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(e));
+                    if (!Engine::Dimension::has(dim_node)) continue;
+                    int depth = 0;
+                    for (auto it = dim_node->get_parent(); it; it = it->get_parent()) depth++;
+                    entries.emplace_back(depth, e);
+                }
+            }
+            std::stable_sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+            for (const auto& [depth, e] : entries) {
+                auto dim_node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(e));
+                node->rpc_id(id, "_sync_dimension", (int)e->get_net_id(), Engine::Dimension::get(dim_node));
             }
         }
 

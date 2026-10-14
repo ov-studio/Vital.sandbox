@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/rigid_body.h>
 #include <Vital.sandbox/Engine/public/static_body.h>
@@ -58,6 +59,7 @@ namespace Vital::Engine {
         rpc_config("_sync_component_visible", reliable);
         rpc_config("_sync_component_render", reliable);
         rpc_config("_force_transform", reliable);
+        rpc_config("_sync_dimension", reliable);
         rpc_config("_wake_sync", reliable);
 
         godot::Dictionary unreliable;
@@ -517,6 +519,22 @@ namespace Vital::Engine {
         #endif
     }
 
+    // _sync_dimension: server → all clients. Server broadcasts from set_dimension / set_parent
+    // (see API::Node_3D, ISyncable::apply_parent); clients apply, or defer until the entity registers.
+    void Network::_sync_dimension(int net_id, int dimension) {
+        #if defined(VSDK_Client)
+        auto mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+        if (!entity) {
+            mgr->defer_dimension_sync((uint32_t)net_id, dimension);
+            return;
+        }
+        auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
+        if (node) Engine::Dimension::set(node, dimension);
+        #endif
+    }
+
     void Network::_force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale) {
         #if defined(VSDK_Client)
         auto mgr = Manager::Network::get_singleton();
@@ -892,6 +910,7 @@ namespace Vital::Engine {
             // actually happens.
             child_node->reparent(target, false);
         }
+        Engine::Dimension::apply(child_node); // inheritance may have changed
 
         // Switch sync coordinate space for every ISyncable type (Model,
         // Physics_Body subtypes, or anything added later).

@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
@@ -86,6 +87,7 @@ namespace Vital::Engine {
         if (!is_ready()) return;
         Manager::Sandbox::get_singleton() -> drain();
         Manager::Sandbox::get_singleton() -> process(delta);
+        Dimension::refresh();
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!work_queue.empty()) call_deferred("drain");

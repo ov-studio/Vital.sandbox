@@ -65,6 +65,10 @@ namespace Vital::Manager {
             std::unordered_map<uint32_t, std::vector<std::pair<godot::String, bool>>> pending_component_render_syncs;
             std::mutex pending_component_render_mutex;
 
+            // dimension: net_id → last dimension received before the entity registered.
+            std::unordered_map<uint32_t, int> pending_dimension_syncs;
+            std::mutex pending_dimension_mutex;
+
             // anim_layer: net_id → list of (layer, mode, name, loop, speed, weight, blend_time) entries.
             // anim_layer_filter: net_id → list of (layer, enabled, bone_paths) entries.
             // Both keyed by net_id; applied in order in replay_pending_syncs when the entity registers.
@@ -223,6 +227,10 @@ namespace Vital::Manager {
             // entity registers. See pending_component_visible_syncs / pending_component_render_syncs.
             void defer_component_visible_sync(uint32_t net_id, const godot::String& component, bool state);
             void defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state);
+
+            // Buffers a _sync_dimension for a net_id not yet registered (last write wins);
+            // replay_pending_syncs() applies it once the entity registers.
+            void defer_dimension_sync(uint32_t net_id, int dimension);
 
             // Buffers an animation-layer sync/filter for a net_id not yet registered
             // (e.g. the state-dump RPCs sent to a late-joiner in send_full_state_to_peer

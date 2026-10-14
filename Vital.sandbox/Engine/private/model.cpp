@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
@@ -420,7 +421,7 @@ namespace Vital::Engine {
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
         if (!sync_registered) Manager::Network::get_singleton()->enqueue_syncable_registration(this);
-        set_visible(true);
+        Dimension::set_node_visible(this, true); // keeps a dimension-forced hide
         Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
         Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));

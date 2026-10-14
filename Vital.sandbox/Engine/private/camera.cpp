@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 
 
 ////////////////////////////
@@ -61,12 +62,12 @@ namespace Vital::Engine {
 
     // Setters //
     void Camera::set_active(Camera* camera) {
-        if (camera) {
-            camera -> make_current();
-            return;
+        if (camera) camera -> make_current();
+        else {
+            auto active = get_active();
+            if (active) active -> clear_current(false);
         }
-        auto active = get_active();
-        if (active) active -> clear_current(false);
+        Dimension::refresh(); // switch cameras seamlessly
     }
 }
 #endif
