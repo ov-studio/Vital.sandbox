@@ -60,7 +60,6 @@ namespace Vital::Sandbox::API {
                 if (n -> get_parent() == t) return;
                 auto previous = Vital::Engine::Dimension::get(n);
                 n -> reparent(t, true);
-                // Detached keeps its dimension, attached follows its parent
                 Vital::Engine::Dimension::set(n, t == Vital::Engine::Core::get_singleton() ? previous : Vital::Engine::Dimension::INHERIT);
             });
         }
