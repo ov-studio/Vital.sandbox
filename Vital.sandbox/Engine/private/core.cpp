@@ -96,6 +96,7 @@ namespace Vital::Engine {
 
     void Core::_physics_process(double delta) {
         if (!is_ready()) return;
+        Dimension::sync_mirrors(); // dimension -1 proxies, before the physics step
         Manager::Sandbox::get_singleton() -> physics_process(delta);
         Manager::Network::get_singleton() -> sync_tick(delta);
     }
