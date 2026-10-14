@@ -746,16 +746,17 @@ namespace Vital::Engine {
                 mesh->set_process(true);
                 return true;
             };
+            // A wildcard that matches nothing is a valid no-op, only an exact name that
+            // matches nothing is an error
             if (Tool::contains_wildcard(component)) {
                 std::vector<std::string> keys;
                 keys.reserve(detached_components.size());
                 for (const auto& [name, _] : detached_components) keys.push_back(name);
-                bool matched = !keys.empty();
                 for (const auto& name : keys)
                     if (Tool::match_wildcard(component, name)) exec(name);
-                if (!matched)
-                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in detached components of model '{}'", component, model_name));
             } else {
+                if (!detached_components.count(component) && !find_mesh_node(this, component))
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
                 exec(component);
             }
         } else {
@@ -775,13 +776,8 @@ namespace Vital::Engine {
                 return true;
             };
             if (Tool::contains_wildcard(component)) {
-                bool matched = false;
                 for (const auto& name : live_names)
-                    if (Tool::match_wildcard(component, name)) { exec(name); matched = true; }
-                for (const auto& [name, _] : detached_components)
-                    if (Tool::match_wildcard(component, name)) matched = true;
-                if (!matched)
-                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+                    if (Tool::match_wildcard(component, name)) exec(name);
             } else {
                 if (!exec(component))
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
@@ -1380,6 +1376,7 @@ namespace Vital::Engine {
     // ORIGINAL mesh material (not the current override) so its textures can be reused.
     int Model::apply_material_shader(const std::string& component, const std::string& material, const SurfaceMaterialFactory& factory) {
         int count = 0;
+        const bool wildcard_component = Tool::contains_wildcard(component);
 
         auto apply_to_component = [&](const std::string& comp_name) -> bool {
             godot::MeshInstance3D* mesh = find_mesh_node(this, comp_name);
@@ -1400,13 +1397,17 @@ namespace Vital::Engine {
                 return true;
             };
 
-            if (!apply_wildcard(material, [&]{ return get_materials(comp_name); }, apply_to_surface))
+            // A wildcard component only has to match the material in some of its components,
+            // an exact component must contain the exact material
+            if (!apply_wildcard(material, [&]{ return get_materials(comp_name); }, apply_to_surface) && !wildcard_component)
                 throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, comp_name));
             return true;
         };
 
         if (!apply_wildcard(component, [&]{ return get_components(); }, apply_to_component))
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        if (wildcard_component && !Tool::contains_wildcard(material) && count == 0)
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in any component matching '{}' of model '{}'", material, component, model_name));
         return count;
     }
 }
