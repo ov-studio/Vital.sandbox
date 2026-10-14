@@ -67,8 +67,6 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
-        // child_entity = true marks types that are hardcoded children of another entity (always attached):
-        // they have no set_dimension, get_dimension stays and returns the inherited one
         template<typename Instance, Type node_type = Type::Spatial, bool child_entity = false>
         static void methods(Machine* vm) {
             if constexpr (node_type == Type::Spatial) {
@@ -135,7 +133,6 @@ namespace Vital::Sandbox::API {
                         auto dimension = vm -> get_int(2);
                         if constexpr (node_type == Type::Camera) Vital::Engine::Dimension::set_camera_dimension(node, dimension);
                         else {
-                            // Attached entities follow their parent's dimension
                             if (Vital::Engine::Dimension::is_attached(node)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot set the dimension of an attached entity, it follows its parent");
                             Vital::Engine::Dimension::set(node, dimension);
                             if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
