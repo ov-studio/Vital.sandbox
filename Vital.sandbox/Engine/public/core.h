@@ -58,6 +58,7 @@ namespace Vital::Engine {
             };
         public:
             // Hooks //
+            void _notification(int what);     // TODO: Improve ordfer of this?
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;

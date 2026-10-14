@@ -34,6 +34,11 @@
 
 namespace Vital::Engine {
     // Hooks //
+    // TODO: Improve ordfer of this?
+    void Core::_notification(int what) {
+        if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Dimension::dirty = true;
+    }
+
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(false);

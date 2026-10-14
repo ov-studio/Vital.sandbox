@@ -47,7 +47,8 @@ namespace Vital::Engine {
 
         inline static bool refreshed = false;
         inline static Viewer last_viewer;
-        inline static int last_child_count = 0;
+        inline static bool dirty = true;  // Core's child list changed (set by Core::_notification)
+        inline static std::unordered_set<uint64_t> known;  // Core children already applied
         inline static std::unordered_map<int, godot::RID> spaces;
 
         static bool has(godot::Node* node) {
@@ -218,27 +219,43 @@ namespace Vital::Engine {
             refresh();
         }
 
+        // Applies not-yet-known Core children and forgets removed ones. Tracked by instance id, not by
+        // child count: a removal and an addition in the same frame leave the count unchanged.
+        static void sync_children(godot::Node* core, const Viewer& viewer, bool apply_new = true) {
+            std::unordered_set<uint64_t> current;
+            auto count = core -> get_child_count();
+            current.reserve(count);
+            for (int i = 0; i < count; i++) {
+                auto child = core -> get_child(i);
+                auto id = (uint64_t)child -> get_instance_id();
+                current.insert(id);
+                if (apply_new && !known.count(id)) apply(child, viewer);
+            }
+            known = std::move(current);
+        }
+
         // Called every frame from Core::_process and right after the active camera changes.
         // Client: full re-apply when the active camera, or its dimension, changes (incl. none).
         // Both: newly added Core children get gated / moved into their physics space.
         static void refresh() {
             auto core = Vital::Engine::Core::get_singleton();
             if (!core) return;
-            auto count = core -> get_child_count();
             #if defined(VSDK_Client)
             auto viewer = get_viewer();
             if (!refreshed || viewer.active != last_viewer.active || viewer.dimension != last_viewer.dimension || viewer.camera != last_viewer.camera) {
                 refreshed = true;
                 last_viewer = viewer;
-                last_child_count = count;
+                dirty = false;
                 apply(core, viewer);
+                sync_children(core, viewer, false);
                 return;
             }
             #else
             Viewer viewer;
             #endif
-            for (int i = last_child_count; i < count; i++) apply(core -> get_child(i), viewer);
-            last_child_count = count;
+            if (!dirty) return;
+            dirty = false;
+            sync_children(core, viewer);
         }
     };
 }
