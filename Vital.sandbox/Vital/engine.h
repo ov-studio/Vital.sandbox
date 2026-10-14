@@ -14,6 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/display.h>
 #include <Vital.sandbox/Engine/public/monitor.h>
@@ -38,6 +40,7 @@
 #include <Vital.sandbox/Engine/public/spot_light.h>
 #include <Vital.sandbox/Engine/public/area_light.h>
 #include <Vital.sandbox/Engine/public/gpu_particles.h>
+#include <Vital.sandbox/Engine/public/physics_body.h>
 #include <Vital.sandbox/Engine/public/rigid_body.h>
 #include <Vital.sandbox/Engine/public/static_body.h>
 #include <Vital.sandbox/Engine/public/character_body.h>
