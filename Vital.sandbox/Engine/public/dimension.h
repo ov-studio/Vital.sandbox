@@ -14,14 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#include <unordered_map>
-#include <godot_cpp/classes/area3d.hpp>
-#include <godot_cpp/classes/audio_stream_player3d.hpp>
-#include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/classes/collision_object3d.hpp>
-#include <godot_cpp/classes/physics_server3d.hpp>
-#include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/world3d.hpp>
 
 
 /////////////////////////////////

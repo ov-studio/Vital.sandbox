@@ -18,7 +18,6 @@
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/Engine/public/dimension.h>
-#include <algorithm>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/collision_shape.h>
 #include <Vital.sandbox/Engine/public/vehicle_wheel.h>
