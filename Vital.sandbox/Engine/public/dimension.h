@@ -14,8 +14,14 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <unordered_map>
+#include <godot_cpp/classes/area3d.hpp>
 #include <godot_cpp/classes/audio_stream_player3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/collision_object3d.hpp>
+#include <godot_cpp/classes/physics_server3d.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/world3d.hpp>
 
 
 /////////////////////////////////
@@ -31,6 +37,9 @@
 //   Node3D (model, particles, lights, bodies...): force-hidden via `visible`. Only the "scope" nodes
 //     are flagged (own dimension, or direct Core child); descendants follow through the tree.
 //   AudioStreamPlayer3D: force-muted via volume (timeline keeps running).
+//   Physics (client + server): every dimension > 0 gets its own physics space, bodies/areas are moved into
+//     it, so they only collide with / trigger / get hit by queries of the same dimension. Dimension 0 and -1
+//     live in the default space. Spaces are created on demand and kept.
 // The user's own visible/volume is kept aside while forced and restored after, and
 // set_node_visible / set_player_volume keep working meanwhile (they only update the kept value).
 namespace Vital::Engine {
@@ -47,6 +56,7 @@ namespace Vital::Engine {
         inline static bool refreshed = false;
         inline static Viewer last_viewer;
         inline static int last_child_count = 0;
+        inline static std::unordered_map<int, godot::RID> spaces;
 
         static bool has(godot::Node* node) {
             return node && node -> has_meta("vsdk_dimension");
@@ -92,10 +102,40 @@ namespace Vital::Engine {
             return is_visible(dimension, get_viewer());
         }
 
+        // Physics space of a dimension (0 and -1 = the default world space)
+        static godot::RID get_space(int dimension) {
+            auto default_space = Vital::Engine::Core::get_singleton() -> get_viewport() -> get_world_3d() -> get_space();
+            if (dimension <= 0) return default_space;
+            auto it = spaces.find(dimension);
+            if (it != spaces.end()) return it -> second;
+            auto server = godot::PhysicsServer3D::get_singleton();
+            auto space = server -> space_create();
+            server -> space_set_active(space, true);
+            // A new space's default area starts empty: copy the default world's environment
+            for (auto param : {godot::PhysicsServer3D::AREA_PARAM_GRAVITY, godot::PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, godot::PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, godot::PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP}) {
+                server -> area_set_param(space, param, server -> area_get_param(default_space, param));
+            }
+            spaces[dimension] = space;
+            return space;
+        }
+
+        // Entering the tree resets a body to the default space, so this runs again after reparents
+        static void apply_space(godot::CollisionObject3D* object, int dimension) {
+            if (!object -> is_inside_tree()) return;
+            auto server = godot::PhysicsServer3D::get_singleton();
+            auto space = get_space(dimension);
+            auto rid = object -> get_rid();
+            if (godot::Object::cast_to<godot::Area3D>(object)) {
+                if (server -> area_get_space(rid) != space) server -> area_set_space(rid, space);
+            }
+            else if (server -> body_get_space(rid) != space) server -> body_set_space(rid, space);
+        }
+
         static void apply(godot::Node* node, const Viewer& viewer) {
-            #if defined(VSDK_Client)
             if (!node) return;
-            auto visible = is_visible(get(node), viewer);
+            auto dimension = get(node);
+            #if defined(VSDK_Client)
+            auto visible = is_visible(dimension, viewer);
             auto node_3d = godot::Object::cast_to<godot::Node3D>(node);
             if (node_3d && !godot::Object::cast_to<godot::Camera3D>(node)) {
                 auto scope = has(node) || node -> get_parent() == Vital::Engine::Core::get_singleton();
@@ -126,8 +166,9 @@ namespace Vital::Engine {
                     player -> remove_meta("vsdk_user_volume");
                 }
             }
-            for (int i = 0; i < node -> get_child_count(); i++) apply(node -> get_child(i), viewer);
             #endif
+            if (auto object = godot::Object::cast_to<godot::CollisionObject3D>(node)) apply_space(object, dimension);
+            for (int i = 0; i < node -> get_child_count(); i++) apply(node -> get_child(i), viewer);
         }
 
         // User-facing visible, aware of the force-hidden flag
@@ -179,14 +220,14 @@ namespace Vital::Engine {
         }
 
         // Called every frame from Core::_process and right after the active camera changes.
-        // Full re-apply when the active camera, or its dimension, changes (incl. none);
-        // otherwise only newly added Core children get gated.
+        // Client: full re-apply when the active camera, or its dimension, changes (incl. none).
+        // Both: newly added Core children get gated / moved into their physics space.
         static void refresh() {
-            #if defined(VSDK_Client)
             auto core = Vital::Engine::Core::get_singleton();
             if (!core) return;
-            auto viewer = get_viewer();
             auto count = core -> get_child_count();
+            #if defined(VSDK_Client)
+            auto viewer = get_viewer();
             if (!refreshed || viewer.active != last_viewer.active || viewer.dimension != last_viewer.dimension || viewer.camera != last_viewer.camera) {
                 refreshed = true;
                 last_viewer = viewer;
@@ -194,9 +235,11 @@ namespace Vital::Engine {
                 apply(core, viewer);
                 return;
             }
+            #else
+            Viewer viewer;
+            #endif
             for (int i = last_child_count; i < count; i++) apply(core -> get_child(i), viewer);
             last_child_count = count;
-            #endif
         }
     };
 }

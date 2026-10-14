@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/API/physics/physics_entity.h>
 #include <Vital.sandbox/API/physics/area.h>
 
@@ -23,6 +24,7 @@
 // Vital: API: Space //
 ////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Space : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "space"};
@@ -30,6 +32,7 @@ namespace Vital::Sandbox::API {
         struct Query {
             uint32_t mask = 0xFFFFFFFF;
             int max_results = 32;
+            int dimension = 0; // which dimension's physics space to query
             float margin = 0.04f;
             bool collide_bodies = true;
             bool collide_areas = false;
@@ -73,6 +76,7 @@ namespace Vital::Sandbox::API {
             if (!vm -> is_table(idx)) return query;
             read_field(vm, "mask", idx, query.mask);
             read_field(vm, "max_results", idx, query.max_results);
+            read_field(vm, "dimension", idx, query.dimension);
             read_field(vm, "margin", idx, query.margin);
             read_field(vm, "collide_bodies", idx, query.collide_bodies);
             read_field(vm, "collide_areas", idx, query.collide_areas);
@@ -82,10 +86,10 @@ namespace Vital::Sandbox::API {
             return query;
         }
 
-        static godot::PhysicsDirectSpaceState3D* get_space_state() {
+        static godot::PhysicsDirectSpaceState3D* get_space_state(int dimension = 0) {
             auto core = Vital::Engine::Core::get_singleton();
             if (!core || !core -> get_viewport() || !core -> get_viewport() -> get_world_3d().is_valid()) return nullptr;
-            return core -> get_viewport() -> get_world_3d() -> get_direct_space_state();
+            return godot::PhysicsServer3D::get_singleton() -> space_get_direct_state(Vital::Engine::Dimension::get_space(dimension));
         }
 
         static godot::TypedArray<godot::RID> build_exclude(Machine* vm, int idx) {
@@ -171,7 +175,7 @@ namespace Vital::Sandbox::API {
                 auto to = vm -> get_vector3(2);
                 auto query = Space::parse_options(vm, 3);
 
-                auto space_state = Space::get_space_state();
+                auto space_state = Space::get_space_state(query.dimension);
                 if (!space_state) { vm -> push_value(false); return 1; }
 
                 auto params = godot::PhysicsRayQueryParameters3D::create(from, to, query.mask, query.exclude);
@@ -202,7 +206,7 @@ namespace Vital::Sandbox::API {
                 auto point = vm -> get_vector3(1);
                 auto query = Space::parse_options(vm, 2);
 
-                auto space_state = Space::get_space_state();
+                auto space_state = Space::get_space_state(query.dimension);
                 if (!space_state) { vm -> create_table(); return 1; }
 
                 godot::Ref<godot::PhysicsPointQueryParameters3D> params;
@@ -238,7 +242,7 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 if (!shape.is_valid()) return 1;
 
-                auto space_state = Space::get_space_state();
+                auto space_state = Space::get_space_state(query.dimension);
                 if (!space_state) return 1;
 
                 godot::Ref<godot::PhysicsShapeQueryParameters3D> params;
@@ -277,7 +281,7 @@ namespace Vital::Sandbox::API {
                 auto query = Space::parse_options(vm, 4);
 
                 if (!shape.is_valid()) { vm -> push_value(false); return 1; }
-                auto space_state = Space::get_space_state();
+                auto space_state = Space::get_space_state(query.dimension);
                 if (!space_state) { vm -> push_value(false); return 1; }
 
                 godot::Ref<godot::PhysicsShapeQueryParameters3D> params;
