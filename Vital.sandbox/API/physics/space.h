@@ -53,6 +53,18 @@ namespace Vital::Sandbox::API {
             vm -> pop(1);
         }
 
+        // Out-of-range dimensions raise an error, they must never silently fall back to another dimension
+        static void read_dimension(Machine* vm, int idx, int& out) {
+            vm -> get_table_field("dimension", idx);
+            if (vm -> is_number(-1)) {
+                auto value = vm -> get_double(-1);
+                vm -> pop(1);
+                if (!Vital::Engine::Dimension::is_valid(value)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("dimension out of range [0 - {}]", Vital::Engine::Dimension::LIMIT));
+                out = (int)value;
+            }
+            else vm -> pop(1);
+        }
+
         static void read_field(Machine* vm, const std::string& key, int idx, float& out) {
             vm -> get_table_field(key, idx);
             if (vm -> is_number(-1)) out = vm -> get_float(-1);
@@ -76,7 +88,7 @@ namespace Vital::Sandbox::API {
             if (!vm -> is_table(idx)) return query;
             read_field(vm, "mask", idx, query.mask);
             read_field(vm, "max_results", idx, query.max_results);
-            read_field(vm, "dimension", idx, query.dimension);
+            read_dimension(vm, idx, query.dimension);
             read_field(vm, "margin", idx, query.margin);
             read_field(vm, "collide_bodies", idx, query.collide_bodies);
             read_field(vm, "collide_areas", idx, query.collide_areas);
@@ -89,7 +101,10 @@ namespace Vital::Sandbox::API {
         static godot::PhysicsDirectSpaceState3D* get_space_state(int dimension = 0) {
             auto core = Vital::Engine::Core::get_singleton();
             if (!core || !core -> get_viewport() || !core -> get_viewport() -> get_world_3d().is_valid()) return nullptr;
-            return godot::PhysicsServer3D::get_singleton() -> space_get_direct_state(Vital::Engine::Dimension::get_space(dimension));
+            // find, not get: querying an unused dimension must not allocate (and keep stepping) a physics space
+            auto space = Vital::Engine::Dimension::find_space(dimension);
+            if (!space.is_valid()) return nullptr;
+            return godot::PhysicsServer3D::get_singleton() -> space_get_direct_state(space);
         }
 
         static godot::TypedArray<godot::RID> build_exclude(Machine* vm, int idx) {

@@ -125,6 +125,13 @@ namespace Vital::Engine {
             return space;
         }
 
+        // Read-only lookup for queries: never creates a space, an unused dimension has none (= nothing in it)
+        static godot::RID find_space(int dimension) {
+            if (dimension <= 0) return Vital::Engine::Core::get_singleton() -> get_viewport() -> get_world_3d() -> get_space();
+            auto it = spaces.find(dimension);
+            return it != spaces.end() ? it -> second : godot::RID();
+        }
+
         // Entering the tree resets a body to the default space, so this runs again after reparents
         static void apply_space(godot::CollisionObject3D* object, int dimension) {
             if (!object -> is_inside_tree()) return;
