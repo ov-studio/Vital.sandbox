@@ -183,6 +183,7 @@ namespace Vital::Engine {
         godot::Ref<godot::ConcavePolygonShape3D> shape;
         shape.instantiate();
         shape -> set_faces(faces);
+        shape -> set_backface_collision_enabled(true);
         return shape;
     }
 }
