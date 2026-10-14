@@ -16,7 +16,6 @@
 #include <Vital.sandbox/Engine/public/core.h>
 #include <godot_cpp/classes/audio_stream_player3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 
 
 /////////////////////////////////
@@ -33,7 +32,7 @@
 //     are flagged (own dimension, or direct Core child); descendants follow through the tree.
 //   AudioStreamPlayer3D: force-muted via volume (timeline keeps running).
 // The user's own visible/volume is kept aside while forced and restored after, and
-// set_node_visible / set_player_volume_db keep working meanwhile (they only update the kept value).
+// set_node_visible / set_player_volume keep working meanwhile (they only update the kept value).
 namespace Vital::Engine {
     struct Dimension {
         static constexpr int ALL = -1;      // visible in every dimension
@@ -116,13 +115,13 @@ namespace Vital::Engine {
             if (auto player = godot::Object::cast_to<godot::AudioStreamPlayer3D>(node)) {
                 if (!visible) {
                     if (!player -> has_meta("vsdk_force_muted")) {
-                        player -> set_meta("vsdk_user_volume", player -> get_volume_db());
+                        player -> set_meta("vsdk_user_volume", player -> get_volume_linear());
                         player -> set_meta("vsdk_force_muted", true);
                     }
-                    player -> set_volume_db(-80.0f);
+                    player -> set_volume_linear(0.0f);
                 }
                 else if (player -> has_meta("vsdk_force_muted")) {
-                    player -> set_volume_db((float)player -> get_meta("vsdk_user_volume"));
+                    player -> set_volume_linear((float)player -> get_meta("vsdk_user_volume"));
                     player -> remove_meta("vsdk_force_muted");
                     player -> remove_meta("vsdk_user_volume");
                 }
@@ -142,13 +141,13 @@ namespace Vital::Engine {
             else node -> set_visible(visible);
         }
 
-        static float get_player_volume_db(godot::AudioStreamPlayer3D* player) {
-            return player -> has_meta("vsdk_force_muted") ? (float)player -> get_meta("vsdk_user_volume") : player -> get_volume_db();
+        static float get_player_volume(godot::AudioStreamPlayer3D* player) {
+            return player -> has_meta("vsdk_force_muted") ? (float)player -> get_meta("vsdk_user_volume") : player -> get_volume_linear();
         }
 
-        static void set_player_volume_db(godot::AudioStreamPlayer3D* player, float volume_db) {
-            if (player -> has_meta("vsdk_force_muted")) player -> set_meta("vsdk_user_volume", volume_db);
-            else player -> set_volume_db(volume_db);
+        static void set_player_volume(godot::AudioStreamPlayer3D* player, float volume) {
+            if (player -> has_meta("vsdk_force_muted")) player -> set_meta("vsdk_user_volume", volume);
+            else player -> set_volume_linear(volume);
         }
 
         // Re-evaluates rendering for node + descendants. Also called from Model::hydrate().
