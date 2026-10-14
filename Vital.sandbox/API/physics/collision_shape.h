@@ -167,7 +167,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial, false>(vm);
+            API::Node_3D::methods<Instance, Node_3D::Type::Spatial, true>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_disabled());

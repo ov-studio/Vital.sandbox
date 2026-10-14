@@ -67,9 +67,9 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
-        // dimension_owner = false hides set_dimension for types that are always attached to a parent
-        // (get_dimension stays, returns the inherited one)
-        template<typename Instance, Type node_type = Type::Spatial, bool dimension_owner = true>
+        // child_entity = true marks types that are hardcoded children of another entity (always attached):
+        // they have no set_dimension, get_dimension stays and returns the inherited one
+        template<typename Instance, Type node_type = Type::Spatial, bool child_entity = false>
         static void methods(Machine* vm) {
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                if constexpr (dimension_owner) {
+                if constexpr (!child_entity) {
                     API::Syncable::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
                         vm_args(vm, id, "(dimension)", true)
                             .require(2, &Machine::is_number);
