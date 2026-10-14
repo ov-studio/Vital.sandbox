@@ -34,8 +34,8 @@
 
 namespace Vital::Engine {
     // Hooks //
-    // TODO: Improve ordfer of this?
     void Core::_notification(int what) {
+        // Child added / removed / moved: Dimension::refresh re-scans Core's children
         if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Dimension::dirty = true;
     }
 
@@ -202,6 +202,7 @@ namespace Vital::Engine {
         Manager::Network::get_singleton() -> reset();
         free_environment();
         #endif
+        Dimension::reset(); // frees the dimension physics spaces, they never outlive a session
         enqueue([]() {
             Manager::Sandbox::free_singleton();
             Tool::Event::emit("core:reset");

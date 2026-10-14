@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <unordered_set>
 #include <Vital.sandbox/Engine/public/core.h>
 
 
@@ -38,6 +39,12 @@
 namespace Vital::Engine {
     struct Dimension {
         static constexpr int INHERIT = -1;  // network sentinel: drop own override, follow parent
+        static constexpr int LIMIT = 65535; // hard cap, every dimension above 0 owns a physics space
+
+        // Takes a double so out-of-range Lua numbers are rejected before any int cast (NaN fails too)
+        static bool is_valid(double dimension) {
+            return dimension >= 0 && dimension <= LIMIT;
+        }
 
         struct Viewer {
             bool active = false;
@@ -105,7 +112,7 @@ namespace Vital::Engine {
         // Physics space of a dimension (0 = the default world space)
         static godot::RID get_space(int dimension) {
             auto default_space = Vital::Engine::Core::get_singleton() -> get_viewport() -> get_world_3d() -> get_space();
-            if (dimension <= 0) return default_space;
+            if (dimension <= 0 || dimension > LIMIT) return default_space;
             auto it = spaces.find(dimension);
             if (it != spaces.end()) return it -> second;
             auto server = godot::PhysicsServer3D::get_singleton();
@@ -191,6 +198,40 @@ namespace Vital::Engine {
             else player -> set_volume_linear(volume);
         }
 
+        // Session end (disconnect / shutdown): frees every dimension physics space and resets the
+        // refresh tracking. Objects still inside a dimension space are moved back to the default one
+        // first, since freeing a space under live objects is physics-backend dependent. Anything that
+        // survives is re-gated and re-spaced on the next refresh, spaces get recreated on demand.
+        static void release(godot::Node* node, godot::RID default_space) {
+            auto server = godot::PhysicsServer3D::get_singleton();
+            if (auto object = godot::Object::cast_to<godot::CollisionObject3D>(node)) {
+                if (object -> is_inside_tree()) {
+                    auto rid = object -> get_rid();
+                    if (godot::Object::cast_to<godot::Area3D>(object)) {
+                        if (server -> area_get_space(rid) != default_space) server -> area_set_space(rid, default_space);
+                    }
+                    else if (server -> body_get_space(rid) != default_space) server -> body_set_space(rid, default_space);
+                }
+            }
+            for (int i = 0; i < node -> get_child_count(); i++) release(node -> get_child(i), default_space);
+        }
+
+        static void reset() {
+            auto server = godot::PhysicsServer3D::get_singleton();
+            if (server && !spaces.empty()) {
+                auto core = Vital::Engine::Core::get_singleton();
+                auto viewport = core ? core -> get_viewport() : nullptr;
+                auto world = viewport ? viewport -> get_world_3d() : godot::Ref<godot::World3D>();
+                if (world.is_valid()) release(core, world -> get_space());
+                for (auto& [dimension, space] : spaces) server -> free_rid(space);
+            }
+            spaces.clear();
+            refreshed = false;
+            dirty = true;
+            known.clear();
+            last_viewer = Viewer();
+        }
+
         // Re-evaluates rendering for node + descendants. Also called from Model::hydrate().
         static void apply(godot::Node* node) {
             apply(node, get_viewer());
@@ -198,6 +239,7 @@ namespace Vital::Engine {
 
         // Sets node's dimension and makes descendants follow it. INHERIT drops node's own override.
         static void set(godot::Node* node, int dimension) {
+            if (dimension != INHERIT && !is_valid(dimension)) return;
             clear(node);
             if (dimension != INHERIT) node -> set_meta("vsdk_dimension", dimension);
             apply(node);
@@ -205,6 +247,7 @@ namespace Vital::Engine {
 
         // Same as set, but leaves descendants' overrides alone (deferred network replay).
         static void assign(godot::Node* node, int dimension) {
+            if (dimension != INHERIT && !is_valid(dimension)) return;
             if (dimension == INHERIT) {
                 if (node -> has_meta("vsdk_dimension")) node -> remove_meta("vsdk_dimension");
             }

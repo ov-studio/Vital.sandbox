@@ -547,8 +547,8 @@ namespace Vital::Engine {
                 " is not the sync authority for net_id=", net_id);
             return;
         }
-        if (sender != 0 && dimension < 0) {
-            godot::UtilityFunctions::push_warning("_sync_dimension: rejected — invalid dimension ", dimension,
+        if (sender != 0 && !Engine::Dimension::is_valid(dimension)) {
+            godot::UtilityFunctions::push_warning("_sync_dimension: rejected — dimension ", dimension, " is outside 0-", Engine::Dimension::LIMIT,
                 " from sender ", sender, " for net_id=", net_id);
             return;
         }
