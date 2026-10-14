@@ -129,7 +129,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_number);
 
                     auto dimension = vm -> get_int(2);
-                    if (dimension < Vital::Engine::Dimension::ALL) {
+                    if (dimension < 0) {
                         vm -> push_value(false);
                         return 1;
                     }
