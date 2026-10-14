@@ -135,9 +135,9 @@ namespace Vital::Sandbox::API {
                     }
                     auto node = self -> get_node();
                     Vital::Engine::Dimension::set(node, dimension);
-                    // Replicated: server broadcasts to all clients, the authority client sends it to the
-                    // server (rpc_id(1)) which applies and relays. Non-authority clients never get here,
-                    // Syncable::bind_method already raised the ownership error.
+                    // Replicated: the server broadcasts to all clients. A client that owns the entity
+                    // (Syncable::bind_method already rejected everyone else) sends it to the server
+                    // (rpc_id(1)), where Network::_sync_dimension validates the sender, applies and relays.
                     if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
                         auto network = Vital::Manager::Network::get_singleton();
                         auto net_node = network ? network -> get_node() : nullptr;
