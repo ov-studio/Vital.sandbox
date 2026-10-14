@@ -25,7 +25,6 @@
 // Vital: API: Node_3D //
 //////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Node_3D {
         enum class Type {
