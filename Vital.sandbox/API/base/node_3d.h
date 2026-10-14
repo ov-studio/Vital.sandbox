@@ -203,6 +203,26 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
+            if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
+                if constexpr (!child_entity) {
+                    API::Syncable::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
+                        vm_args(vm, id, "(dimension)", true)
+                            .require(2, &Machine::is_number)
+                            .validate(2, [](Machine* vm, int idx) { return Vital::Engine::Dimension::is_valid(vm -> get_double(idx)); }, fmt::format("out of range [0 - {}]", Vital::Engine::Dimension::LIMIT));
+
+                        auto node = self -> get_node();
+                        auto dimension = vm -> get_int(2);
+                        if constexpr (node_type == Type::Camera) Vital::Engine::Dimension::set_camera_dimension(node, dimension);
+                        else {
+                            if (Vital::Engine::Dimension::is_attached(node)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot set the dimension of an attached entity, it follows its parent");
+                            Vital::Engine::Dimension::set(node, dimension);
+                            if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
+                        }
+                        vm -> push_value(true);
+                        return 1;
+                    });
+                }
+            }
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(visible)", true)
