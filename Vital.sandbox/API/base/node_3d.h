@@ -130,13 +130,14 @@ namespace Vital::Sandbox::API {
                         vm_args(vm, id, "(dimension)", true)
                             .require(2, &Machine::is_number);
 
-                        auto dimension = vm -> get_int(2);
+                        auto value = vm -> get_double(2);
                         auto node = self -> get_node();
                         // Attached entities follow their parent's dimension
-                        if (dimension < 0 || Vital::Engine::Dimension::is_attached(node)) {
+                        if (!Vital::Engine::Dimension::is_valid(value) || Vital::Engine::Dimension::is_attached(node)) {
                             vm -> push_value(false);
                             return 1;
                         }
+                        auto dimension = (int)value;
                         Vital::Engine::Dimension::set(node, dimension);
                         if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
                         vm -> push_value(true);
@@ -154,12 +155,12 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(dimension)", true)
                         .require(2, &Machine::is_number);
 
-                    auto dimension = vm -> get_int(2);
-                    if (dimension < 0) {
+                    auto value = vm -> get_double(2);
+                    if (!Vital::Engine::Dimension::is_valid(value)) {
                         vm -> push_value(false);
                         return 1;
                     }
-                    Vital::Engine::Dimension::set_camera_dimension(self -> get_node(), dimension);
+                    Vital::Engine::Dimension::set_camera_dimension(self -> get_node(), (int)value);
                     vm -> push_value(true);
                     return 1;
                 });
