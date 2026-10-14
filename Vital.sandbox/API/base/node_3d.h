@@ -17,12 +17,15 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/API/base/syncable.h>
+#include <Vital.sandbox/Engine/public/dimension.h>
+#include <Vital.sandbox/Manager/public/network.h>
 
 
 //////////////////////////
 // Vital: API: Node_3D //
 //////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Node_3D {
         enum class Type {
@@ -54,7 +57,11 @@ namespace Vital::Sandbox::API {
         static void reparent_safe(Vital::Engine::Core* core, godot::Node3D* node, godot::Node* target) {
             if (!core || !node) return;
             core -> execute_when_ready(node, target, [](godot::Node3D* n, godot::Node* t) {
-                if (n -> get_parent() != t) n -> reparent(t, true);
+                if (n -> get_parent() == t) return;
+                auto previous = Vital::Engine::Dimension::get(n);
+                n -> reparent(t, true);
+                // Detached keeps its dimension, attached follows its parent
+                Vital::Engine::Dimension::set(n, t == Vital::Engine::Core::get_singleton() ? previous : Vital::Engine::Dimension::INHERIT);
             });
         }
 
@@ -65,7 +72,7 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> is_visible());
+                    vm -> push_value(Vital::Engine::Dimension::is_node_visible(self -> get_node()));
                     return 1;
                 });
 
@@ -108,6 +115,54 @@ namespace Vital::Sandbox::API {
 
                 vm_module::bind_method<Instance>(vm, "get_quaternion", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> get_node() -> get_quaternion());
+                    return 1;
+                });
+            }
+            if constexpr (node_type == Type::Spatial) {
+                vm_module::bind_method<Instance>(vm, "get_dimension", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(Vital::Engine::Dimension::get(self -> get_node()));
+                    return 1;
+                });
+
+                API::Syncable::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(dimension)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto dimension = vm -> get_int(2);
+                    if (dimension < Vital::Engine::Dimension::ALL) {
+                        vm -> push_value(false);
+                        return 1;
+                    }
+                    auto node = self -> get_node();
+                    Vital::Engine::Dimension::set(node, dimension);
+                    #if !defined(VSDK_Client)
+                    if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) {
+                        auto network = Vital::Manager::Network::get_singleton();
+                        auto net_node = network ? network -> get_node() : nullptr;
+                        if (net_node && syncable -> get_net_id() != 0) net_node -> rpc("_sync_dimension", (int)syncable -> get_net_id(), (int)dimension);
+                    }
+                    #endif
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
+            if constexpr (node_type == Type::Camera) {
+                vm_module::bind_method<Instance>(vm, "get_dimension", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(Vital::Engine::Dimension::get(self -> get_node()));
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(dimension)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto dimension = vm -> get_int(2);
+                    if (dimension < 0) {
+                        vm -> push_value(false);
+                        return 1;
+                    }
+                    Vital::Engine::Dimension::set_camera_dimension(self -> get_node(), dimension);
+                    vm -> push_value(true);
                     return 1;
                 });
             }
@@ -196,7 +251,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_bool);
 
                     auto visible = vm -> get_bool(2);
-                    self -> get_node() -> set_visible(visible);
+                    Vital::Engine::Dimension::set_node_visible(self -> get_node(), visible);
                     vm -> push_value(true);
                     return 1;
                 });
