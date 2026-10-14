@@ -181,7 +181,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::methods<Instance, Node_3D::Type::Spatial, false>(vm);
 
             API::Syncable::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)

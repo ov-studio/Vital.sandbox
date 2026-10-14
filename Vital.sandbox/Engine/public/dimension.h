@@ -61,6 +61,13 @@ namespace Vital::Engine {
             return 0;
         }
 
+        // Attached = parented to another entity. Only root entities (direct Core children) own a
+        // dimension; attached ones always follow their parent, so a child can never split from it.
+        static bool is_attached(godot::Node* node) {
+            auto parent = node ? node -> get_parent() : nullptr;
+            return parent && parent != Vital::Engine::Core::get_singleton();
+        }
+
         static void clear(godot::Node* node) {
             if (node -> has_meta("vsdk_dimension")) node -> remove_meta("vsdk_dimension");
             for (int i = 0; i < node -> get_child_count(); i++) clear(node -> get_child(i));

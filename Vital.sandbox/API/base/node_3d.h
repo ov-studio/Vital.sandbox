@@ -67,7 +67,9 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
-        template<typename Instance, Type node_type = Type::Spatial>
+        // dimension_owner = false hides set_dimension for types that are always attached to a parent
+        // (get_dimension stays, returns the inherited one)
+        template<typename Instance, Type node_type = Type::Spatial, bool dimension_owner = true>
         static void methods(Machine* vm) {
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
@@ -123,21 +125,24 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                API::Syncable::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(dimension)", true)
-                        .require(2, &Machine::is_number);
+                if constexpr (dimension_owner) {
+                    API::Syncable::bind_method<Instance>(vm, "set_dimension", [](auto vm, auto self, auto& id) -> int {
+                        vm_args(vm, id, "(dimension)", true)
+                            .require(2, &Machine::is_number);
 
-                    auto dimension = vm -> get_int(2);
-                    if (dimension < 0) {
-                        vm -> push_value(false);
+                        auto dimension = vm -> get_int(2);
+                        auto node = self -> get_node();
+                        // Attached entities follow their parent's dimension
+                        if (dimension < 0 || Vital::Engine::Dimension::is_attached(node)) {
+                            vm -> push_value(false);
+                            return 1;
+                        }
+                        Vital::Engine::Dimension::set(node, dimension);
+                        if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
+                        vm -> push_value(true);
                         return 1;
-                    }
-                    auto node = self -> get_node();
-                    Vital::Engine::Dimension::set(node, dimension);
-                    if (auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(node)) syncable -> sync_dimension(dimension);
-                    vm -> push_value(true);
-                    return 1;
-                });
+                    });
+                }
             }
             if constexpr (node_type == Type::Camera) {
                 vm_module::bind_method<Instance>(vm, "get_dimension", [](auto vm, auto self, auto& id) -> int {

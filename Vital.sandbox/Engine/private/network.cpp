@@ -524,7 +524,8 @@ namespace Vital::Engine {
     //     ISyncable::apply_parent); clients apply, or defer until the entity registers.
     //   authority client → server: the owner of a replicated entity reports its own set_dimension.
     //     The server only trusts the entity's sync authority, rejects the INHERIT sentinel (a
-    //     server-side value, never client-settable), applies, then relays to every client.
+    //     server-side value, never client-settable) and attached entities (they follow their
+    //     parent), applies, then relays to every client.
     //     The owner receives its own echo too; applying the same value again is idempotent.
     void Network::_sync_dimension(int net_id, int dimension) {
         auto mgr = Manager::Network::get_singleton();
@@ -553,6 +554,11 @@ namespace Vital::Engine {
         }
         auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
         if (!node) return;
+        if (sender != 0 && Engine::Dimension::is_attached(node)) {
+            godot::UtilityFunctions::push_warning("_sync_dimension: rejected — net_id=", net_id,
+                " is attached to a parent and follows its dimension");
+            return;
+        }
         Engine::Dimension::set(node, dimension);
         auto net_node = mgr->get_node();
         if (net_node) net_node->rpc("_sync_dimension", net_id, dimension);
