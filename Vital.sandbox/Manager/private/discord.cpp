@@ -38,6 +38,25 @@ namespace Vital::Manager {
             Manager::Kit::fetch_json_value("config/discord", "details").as<std::string>()
         };
         reset_application();
+
+        // TODO: Improve
+        // Presence/application set by a server's scripts must not outlive the session. Only reset when
+        // something actually differs from the defaults, since reset_application() rebuilds the client.
+        static bool reset_bound = false;
+        if (reset_bound) return;
+        reset_bound = true;
+        Tool::Event::bind("core:reset", [](Tool::Stack) {
+            if (!has_singleton()) return;
+            auto self = get_singleton();
+            const auto& a = self -> activity;
+            const auto& d = self -> default_activity;
+            const bool customized = self -> application_id != self -> default_application_id
+                || a.state != d.state || a.details != d.details
+                || a.small_image_key != d.small_image_key || a.small_image_text != d.small_image_text
+                || a.large_image_key != d.large_image_key || a.large_image_text != d.large_image_text
+                || a.timestamp_start != d.timestamp_start || a.timestamp_end != d.timestamp_end;
+            if (customized) self -> reset_application();
+        });
     }
 
     void Discord::process() const {

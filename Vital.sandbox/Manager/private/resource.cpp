@@ -377,8 +377,8 @@ namespace Vital::Manager {
             }
         }
         if (again) {
-            Resource::get_singleton()->log("sbox", fmt::format("resource `{}` applying coalesced restart", name));
-            Resource::get_singleton()->restart(name);
+            Resource::get_singleton() -> log("sbox", fmt::format("resource `{}` applying coalesced restart", name));
+            Resource::get_singleton() -> restart(name);
         }
     }
     #endif
@@ -547,7 +547,8 @@ namespace Vital::Manager {
         if (was_running) {
             vm -> clear_environment_id(name);
             #if defined(VSDK_Client)
-            Manager::Asset::get_singleton()->clear_spawn_queue_prefix(fmt::format(":{}/", name));
+            Engine::Model::unload_resource_models(name);
+            Manager::Asset::get_singleton() -> clear_spawn_queue_prefix(fmt::format(":{}/", name));
             #endif
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));

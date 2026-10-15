@@ -504,6 +504,11 @@ namespace Vital::Sandbox::API {
                 std::lock_guard lock(pending_resource_remote_mutex);
                 pending_resource_remote.erase(resource_name);
             });
+
+            Tool::Event::bind("core:reset", [](Tool::Stack) {
+                std::lock_guard lock(pending_resource_remote_mutex);
+                pending_resource_remote.clear();
+            });
             #endif
 
             Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
