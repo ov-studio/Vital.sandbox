@@ -44,22 +44,6 @@ namespace Vital::Engine {
             bool trail_mode = false;
             float distance_range = 0.0f; // Applied cull distance, 0 = no limit
 
-            // Motion trail: a ribbon along the emitter's own movement. Built on the CPU from sampled
-            // positions, since Godot's particle trails only follow a particle's own path
-            struct TrailPoint {
-                godot::Vector3 position;
-                double time;
-            };
-            godot::MeshInstance3D* motion_instance = nullptr;
-            godot::Ref<godot::ImmediateMesh> motion_mesh;
-            godot::Ref<godot::StandardMaterial3D> motion_material;
-            std::deque<TrailPoint> motion_points;
-            bool motion_trail = false;
-            double motion_lifetime = 0.5;
-            double motion_clock = 0.0;
-            godot::Color ramp_from = godot::Color(1, 1, 1, 1); // Ribbon colors, shared with the color ramp
-            godot::Color ramp_to = godot::Color(1, 1, 1, 0);
-
             // Signals: the sandbox layer wires these (see API/particle/gpu_particles.h)
             std::function<void()> emit_handler;
             std::function<void()> finished_handler;
@@ -72,8 +56,6 @@ namespace Vital::Engine {
             void apply_draw_passes();
             void apply_material();
             void sync_distance();
-            void update_motion_trail(double delta);
-            void clear_motion_trail();
 
 
             // Instantiators //
@@ -106,7 +88,6 @@ namespace Vital::Engine {
             bool has_draw_shader() const;
             bool has_mesh() const;
             bool is_trail_mode() const;
-            bool is_motion_trail() const;
             bool is_billboard() const;
 
 
@@ -138,10 +119,6 @@ namespace Vital::Engine {
             void set_scale_curve(float from, float to);
             void reset_scale_curve();
             void set_trail(bool state, double lifetime);
-
-            // Ribbon behind the emitter's own movement (e.g. a hand), independent of the particles.
-            // Width is the draw size, colors are the color ramp, it thins out and fades with age
-            void set_motion_trail(bool state, double lifetime);
     };
 }
 #endif
