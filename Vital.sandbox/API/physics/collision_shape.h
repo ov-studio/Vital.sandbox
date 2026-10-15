@@ -134,7 +134,7 @@ namespace Vital::Sandbox::API {
 
             #if defined(VSDK_Client)
             static Tool::Event::Handle reset_binding;
-            reset_binding.bind("core:reset", [](Tool::Stack) {
+            reset_binding.bind("environment:free", [](Tool::Stack) {
                 base_class::set_debug_all(false);
             });
             #endif

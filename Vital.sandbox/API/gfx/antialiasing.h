@@ -48,21 +48,24 @@ namespace Vital::Sandbox::API {
 
         // TODO: Improve
         // Unlike the other gfx modules (which write to the WorldEnvironment that Core::reset() frees),
-        // AA lives on the root viewport and would survive a disconnect. The first change snapshots the
-        // original values and binds a one-time "core:reset" handler that restores them.
+        // AA lives on the root viewport and would survive a disconnect. init() snapshots the original
+        // values (before any script runs) and restores them on "environment:free".
         inline static bool original_captured = false;
         inline static bool original_taa = false;
         inline static godot::Viewport::ScreenSpaceAA original_ssaa = godot::Viewport::SCREEN_SPACE_AA_DISABLED;
         inline static godot::Viewport::MSAA original_msaa = godot::Viewport::MSAA_DISABLED;
 
-        static void track() {
-            if (original_captured) return;
-            original_captured = true;
-            auto root = base_class::get_scene_root();
-            original_taa = root -> is_using_taa();
-            original_ssaa = root -> get_screen_space_aa();
-            original_msaa = root -> get_msaa_3d();
-            Tool::Event::bind("core:reset", [](Tool::Stack) {
+        static void init(Machine* vm) {
+            if (!original_captured) {
+                original_captured = true;
+                auto root = base_class::get_scene_root();
+                original_taa = root -> is_using_taa();
+                original_ssaa = root -> get_screen_space_aa();
+                original_msaa = root -> get_msaa_3d();
+            }
+
+            static Tool::Event::Handle reset_binding;
+            reset_binding.bind("environment:free", [](Tool::Stack) {
                 auto tree = base_class::get_scene_tree();
                 auto root = tree ? tree -> get_root() : nullptr;
                 if (!root) return;
@@ -80,7 +83,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void set_mode(int mode) {
-            track();
             auto root = base_class::get_scene_root();
             switch (mode) {
                 case MODE_FXAA:
@@ -123,7 +125,6 @@ namespace Vital::Sandbox::API {
                     .require_enum(1, msaa_mode_registry);
 
                 auto mode = static_cast<godot::Viewport::MSAA>(vm -> get_int(1));
-                track();
                 base_class::get_scene_root() -> set_msaa_3d(mode);
                 vm -> push_value(true);
                 return 1;

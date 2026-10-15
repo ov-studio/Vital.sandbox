@@ -26,6 +26,14 @@ namespace Vital::Sandbox::API {
     struct Discord : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "discord"};
 
+        static void init(Machine* vm) {
+            static Tool::Event::Handle reset_binding;
+            reset_binding.bind("environment:free", [](Tool::Stack) {
+                if (!Manager::Discord::has_singleton()) return;
+                Manager::Discord::get_singleton() -> reset_if_customized();
+            });
+        }
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_connected", [](auto vm, auto& id) -> int {
                 vm -> push_value(Manager::Discord::get_singleton() -> is_connected());

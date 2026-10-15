@@ -69,6 +69,7 @@ namespace Vital::Manager {
             // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
             bool reset_application();
+            bool reset_if_customized(); // TOOD: Improve
             bool set_state(const std::string& state);
             bool set_details(const std::string& details);
             bool set_small_image(const std::string& key, const std::string& text = "N/A");
