@@ -101,9 +101,93 @@ namespace Vital::Engine {
     }
 
 
+    namespace {
+        constexpr double MOTION_MIN_SPACING = 0.01;  // distance between samples
+        constexpr double MOTION_TELEPORT    = 10.0;  // a jump this long breaks the ribbon instead of stretching it
+        constexpr size_t MOTION_MAX_SAMPLES = 512;
+        constexpr int    MOTION_SUBDIV      = 3;     // smoothing subdivisions per segment
+    }
+
+    void GPU_Particles::clear_motion_trail() {
+        motion_points.clear();
+        if (motion_mesh.is_valid()) motion_mesh -> clear_surfaces();
+    }
+
+    // Samples the emitter position, drops samples older than the lifetime and rebuilds the ribbon:
+    // a camera facing strip, full width and color at the emitter, thinning out and fading with age
+    void GPU_Particles::update_motion_trail(double delta) {
+        if (!motion_trail || !motion_mesh.is_valid()) return;
+
+        // Hidden (dimension, visibility): nothing to draw and no stale samples to show on return
+        if (!is_visible_in_tree()) {
+            clear_motion_trail();
+            return;
+        }
+
+        motion_clock += delta;
+        const godot::Vector3 head = get_global_position();
+        if (!motion_points.empty() && head.distance_to(motion_points.back().position) > MOTION_TELEPORT) motion_points.clear();
+        if (motion_points.empty() || head.distance_to(motion_points.back().position) >= MOTION_MIN_SPACING) {
+            motion_points.push_back({head, motion_clock});
+            if (motion_points.size() > MOTION_MAX_SAMPLES) motion_points.pop_front();
+        }
+        while (!motion_points.empty() && motion_clock - motion_points.front().time > motion_lifetime) motion_points.pop_front();
+
+        // Samples + the live emitter position, so the ribbon always touches the emitter
+        std::vector<TrailPoint> points(motion_points.begin(), motion_points.end());
+        if (points.empty() || head.distance_to(points.back().position) > 0.0001) points.push_back({head, motion_clock});
+        motion_mesh -> clear_surfaces();
+        if (points.size() < 2) return;
+
+        // Catmull-Rom smoothing: samples sit one frame apart, which shows as corners on a fast arc
+        std::vector<TrailPoint> path;
+        path.reserve(points.size()*MOTION_SUBDIV + 1);
+        for (size_t i = 0; i + 1 < points.size(); i++) {
+            const auto& p0 = points[i == 0 ? 0 : i - 1];
+            const auto& p1 = points[i];
+            const auto& p2 = points[i + 1];
+            const auto& p3 = points[i + 2 < points.size() ? i + 2 : i + 1];
+            for (int step = 0; step < MOTION_SUBDIV; step++) {
+                const float t = (float)step/(float)MOTION_SUBDIV;
+                path.push_back({p1.position.cubic_interpolate(p2.position, p0.position, p3.position, t), p1.time + (p2.time - p1.time)*t});
+            }
+        }
+        path.push_back(points.back());
+
+        auto* viewport = get_viewport();
+        auto* camera = viewport ? viewport -> get_camera_3d() : nullptr;
+        const godot::Vector3 eye = camera ? camera -> get_global_position() : godot::Vector3();
+        const float half = std::max(0.0f, quad -> get_size().x)*0.5f;
+        motion_material -> set_blend_mode(material -> get_blend_mode());
+
+        motion_mesh -> surface_begin(godot::Mesh::PRIMITIVE_TRIANGLE_STRIP, motion_material);
+        for (size_t i = 0; i < path.size(); i++) {
+            const auto& current = path[i];
+            const godot::Vector3 tangent = path[i + 1 < path.size() ? i + 1 : i].position - path[i == 0 ? 0 : i - 1].position;
+            const float age = (float)std::clamp((motion_clock - current.time)/motion_lifetime, 0.0, 1.0);
+
+            // Sideways: across the path, facing the camera
+            godot::Vector3 side = tangent.cross(camera ? eye - current.position : godot::Vector3(0, 1, 0));
+            if (side.length_squared() < 1e-8f) side = tangent.cross(godot::Vector3(0, 1, 0)); // looking straight down the path
+            if (side.length_squared() < 1e-8f) side = godot::Vector3(1, 0, 0);
+            side = side.normalized()*(half*(1.0f - age));
+
+            const godot::Color color = ramp_from.lerp(ramp_to, age);
+            motion_mesh -> surface_set_color(color);
+            motion_mesh -> surface_set_uv(godot::Vector2(age, 0.0f));
+            motion_mesh -> surface_add_vertex(current.position + side);
+            motion_mesh -> surface_set_color(color);
+            motion_mesh -> surface_set_uv(godot::Vector2(age, 1.0f));
+            motion_mesh -> surface_add_vertex(current.position - side);
+        }
+        motion_mesh -> surface_end();
+    }
+
+
     // Hooks //
-    void GPU_Particles::_process(double) {
+    void GPU_Particles::_process(double delta) {
         sync_distance();
+        update_motion_trail(delta);
 
         // Emission started by anything that bypasses emit/burst/restart_emission (set_emitting from the
         // engine, preprocess, a one-shot restarting itself): picked up on the rising edge
@@ -206,6 +290,10 @@ namespace Vital::Engine {
 
     bool GPU_Particles::is_trail_mode() const {
         return trail_mode;
+    }
+
+    bool GPU_Particles::is_motion_trail() const {
+        return motion_trail;
     }
 
     bool GPU_Particles::is_billboard() const {
@@ -321,6 +409,8 @@ namespace Vital::Engine {
         gradient.instantiate();
         gradient -> set_color(0, from);
         gradient -> set_color(1, to);
+        ramp_from = from;
+        ramp_to = to;
         godot::Ref<godot::GradientTexture1D> ramp;
         ramp.instantiate();
         ramp -> set_gradient(gradient);
@@ -328,6 +418,8 @@ namespace Vital::Engine {
     }
 
     void GPU_Particles::reset_color_ramp() {
+        ramp_from = godot::Color(1, 1, 1, 1);
+        ramp_to = godot::Color(1, 1, 1, 0);
         process -> set_color_ramp(godot::Ref<godot::Texture2D>());
     }
 
@@ -348,6 +440,40 @@ namespace Vital::Engine {
 
     void GPU_Particles::reset_scale_curve() {
         process -> set_param_texture(godot::ParticleProcessMaterial::PARAM_SCALE, godot::Ref<godot::Texture2D>());
+    }
+
+    void GPU_Particles::set_motion_trail(bool state, double lifetime) {
+        if (state) {
+            motion_lifetime = std::max(0.01, lifetime);
+            if (!motion_instance) {
+                motion_mesh.instantiate();
+                motion_material.instantiate();
+                motion_material -> set_shading_mode(godot::BaseMaterial3D::SHADING_MODE_UNSHADED);
+                motion_material -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+                motion_material -> set_flag(godot::BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+                motion_material -> set_cull_mode(godot::BaseMaterial3D::CULL_DISABLED);
+
+                // Top level: the ribbon is built in world space, so it must not follow the emitter's transform
+                motion_instance = memnew(godot::MeshInstance3D);
+                motion_instance -> set_mesh(motion_mesh);
+                motion_instance -> set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+                motion_instance -> set_as_top_level(true);
+                add_child(motion_instance);
+                motion_instance -> set_global_transform(godot::Transform3D());
+            }
+            motion_trail = true;
+            motion_points.clear();
+        }
+        else {
+            motion_trail = false;
+            clear_motion_trail();
+            if (motion_instance) {
+                motion_instance -> queue_free();
+                motion_instance = nullptr;
+            }
+            motion_mesh.unref();
+            motion_material.unref();
+        }
     }
 
     void GPU_Particles::set_trail(bool state, double lifetime) {
