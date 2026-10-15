@@ -55,6 +55,7 @@
 #include <Vital.sandbox/API/light/area_light.h>
 
 #include <Vital.sandbox/API/particle/gpu_particles.h>
+#include <Vital.sandbox/API/particle/trail.h>
 
 #include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
@@ -134,6 +135,7 @@ namespace Vital::Sandbox::API {
 
             // Particle //
             vm_module::make_api<GPU_Particles>(),
+            vm_module::make_api<Trail>(),
 
             // GFX //
             vm_module::make_api<Environment>(),
