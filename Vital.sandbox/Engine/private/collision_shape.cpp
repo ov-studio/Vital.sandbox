@@ -277,6 +277,15 @@ namespace Vital::Engine {
     }
 
     void Collision_Shape::set_debug_all(bool state) {
+        // Bound once: debug_all is global client state that scripts toggle, so it must not
+        // survive a session (disconnect / lost connection / shutdown all emit "core:reset").
+        static bool reset_bound = false;
+        if (!reset_bound) {
+            reset_bound = true;
+            Tool::Event::bind("core:reset", [](Tool::Stack) {
+                set_debug_all(false);
+            });
+        }
         debug_all = state;
         std::lock_guard<std::mutex> lock(mutex);
         for (auto shape : buffer) shape -> set_debug_visible(state);
