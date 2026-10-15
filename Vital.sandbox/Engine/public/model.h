@@ -47,6 +47,9 @@ namespace Vital::Engine {
             std::string model_name;
             int pending_authority = 1;
             bool placeholder = false;
+            // Work waiting for this model's mesh tree (placeholder -> hydrate()), e.g. collision shapes rebuilt
+            // from its meshes. Run once by hydrate(), dropped together with the node if it never hydrates.
+            std::vector<std::function<void()>> hydrate_callbacks;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
             godot::AnimationTree* anim_tree = nullptr;

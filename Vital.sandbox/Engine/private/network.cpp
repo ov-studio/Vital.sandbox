@@ -817,6 +817,18 @@ namespace Vital::Engine {
         auto* model_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(model_entity));
         if (!body_node || !model_node) return;
 
+        // A model that isn't cached yet (first start of a resource, a restart, slow downloads) spawns as a
+        // placeholder: in the tree, but without its mesh subtree until Model::hydrate(). Building the shape now
+        // would find no mesh and silently skip it, leaving the body without collision for good, so wait for it.
+        if (auto* pending = godot::Object::cast_to<Engine::Model>(model_node); pending && pending -> placeholder) {
+            pending -> hydrate_callbacks.push_back([net_id, model_net_id, mode, entries]() {
+                auto* nm = Manager::Network::get_singleton();
+                if (!nm -> find_syncable(net_id) || !nm -> find_syncable(model_net_id)) return; // destroyed while waiting
+                Network::apply_mesh_ref(net_id, model_net_id, mode, entries);
+            });
+            return;
+        }
+
         // Wait until both nodes are actually in the scene tree before touching them.
         Core::get_singleton() -> execute_when_ready(body_node, model_node,
             [entries, mode](godot::Node3D* body_node, godot::Node* model_node_raw) {

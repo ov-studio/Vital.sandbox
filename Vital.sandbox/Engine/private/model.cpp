@@ -202,6 +202,10 @@ namespace Vital::Engine {
     void Model::on_connected() {
         Manager::Asset::get_singleton()->clear();
         cleanup_spawned();
+        // Nothing cached by a previous session may be served to this one, a same-named model on the new
+        // server can be a different file. Runs before the handshake, so nothing of this session is loaded yet.
+        cache_loaded.clear();
+        cache_hashes.clear();
         next_net_id = 1;
     }
 
@@ -425,6 +429,11 @@ namespace Vital::Engine {
         Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
         Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
+
+        // The mesh tree exists now: run whatever was waiting on it (see Network::apply_mesh_ref).
+        auto waiting = std::move(hydrate_callbacks);
+        hydrate_callbacks.clear();
+        for (auto& exec : waiting) exec();
     }
     #endif
 
