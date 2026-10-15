@@ -54,6 +54,7 @@ namespace Vital::Sandbox::API {
         inline static bool original_taa = false;
         inline static godot::Viewport::ScreenSpaceAA original_ssaa = godot::Viewport::SCREEN_SPACE_AA_DISABLED;
         inline static godot::Viewport::MSAA original_msaa = godot::Viewport::MSAA_DISABLED;
+        inline static float original_scaling_3d = 1.0f;
 
         static void init(Machine* vm) {
             if (!original_captured) {
@@ -62,6 +63,7 @@ namespace Vital::Sandbox::API {
                 original_taa = root -> is_using_taa();
                 original_ssaa = root -> get_screen_space_aa();
                 original_msaa = root -> get_msaa_3d();
+                original_scaling_3d = root -> get_scaling_3d_scale();
             }
 
             static Tool::Event::Handle reset_binding;
@@ -70,6 +72,7 @@ namespace Vital::Sandbox::API {
                 root -> set_use_taa(original_taa);
                 root -> set_screen_space_aa(original_ssaa);
                 root -> set_msaa_3d(original_msaa);
+                root -> set_scaling_3d_scale(original_scaling_3d);
             });
         }
 
@@ -124,6 +127,27 @@ namespace Vital::Sandbox::API {
 
                 auto mode = static_cast<godot::Viewport::MSAA>(vm -> get_int(1));
                 base_class::get_scene_root() -> set_msaa_3d(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Supersampling (SSAA): the 3D scene, including post-process shaders that read the
+            // screen/depth/normal buffers, is rendered at `scale` x the window size and then
+            // filtered down. > 1.0 antialiases everything MSAA can't reach (shader-drawn lines etc).
+            // 1.0 = off, 1.5 = cheap, 2.0 = best (4x the pixels).
+            API::bind(vm, base_scope, "get_scaling_3d_scale", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_scene_root() -> get_scaling_3d_scale());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_scaling_3d_scale", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(scale)")
+                    .require(1, &Machine::is_number);
+
+                auto scale = vm -> get_float(1);
+                if (scale < 0.25f) scale = 0.25f;
+                if (scale > 2.0f) scale = 2.0f;
+                base_class::get_scene_root() -> set_scaling_3d_scale(scale);
                 vm -> push_value(true);
                 return 1;
             });
