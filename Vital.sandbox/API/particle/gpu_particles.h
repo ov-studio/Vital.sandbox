@@ -606,23 +606,6 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> particles -> is_trail_mode());
                     return 1;
                 });
-
-                // Ribbon behind the emitter's own movement, independent of the particles (stop() them if only the ribbon is wanted)
-                vm_module::bind_method<Instance>(vm, "set_motion_trail", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(state, lifetime = 0.5)", true)
-                        .require(2, &Machine::is_bool)
-                        .optional(3, &Machine::is_number);
-
-                    auto lifetime = vm -> is_number(3) ? vm -> get_float(3) : 0.5f;
-                    self -> particles -> set_motion_trail(vm -> get_bool(2), std::max(0.01f, lifetime));
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "is_motion_trail_enabled", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> particles -> is_motion_trail());
-                    return 1;
-                });
             }
 
             // Material //
