@@ -131,6 +131,13 @@ namespace Vital::Sandbox::API {
                     instance -> body = nullptr;
                 });
             });
+
+            #if defined(VSDK_Client)
+            static Tool::Event::Handle reset_binding;
+            reset_binding.bind("core:reset", [](Tool::Stack) {
+                base_class::set_debug_all(false);
+            });
+            #endif
         }
 
         static void bind(Machine* vm) {
