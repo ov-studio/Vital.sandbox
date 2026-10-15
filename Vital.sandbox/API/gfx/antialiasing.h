@@ -66,9 +66,7 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::Handle reset_binding;
             reset_binding.bind("environment:free", [](Tool::Stack) {
-                auto tree = base_class::get_scene_tree();
-                auto root = tree ? tree -> get_root() : nullptr;
-                if (!root) return;
+                auto root = base_class::get_scene_root();
                 root -> set_use_taa(original_taa);
                 root -> set_screen_space_aa(original_ssaa);
                 root -> set_msaa_3d(original_msaa);
