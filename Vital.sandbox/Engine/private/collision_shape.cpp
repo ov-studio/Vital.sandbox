@@ -279,6 +279,7 @@ namespace Vital::Engine {
     void Collision_Shape::set_debug_all(bool state) {
         // Bound once: debug_all is global client state that scripts toggle, so it must not
         // survive a session (disconnect / lost connection / shutdown all emit "core:reset").
+        // TODO: Init...
         static bool reset_bound = false;
         if (!reset_bound) {
             reset_bound = true;
