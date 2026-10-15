@@ -40,6 +40,7 @@
 #include <Vital.sandbox/Engine/public/spot_light.h>
 #include <Vital.sandbox/Engine/public/area_light.h>
 #include <Vital.sandbox/Engine/public/gpu_particles.h>
+#include <Vital.sandbox/Engine/public/trail.h>
 #include <Vital.sandbox/Engine/public/physics_body.h>
 #include <Vital.sandbox/Engine/public/rigid_body.h>
 #include <Vital.sandbox/Engine/public/static_body.h>
