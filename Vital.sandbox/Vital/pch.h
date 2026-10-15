@@ -28,6 +28,7 @@
 #include <atomic>
 #include <chrono>
 #include <cctype>
+#include <deque>
 #include <functional>
 #include <filesystem>
 #include <fstream>
