@@ -259,8 +259,8 @@ namespace Vital::Sandbox::API {
                     godot::Variant value;
                     if      (vm -> is_number(3))   value = vm -> get_float(3);
                     else if (vm -> is_bool(3))     value = vm -> get_bool(3);
-                    else if (vm -> is_vector2(3))  value = vm -> get_vector2(3);
                     else if (vm -> is_vector3(3))  value = vm -> get_vector3(3);
+                    else if (vm -> is_vector2(3))  value = vm -> get_vector2(3);
                     vm -> push_value(self -> shader -> set_param(name, value));
                 }
                 return 1;
