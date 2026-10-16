@@ -65,101 +65,199 @@ namespace Vital::Sandbox::API {
 
 
         // ------------------------------------------------------------------
-        // Shader registry — persistent material assignments
+        // Shader registry - persistent material assignments with priority
         //
-        // Each entry records a (model_pattern, component_pattern,
-        // material_pattern) triple together with the owning shader instance
-        // and the Lua environment it was created from.  Whenever a new model
-        // spawns (entity:spawned) every live entry whose model_pattern matches
-        // the new model's name is re-applied automatically.
+        // Every apply_to_material() call records one Registration. A surface
+        // never keeps "whatever was applied last" directly. Instead the winner is
+        // recomputed from the registry every time something changes (apply,
+        // remove, destroy, resource stop, model spawn):
+        //
+        //   1. highest priority wins
+        //   2. on equal priority, the most recently applied wins
+        //
+        // Because every assignment stays in the registry, removing or destroying
+        // the winner automatically falls back to the next best one, and
+        // re-applying a shader moves it to the top of its priority.
+        //
+        // target == 0 is the "*" assignment (every live model and every model
+        // spawned later). Any other value is the instance id of one model; it
+        // lasts as long as that model does.
         // ------------------------------------------------------------------
+        // BEGIN pure
         struct Registration {
+            uint64_t    seq = 0;          // apply order, bumped on every (re-)apply
+            int         priority = 0;     // higher wins
             std::string env;              // Lua resource env that created this
-            std::string model_pattern;    // e.g. "*", "player_body", "vehicle_*"
             std::string component_pattern;// e.g. "*", "Body"
             std::string material_pattern; // e.g. "*", "body_paint", "body_*"
+            uint64_t    target = 0;       // 0 = every model, otherwise one model's instance id
             Instance*   owner = nullptr;  // raw back-pointer; valid while shader alive
         };
 
-        inline static std::mutex             registrations_mutex;
-        inline static std::vector<Registration> registrations;
-
-        // Apply a single registration to one model (silently skips mismatches).
-        static void apply_registration(const Registration& reg, Vital::Engine::Model* model) {
-            if (!reg.owner || !reg.owner -> shader) return;
-            if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) return;
-            try {
-                model -> apply_material_shader(
-                    reg.component_pattern,
-                    reg.material_pattern,
-                    reg.owner -> shader -> get_surface_factory()
-                );
-            } catch (...) {}
+        static bool is_candidate(const Registration& reg, uint64_t model_id, const std::string& component, const std::string& material) {
+            if (!reg.owner || !reg.owner -> shader) return false;
+            if (reg.target != 0 && reg.target != model_id) return false;
+            return Tool::match_wildcard(reg.component_pattern, component)
+                && Tool::match_wildcard(reg.material_pattern, material);
         }
 
-        // Remove all registrations owned by a particular Instance* and replay
-        // surviving registrations on every model that was affected, so other
-        // shaders that overlap the same surfaces remain intact.
-        static void purge_registrations(Instance* owner) {
-            std::lock_guard<std::mutex> lock(registrations_mutex);
+        // Winner for one surface: highest priority, ties go to the latest applied.
+        static const Registration* pick_winner(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
+            const Registration* best = nullptr;
+            for (const auto& reg : list) {
+                if (!is_candidate(reg, model_id, component, material)) continue;
+                if (!best || reg.priority > best -> priority || (reg.priority == best -> priority && reg.seq > best -> seq)) best = &reg;
+            }
+            return best;
+        }
 
-            // Collect the patterns being removed so we know which models need recompute.
+        // Adds an assignment, or re-prioritises the identical one (same shader, target and patterns).
+        // Either way it becomes the latest apply.
+        static void upsert(std::vector<Registration>& list, uint64_t& sequence, Instance* owner, const std::string& env, uint64_t target,
+                           const std::string& component, const std::string& material, int priority) {
+            for (auto& r : list) {
+                if (r.owner == owner && r.target == target && r.component_pattern == component && r.material_pattern == material) {
+                    r.priority = priority;
+                    r.seq = ++sequence;
+                    r.env = env;
+                    return;
+                }
+            }
+            list.push_back({ ++sequence, priority, env, component, material, target, owner });
+        }
+
+        // Erases this shader's assignments on `target` whose patterns are covered by the given ones
+        // ("*" covers everything) and returns them so the caller can re-resolve their surfaces.
+        static std::vector<Registration> erase_covered(std::vector<Registration>& list, Instance* owner, uint64_t target,
+                                                       const std::string& component_pattern, const std::string& material_pattern) {
             std::vector<Registration> removed;
-            for (const auto& r : registrations)
-                if (r.owner == owner) removed.push_back(r);
+            for (auto it = list.begin(); it != list.end();) {
+                if (it -> owner == owner && it -> target == target
+                    && Tool::match_wildcard(component_pattern, it -> component_pattern)
+                    && Tool::match_wildcard(material_pattern, it -> material_pattern)) {
+                    removed.push_back(*it);
+                    it = list.erase(it);
+                }
+                else ++it;
+            }
+            return removed;
+        }
+        // END pure
 
-            registrations.erase(
-                std::remove_if(registrations.begin(), registrations.end(),
-                    [owner](const Registration& r) { return r.owner == owner; }),
-                registrations.end()
-            );
+        inline static std::mutex                registrations_mutex;
+        inline static std::vector<Registration> registrations;
+        inline static uint64_t                  registration_sequence = 0;
 
-            // For each affected model: clear removed surfaces, then replay survivors.
+        // Re-resolves every surface of one model matching the patterns.
+        // clear_unmatched = true restores the mesh's own material on surfaces nobody claims;
+        // false leaves those surfaces alone (used for spawns so we never wipe other overrides).
+        // Surfaces that were visited are added to `touched`.
+        static void resolve_model(Vital::Engine::Model* model, const std::string& component_pattern, const std::string& material_pattern,
+                                  bool clear_unmatched, std::unordered_set<std::string>& touched) {
+            const uint64_t model_id = model -> get_instance_id();
+
+            std::vector<std::string> components;
+            try { components = model -> get_components(); } catch (...) { return; }
+
+            for (const auto& component : components) {
+                if (!Tool::match_wildcard(component_pattern, component)) continue;
+                std::vector<std::string> materials;
+                try { materials = model -> get_materials(component); } catch (...) { continue; }
+
+                for (const auto& material : materials) {
+                    if (!Tool::match_wildcard(material_pattern, material)) continue;
+                    const Registration* winner = pick_winner(registrations, model_id, component, material);
+                    if (!winner && !clear_unmatched) continue;
+                    try {
+                        if (winner) model -> apply_material_shader(component, material, winner -> owner -> shader -> get_surface_factory());
+                        else model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>());
+                        touched.insert(std::to_string(model_id) + "|" + component + "|" + material);
+                    } catch (...) {}
+                }
+            }
+        }
+
+        // Re-resolves the surfaces matching the patterns on the registration's target.
+        // Caller must hold registrations_mutex.
+        static void refresh(uint64_t target, const std::string& component_pattern, const std::string& material_pattern,
+                            bool clear_unmatched, std::unordered_set<std::string>& touched) {
+            if (target != 0) {
+                auto* object = godot::ObjectDB::get_instance(godot::ObjectID(target));
+                auto* model = object ? godot::Object::cast_to<Vital::Engine::Model>(object) : nullptr;
+                if (model) resolve_model(model, component_pattern, material_pattern, clear_unmatched, touched);
+                return;
+            }
             std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
             for (auto& [index, instance] : Model::registry.buffer) {
                 if (!instance || !instance -> is_alive()) continue;
                 auto* model = instance -> get_node();
                 if (!model) continue;
-
-                bool affected = false;
-                for (const auto& reg : removed) {
-                    if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                    affected = true;
-                    try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, godot::Ref<godot::ShaderMaterial>()); }
-                    catch (...) {}
-                }
-                if (!affected) continue;
-
-                for (const auto& reg : registrations) {
-                    if (!reg.owner || !reg.owner -> shader) continue;
-                    if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                    try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
-                    catch (...) {}
-                }
+                resolve_model(model, component_pattern, material_pattern, clear_unmatched, touched);
             }
         }
 
-        // Remove registrations by (owner, model, component, material) key.
-        static void remove_registration(Instance* owner,
-                                        const std::string& model_pattern,
-                                        const std::string& component_pattern,
-                                        const std::string& material_pattern) {
-            std::lock_guard<std::mutex> lock(registrations_mutex);
+        // Caller must hold registrations_mutex. Drops assignments whose model no longer exists.
+        static void prune_dead_targets() {
             registrations.erase(
-                std::remove_if(registrations.begin(), registrations.end(),
-                    [&](const Registration& r) {
-                        return r.owner            == owner
-                            && r.model_pattern     == model_pattern
-                            && r.component_pattern == component_pattern
-                            && r.material_pattern  == material_pattern;
-                    }),
+                std::remove_if(registrations.begin(), registrations.end(), [](const Registration& r) {
+                    return r.target != 0 && !godot::ObjectDB::get_instance(godot::ObjectID(r.target));
+                }),
                 registrations.end()
             );
         }
 
+        // Records (or re-prioritises) an assignment and resolves the surfaces it covers.
+        // Returns the number of surfaces on live models that matched.
+        static int assign(Instance* owner, const std::string& env, uint64_t target,
+                          const std::string& component, const std::string& material, int priority) {
+            std::lock_guard<std::mutex> lock(registrations_mutex);
+            prune_dead_targets();
+
+            upsert(registrations, registration_sequence, owner, env, target, component, material, priority);
+
+            std::unordered_set<std::string> touched;
+            refresh(target, component, material, false, touched);
+            return static_cast<int>(touched.size());
+        }
+
+        // Removes this shader's assignments on `target` that are covered by the given patterns,
+        // then hands the surfaces over to whatever is next in line.
+        // Returns the number of surfaces that were re-resolved.
+        static int unassign(Instance* owner, uint64_t target, const std::string& component_pattern, const std::string& material_pattern) {
+            std::lock_guard<std::mutex> lock(registrations_mutex);
+            prune_dead_targets();
+
+            auto removed = erase_covered(registrations, owner, target, component_pattern, material_pattern);
+
+            std::unordered_set<std::string> touched;
+            for (const auto& r : removed) refresh(r.target, r.component_pattern, r.material_pattern, true, touched);
+            return static_cast<int>(touched.size());
+        }
+
+        // Drops every assignment matching the predicate and resolves the surfaces they covered,
+        // so lower priority shaders that overlap them take over again.
+        template<typename Predicate>
+        static void drop_registrations(Predicate&& predicate) {
+            std::lock_guard<std::mutex> lock(registrations_mutex);
+            prune_dead_targets();
+
+            std::vector<Registration> removed;
+            for (auto it = registrations.begin(); it != registrations.end();) {
+                if (predicate(*it)) { removed.push_back(*it); it = registrations.erase(it); }
+                else ++it;
+            }
+
+            std::unordered_set<std::string> touched;
+            for (const auto& r : removed) refresh(r.target, r.component_pattern, r.material_pattern, true, touched);
+        }
+
+        // Called when a shader instance is destroyed: the next best shader takes over its surfaces
+        static void purge_registrations(Instance* owner) {
+            drop_registrations([owner](const Registration& r) { return r.owner == owner; });
+        }
+
         static void init(Machine* vm) {
-            // Hook entity:spawned so every new model gets shader assignments
-            // that match its name applied automatically.
+            // Hook entity:spawned so every new model gets the assignments that cover it
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
@@ -174,9 +272,8 @@ namespace Vital::Sandbox::API {
                     if (!model) return;
 
                     std::lock_guard<std::mutex> lock(registrations_mutex);
-                    for (const auto& reg : registrations) {
-                        apply_registration(reg, model);
-                    }
+                    std::unordered_set<std::string> touched;
+                    resolve_model(model, "*", "*", false, touched);
                 });
             });
         }
@@ -266,87 +363,62 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // apply_to_material(model, component, material)
+            // apply_to_material(model, component, material, priority = 0)
             //
-            // Registers a persistent shader assignment and immediately applies
-            // it to matching models.
+            // Records a shader assignment and resolves the matching surfaces.
             //
-            // model     — a model instance (applies only to that model, no persistent
-            //             registration for future spawns), or the string "*" to match
-            //             every model (registers persistently for future spawns too).
-            //             Any other value is an error.
-            // component — mesh component name or wildcard
-            // material  — surface/material name or wildcard
+            // model     - a model instance (that model only, lasts as long as the model),
+            //             or the string "*" / nil to match every model (also covers models
+            //             that spawn later). Any other value is an error.
+            // component - mesh component name or wildcard
+            // material  - surface/material name or wildcard
+            // priority  - higher wins; on equal priority the most recently applied wins.
+            //             Applying the same shader to the same target again just updates
+            //             its priority and counts as the latest apply.
             //
-            // Returns the number of surfaces updated on already-live models.
+            // Returns the number of surfaces on live models that matched.
             vm_module::bind_method<Instance>(vm, "apply_to_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
                 bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
 
-                vm_args args_check(vm, id, "(model, component, material)", true);
+                vm_args args_check(vm, id, "(model, component, material, priority = 0)", true);
                 if (!is_model_instance && !is_wildcard)
                     args_check.validate(2, [](Machine*, int) { return false; }, "model instance, \"*\", or nil expected");
                 args_check.require(3, &Machine::is_string)
-                          .require(4, &Machine::is_string);
+                          .require(4, &Machine::is_string)
+                          .optional(5, &Machine::is_number);
 
                 auto component = vm -> get_string(3);
                 auto material  = vm -> get_string(4);
+                int  priority  = vm -> is_number(5) ? vm -> get_int(5) : 0;
                 auto env       = vm -> get_environment_id();
 
-                int count = 0;
-
+                uint64_t target = 0;
                 if (is_model_instance) {
-                    // Direct model instance — apply immediately, no persistent registration
                     auto model_inst = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
-                    if (model_inst && model_inst -> is_alive()) {
-                        auto* model = model_inst -> get_node();
-                        if (model) {
-                            try { count += model -> apply_material_shader(component, material, self -> shader -> get_surface_factory()); }
-                            catch (...) {}
-                        }
+                    auto* model = (model_inst && model_inst -> is_alive()) ? model_inst -> get_node() : nullptr;
+                    if (!model) {
+                        vm -> push_value(0);
+                        return 1;
                     }
-                } else {
-                    // Wildcard "*" — register persistently for future spawns
-                    const std::string model_pattern = "*";
-                    {
-                        std::lock_guard<std::mutex> lock(registrations_mutex);
-                        bool exists = false;
-                        for (const auto& r : registrations) {
-                            if (r.owner == self.get()
-                                && r.model_pattern     == model_pattern
-                                && r.component_pattern == component
-                                && r.material_pattern  == material) { exists = true; break; }
-                        }
-                        if (!exists) registrations.push_back({ env, model_pattern, component, material, self.get() });
-                    }
-
-                    Registration reg { env, model_pattern, component, material, self.get() };
-                    std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                    for (auto& [index, instance] : Model::registry.buffer) {
-                        if (!instance || !instance -> is_alive()) continue;
-                        auto* model = instance -> get_node();
-                        if (!model) continue;
-                        try { count += model -> apply_material_shader(component, material, self -> shader -> get_surface_factory()); }
-                        catch (...) {}
-                    }
+                    target = model -> get_instance_id();
                 }
 
-                vm -> push_value(count);
+                vm -> push_value(assign(self.get(), env, target, component, material, priority));
                 return 1;
             });
 
             // remove_from_material(model, component, material)
             //
-            // Removes a shader override applied by apply_to_material.
+            // Removes this shader's assignments on the given target that are covered by the
+            // component / material patterns, so remove_from_material(model, "*", "*") removes
+            // all of them. The surfaces fall back to the next best assignment (priority, then
+            // latest applied) or to the mesh's own material when nothing else claims them.
             //
-            // model     — a model instance (clears the override on that model only),
-            //             or the string "*" (removes the persistent registration and
-            //             clears overrides on all currently live models).
-            //             Any other value is an error.
-            // component — mesh component name or wildcard
-            // material  — surface/material name or wildcard
+            // model     - a model instance (assignments made for that model), or "*" / nil
+            //             (assignments made with "*"). Any other value is an error.
             //
-            // Returns the number of surfaces whose override was changed.
+            // Returns the number of surfaces that were re-resolved.
             vm_module::bind_method<Instance>(vm, "remove_from_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
                 bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
@@ -360,65 +432,18 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(3);
                 auto material  = vm -> get_string(4);
 
-                int count = 0;
-
+                uint64_t target = 0;
                 if (is_model_instance) {
-                    // Direct model instance — clear override on that model only
                     auto model_inst = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
-                    if (model_inst && model_inst -> is_alive()) {
-                        auto* model = model_inst -> get_node();
-                        if (model) {
-                            try { model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>()); count++; }
-                            catch (...) {}
-
-                            // Re-apply surviving registrations on this model
-                            std::lock_guard<std::mutex> lock(registrations_mutex);
-                            for (const auto& reg : registrations) {
-                                if (!reg.owner || !reg.owner -> shader) continue;
-                                if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                                try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
-                                catch (...) {}
-                            }
-                        }
+                    auto* model = (model_inst && model_inst -> is_alive()) ? model_inst -> get_node() : nullptr;
+                    if (!model) {
+                        vm -> push_value(0);
+                        return 1;
                     }
-                } else {
-                    // Wildcard "*" — remove persistent registration and replay survivors on live models.
-                    // Do everything under one lock to avoid deadlock (remove_registration also locks).
-                    const std::string model_pattern = "*";
-                    std::lock_guard<std::mutex> lock(registrations_mutex);
-
-                    registrations.erase(
-                        std::remove_if(registrations.begin(), registrations.end(),
-                            [&](const Registration& r) {
-                                return r.owner            == self.get()
-                                    && r.model_pattern     == model_pattern
-                                    && r.component_pattern == component
-                                    && r.material_pattern  == material;
-                            }),
-                        registrations.end()
-                    );
-
-                    std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                    for (auto& [index, instance] : Model::registry.buffer) {
-                        if (!instance || !instance -> is_alive()) continue;
-                        auto* model = instance -> get_node();
-                        if (!model) continue;
-
-                        // Clear the surface back to no-override, then replay every surviving
-                        // registration that covers this model so other shaders remain intact.
-                        try { model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>()); count++; }
-                        catch (...) {}
-
-                        for (const auto& reg : registrations) {
-                            if (!reg.owner || !reg.owner -> shader) continue;
-                            if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                            try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
-                            catch (...) {}
-                        }
-                    }
+                    target = model -> get_instance_id();
                 }
 
-                vm -> push_value(count);
+                vm -> push_value(unassign(self.get(), target, component, material));
                 return 1;
             });
         }
@@ -428,42 +453,9 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            // Drop registrations for this env and replay survivors on affected models,
-            // so shaders from other envs that overlap the same surfaces remain intact.
-            {
-                std::lock_guard<std::mutex> lock(registrations_mutex);
-                std::vector<Registration> removed;
-                for (const auto& r : registrations)
-                    if (r.env == env) removed.push_back(r);
-
-                registrations.erase(
-                    std::remove_if(registrations.begin(), registrations.end(), [&env](const Registration& r) { return r.env == env; }),
-                    registrations.end()
-                );
-
-                std::lock_guard<std::mutex> model_lock(Model::registry.mutex);
-                for (auto& [index, instance] : Model::registry.buffer) {
-                    if (!instance || !instance -> is_alive()) continue;
-                    auto* model = instance -> get_node();
-                    if (!model) continue;
-
-                    bool affected = false;
-                    for (const auto& reg : removed) {
-                        if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                        affected = true;
-                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, godot::Ref<godot::ShaderMaterial>()); }
-                        catch (...) {}
-                    }
-                    if (!affected) continue;
-
-                    for (const auto& reg : registrations) {
-                        if (!reg.owner || !reg.owner -> shader) continue;
-                        if (!Tool::match_wildcard(reg.model_pattern, model -> get_model_name())) continue;
-                        try { model -> apply_material_shader(reg.component_pattern, reg.material_pattern, reg.owner -> shader -> get_surface_factory()); }
-                        catch (...) {}
-                    }
-                }
-            }
+            // Drop this env's assignments; shaders from other envs (or lower priorities)
+            // that overlap the same surfaces take over again.
+            drop_registrations([&env](const Registration& r) { return r.env == env; });
             Instance::collect_env(env);
         }
     };
