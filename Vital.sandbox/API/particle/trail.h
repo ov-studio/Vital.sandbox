@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                // Returns the color at the node, then the color at the end of the ribbon
+                // Returns the color at the start of the ribbon, then the color at the end of it
                 vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> trail -> get_color_from());
                     vm -> push_value(self -> trail -> get_color_to());
@@ -116,7 +116,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                // Ribbon width at the node, it thins out to nothing at the end
+                // Ribbon width at its start, it thins out to nothing at the end
                 vm_module::bind_method<Instance>(vm, "set_width", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(width)", true)
                         .require(2, &Machine::is_number);
@@ -126,10 +126,10 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                // Color at the node and at the end of the ribbon, e.g. set_color({1, 0.6, 0.1, 1}, {1, 0.1, 0, 0})
-                // Without `to` the ribbon fades out in the same color
+                // Color at the start and at the end of the ribbon, e.g. set_color({1, 0.6, 0.1, 1}, {1, 0.1, 0, 0})
+                // Without `to` the ribbon fades out in the `from` color (alpha 0)
                 vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(from, to = from faded out)", true)
+                    vm_args(vm, id, "(from, to = from)", true)
                         .require(2, &Machine::is_color)
                         .optional(3, &Machine::is_color);
 
