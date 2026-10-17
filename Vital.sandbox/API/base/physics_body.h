@@ -84,13 +84,6 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                #if !defined(VSDK_Client)
-                vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> get_sync_authority());
-                    return 1;
-                });
-                #endif
-
                 vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> get_node() -> get_gravity());
                     return 1;
@@ -104,6 +97,13 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> get_node() -> get_axis_lock(axis));
                     return 1;
                 });
+
+                #if !defined(VSDK_Client)
+                vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> get_node() -> get_sync_authority());
+                    return 1;
+                });
+                #endif
             }
             if constexpr (body_type == Type::Static || body_type == Type::Animatable) {
                 vm_module::bind_method<Instance>(vm, "get_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
@@ -117,18 +117,6 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                #if !defined(VSDK_Client)
-                vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(peer_id)", true)
-                        .require(2, &Machine::is_number);
-
-                    auto peer_id = vm -> get_int(2);
-                    self -> get_node() -> set_syncer(peer_id);
-                    vm -> push_value(true);
-                    return 1;
-                });
-                #endif
-
                 API::Syncable::bind_method<Instance>(vm, "set_axis_lock", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(axis, lock)", true)
                         .require_enum(2, axis_registry)
@@ -140,6 +128,18 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
+
+                #if !defined(VSDK_Client)
+                vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(peer_id)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto peer_id = vm -> get_int(2);
+                    self -> get_node() -> set_syncer(peer_id);
+                    vm -> push_value(true);
+                    return 1;
+                });
+                #endif
             }
             if constexpr (body_type == Type::Rigid || body_type == Type::Static || body_type == Type::Animatable) {
                 API::Syncable::bind_method<Instance>(vm, "set_physics_material", [](auto vm, auto self, auto& id) -> int {
@@ -282,16 +282,6 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                API::Syncable::bind_method<Instance>(vm, "set_freeze_mode", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(mode)", true)
-                        .require_enum(2, Instance::Owner::freeze_mode_registry);
-    
-                    auto mode = static_cast<typename Instance::Owner::base_class::FreezeMode>(vm -> get_int(2));
-                    self -> body -> set_freeze_mode(mode);
-                    vm -> push_value(true);
-                    return 1;
-                });
-
                 API::Syncable::bind_method<Instance>(vm, "set_linear_velocity", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(velocity)", true)
                         .require(2, &Machine::is_vector3);
@@ -308,6 +298,16 @@ namespace Vital::Sandbox::API {
     
                     auto velocity = vm -> get_vector3(2);
                     self -> body -> set_angular_velocity(velocity);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                API::Syncable::bind_method<Instance>(vm, "set_freeze_mode", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(mode)", true)
+                        .require_enum(2, Instance::Owner::freeze_mode_registry);
+    
+                    auto mode = static_cast<typename Instance::Owner::base_class::FreezeMode>(vm -> get_int(2));
+                    self -> body -> set_freeze_mode(mode);
                     vm -> push_value(true);
                     return 1;
                 });
