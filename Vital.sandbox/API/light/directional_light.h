@@ -99,6 +99,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_PANCAKE_SIZE));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_shadow_max_distance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_MAX_DISTANCE));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_shadow_fade_start", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_FADE_START));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_shadow_split_1_offset", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_SPLIT_1_OFFSET));
                 return 1;
@@ -111,21 +126,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_shadow_split_3_offset", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_SPLIT_3_OFFSET));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_shadow_fade_start", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_FADE_START));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_shadow_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_MAX_DISTANCE));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_PANCAKE_SIZE));
                 return 1;
             });
 
@@ -150,6 +150,36 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(2);
                 self -> light -> set_blend_splits(state);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(size)", true)
+                    .require(2, &Machine::is_number);
+
+                auto size = vm -> get_float(2);
+                self -> light -> set_param(base_class::PARAM_SHADOW_PANCAKE_SIZE, size);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_shadow_max_distance", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(distance)", true)
+                    .require(2, &Machine::is_number);
+
+                auto distance = vm -> get_float(2);
+                self -> light -> set_param(base_class::PARAM_SHADOW_MAX_DISTANCE, distance);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_shadow_fade_start", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(fade)", true)
+                    .require(2, &Machine::is_number);
+
+                auto fade = vm -> get_float(2);
+                self -> light -> set_param(base_class::PARAM_SHADOW_FADE_START, fade);
                 vm -> push_value(true);
                 return 1;
             });
@@ -180,36 +210,6 @@ namespace Vital::Sandbox::API {
 
                 auto offset = vm -> get_float(2);
                 self -> light -> set_param(base_class::PARAM_SHADOW_SPLIT_3_OFFSET, offset);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_shadow_fade_start", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(fade)", true)
-                    .require(2, &Machine::is_number);
-
-                auto fade = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_SHADOW_FADE_START, fade);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_shadow_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(distance)", true)
-                    .require(2, &Machine::is_number);
-
-                auto distance = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_SHADOW_MAX_DISTANCE, distance);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size)", true)
-                    .require(2, &Machine::is_number);
-
-                auto size = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_SHADOW_PANCAKE_SIZE, size);
                 vm -> push_value(true);
                 return 1;
             });
