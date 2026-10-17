@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        template<typename Instance>
+        template<typename Instance, Type object_type = Type::Body>
         static void inject(Machine* vm) {}
     };
 }

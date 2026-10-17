@@ -484,9 +484,9 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        template<typename Instance>
+        template<typename Instance, Type light_type = Type::Point>
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
+            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
             
             vm -> scope_set_enum(Instance::Owner::base_scope, "bake_mode", Instance::Owner::bake_mode_registry);
         }

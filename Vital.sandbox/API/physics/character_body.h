@@ -259,7 +259,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance>(vm);
+            API::Physics_Body::inject<Instance, Physics_Body::Type::Character>(vm);
             vm -> scope_set_enum(base_scope, "motion_mode", motion_mode_registry);
             vm -> scope_set_enum(base_scope, "platform_on_leave", platform_on_leave_registry);
         }

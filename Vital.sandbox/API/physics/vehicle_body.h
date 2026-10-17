@@ -112,7 +112,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance>(vm);
+            API::Physics_Body::inject<Instance, Physics_Body::Type::Rigid>(vm);
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
         }
 

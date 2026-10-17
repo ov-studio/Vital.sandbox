@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Light_3D::inject<Instance>(vm);
+            API::Light_3D::inject<Instance, Light_3D::Type::Spot>(vm);
         }
 
         static void clean(const std::string& env) {

@@ -687,7 +687,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
+            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
             
             vm -> scope_set_enum(base_scope, "draw_order", draw_order_registry);
             vm -> scope_set_enum(base_scope, "emission_shape", emission_shape_registry);

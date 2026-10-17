@@ -231,7 +231,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Light_3D::inject<Instance>(vm);
+            API::Light_3D::inject<Instance, Light_3D::Type::Directional>(vm);
             vm -> scope_set_enum(base_scope, "shadow_mode", shadow_mode_registry);
             vm -> scope_set_enum(base_scope, "sky_mode", sky_mode_registry);
         }

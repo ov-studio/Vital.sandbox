@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance>(vm);
+            API::Physics_Body::inject<Instance, Physics_Body::Type::Animatable>(vm);
         }
 
         static void clean(const std::string& env) {
