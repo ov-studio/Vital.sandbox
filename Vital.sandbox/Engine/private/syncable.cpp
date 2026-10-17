@@ -42,21 +42,21 @@ namespace Vital::Engine {
              | ((uint8_t)buffer[offset+2] << 16)
              | ((uint8_t)buffer[offset+3] << 24);
     }
-    
-    void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
-        buffer[offset]   =  value        & 0xFF;
-        buffer[offset+1] = (value >>  8) & 0xFF;
-        buffer[offset+2] = (value >> 16) & 0xFF;
-        buffer[offset+3] = (value >> 24) & 0xFF;
+
+    void ISyncable::Internal::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
+        uint32_t raw; std::memcpy(&raw, &value, 4); write_u32(buffer, offset, raw);
     }
 
     void ISyncable::Internal::write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value) {
         buffer[offset]   =  value       & 0xFF;
         buffer[offset+1] = (value >> 8) & 0xFF;
     }
-
-    void ISyncable::Internal::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
-        uint32_t raw; std::memcpy(&raw, &value, 4); write_u32(buffer, offset, raw);
+    
+    void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
+        buffer[offset]   =  value        & 0xFF;
+        buffer[offset+1] = (value >>  8) & 0xFF;
+        buffer[offset+2] = (value >> 16) & 0xFF;
+        buffer[offset+3] = (value >> 24) & 0xFF;
     }
 
     int ISyncable::Internal::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {

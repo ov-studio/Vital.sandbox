@@ -96,12 +96,12 @@ namespace Vital::Engine {
 
                 
                 // Helpers //
-                static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
-                static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
-                static void write_f32(godot::PackedByteArray& buffer, int offset, float value);
                 static float read_f32(const godot::PackedByteArray& buffer, int offset);
                 static uint16_t read_u16(const godot::PackedByteArray& buffer, int offset);
                 static uint32_t read_u32(const godot::PackedByteArray& buffer, int offset);
+                static void write_f32(godot::PackedByteArray& buffer, int offset, float value);
+                static void write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value);
+                static void write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value);
                 static int encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
                 static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
             };
