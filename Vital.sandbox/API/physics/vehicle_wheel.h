@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
 
             #if !defined(VSDK_Client)
             static Tool::Event::Handle ready_binding;
@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);
             
-            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::bind<Instance, API::Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
@@ -185,7 +185,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial, true>(vm);
+            API::Node_3D::methods<Instance, API::Node_3D::Type::Spatial, true>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_used_as_traction", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_used_as_traction());
@@ -485,7 +485,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::inject<Instance, API::Node_3D::Type::Spatial>(vm);
         }
 
         static void clean(const std::string& env) {

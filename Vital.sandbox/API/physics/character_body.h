@@ -46,12 +46,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Physics_Body::init<Instance, Physics_Body::Type::Character>(vm);
+            API::Physics_Body::init<Instance, API::Physics_Body::Type::Character>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Character_Body>(vm);
-            API::Physics_Body::bind<Instance, Physics_Body::Type::Character>(vm);
+            API::Physics_Body::bind<Instance, API::Physics_Body::Type::Character>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 int authority_peer = 0;
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Physics_Body::methods<Instance, Physics_Body::Type::Character>(vm);
+            API::Physics_Body::methods<Instance, API::Physics_Body::Type::Character>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_on_floor", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_on_floor());
@@ -259,7 +259,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance, Physics_Body::Type::Character>(vm);
+            API::Physics_Body::inject<Instance, API::Physics_Body::Type::Character>(vm);
             vm -> scope_set_enum(base_scope, "motion_mode", motion_mode_registry);
             vm -> scope_set_enum(base_scope, "platform_on_leave", platform_on_leave_registry);
         }

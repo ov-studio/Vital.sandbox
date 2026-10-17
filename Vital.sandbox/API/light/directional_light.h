@@ -76,12 +76,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Light_3D::init<Instance, Light_3D::Type::Directional>(vm);
+            API::Light_3D::init<Instance, API::Light_3D::Type::Directional>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Directional_Light>(vm);
-            API::Light_3D::bind<Instance, Light_3D::Type::Directional>(vm);
+            API::Light_3D::bind<Instance, API::Light_3D::Type::Directional>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -92,7 +92,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Light_3D::methods<Instance, Light_3D::Type::Directional>(vm);
+            API::Light_3D::methods<Instance, API::Light_3D::Type::Directional>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_blend_splits_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_blend_splits_enabled());
@@ -231,7 +231,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Light_3D::inject<Instance, Light_3D::Type::Directional>(vm);
+            API::Light_3D::inject<Instance, API::Light_3D::Type::Directional>(vm);
             vm -> scope_set_enum(base_scope, "shadow_mode", shadow_mode_registry);
             vm -> scope_set_enum(base_scope, "sky_mode", sky_mode_registry);
         }

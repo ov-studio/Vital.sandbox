@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void init(Machine* vm) {
-            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
 
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
@@ -145,7 +145,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Collision_Shape>(vm);
             
-            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::bind<Instance, API::Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial, true>(vm);
+            API::Node_3D::methods<Instance, API::Node_3D::Type::Spatial, true>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_disabled());
@@ -514,7 +514,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::inject<Instance, API::Node_3D::Type::Spatial>(vm);
         }
 
         static void clean(const std::string& env) {

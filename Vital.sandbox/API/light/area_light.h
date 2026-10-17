@@ -64,12 +64,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Light_3D::init<Instance, Light_3D::Type::Area>(vm);
+            API::Light_3D::init<Instance, API::Light_3D::Type::Area>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Area_Light>(vm);
-            API::Light_3D::bind<Instance, Light_3D::Type::Area>(vm);
+            API::Light_3D::bind<Instance, API::Light_3D::Type::Area>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Light_3D::methods<Instance, Light_3D::Type::Area>(vm);
+            API::Light_3D::methods<Instance, API::Light_3D::Type::Area>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_area_normalizing_energy", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_area_normalizing_energy());
@@ -144,7 +144,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Light_3D::inject<Instance, Light_3D::Type::Area>(vm);
+            API::Light_3D::inject<Instance, API::Light_3D::Type::Area>(vm);
         }
 
         static void clean(const std::string& env) {

@@ -50,12 +50,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Physics_Body::init<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::init<Instance, API::Physics_Body::Type::Rigid>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Rigid_Body>(vm);
-            API::Physics_Body::bind<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::bind<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 int authority_peer = 0;
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Physics_Body::methods<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::methods<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_able_to_sleep", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_able_to_sleep());
@@ -260,7 +260,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::inject<Instance, API::Physics_Body::Type::Rigid>(vm);
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
             vm -> scope_set_enum(base_scope, "center_of_mass_mode", center_of_mass_mode_registry);
             vm -> scope_set_enum(base_scope, "damp_mode", damp_mode_registry);

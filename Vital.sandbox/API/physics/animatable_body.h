@@ -35,12 +35,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Physics_Body::init<Instance, Physics_Body::Type::Animatable>(vm);
+            API::Physics_Body::init<Instance, API::Physics_Body::Type::Animatable>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Animatable_Body>(vm);
-            API::Physics_Body::bind<Instance, Physics_Body::Type::Animatable>(vm);
+            API::Physics_Body::bind<Instance, API::Physics_Body::Type::Animatable>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 int authority_peer = 0;
@@ -55,11 +55,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Physics_Body::methods<Instance, Physics_Body::Type::Animatable>(vm);
+            API::Physics_Body::methods<Instance, API::Physics_Body::Type::Animatable>(vm);
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance, Physics_Body::Type::Animatable>(vm);
+            API::Physics_Body::inject<Instance, API::Physics_Body::Type::Animatable>(vm);
         }
 
         static void clean(const std::string& env) {

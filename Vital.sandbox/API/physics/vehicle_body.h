@@ -40,12 +40,12 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Physics_Body::init<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::init<Instance, API::Physics_Body::Type::Rigid>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Body>(vm);
-            API::Physics_Body::bind<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::bind<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
             // damp, sleep, CCD, freeze, impulse / force helpers, etc.).
             // All the rigid-body methods that were previously re-declared here
             // verbatim are now provided by that single call — nothing to repeat.
-            API::Physics_Body::methods<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::methods<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             // Vehicle-specific: whole-chassis engine / brake / steering.
             // Per-wheel overrides of the same properties live on Vehicle_Wheel.
@@ -112,7 +112,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance, Physics_Body::Type::Rigid>(vm);
+            API::Physics_Body::inject<Instance, API::Physics_Body::Type::Rigid>(vm);
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
         }
 

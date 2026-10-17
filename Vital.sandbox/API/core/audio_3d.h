@@ -73,13 +73,13 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Node_3D::init<Instance, Node_3D::Type::Audio>(vm);
+            API::Node_3D::init<Instance, API::Node_3D::Type::Audio>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
 
-            API::Node_3D::bind<Instance, Node_3D::Type::Audio>(vm);
+            API::Node_3D::bind<Instance, API::Node_3D::Type::Audio>(vm);
             API::Audio_Effect::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm);
+            API::Node_3D::methods<Instance, API::Node_3D::Type::Audio>(vm);
             API::Audio_Effect::methods<Instance>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
@@ -368,7 +368,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Audio>(vm);
+            API::Node_3D::inject<Instance, API::Node_3D::Type::Audio>(vm);
             API::Audio_Effect::inject<Instance>(vm);
             
             vm -> scope_set_enum(base_scope, "attenuation_model", attenuation_model_registry);

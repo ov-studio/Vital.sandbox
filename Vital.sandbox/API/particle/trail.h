@@ -65,13 +65,13 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
-            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Trail>(vm);
 
-            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::bind<Instance, API::Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::methods<Instance, API::Node_3D::Type::Spatial>(vm);
 
             vm_module::bind_method<Instance>(vm, "get_lifetime", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> trail -> get_lifetime());
@@ -155,7 +155,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::inject<Instance, API::Node_3D::Type::Spatial>(vm);
             
             vm -> scope_set_enum(base_scope, "blend_mode", blend_mode_registry);
         }

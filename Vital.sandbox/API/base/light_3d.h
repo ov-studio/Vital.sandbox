@@ -35,17 +35,17 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance, Type light_type = Type::Point>
         static void init(Machine* vm) {
-            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
         }
 
         template<typename Instance, Type light_type = Type::Point>
         static void bind(Machine* vm) {
-            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::bind<Instance, API::Node_3D::Type::Spatial>(vm);
         }
 
         template<typename Instance, Type light_type = Type::Point>
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::methods<Instance, API::Node_3D::Type::Spatial>(vm);
 
             {
                 vm_module::bind_method<Instance>(vm, "is_shadow_enabled", [](auto vm, auto self, auto& id) -> int {
@@ -486,7 +486,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance, Type light_type = Type::Point>
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::inject<Instance, API::Node_3D::Type::Spatial>(vm);
             
             vm -> scope_set_enum(Instance::Owner::base_scope, "bake_mode", Instance::Owner::bake_mode_registry);
         }
