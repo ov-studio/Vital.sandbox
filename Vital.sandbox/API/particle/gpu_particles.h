@@ -16,7 +16,6 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/gpu_particles.h>
-#include <Vital.sandbox/Engine/public/image.h>
 #include <Vital.sandbox/API/base/node_3d.h>
 #include <Vital.sandbox/API/core/image.h>
 #include <Vital.sandbox/API/core/svg.h>
@@ -29,7 +28,6 @@
 // Vital: API: GPU_Particles //
 ////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct GPU_Particles : vm_module {
         inline static const std::vector<std::string> base_scope = {"particle", "gpu"};
