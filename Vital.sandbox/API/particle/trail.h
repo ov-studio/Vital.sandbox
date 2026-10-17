@@ -111,7 +111,8 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(seconds)", true)
                         .require(2, &Machine::is_number);
 
-                    self -> trail -> set_lifetime(vm -> get_float(2));
+                    auto lifetime = vm -> get_float(2);
+                    self -> trail -> set_lifetime(lifetime);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -121,7 +122,8 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(width)", true)
                         .require(2, &Machine::is_number);
 
-                    self -> trail -> set_width(vm -> get_float(2));
+                    auto width = vm -> get_float(2);
+                    self -> trail -> set_width(width);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -144,7 +146,8 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(mode)", true)
                         .require_enum(2, blend_mode_registry);
 
-                    self -> trail -> set_blend_mode(static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2)));
+                    auto mode = static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2));
+                    self -> trail -> set_blend_mode(mode);
                     vm -> push_value(true);
                     return 1;
                 });
