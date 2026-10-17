@@ -107,17 +107,27 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_msaa_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_scene_root() -> get_msaa_3d()));
+                return 1;
+            });
+
+            // Supersampling (SSAA): the 3D scene, including post-process shaders that read the
+            // screen/depth/normal buffers, is rendered at `scale` x the window size and then
+            // filtered down. > 1.0 antialiases everything MSAA can't reach (shader-drawn lines etc).
+            // 1.0 = off, 1.5 = cheap, 2.0 = best (4x the pixels).
+            API::bind(vm, base_scope, "get_scaling_3d_scale", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_scene_root() -> get_scaling_3d_scale());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require_enum(1, aa_mode_registry);
 
-                set_mode(vm -> get_int(1));
+                auto mode = vm -> get_int(1);
+                set_mode(mode);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_msaa_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(base_class::get_scene_root() -> get_msaa_3d()));
                 return 1;
             });
 
@@ -128,15 +138,6 @@ namespace Vital::Sandbox::API {
                 auto mode = static_cast<godot::Viewport::MSAA>(vm -> get_int(1));
                 base_class::get_scene_root() -> set_msaa_3d(mode);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            // Supersampling (SSAA): the 3D scene, including post-process shaders that read the
-            // screen/depth/normal buffers, is rendered at `scale` x the window size and then
-            // filtered down. > 1.0 antialiases everything MSAA can't reach (shader-drawn lines etc).
-            // 1.0 = off, 1.5 = cheap, 2.0 = best (4x the pixels).
-            API::bind(vm, base_scope, "get_scaling_3d_scale", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_scene_root() -> get_scaling_3d_scale());
                 return 1;
             });
 
