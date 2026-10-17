@@ -125,13 +125,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_overlay", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> webview -> is_overlay());
+            vm_module::bind_method<Instance>(vm, "is_incognito", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_incognito());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_incognito", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> webview -> is_incognito());
+            vm_module::bind_method<Instance>(vm, "is_overlay", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_overlay());
                 return 1;
             });
 
@@ -170,26 +170,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)", true)
-                    .require(2, &Machine::is_bool);
-
-                auto state = vm -> get_bool(2);
-                self -> webview -> set_visible(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_focussed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)", true)
-                    .require(2, &Machine::is_bool);
-
-                auto state = vm -> get_bool(2);
-                self -> webview -> set_focussed(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
@@ -206,6 +186,26 @@ namespace Vital::Sandbox::API {
 
                 auto size = vm -> get_vector2(2);
                 self -> webview -> set_size(size);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_visible(state);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_focussed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_focussed(state);
                 vm -> push_value(true);
                 return 1;
             });
