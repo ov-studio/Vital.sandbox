@@ -529,7 +529,8 @@ namespace Vital::Sandbox::API {
                 bool mouse;
                 resolve_key(code, key, mouse);
                 bool down;
-                resolve_direction(vm -> get_string(2), down);
+                auto direction = vm -> get_string(2);
+                resolve_direction(direction, down);
                 auto ok = add_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](int ref) { return BindHandler{ref, down}; });
                 vm -> push_value(ok);
                 return 1;
@@ -547,7 +548,8 @@ namespace Vital::Sandbox::API {
                 bool mouse;
                 resolve_key(code, key, mouse);
                 bool down;
-                resolve_direction(vm -> get_string(2), down);
+                auto direction = vm -> get_string(2);
+                resolve_direction(direction, down);
                 auto ok = remove_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](const BindHandler& handle) { return handle.down == down; });
                 vm -> push_value(ok);
                 return 1;
