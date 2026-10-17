@@ -67,11 +67,6 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Physics_Body::methods<Instance, Physics_Body::Type::Rigid>(vm);
 
-            vm_module::bind_method<Instance>(vm, "get_gravity_scale", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_gravity_scale());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_able_to_sleep", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_able_to_sleep());
                 return 1;
@@ -82,16 +77,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_max_contacts_reported", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_max_contacts_reported());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_contact_count", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_contact_count());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_lock_rotation_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_lock_rotation_enabled());
                 return 1;
@@ -99,6 +84,21 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "is_freeze_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_freeze_enabled());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity_scale", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_gravity_scale());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_max_contacts_reported", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_max_contacts_reported());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_contact_count", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_contact_count());
                 return 1;
             });
 
