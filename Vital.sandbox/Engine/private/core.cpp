@@ -34,11 +34,6 @@
 
 namespace Vital::Engine {
     // Hooks //
-    void Core::_notification(int what) {
-        // Child added / removed / moved: Dimension::refresh re-scans Core's children
-        if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Dimension::dirty = true;
-    }
-
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(false);
@@ -88,6 +83,10 @@ namespace Vital::Engine {
         Tool::Event::emit("core:free");
     }
 
+    void Core::_notification(int what) {
+        if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Dimension::dirty = true;
+    }
+    
     void Core::_process(double delta) {
         if (!is_ready()) return;
         Manager::Sandbox::get_singleton() -> drain();

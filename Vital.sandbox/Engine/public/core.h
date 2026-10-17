@@ -58,9 +58,9 @@ namespace Vital::Engine {
             };
         public:
             // Hooks //
-            void _notification(int what);     // TODO: Improve ordfer of this?
             void _ready() override;
             void _exit_tree() override;
+            void _notification(int what);
             void _process(double delta) override;
             void _physics_process(double delta) override;
             #if defined(VSDK_Client)
