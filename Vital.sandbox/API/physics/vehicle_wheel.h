@@ -123,6 +123,8 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void init(Machine* vm) {
+            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+
             #if !defined(VSDK_Client)
             static Tool::Event::Handle ready_binding;
             ready_binding.bind("entity:ready", [](Tool::Stack args) {
@@ -153,6 +155,8 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);
+            
+            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)
@@ -481,11 +485,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
+            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
         }
 
         static void clean(const std::string& env) {
-            Instance::collect_env(env);
+            API::Node_3D::clean<Instance, Node_3D::Type::Spatial>(env);
         }
     };
 }
