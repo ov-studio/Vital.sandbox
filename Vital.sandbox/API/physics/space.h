@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
         struct Query {
             uint32_t mask = 0xFFFFFFFF;
             int max_results = 32;
-            int dimension = 0; // which dimension's physics space to query
+            int dimension = 0;
             float margin = 0.04f;
             bool collide_bodies = true;
             bool collide_areas = false;
@@ -53,18 +53,6 @@ namespace Vital::Sandbox::API {
             vm -> pop(1);
         }
 
-        // Out-of-range dimensions raise an error, they must never silently fall back to another dimension
-        static void read_dimension(Machine* vm, int idx, int& out) {
-            vm -> get_table_field("dimension", idx);
-            if (vm -> is_number(-1)) {
-                auto value = vm -> get_double(-1);
-                vm -> pop(1);
-                if (!Vital::Engine::Dimension::is_valid(value)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("dimension out of range [0 - {}]", Vital::Engine::Dimension::LIMIT));
-                out = (int)value;
-            }
-            else vm -> pop(1);
-        }
-
         static void read_field(Machine* vm, const std::string& key, int idx, float& out) {
             vm -> get_table_field(key, idx);
             if (vm -> is_number(-1)) out = vm -> get_float(-1);
@@ -81,6 +69,17 @@ namespace Vital::Sandbox::API {
             vm -> get_table_field(key, idx);
             if (vm -> is_table(-1)) out = Space::build_exclude(vm, -1);
             vm -> pop(1);
+        }
+
+        static void read_dimension(Machine* vm, int idx, int& out) {
+            vm -> get_table_field("dimension", idx);
+            if (vm -> is_number(-1)) {
+                auto value = vm -> get_double(-1);
+                vm -> pop(1);
+                if (!Vital::Engine::Dimension::is_valid(value)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("dimension out of range [0 - {}]", Vital::Engine::Dimension::LIMIT));
+                out = (int)value;
+            }
+            else vm -> pop(1);
         }
 
         static Query parse_options(Machine* vm, int idx) {
