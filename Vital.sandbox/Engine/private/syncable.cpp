@@ -412,10 +412,10 @@ namespace Vital::Engine {
                 target = parent_node;
             }
         }
-        auto previous = Dimension::get(self_node);
+        auto previous = Engine::Dimension::get(self_node);
         if (self_node -> get_parent() != target) self_node -> reparent(target, true);
-        int captured_dimension = (target == core) ? previous : Dimension::INHERIT;
-        Dimension::set(self_node, captured_dimension);
+        int captured_dimension = (target == core) ? previous : Engine::Dimension::INHERIT;
+        Engine::Dimension::set(self_node, captured_dimension);
         sync_parent_net_id = parent_net_id;
         sync_last_pos = get_sync_position(); 
         sync_last_rot = get_sync_rotation();

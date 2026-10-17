@@ -84,14 +84,14 @@ namespace Vital::Engine {
     }
 
     void Core::_notification(int what) {
-        if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Dimension::dirty = true;
+        if (what == NOTIFICATION_CHILD_ORDER_CHANGED) Engine::Dimension::dirty = true;
     }
-    
+
     void Core::_process(double delta) {
         if (!is_ready()) return;
         Manager::Sandbox::get_singleton() -> drain();
         Manager::Sandbox::get_singleton() -> process(delta);
-        Dimension::refresh();
+        Engine::Dimension::refresh();
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!work_queue.empty()) call_deferred("drain");
@@ -201,7 +201,7 @@ namespace Vital::Engine {
         Manager::Network::get_singleton() -> reset();
         free_environment();
         #endif
-        Dimension::reset(); // frees the dimension physics spaces, they never outlive a session
+        Engine::Dimension::reset();
         enqueue([]() {
             Manager::Sandbox::free_singleton();
             Tool::Event::emit("core:reset");

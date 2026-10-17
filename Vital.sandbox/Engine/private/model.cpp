@@ -44,9 +44,6 @@ namespace Vital::Engine {
 
     void Model::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) {
-            // Free any components that were detached from the tree and are
-            // therefore not owned by any parent — Godot won't free them
-            // automatically since they have no parent node.
             for (auto& [name, mesh] : detached_components) {
                 if (mesh) mesh->queue_free();
             }
@@ -425,7 +422,7 @@ namespace Vital::Engine {
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
         if (!sync_registered) Manager::Network::get_singleton()->enqueue_syncable_registration(this);
-        Dimension::set_node_visible(this, true); // keeps a dimension-forced hide
+        Engine::Dimension::set_node_visible(this, true);
         Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
         Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));

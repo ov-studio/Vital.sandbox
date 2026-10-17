@@ -67,7 +67,7 @@ namespace Vital::Engine {
             auto active = get_active();
             if (active) active -> clear_current(false);
         }
-        Dimension::refresh(); // switch cameras seamlessly
+        Engine::Dimension::refresh();
     }
 }
 #endif
