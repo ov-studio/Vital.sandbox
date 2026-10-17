@@ -45,34 +45,36 @@ namespace Vital::Sandbox::API {
             { "X8",       godot::Viewport::MSAA_8X       }
         };
 
+        struct Snapshot {
+            bool taa;
+            godot::Viewport::ScreenSpaceAA ssaa;
+            godot::Viewport::MSAA msaa;
+            float scaling_3d;
 
-        // TODO: Improve
-        // Unlike the other gfx modules (which write to the WorldEnvironment that Core::reset() frees),
-        // AA lives on the root viewport and would survive a disconnect. init() snapshots the original
-        // values (before any script runs) and restores them on "environment:free".
-        inline static bool original_captured = false;
-        inline static bool original_taa = false;
-        inline static godot::Viewport::ScreenSpaceAA original_ssaa = godot::Viewport::SCREEN_SPACE_AA_DISABLED;
-        inline static godot::Viewport::MSAA original_msaa = godot::Viewport::MSAA_DISABLED;
-        inline static float original_scaling_3d = 1.0f;
+            static Snapshot capture(godot::Viewport* root) {
+                return {
+                    root -> is_using_taa(),
+                    root -> get_screen_space_aa(),
+                    root -> get_msaa_3d(),
+                    root -> get_scaling_3d_scale()
+                };
+            }
+
+            void apply(godot::Viewport* root) const {
+                root -> set_use_taa(taa);
+                root -> set_screen_space_aa(ssaa);
+                root -> set_msaa_3d(msaa);
+                root -> set_scaling_3d_scale(scaling_3d);
+            }
+        };
+        inline static std::optional<Snapshot> original;
 
         static void init(Machine* vm) {
-            if (!original_captured) {
-                original_captured = true;
-                auto root = base_class::get_scene_root();
-                original_taa = root -> is_using_taa();
-                original_ssaa = root -> get_screen_space_aa();
-                original_msaa = root -> get_msaa_3d();
-                original_scaling_3d = root -> get_scaling_3d_scale();
-            }
+            if (!original) original = Snapshot::capture(base_class::get_scene_root());
 
             static Tool::Event::Handle reset_binding;
             reset_binding.bind("environment:free", [](Tool::Stack) {
-                auto root = base_class::get_scene_root();
-                root -> set_use_taa(original_taa);
-                root -> set_screen_space_aa(original_ssaa);
-                root -> set_msaa_3d(original_msaa);
-                root -> set_scaling_3d_scale(original_scaling_3d);
+                if (original) original -> apply(base_class::get_scene_root());
             });
         }
 
@@ -85,20 +87,8 @@ namespace Vital::Sandbox::API {
 
         static void set_mode(int mode) {
             auto root = base_class::get_scene_root();
-            switch (mode) {
-                case MODE_FXAA:
-                    root -> set_use_taa(false);
-                    root -> set_screen_space_aa(godot::Viewport::SCREEN_SPACE_AA_FXAA);
-                    break;
-                case MODE_TAA:
-                    root -> set_use_taa(true);
-                    root -> set_screen_space_aa(godot::Viewport::SCREEN_SPACE_AA_DISABLED);
-                    break;
-                default:
-                    root -> set_use_taa(false);
-                    root -> set_screen_space_aa(godot::Viewport::SCREEN_SPACE_AA_DISABLED);
-                    break;
-            }
+            root -> set_use_taa(mode == MODE_TAA);
+            root -> set_screen_space_aa(mode == MODE_FXAA ? godot::Viewport::SCREEN_SPACE_AA_FXAA : godot::Viewport::SCREEN_SPACE_AA_DISABLED);
         }
 
         static void bind(Machine* vm) {
