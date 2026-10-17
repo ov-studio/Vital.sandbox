@@ -23,7 +23,6 @@
 // Vital: API: Trail //
 ////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Trail : vm_module {
         inline static const std::vector<std::string> base_scope = {"particle", "trail"};
