@@ -63,6 +63,21 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Physics_Body::methods<Instance, Physics_Body::Type::Character>(vm);
 
+            vm_module::bind_method<Instance>(vm, "is_on_floor", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_on_floor());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_on_ceiling", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_on_ceiling());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_on_wall", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_on_wall());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_velocity", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> get_velocity());
                 return 1;
@@ -80,21 +95,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_floor_max_angle", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(godot::Math::rad_to_deg(self -> body -> get_floor_max_angle()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_on_floor", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_on_floor());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_on_ceiling", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_on_ceiling());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_on_wall", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_on_wall());
                 return 1;
             });
 
