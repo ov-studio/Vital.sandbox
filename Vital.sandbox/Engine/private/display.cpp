@@ -31,10 +31,7 @@ namespace Vital::Engine {
     godot::Ref<godot::ViewportTexture> Display::get_texture() {
         return Core::get_scene_root() -> get_texture();
     }
-
-
-    // Drawing the root viewport's own texture inside that viewport is a read/write
-    // feedback loop (speckles). hint_screen_texture reads the back buffer copy instead.
+    
     godot::Ref<godot::ShaderMaterial> Display::get_screen_material() {
         if (!screen_material.is_valid()) {
             godot::Ref<godot::Shader> shader;
@@ -83,17 +80,15 @@ namespace Vital::Engine {
             godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_copy_last_frame"));
             return;
         }
-        // Not requested this frame: never serve an old frame when requested again later
         last_frame_ready = false;
         if (!last_frame_texture.is_valid() || ++last_frame_idle < LAST_FRAME_IDLE_LIMIT) return;
-        // Idle for a while: release the GPU memory, it is recreated on the next request
+
         godot::RID texture = last_frame_texture;
         last_frame_texture = godot::RID();
         last_frame_idle = 0;
         godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_release_last_frame").bind(texture));
     }
 
-    // Runs on the render thread
     void Display::_copy_last_frame() {
         auto rs = godot::RenderingServer::get_singleton();
         auto rd = rs -> get_rendering_device();
@@ -102,6 +97,7 @@ namespace Vital::Engine {
         if (!source.is_valid()) return;
         auto source_format = rd -> texture_get_format(source);
         if (!source_format.is_valid()) return;
+
         godot::Vector2i size = {(int)source_format -> get_width(), (int)source_format -> get_height()};
         if (!last_frame_rid.is_valid() || size != last_frame_size) {
             godot::Ref<godot::RDTextureFormat> format;
@@ -118,7 +114,7 @@ namespace Vital::Engine {
             view.instantiate();
             godot::RID created = rd -> texture_create(format, view);
             if (!created.is_valid()) return;
-            // Swaps the content, copy_target keeps its RID (the wrapper RID passed in is consumed)
+
             rs -> texture_replace(copy_target, rs -> texture_rd_create(created));
             if (last_frame_rid.is_valid()) rd -> free_rid(last_frame_rid);
             last_frame_rid = created;
@@ -128,7 +124,6 @@ namespace Vital::Engine {
         last_frame_ready = true;
     }
 
-    // Runs on the render thread
     void Display::_release_last_frame(godot::RID texture) {
         auto rs = godot::RenderingServer::get_singleton();
         if (texture.is_valid()) rs -> free_rid(texture);
@@ -142,7 +137,8 @@ namespace Vital::Engine {
         last_frame_ready = false;
         auto rs = godot::RenderingServer::get_singleton();
         if (!rs) return;
-        rs -> force_sync(); // let any queued copy finish before the textures go away
+        
+        rs -> force_sync();
         if (last_frame_texture.is_valid()) rs -> free_rid(last_frame_texture);
         auto rd = rs -> get_rendering_device();
         if (rd && last_frame_rid.is_valid()) rd -> free_rid(last_frame_rid);
