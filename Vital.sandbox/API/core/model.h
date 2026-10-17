@@ -148,14 +148,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name)")
-                    .require(1, &Machine::is_string);
-
-                vm -> push_value(base_class::is_model_loaded(ref_name(Manager::Resource::get_resource_from_vm(vm), vm -> get_string(1))));
-                return 1;
-            });
-
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
@@ -167,6 +159,15 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 instance -> model = base_class::create(key, authority);
                 instance -> store(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name)")
+                    .require(1, &Machine::is_string);
+
+                auto name = vm -> get_string(1);
+                vm -> push_value(base_class::is_model_loaded(ref_name(Manager::Resource::get_resource_from_vm(vm), name)));
                 return 1;
             });
         }
@@ -181,6 +182,15 @@ namespace Vital::Sandbox::API {
 
                 auto component = vm -> get_string(2);
                 vm -> push_value(self -> model -> is_component_visible(component));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                vm -> push_value(self -> model -> is_component_rendered(component));
                 return 1;
             });
 
@@ -223,6 +233,20 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "is_animation_playing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> model -> is_animation_playing());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_animation_layer_playing", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                vm -> push_value(self -> model -> is_animation_layer_playing(layer));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> model -> get_sync_authority());
                 return 1;
             });
 
@@ -313,15 +337,54 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_current_animation_layer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                vm -> push_value(self -> model -> get_current_animation_layer(layer));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_animation_speed", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> model -> get_animation_speed());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_sync_authority());
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                vm -> push_value(self -> model -> get_animation_layer_speed(layer));
                 return 1;
             });
+
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer)", true)
+                    .require(2, &Machine::is_number);
+
+                auto layer = vm -> get_int(2);
+                vm -> push_value(self -> model -> get_animation_layer_weight(layer));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_animation_layer_count", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> model -> get_animation_layer_count());
+                return 1;
+            });
+
+            #if !defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)", true)
+                    .require(2, &Machine::is_number);
+
+                int peer_id = (int)(vm -> get_int(2));
+                self -> model -> set_syncer(peer_id);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
 
             API::Syncable::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, state)", true)
@@ -332,15 +395,6 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(3);
                 self -> model -> set_component_visible(component, state);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component)", true)
-                    .require(2, &Machine::is_string);
-
-                auto component = vm -> get_string(2);
-                vm -> push_value(self -> model -> is_component_rendered(component));
                 return 1;
             });
 
@@ -422,17 +476,58 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)", true)
-                    .require(2, &Machine::is_number);
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, speed, sync = true)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_number)
+                    .optional(4, &Machine::is_bool);
 
-                int peer_id = (int)(vm -> get_int(2));
-                self -> model -> set_syncer(peer_id);
+                auto layer = vm -> get_int(2);
+                auto speed = vm -> get_float(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                self -> model -> set_animation_layer_speed(layer, speed, sync);
                 vm -> push_value(true);
                 return 1;
             });
-            #endif
+
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, weight, blend_time = 0, sync = true)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_number)
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_bool);
+
+                auto layer = vm -> get_int(2);
+                auto weight = vm -> get_float(3);
+                auto blend_time = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                auto sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
+                vm -> push_value(self -> model -> set_animation_layer_weight(layer, weight, blend_time, sync));
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(layer, enabled, bone_paths?, sync = true)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_bool)
+                    .optional(4, &Machine::is_table)
+                    .optional(5, &Machine::is_bool);
+
+                int layer = vm -> get_int(2);
+                bool enabled = vm -> get_bool(3);
+                std::vector<std::string> bones;
+                if (vm -> get_count() >= 4 && vm -> is_table(4)) {
+                    int n = vm -> get_length(4);
+                    bones.reserve(n);
+                    for (int i = 1; i <= n; ++i) {
+                        vm -> get_table_field(i, 4);
+                        if (vm -> is_string(-1)) bones.push_back(vm -> get_string(-1));
+                        vm -> pop(1);
+                    }
+                }
+                bool sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
+                vm -> push_value(self -> model -> set_animation_layer_filter(layer, enabled, bones, sync));
+                return 1;
+            });
 
             API::Syncable::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25, sync = true)", true)
@@ -466,96 +561,6 @@ namespace Vital::Sandbox::API {
                 auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> stop_animation_layer(layer, blend_time, sync);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, weight, blend_time = 0, sync = true)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number)
-                    .optional(4, &Machine::is_number)
-                    .optional(5, &Machine::is_bool);
-
-                auto layer = vm -> get_int(2);
-                auto weight = vm -> get_float(3);
-                auto blend_time = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                auto sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
-                vm -> push_value(self -> model -> set_animation_layer_weight(layer, weight, blend_time, sync));
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, speed, sync = true)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number)
-                    .optional(4, &Machine::is_bool);
-
-                auto layer = vm -> get_int(2);
-                auto speed = vm -> get_float(3);
-                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
-                self -> model -> set_animation_layer_speed(layer, speed, sync);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer, enabled, bone_paths?, sync = true)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_bool)
-                    .optional(4, &Machine::is_table)
-                    .optional(5, &Machine::is_bool);
-
-                int layer = vm -> get_int(2);
-                bool enabled = vm -> get_bool(3);
-                std::vector<std::string> bones;
-                if (vm -> get_count() >= 4 && vm -> is_table(4)) {
-                    int n = vm -> get_length(4);
-                    bones.reserve(n);
-                    for (int i = 1; i <= n; ++i) {
-                        vm -> get_table_field(i, 4);
-                        if (vm -> is_string(-1)) bones.push_back(vm -> get_string(-1));
-                        vm -> pop(1);
-                    }
-                }
-                bool sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
-                vm -> push_value(self -> model -> set_animation_layer_filter(layer, enabled, bones, sync));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer)", true)
-                    .require(2, &Machine::is_number);
-
-                vm -> push_value(self -> model -> get_animation_layer_weight(vm -> get_int(2)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer)", true)
-                    .require(2, &Machine::is_number);
-
-                vm -> push_value(self -> model -> get_animation_layer_speed(vm -> get_int(2)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_current_animation_layer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer)", true)
-                    .require(2, &Machine::is_number);
-
-                vm -> push_value(self -> model -> get_current_animation_layer(vm -> get_int(2)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_animation_layer_playing", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(layer)", true)
-                    .require(2, &Machine::is_number);
-
-                vm -> push_value(self -> model -> is_animation_layer_playing(vm -> get_int(2)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_animation_layer_count", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_animation_layer_count());
                 return 1;
             });
         }
