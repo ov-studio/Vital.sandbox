@@ -221,7 +221,10 @@ namespace Vital::Sandbox::API {
                 vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
 
-                if (vm -> is_string(1)) vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
+                if (vm -> is_string(1)) {
+                    auto name = vm -> get_string(1);
+                    vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(name)));
+                }
                 else {
                     auto value = vm -> get_int(1);
                     vm -> push_value(std::find_if(stat_native_registry.begin(), stat_native_registry.end(), [&](const auto& entry) {
