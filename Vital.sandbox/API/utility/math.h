@@ -29,6 +29,17 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
+            API::bind(vm, base_scope, "percent", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value, percent)")
+                    .require(1, &Machine::is_number)
+                    .require(2, &Machine::is_number);
+
+                auto value = vm -> get_double(1);
+                auto percent = vm -> get_double(2);
+                vm -> push_value(value*percent*0.01);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "round", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value, decimals = 0)")
                     .require(1, &Machine::is_number)
@@ -38,17 +49,6 @@ namespace Vital::Sandbox::API {
                 auto decimals = vm -> is_number(2) ? vm -> get_int(2) : 0;
                 auto factor = std::pow(10.0, decimals);
                 vm -> push_value(std::round(value*factor)/factor);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "percent", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value, percent)")
-                    .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_number);
-
-                auto value = vm -> get_double(1);
-                auto percent = vm -> get_double(2);
-                vm -> push_value(value*percent*0.01);
                 return 1;
             });
 
