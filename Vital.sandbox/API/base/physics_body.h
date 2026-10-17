@@ -68,6 +68,11 @@ namespace Vital::Sandbox::API {
         };
 
         template<typename Instance, Type body_type = Type::Static>
+        static void init(Machine* vm) {
+            API::Collision_Object::init<Instance, Collision_Object::Type::Body>(vm);
+        }
+
+        template<typename Instance, Type body_type = Type::Static>
         static void bind(Machine* vm) {
             API::Collision_Object::bind<Instance, Collision_Object::Type::Body>(vm);
         }

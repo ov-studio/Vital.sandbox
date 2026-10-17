@@ -72,6 +72,10 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static void init(Machine* vm) {
+            API::Node_3D::init<Instance, Node_3D::Type::Audio>(vm);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
             API::Node_3D::bind<Instance, Node_3D::Type::Audio>(vm);

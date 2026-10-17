@@ -98,6 +98,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void init(Machine* vm) {
+            API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
@@ -142,6 +143,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Collision_Shape>(vm);
+            API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(body)", true)

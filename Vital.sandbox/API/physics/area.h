@@ -97,8 +97,13 @@ namespace Vital::Sandbox::API {
             return false;
         }
 
+        static void init(Machine* vm) {
+            API::Collision_Object::init<Instance, Collision_Object::Type::Area>(vm);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Area>(vm);
+            API::Collision_Object::bind<Instance, Collision_Object::Type::Area>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);

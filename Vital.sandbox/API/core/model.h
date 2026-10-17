@@ -76,7 +76,6 @@ namespace Vital::Sandbox::API {
 
         static void init(Machine* vm) {
             API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
-
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
@@ -114,7 +113,6 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm);
-
             API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "load", [](auto vm, auto& id) -> int {
@@ -569,13 +567,8 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
-        }
-
         static void clean(const std::string& env) {
-            API::Node_3D::clean<Instance, Node_3D::Type::Spatial>(env);
-            
+            Instance::collect_env(env);
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;

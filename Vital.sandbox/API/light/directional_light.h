@@ -75,8 +75,13 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static void init(Machine* vm) {
+            API::Light_3D::init<Instance, Light_3D::Type::Directional>(vm);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Directional_Light>(vm);
+            API::Light_3D::bind<Instance, Light_3D::Type::Directional>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);

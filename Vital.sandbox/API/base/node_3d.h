@@ -64,6 +64,9 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance, Type node_type = Type::Spatial>
+        static void init(Machine* vm) {}
+
+        template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
 
         template<typename Instance, Type node_type = Type::Spatial, bool child_entity = false>
