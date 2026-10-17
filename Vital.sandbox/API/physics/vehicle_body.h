@@ -45,6 +45,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Body>(vm);
+
             API::Physics_Body::bind<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -113,6 +114,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Physics_Body::inject<Instance, API::Physics_Body::Type::Rigid>(vm);
+            
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
         }
 

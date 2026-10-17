@@ -40,6 +40,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Static_Body>(vm);
+            
             API::Physics_Body::bind<Instance, API::Physics_Body::Type::Static>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {

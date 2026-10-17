@@ -51,6 +51,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Character_Body>(vm);
+
             API::Physics_Body::bind<Instance, API::Physics_Body::Type::Character>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -260,6 +261,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Physics_Body::inject<Instance, API::Physics_Body::Type::Character>(vm);
+            
             vm -> scope_set_enum(base_scope, "motion_mode", motion_mode_registry);
             vm -> scope_set_enum(base_scope, "platform_on_leave", platform_on_leave_registry);
         }
