@@ -181,6 +181,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            #if defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "is_debug_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_debug_visible());
+                return 1;
+            });
+            #endif
+
             API::Syncable::bind_method<Instance>(vm, "set_disabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -192,11 +199,6 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "is_debug_visible", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_debug_visible());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_debug_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -272,76 +274,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            API::Syncable::bind_method<Instance>(vm, "set_shape_cylinder", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(radius, height)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number);
-
-                auto radius = vm -> get_float(2);
-                auto height = vm -> get_float(3);
-                godot::Ref<godot::CylinderShape3D> shape;
-                shape.instantiate();
-                shape -> set_radius(radius);
-                shape -> set_height(height);
-                self -> body -> assign_shape(shape);
-                #if !defined(VSDK_Client)
-                { 
-                    godot::Array p; 
-                    p.push_back(radius); 
-                    p.push_back(height); 
-                    self -> broadcast("cylinder", p); 
-                }
-                #endif
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_shape_world_boundary", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(plane_normal, plane_distance = 0)", true)
-                    .require(2, &Machine::is_vector3)
-                    .optional(3, &Machine::is_number);
-
-                auto normal = vm -> get_vector3(2);
-                auto distance = vm -> is_number(3) ? vm -> get_float(3) : 0.f;
-                godot::Ref<godot::WorldBoundaryShape3D> shape;
-                shape.instantiate();
-                shape -> set_plane(godot::Plane(normal, distance));
-                self -> body -> assign_shape(shape);
-                #if !defined(VSDK_Client)
-                { 
-                    godot::Array p; 
-                    p.push_back(normal.x); 
-                    p.push_back(normal.y); 
-                    p.push_back(normal.z); 
-                    p.push_back(distance); 
-                    self -> broadcast("world_boundary", p); 
-                }
-                #endif
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_shape_separation_ray", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(length)", true)
-                    .require(2, &Machine::is_number);
-
-                auto length = vm -> get_float(2);
-                godot::Ref<godot::SeparationRayShape3D> shape;
-                shape.instantiate();
-                shape -> set_length(length);
-                self -> body -> assign_shape(shape);
-                #if !defined(VSDK_Client)
-                { 
-                    godot::Array p; 
-                    p.push_back(length); 
-                    self -> broadcast("separation_ray", p); 
-                }
-                #endif
-                vm -> push_value(true);
-                return 1;
-            });
-
 
             /*
              * set_shape_mesh(model, config = {})
@@ -534,6 +466,76 @@ namespace Vital::Sandbox::API {
                     if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
                     #endif
                 }
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_shape_cylinder", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(radius, height)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_number);
+
+                auto radius = vm -> get_float(2);
+                auto height = vm -> get_float(3);
+                godot::Ref<godot::CylinderShape3D> shape;
+                shape.instantiate();
+                shape -> set_radius(radius);
+                shape -> set_height(height);
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
+                { 
+                    godot::Array p; 
+                    p.push_back(radius); 
+                    p.push_back(height); 
+                    self -> broadcast("cylinder", p); 
+                }
+                #endif
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_shape_world_boundary", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(plane_normal, plane_distance = 0)", true)
+                    .require(2, &Machine::is_vector3)
+                    .optional(3, &Machine::is_number);
+
+                auto normal = vm -> get_vector3(2);
+                auto distance = vm -> is_number(3) ? vm -> get_float(3) : 0.f;
+                godot::Ref<godot::WorldBoundaryShape3D> shape;
+                shape.instantiate();
+                shape -> set_plane(godot::Plane(normal, distance));
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
+                { 
+                    godot::Array p; 
+                    p.push_back(normal.x); 
+                    p.push_back(normal.y); 
+                    p.push_back(normal.z); 
+                    p.push_back(distance); 
+                    self -> broadcast("world_boundary", p); 
+                }
+                #endif
+                vm -> push_value(true);
+                return 1;
+            });
+
+
+            API::Syncable::bind_method<Instance>(vm, "set_shape_separation_ray", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(length)", true)
+                    .require(2, &Machine::is_number);
+
+                auto length = vm -> get_float(2);
+                godot::Ref<godot::SeparationRayShape3D> shape;
+                shape.instantiate();
+                shape -> set_length(length);
+                self -> body -> assign_shape(shape);
+                #if !defined(VSDK_Client)
+                { 
+                    godot::Array p; 
+                    p.push_back(length); 
+                    self -> broadcast("separation_ray", p); 
+                }
+                #endif
                 vm -> push_value(true);
                 return 1;
             });
