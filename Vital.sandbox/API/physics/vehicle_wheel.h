@@ -183,47 +183,18 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial, true>(vm);
 
-            API::Syncable::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto position = vm -> get_vector3(2);
-                self -> body -> set_position(position);
-                self -> broadcast_transform();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_used_as_traction", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_used_as_traction());
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto offset = vm -> get_vector3(2);
-                self -> body -> translate(offset);
-                self -> broadcast_transform();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_used_as_steering", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_used_as_steering());
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto offset = vm -> get_vector3(2);
-                self -> body -> translate_object_local(offset);
-                self -> broadcast_transform();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(rotation)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto rotation = vm -> get_vector3(2);
-                self -> body -> set_rotation_degrees(rotation);
-                self -> broadcast_transform();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_in_contact", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_in_contact());
                 return 1;
             });
 
@@ -262,39 +233,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_used_as_traction", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_used_as_traction());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_used_as_steering", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_used_as_steering());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_friction_slip", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> get_friction_slip());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_in_contact", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> is_in_contact());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_contact_body", [](auto vm, auto self, auto& id) -> int {
-                auto node = self -> body -> get_contact_body();
-                if (!node || !Area::push_entity(vm, node)) vm -> push_value(false);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_contact_point", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_contact_point());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_contact_normal", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_contact_normal());
                 return 1;
             });
 
@@ -325,6 +265,44 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_steering", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(godot::Math::rad_to_deg(self -> body -> get_steering()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_contact_body", [](auto vm, auto self, auto& id) -> int {
+                auto node = self -> body -> get_contact_body();
+                if (!node || !Area::push_entity(vm, node)) vm -> push_value(false);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_contact_point", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_contact_point());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_contact_normal", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_contact_normal());
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto position = vm -> get_vector3(2);
+                self -> body -> set_position(position);
+                self -> broadcast_transform();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(rotation)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto rotation = vm -> get_vector3(2);
+                self -> body -> set_rotation_degrees(rotation);
+                self -> broadcast_transform();
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -475,6 +453,28 @@ namespace Vital::Sandbox::API {
 
                 auto steering = vm -> get_float(2);
                 self -> body -> set_steering(godot::Math::deg_to_rad(steering));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(offset)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto offset = vm -> get_vector3(2);
+                self -> body -> translate(offset);
+                self -> broadcast_transform();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(offset)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto offset = vm -> get_vector3(2);
+                self -> body -> translate_object_local(offset);
+                self -> broadcast_transform();
                 vm -> push_value(true);
                 return 1;
             });
