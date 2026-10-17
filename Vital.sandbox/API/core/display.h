@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
                 else instance -> push_self(vm);
                 return 1;
             });
-
+            
             API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
