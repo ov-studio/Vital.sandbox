@@ -13,7 +13,20 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/log.h>
+#include <cstdint>
+#include <initializer_list>
+#include <map>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <typeinfo>
+#include <utility>
+#include <variant>
+#include <vector>
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 
 /////////////////////////
@@ -201,7 +214,8 @@ namespace Vital::Tool {
 
         // Packet //
         bool is_packet(const std::string& type) const {
-            return object.count("packet") && object.at("packet").as<std::string>() == type;
+            const auto* packet = get("packet");
+            return packet && packet->is<std::string>() && packet->as<std::string>() == type;
         }
 
         static Stack make_packet(const std::string& type, std::vector<StackValue> args = {}) {

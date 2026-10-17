@@ -26,6 +26,7 @@
 #include <Vital.sandbox/Tool/http.h>
 #include <Vital.sandbox/Tool/inspect.h>
 #include <Vital.sandbox/Tool/localserver.h>
+#include <Vital.sandbox/Tool/network_packet.h>
 
 
 //////////////////////////////
@@ -994,34 +995,40 @@ namespace Vital::Manager {
         auto mp = tree->get_multiplayer();
         int32_t sender = mp.is_valid() ? mp->get_remote_sender_id() : 0;
 
-        godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
-        obj["sender"] = (int64_t)sender;
-        data["object"] = obj;
-
-        Tool::Stack stack = Tool::Stack::from_dict(data);
+        using PacketKind = Tool::NetworkPacket::Kind;
+        #if !defined(VSDK_Client)
+        const auto kind = Tool::NetworkPacket::classify(data, Network::Name, connected_peers.count(sender) != 0);
+        #else
+        const auto kind = Tool::NetworkPacket::classify(data, Network::Name, true);
+        #endif
+        if (kind == PacketKind::Reject) return;
 
         #if !defined(VSDK_Client)
-        if (stack.is_packet(Network::Name)) {
-            if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
-                if (stack.array.size() > 1 && stack.array[1].is<std::string>()) peer_serials[sender] = stack.array[1].as<std::string>();
+        if (kind == PacketKind::Ping || kind == PacketKind::Quit) {
+            if (kind == PacketKind::Ping) {
+                const godot::Array args = data["array"];
+                if (args.size() == 2) peer_serials[sender] = Tool::to_std_string((godot::String)args[1]);
                 if (!connected_peers.count(sender)) {
                     connected_peers.insert(sender);
                     log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
                     Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)sender));
                 }
             }
-            else if (stack.array[0].as<std::string>() == "quit") {
+            else {
                 if (peer.is_valid()) peer->disconnect_peer(sender);
                 return;
             }
             return;
         }
-        // Drop all other packets from peers that haven't completed handshake yet.
-        if (!connected_peers.count(sender)) return;
         #else
         // Internal protocol packets are never forwarded to scripts.
-        if (stack.is_packet(Network::Name)) return;
+        if (kind != PacketKind::Application) return;
         #endif
+
+        godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
+        obj["sender"] = (int64_t)sender;
+        data["object"] = obj;
+        Tool::Stack stack = Tool::Stack::from_dict(data);
 
         if (stack.has("__event") || stack.has("__reply_serial")) {
             auto vm = Manager::Sandbox::get_singleton()->get_vm();

@@ -74,7 +74,13 @@ namespace Vital::Engine {
 
     // Signals //
     void Network::_receive(godot::Dictionary data) {
-        Manager::Network::get_singleton() -> _on_packet_received(data);
+        try {
+            Manager::Network::get_singleton() -> _on_packet_received(data);
+        }
+        catch (const std::exception&) {
+            // A malformed remote payload must not unwind through Godot's RPC boundary.
+            return;
+        }
     }
     
     void Network::_sync_entities(godot::PackedByteArray data) {

@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.22)
+project(network_packet_regression LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(GODOTCPP_BUILD_PROFILE "${CMAKE_CURRENT_SOURCE_DIR}/build_profile.json" CACHE PATH "" FORCE)
+set(GODOTCPP_DISABLE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
+add_subdirectory(../../Vital.sandbox/Vendor/godot-cpp godot-cpp)
+add_library(network_packet_regression SHARED regression.cpp)
+target_include_directories(network_packet_regression PRIVATE ../..)
+target_link_libraries(network_packet_regression PRIVATE godot-cpp)
+if(MSVC)
+    target_compile_options(network_packet_regression PRIVATE /EHsc)
+endif()
+set_target_properties(network_packet_regression PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/project"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/project")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/project")
+configure_file(project.godot "${CMAKE_CURRENT_BINARY_DIR}/project/project.godot" COPYONLY)
+configure_file(run.gd "${CMAKE_CURRENT_BINARY_DIR}/project/run.gd" COPYONLY)
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/project/regression.$<CONFIG>.gdextension" CONTENT
+"[configuration]\nentry_symbol = \"network_packet_test_init\"\ncompatibility_minimum = \"4.7\"\n[libraries]\nwindows.x86_64 = \"$<TARGET_FILE:network_packet_regression>\"\nlinux.x86_64 = \"$<TARGET_FILE:network_packet_regression>\"\nmacos = \"$<TARGET_FILE:network_packet_regression>\"\n")
