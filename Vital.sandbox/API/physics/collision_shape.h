@@ -309,10 +309,8 @@ namespace Vital::Sandbox::API {
                     .optional(3, &Machine::is_table);
 
                 auto model = vm_module::get_userdata_object<Vital::Sandbox::API::Model::Instance>(vm, 2);
-
-                // Parse config //
-                std::string shape_type = "convex";
                 bool include_children = false;
+                std::string shape_type = "convex";
                 std::vector<std::pair<std::string, std::string>> filters;
                 if (vm -> is_table(3)) {
                     vm -> get_table_field("shape_type", 3);
@@ -352,19 +350,14 @@ namespace Vital::Sandbox::API {
                     return shape_type;
                 };
 
-                // Build a shape ref from a MeshInstance3D* given type string.
                 auto build_shape = [&](godot::MeshInstance3D* mesh, const std::string& type) -> godot::Ref<godot::Shape3D> {
                     if (type == "concave") return base_class::Internal::build_concave_shape(mesh);
                     return base_class::Internal::build_convex_shape(mesh);
                 };
 
                 if (!include_children) {
-                    // Single mesh: use root if it's a MeshInstance3D, else the first
-                    // MeshInstance3D found anywhere in the model's subtree (glTF imports
-                    // routinely nest the mesh 2+ levels below the scene root, so a
-                    // shallow immediate-children scan misses it entirely).
                     godot::MeshInstance3D* mesh = godot::Object::cast_to<godot::MeshInstance3D>(model_node);
-                    std::string used_component; // empty == "the model root itself"
+                    std::string used_component;
                     if (!mesh) {
                         auto components = model_node -> get_components();
                         if (!components.empty()) {
@@ -390,11 +383,8 @@ namespace Vital::Sandbox::API {
                     #endif
                 }
                 else {
-                    // Multi-mesh mode.
                     auto components = model_node -> get_components();
                     if (components.empty()) { vm -> push_value(false); return 1; }
-    
-                    // Anchor shape so the root CollisionShape3D is a valid node (zero-size box).
                     {
                         godot::Ref<godot::BoxShape3D> anchor;
                         anchor.instantiate();
@@ -402,10 +392,6 @@ namespace Vital::Sandbox::API {
                         self -> body -> assign_shape(anchor);
                     }
     
-                    // Sync by REFERENCE (mesh_ref), same rationale as the single-mesh
-                    // branch above: one model net_id + one (component, type, transform)
-                    // tuple per child, no vertex/face data. Clients rebuild each child
-                    // shape locally from their own already-loaded copy of the model.
                     #if !defined(VSDK_Client)
                     godot::Array sync_params;
                     sync_params.push_back((int)model_node -> get_net_id());
@@ -421,27 +407,10 @@ namespace Vital::Sandbox::API {
                         auto shape = build_shape(mesh, resolved);
                         if (!shape.is_valid()) continue;
     
-                        // Parent each per-mesh Collision_Shape DIRECTLY under the physics body
-                        // (StaticBody / RigidBody / …), not under the intermediate anchor
-                        // Collision_Shape. Nested CollisionShape3D under another
-                        // CollisionShape3D often fails to register with the shape body —
-                        // debug wireframe is visible but the character never collides.
                         godot::Node3D* physics_body = godot::Object::cast_to<godot::Node3D>(self -> body -> get_parent());
-                        if (!physics_body) physics_body = self -> body; // fallback
-    
-                        // Offset: mesh transform relative to the PHYSICS BODY in world
-                        // space. Model-root relative was fragile (only matched when the
-                        // model sat unparented at the same world pose as the body).
-                        // Body-relative is correct whether the model is already parented
-                        // under the body or still at world origin, as long as body and
-                        // model share the same world pose when set_shape_mesh runs.
+                        if (!physics_body) physics_body = self -> body;
                         auto rel = physics_body -> get_global_transform().inverse() * mesh -> get_global_transform();
                         auto* child = base_class::create(physics_body);
-                        // Ensure the shape is registered with the body's shape body.
-                        // set_shape while already in-tree, force enabled, apply local
-                        // transform, then toggle disabled to force a shape-body refresh
-                        // (Godot can miss registration when shape + transform are set
-                        // in the same tick as add_child).
                         child -> set_disabled(false);
                         child -> assign_shape(shape);
                         child -> set_transform(rel);
@@ -462,7 +431,6 @@ namespace Vital::Sandbox::API {
                     }
     
                     #if !defined(VSDK_Client)
-                    // Only the net_id + mode ints are present when nothing matched — nothing to send.
                     if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
                     #endif
                 }
