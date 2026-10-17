@@ -196,7 +196,8 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(quaternion)", true)
                         .require(2, &Machine::is_quaternion);
 
-                    self -> get_node() -> set_quaternion(vm -> get_quaternion(2));
+                    auto quaternion = vm -> get_quaternion(2);
+                    self -> get_node() -> set_quaternion(quaternion);
                     maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
