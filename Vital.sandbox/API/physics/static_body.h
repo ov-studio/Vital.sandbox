@@ -34,8 +34,13 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static void init(Machine* vm) {
+            API::Physics_Body::init<Instance, Physics_Body::Type::Static>(vm);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Static_Body>(vm);
+            API::Physics_Body::bind<Instance, Physics_Body::Type::Static>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 int authority_peer = 0;
