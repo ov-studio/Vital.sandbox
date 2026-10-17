@@ -112,10 +112,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Supersampling (SSAA): the 3D scene, including post-process shaders that read the
-            // screen/depth/normal buffers, is rendered at `scale` x the window size and then
-            // filtered down. > 1.0 antialiases everything MSAA can't reach (shader-drawn lines etc).
-            // 1.0 = off, 1.5 = cheap, 2.0 = best (4x the pixels).
             API::bind(vm, base_scope, "get_scaling_3d_scale", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_scene_root() -> get_scaling_3d_scale());
                 return 1;
