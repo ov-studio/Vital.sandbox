@@ -148,33 +148,8 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Collision_Object::methods<Instance, Collision_Object::Type::Area>(vm);
 
-            vm_module::bind_method<Instance>(vm, "get_gravity_space_override_mode", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_gravity_space_override_mode());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_gravity_a_point", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_gravity_a_point());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_gravity_point_center", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_gravity_point_center());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_gravity_direction", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_gravity_direction());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_gravity());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_priority", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> body -> get_priority());
                 return 1;
             });
 
@@ -195,6 +170,31 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "has_overlapping_areas", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> has_overlapping_areas());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_gravity());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity_space_override_mode", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_gravity_space_override_mode());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity_point_center", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_gravity_point_center());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity_direction", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_gravity_direction());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_priority", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> get_priority());
                 return 1;
             });
 
@@ -238,6 +238,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_gravity", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(gravity)", true)
+                    .require(2, &Machine::is_number);
+
+                auto gravity = vm -> get_float(2);
+                self -> body -> set_gravity(gravity);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_gravity_space_override_mode", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, space_override_registry);
@@ -277,17 +287,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            vm_module::bind_method<Instance>(vm, "set_gravity", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(gravity)", true)
-                    .require(2, &Machine::is_number);
-
-                auto gravity = vm -> get_float(2);
-                self -> body -> set_gravity(gravity);
-                vm -> push_value(true);
-                return 1;
-            });
-
+            
             vm_module::bind_method<Instance>(vm, "set_priority", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(priority)", true)
                     .require(2, &Machine::is_number);
