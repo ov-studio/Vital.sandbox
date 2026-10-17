@@ -19,11 +19,11 @@
 #include <Vital.sandbox/API/base/node_3d.h>
 
 
-// TODO: Improve
-///////////////////////////
+////////////////////////
 // Vital: API: Trail //
-///////////////////////////
+////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Trail : vm_module {
         inline static const std::vector<std::string> base_scope = {"particle", "trail"};
@@ -79,89 +79,74 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
 
-            // Getters //
-            {
-                vm_module::bind_method<Instance>(vm, "get_lifetime", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> trail -> get_lifetime());
-                    return 1;
-                });
+            vm_module::bind_method<Instance>(vm, "get_lifetime", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> trail -> get_lifetime());
+                return 1;
+            });
 
-                vm_module::bind_method<Instance>(vm, "get_width", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> trail -> get_width());
-                    return 1;
-                });
+            vm_module::bind_method<Instance>(vm, "get_width", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> trail -> get_width());
+                return 1;
+            });
 
-                // Returns the color at the start of the ribbon, then the color at the end of it
-                vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> trail -> get_color_from());
-                    vm -> push_value(self -> trail -> get_color_to());
-                    return 2;
-                });
+            vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> trail -> get_color_from());
+                vm -> push_value(self -> trail -> get_color_to());
+                return 2;
+            });
 
-                vm_module::bind_method<Instance>(vm, "get_blend_mode", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(static_cast<int>(self -> trail -> get_blend_mode()));
-                    return 1;
-                });
-            }
+            vm_module::bind_method<Instance>(vm, "get_blend_mode", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> trail -> get_blend_mode()));
+                return 1;
+            });
 
-            // Setters //
-            {
-                // How long the ribbon takes to fade out behind the node in seconds, at least 0.01
-                vm_module::bind_method<Instance>(vm, "set_lifetime", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(seconds)", true)
-                        .require(2, &Machine::is_number);
+            vm_module::bind_method<Instance>(vm, "set_lifetime", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(seconds)", true)
+                    .require(2, &Machine::is_number);
 
-                    auto lifetime = vm -> get_float(2);
-                    self -> trail -> set_lifetime(lifetime);
-                    vm -> push_value(true);
-                    return 1;
-                });
+                auto lifetime = vm -> get_float(2);
+                self -> trail -> set_lifetime(lifetime);
+                vm -> push_value(true);
+                return 1;
+            });
 
-                // Ribbon width at its start, it thins out to nothing at the end
-                vm_module::bind_method<Instance>(vm, "set_width", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(width)", true)
-                        .require(2, &Machine::is_number);
+            vm_module::bind_method<Instance>(vm, "set_width", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(width)", true)
+                    .require(2, &Machine::is_number);
 
-                    auto width = vm -> get_float(2);
-                    self -> trail -> set_width(width);
-                    vm -> push_value(true);
-                    return 1;
-                });
+                auto width = vm -> get_float(2);
+                self -> trail -> set_width(width);
+                vm -> push_value(true);
+                return 1;
+            });
 
-                // Color at the start and at the end of the ribbon, e.g. set_color({1, 0.6, 0.1, 1}, {1, 0.1, 0, 0})
-                // Without `to` the ribbon fades out in the `from` color (alpha 0)
-                vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(from, to = from)", true)
-                        .require(2, &Machine::is_color)
-                        .optional(3, &Machine::is_color);
+            vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(from, to = from)", true)
+                    .require(2, &Machine::is_color)
+                    .optional(3, &Machine::is_color);
 
-                    auto from = vm -> get_color(2);
-                    auto to = vm -> is_color(3) ? vm -> get_color(3) : godot::Color(from.r, from.g, from.b, 0.0f);
-                    self -> trail -> set_colors(from, to);
-                    vm -> push_value(true);
-                    return 1;
-                });
+                auto from = vm -> get_color(2);
+                auto to = vm -> is_color(3) ? vm -> get_color(3) : godot::Color(from.r, from.g, from.b, 0.0f);
+                self -> trail -> set_colors(from, to);
+                vm -> push_value(true);
+                return 1;
+            });
 
-                vm_module::bind_method<Instance>(vm, "set_blend_mode", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(mode)", true)
-                        .require_enum(2, blend_mode_registry);
+            vm_module::bind_method<Instance>(vm, "set_blend_mode", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, blend_mode_registry);
 
-                    auto mode = static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2));
-                    self -> trail -> set_blend_mode(mode);
-                    vm -> push_value(true);
-                    return 1;
-                });
-            }
+                auto mode = static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2));
+                self -> trail -> set_blend_mode(mode);
+                vm -> push_value(true);
+                return 1;
+            });
 
-            // Misc //
-            {
-                // Drops the current ribbon, e.g. after repositioning the node
-                vm_module::bind_method<Instance>(vm, "clear", [](auto vm, auto self, auto& id) -> int {
-                    self -> trail -> clear();
-                    vm -> push_value(true);
-                    return 1;
-                });
-            }
+            vm_module::bind_method<Instance>(vm, "clear", [](auto vm, auto self, auto& id) -> int {
+                self -> trail -> clear();
+                vm -> push_value(true);
+                return 1;
+            });
         }
 
         static void inject(Machine* vm) {
