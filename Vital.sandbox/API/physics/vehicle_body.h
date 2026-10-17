@@ -39,8 +39,14 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static void init(Machine* vm) {
+            API::Physics_Body::init<Instance, Physics_Body::Type::Rigid>(vm);
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Body>(vm);
+            
+            API::Physics_Body::bind<Instance, Physics_Body::Type::Rigid>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -107,12 +113,13 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Physics_Body::inject<Instance>(vm);
+            API::Physics_Body::inject<Instance, Physics_Body::Type::Rigid>(vm);
+
             vm -> scope_set_enum(base_scope, "freeze_mode", freeze_mode_registry);
         }
 
         static void clean(const std::string& env) {
-            Instance::collect_env(env);
+            API::Physics_Body::clean<Instance, Physics_Body::Type::Rigid>(env);
         }
     };
 }
