@@ -485,7 +485,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
+            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
         }
 
         static void clean(const std::string& env) {
