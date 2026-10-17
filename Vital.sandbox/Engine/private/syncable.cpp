@@ -24,22 +24,6 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
-        buffer[offset]   =  value        & 0xFF;
-        buffer[offset+1] = (value >>  8) & 0xFF;
-        buffer[offset+2] = (value >> 16) & 0xFF;
-        buffer[offset+3] = (value >> 24) & 0xFF;
-    }
-
-    void ISyncable::Internal::write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value) {
-        buffer[offset]   =  value       & 0xFF;
-        buffer[offset+1] = (value >> 8) & 0xFF;
-    }
-
-    void ISyncable::Internal::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
-        uint32_t raw; std::memcpy(&raw, &value, 4); write_u32(buffer, offset, raw);
-    }
-
     float ISyncable::Internal::read_f32(const godot::PackedByteArray& buffer, int offset) {
         uint32_t raw = (uint8_t)buffer[offset]
                      | ((uint8_t)buffer[offset+1] << 8)
@@ -57,6 +41,22 @@ namespace Vital::Engine {
              | ((uint8_t)buffer[offset+1] << 8)
              | ((uint8_t)buffer[offset+2] << 16)
              | ((uint8_t)buffer[offset+3] << 24);
+    }
+    
+    void ISyncable::Internal::write_u32(godot::PackedByteArray& buffer, int offset, uint32_t value) {
+        buffer[offset]   =  value        & 0xFF;
+        buffer[offset+1] = (value >>  8) & 0xFF;
+        buffer[offset+2] = (value >> 16) & 0xFF;
+        buffer[offset+3] = (value >> 24) & 0xFF;
+    }
+
+    void ISyncable::Internal::write_u16(godot::PackedByteArray& buffer, int offset, uint16_t value) {
+        buffer[offset]   =  value       & 0xFF;
+        buffer[offset+1] = (value >> 8) & 0xFF;
+    }
+
+    void ISyncable::Internal::write_f32(godot::PackedByteArray& buffer, int offset, float value) {
+        uint32_t raw; std::memcpy(&raw, &value, 4); write_u32(buffer, offset, raw);
     }
 
     int ISyncable::Internal::encode_delta(godot::PackedByteArray& buffer, int offset, uint32_t id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale) {
@@ -219,15 +219,12 @@ namespace Vital::Engine {
     }
     #endif
 
-    // Replicates a dimension change of this entity. Server: broadcast to all clients.
-    // Client: send to the server (rpc_id(1)), where Network::_sync_dimension validates that the
-    // sender is this entity's authority, applies and relays. Authority itself is enforced by the
-    // caller (Syncable::bind_method). Client-local entities (net_id == 0) are never replicated.
     void ISyncable::sync_dimension(int dimension) {
         if (!is_replicated()) return;
         auto network = Manager::Network::get_singleton();
         auto net_node = network ? network -> get_node() : nullptr;
         if (!net_node) return;
+        
         #if !defined(VSDK_Client)
         net_node -> rpc("_sync_dimension", (int)net_id, dimension);
         #else
@@ -357,13 +354,6 @@ namespace Vital::Engine {
     }
 
     godot::Vector3 ISyncable::get_sync_position() const {
-        // Shared default for every ISyncable type (Physics_Body subtypes,
-        // Model) — previously duplicated near-identically in each. When
-        // parented to another synced entity, sync the LOCAL position so the
-        // child packet only carries the offset from the parent, not the full
-        // world coordinate; otherwise sync_parent_net_id is 0 and this falls
-        // straight through to the global position, so callers never need to
-        // branch on parenting themselves — see get_sync_node() below.
         auto node = const_cast<ISyncable*>(this) -> get_sync_node();
         if (!node || !node -> is_inside_tree()) return godot::Vector3();
         if (sync_parent_net_id != 0) return node -> get_position();
@@ -371,9 +361,6 @@ namespace Vital::Engine {
     }
 
     godot::Vector3 ISyncable::get_sync_rotation() const {
-        // Godot's get_rotation_degrees() is always local Euler angles, which
-        // already equals global when the parent is the Core root — no
-        // parent-check needed here, unlike position.
         auto node = const_cast<ISyncable*>(this) -> get_sync_node();
         if (!node || !node -> is_inside_tree()) return godot::Vector3();
         return node -> get_rotation_degrees();
@@ -386,23 +373,14 @@ namespace Vital::Engine {
     }
 
     void ISyncable::on_sync_process(double delta) {
-        // Shared default for every ISyncable type (Physics_Body subtypes,
-        // Model). Previously duplicated near-identically in each: this
-        // implementation only needs get_sync_node() (the Node3D to actually
-        // move) and is_sync_active() (each type's own "am I eligible to
-        // render sync data right now" check — Physics_Body: in tree and has
-        // a net_id; Model: in tree and not still a streaming placeholder) to
-        // stay fully generic. A subtype only needs to override this again if
-        // it genuinely needs different behavior, none currently do.
         if (!is_sync_active() || !interp_ready || net_id == 0) return;
         auto net = Manager::Network::get_singleton();
         if (net && net -> get_peer_id() == sync_authority) return;
         auto node = get_sync_node();
         if (!node) return;
+        
         godot::Vector3 out_pos, out_rot;
         interp_process(delta, out_pos, out_rot);
-        // When parented to another synced entity the snapshot values are in
-        // local space, so write them back as local transform — not global.
         if (sync_parent_net_id != 0) node -> set_position(out_pos);
         else node -> set_global_position(out_pos);
         node -> set_rotation_degrees(out_rot);
@@ -436,7 +414,6 @@ namespace Vital::Engine {
         }
         auto previous = Dimension::get(self_node);
         if (self_node -> get_parent() != target) self_node -> reparent(target, true);
-        // Detached keeps its dimension, attached follows its parent
         int captured_dimension = (target == core) ? previous : Dimension::INHERIT;
         Dimension::set(self_node, captured_dimension);
         sync_parent_net_id = parent_net_id;
