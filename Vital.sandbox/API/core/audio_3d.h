@@ -78,6 +78,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
+
             API::Node_3D::bind<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::bind<Instance>(vm);
 
@@ -369,6 +370,7 @@ namespace Vital::Sandbox::API {
         static void inject(Machine* vm) {
             API::Node_3D::inject<Instance>(vm);
             API::Audio_Effect::inject<Instance>(vm);
+            
             vm -> scope_set_enum(base_scope, "attenuation_model", attenuation_model_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);
         }

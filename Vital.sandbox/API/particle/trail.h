@@ -70,6 +70,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Trail>(vm);
+
             API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -155,6 +156,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Node_3D::inject<Instance>(vm);
+            
             vm -> scope_set_enum(base_scope, "blend_mode", blend_mode_registry);
         }
 

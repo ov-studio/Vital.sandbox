@@ -75,6 +75,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Camera>(vm);
+
             API::Node_3D::bind<Instance, Node_3D::Type::Camera>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -515,6 +516,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Node_3D::inject<Instance>(vm);
+            
             vm -> scope_set_enum(base_scope, "projection", projection_registry);
             vm -> scope_set_enum(base_scope, "keep_aspect", keep_aspect_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);

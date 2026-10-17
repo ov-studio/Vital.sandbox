@@ -124,6 +124,7 @@ namespace Vital::Sandbox::API {
 
         static void init(Machine* vm) {
             API::Node_3D::init<Instance, Node_3D::Type::Spatial>(vm);
+
             #if !defined(VSDK_Client)
             static Tool::Event::Handle ready_binding;
             ready_binding.bind("entity:ready", [](Tool::Stack args) {
@@ -154,6 +155,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Vehicle_Wheel>(vm);
+            
             API::Node_3D::bind<Instance, Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {

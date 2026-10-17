@@ -487,6 +487,7 @@ namespace Vital::Sandbox::API {
         template<typename Instance>
         static void inject(Machine* vm) {
             API::Node_3D::inject<Instance>(vm);
+            
             vm -> scope_set_enum(Instance::Owner::base_scope, "bake_mode", Instance::Owner::bake_mode_registry);
         }
     };
