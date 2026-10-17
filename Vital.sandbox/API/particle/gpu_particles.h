@@ -129,27 +129,43 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> emit();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_one_shot", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_one_shot());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "stop", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> set_emitting(false);
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_local_coords", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_use_local_coordinates());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "restart", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> restart_emission();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_turbulence_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_turbulence_enabled());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "burst", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> burst();
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, "is_billboard", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> is_billboard());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_unshaded", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_draw_material() -> get_shading_mode() == godot::BaseMaterial3D::SHADING_MODE_UNSHADED);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_trail_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> is_trail_mode());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "has_shader", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> has_draw_shader());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "has_mesh", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> has_mesh());
                 return 1;
             });
 
@@ -160,11 +176,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_lifetime", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> particles -> get_lifetime());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_one_shot", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_one_shot());
                 return 1;
             });
 
@@ -193,11 +204,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_local_coords", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_use_local_coordinates());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_draw_order", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(static_cast<int>(self -> particles -> get_draw_order()));
                 return 1;
@@ -208,6 +214,62 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(aabb.position);
                 vm -> push_value(aabb.size);
                 return 2;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_direction", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_direction());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_spread", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_spread());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_flatness", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_flatness());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_gravity());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_color());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_param", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(param)", true)
+                    .require_enum(2, param_registry);
+
+                auto param = static_cast<process_material::Parameter>(vm -> get_int(2));
+                auto params = self -> particles -> get_process_params();
+                vm -> push_value(params -> get_param_min(param));
+                vm -> push_value(params -> get_param_max(param));
+                return 2;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_emission_shape", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> particles -> get_process_params() -> get_emission_shape()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_lifetime_randomness", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_process_params() -> get_lifetime_randomness());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> particles -> get_draw_size());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_blend_mode", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> particles -> get_draw_material() -> get_blend_mode()));
+                return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "set_amount", [](auto vm, auto self, auto& id) -> int {
@@ -310,57 +372,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_direction", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_direction());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_spread", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_spread());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_flatness", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_flatness());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_gravity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_gravity());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_color());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_param", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(param)", true)
-                    .require_enum(2, param_registry);
-
-                auto param = static_cast<process_material::Parameter>(vm -> get_int(2));
-                auto params = self -> particles -> get_process_params();
-                vm -> push_value(params -> get_param_min(param));
-                vm -> push_value(params -> get_param_max(param));
-                return 2;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_emission_shape", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> particles -> get_process_params() -> get_emission_shape()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_lifetime_randomness", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_lifetime_randomness());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_turbulence_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_process_params() -> get_turbulence_enabled());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_direction", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(direction)", true)
                     .require(2, &Machine::is_vector3);
@@ -422,15 +433,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_lifetime_randomness", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(ratio)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> particles -> get_process_params() -> set_lifetime_randomness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_emission_shape", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(shape, radius = 1, inner_radius = 0, height = 1)", true)
                     .require_enum(2, emission_shape_registry)
@@ -452,6 +454,15 @@ namespace Vital::Sandbox::API {
                     params -> set_emission_ring_inner_radius(vm -> is_number(4) ? vm -> get_float(4) : 0.0f);
                     params -> set_emission_ring_height(vm -> is_number(5) ? vm -> get_float(5) : 1.0f);
                 }
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_lifetime_randomness", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(ratio)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> particles -> get_process_params() -> set_lifetime_randomness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
                 vm -> push_value(true);
                 return 1;
             });
@@ -480,12 +491,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "reset_color_ramp", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_color_ramp();
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_scale_curve", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(from, to)", true)
                     .require(2, &Machine::is_number)
@@ -493,32 +498,6 @@ namespace Vital::Sandbox::API {
 
                 self -> particles -> set_scale_curve(std::max(0.0f, vm -> get_float(2)), std::max(0.0f, vm -> get_float(3)));
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_scale_curve", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_scale_curve();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_draw_size());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_billboard", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> is_billboard());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_blend_mode", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> particles -> get_draw_material() -> get_blend_mode()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_unshaded", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> get_draw_material() -> get_shading_mode() == godot::BaseMaterial3D::SHADING_MODE_UNSHADED);
                 return 1;
             });
 
@@ -569,11 +548,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_trail_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> is_trail_mode());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_material", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(material)", true)
                     .require(2, [](Machine* vm, int idx) {
@@ -607,17 +581,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "reset_material", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_material();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "has_shader", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> has_draw_shader());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, component = all)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })
@@ -629,14 +592,51 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "reset_mesh", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_mesh();
+            vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> emit();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "has_mesh", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> particles -> has_mesh());
+            vm_module::bind_method<Instance>(vm, "stop", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> set_emitting(false);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "restart", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> restart_emission();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "burst", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> burst();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_color_ramp", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_color_ramp();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_scale_curve", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_scale_curve();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_material", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_material();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_mesh", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_mesh();
+                vm -> push_value(true);
                 return 1;
             });
         }
