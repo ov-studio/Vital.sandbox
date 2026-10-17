@@ -155,7 +155,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
+            API::Node_3D::inject<Instance, Node_3D::Type::Spatial>(vm);
             
             vm -> scope_set_enum(base_scope, "blend_mode", blend_mode_registry);
         }
