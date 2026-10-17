@@ -142,8 +142,6 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto scale = vm -> get_float(1);
-                if (scale < 0.25f) scale = 0.25f;
-                if (scale > 2.0f) scale = 2.0f;
                 base_class::get_scene_root() -> set_scaling_3d_scale(scale);
                 vm -> push_value(true);
                 return 1;
