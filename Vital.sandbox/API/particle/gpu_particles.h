@@ -106,9 +106,6 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
                 instance -> particles = base_class::create();
-
-                // Signals: "particle:emit" and "particle:finished", both carry the emitter.
-                // Weak reference so a pending signal never keeps a destroyed emitter alive
                 std::weak_ptr<Instance> weak = instance;
                 auto wire = [weak](const char* name) {
                     return [weak, name]() {
@@ -119,7 +116,6 @@ namespace Vital::Sandbox::API {
                 };
                 instance -> particles -> set_emit_handler(wire("particle:emit"));
                 instance -> particles -> set_finished_handler(wire("particle:finished"));
-
                 instance -> store(true);
                 return 1;
             });
