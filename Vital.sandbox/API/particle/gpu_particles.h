@@ -276,7 +276,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(amount)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_amount(std::max(1, vm -> get_int(2)));
+                auto amount = std::max(1, vm -> get_int(2));
+                self -> particles -> set_amount(amount);
                 vm -> push_value(true);
                 return 1;
             });
@@ -285,7 +286,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(seconds)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_lifetime(std::max(0.01f, vm -> get_float(2)));
+                auto lifetime = std::max(0.01f, vm -> get_float(2));
+                self -> particles -> set_lifetime(lifetime);
                 vm -> push_value(true);
                 return 1;
             });
@@ -294,7 +296,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> particles -> set_one_shot(vm -> get_bool(2));
+                auto state = vm -> get_bool(2);
+                self -> particles -> set_one_shot(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -303,7 +306,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(seconds)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_pre_process_time(std::max(0.0f, vm -> get_float(2)));
+                auto preprocess = std::max(0.0f, vm -> get_float(2));
+                self -> particles -> set_pre_process_time(preprocess);
                 vm -> push_value(true);
                 return 1;
             });
@@ -312,7 +316,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(scale)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_speed_scale(std::max(0.0f, vm -> get_float(2)));
+                auto scale = std::max(0.0f, vm -> get_float(2));
+                self -> particles -> set_speed_scale(scale);
                 vm -> push_value(true);
                 return 1;
             });
@@ -321,7 +326,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(ratio)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_explosiveness_ratio(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                auto ratio = godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f);
+                self -> particles -> set_explosiveness_ratio(ratio);
                 vm -> push_value(true);
                 return 1;
             });
@@ -330,7 +336,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(ratio)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_randomness_ratio(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                auto ratio = godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f);
+                self -> particles -> set_randomness_ratio(ratio);
                 vm -> push_value(true);
                 return 1;
             });
@@ -339,7 +346,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(fps)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> set_fixed_fps(std::max(0, vm -> get_int(2)));
+                auto fps = std::max(0, vm -> get_int(2));
+                self -> particles -> set_fixed_fps(fps);
                 vm -> push_value(true);
                 return 1;
             });
@@ -348,7 +356,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> particles -> set_use_local_coordinates(vm -> get_bool(2));
+                auto state = vm -> get_bool(2);
+                self -> particles -> set_use_local_coordinates(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -357,7 +366,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(order)", true)
                     .require_enum(2, draw_order_registry);
 
-                self -> particles -> set_draw_order(static_cast<base_class::DrawOrder>(vm -> get_int(2)));
+                auto order = static_cast<base_class::DrawOrder>(vm -> get_int(2));
+                self -> particles -> set_draw_order(order);
                 vm -> push_value(true);
                 return 1;
             });
@@ -367,7 +377,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector3)
                     .require(3, &Machine::is_vector3);
 
-                self -> particles -> set_visibility_aabb(godot::AABB(vm -> get_vector3(2), vm -> get_vector3(3)));
+                auto position = vm -> get_vector3(2);
+                auto size = vm -> get_vector3(3);
+                self -> particles -> set_visibility_aabb(godot::AABB(position, size));
                 vm -> push_value(true);
                 return 1;
             });
@@ -376,7 +388,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(direction)", true)
                     .require(2, &Machine::is_vector3);
 
-                self -> particles -> get_process_params() -> set_direction(vm -> get_vector3(2));
+                auto direction = vm -> get_vector3(2);
+                self -> particles -> get_process_params() -> set_direction(direction);
                 vm -> push_value(true);
                 return 1;
             });
@@ -385,7 +398,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(degrees)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> get_process_params() -> set_spread(godot::Math::clamp(vm -> get_float(2), 0.0f, 180.0f));
+                auto spread = godot::Math::clamp(vm -> get_float(2), 0.0f, 180.0f);
+                self -> particles -> get_process_params() -> set_spread(spread);
                 vm -> push_value(true);
                 return 1;
             });
@@ -394,7 +408,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(amount)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> get_process_params() -> set_flatness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                auto flatness = godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f);
+                self -> particles -> get_process_params() -> set_flatness(flatness);
                 vm -> push_value(true);
                 return 1;
             });
@@ -403,7 +418,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(gravity)", true)
                     .require(2, &Machine::is_vector3);
 
-                self -> particles -> get_process_params() -> set_gravity(vm -> get_vector3(2));
+                auto gravity = vm -> get_vector3(2);
+                self -> particles -> get_process_params() -> set_gravity(gravity);
                 vm -> push_value(true);
                 return 1;
             });
@@ -412,7 +428,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(color)", true)
                     .require(2, &Machine::is_color);
 
-                self -> particles -> get_process_params() -> set_color(vm -> get_color(2));
+                auto color = vm -> get_color(2);
+                self -> particles -> get_process_params() -> set_color(color);
                 vm -> push_value(true);
                 return 1;
             });
@@ -444,15 +461,20 @@ namespace Vital::Sandbox::API {
                 auto params = self -> particles -> get_process_params();
                 params -> set_emission_shape(shape);
                 if (shape == process_material::EMISSION_SHAPE_BOX) {
-                    params -> set_emission_box_extents(vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(1, 1, 1));
+                    auto extents = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(1, 1, 1);
+                    params -> set_emission_box_extents(extents);
                 }
                 else if (shape == process_material::EMISSION_SHAPE_SPHERE || shape == process_material::EMISSION_SHAPE_SPHERE_SURFACE) {
-                    params -> set_emission_sphere_radius(vm -> is_number(3) ? vm -> get_float(3) : 1.0f);
+                    auto radius = vm -> is_number(3) ? vm -> get_float(3) : 1.0f;
+                    params -> set_emission_sphere_radius(radius);
                 }
                 else if (shape == process_material::EMISSION_SHAPE_RING) {
-                    params -> set_emission_ring_radius(vm -> is_number(3) ? vm -> get_float(3) : 1.0f);
-                    params -> set_emission_ring_inner_radius(vm -> is_number(4) ? vm -> get_float(4) : 0.0f);
-                    params -> set_emission_ring_height(vm -> is_number(5) ? vm -> get_float(5) : 1.0f);
+                    auto radius = vm -> is_number(3) ? vm -> get_float(3) : 1.0f;
+                    auto inner_radius = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                    auto height = vm -> is_number(5) ? vm -> get_float(5) : 1.0f;
+                    params -> set_emission_ring_radius(radius);
+                    params -> set_emission_ring_inner_radius(inner_radius);
+                    params -> set_emission_ring_height(height);
                 }
                 vm -> push_value(true);
                 return 1;
@@ -462,7 +484,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(ratio)", true)
                     .require(2, &Machine::is_number);
 
-                self -> particles -> get_process_params() -> set_lifetime_randomness(godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f));
+                auto randomness = godot::Math::clamp(vm -> get_float(2), 0.0f, 1.0f);
+                self -> particles -> get_process_params() -> set_lifetime_randomness(randomness);
                 vm -> push_value(true);
                 return 1;
             });
@@ -474,9 +497,16 @@ namespace Vital::Sandbox::API {
                     .optional(4, &Machine::is_number);
 
                 auto params = self -> particles -> get_process_params();
-                params -> set_turbulence_enabled(vm -> get_bool(2));
-                if (vm -> is_number(3)) params -> set_turbulence_noise_strength(vm -> get_float(3));
-                if (vm -> is_number(4)) params -> set_turbulence_noise_scale(vm -> get_float(4));
+                auto state = vm -> get_bool(2);
+                params -> set_turbulence_enabled(state);
+                if (vm -> is_number(3)) {
+                    auto strength = vm -> get_float(3);
+                    params -> set_turbulence_noise_strength(strength);
+                }
+                if (vm -> is_number(4)) {
+                    auto scale = vm -> get_float(4);
+                    params -> set_turbulence_noise_scale(scale);
+                }
                 vm -> push_value(true);
                 return 1;
             });
@@ -486,7 +516,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_color)
                     .require(3, &Machine::is_color);
 
-                self -> particles -> set_color_ramp(vm -> get_color(2), vm -> get_color(3));
+                auto from = vm -> get_color(2);
+                auto to = vm -> get_color(3);
+                self -> particles -> set_color_ramp(from, to);
                 vm -> push_value(true);
                 return 1;
             });
@@ -496,7 +528,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number);
 
-                self -> particles -> set_scale_curve(std::max(0.0f, vm -> get_float(2)), std::max(0.0f, vm -> get_float(3)));
+                auto from = std::max(0.0f, vm -> get_float(2));
+                auto to = std::max(0.0f, vm -> get_float(3));
+                self -> particles -> set_scale_curve(from, to);
                 vm -> push_value(true);
                 return 1;
             });
@@ -505,7 +539,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_vector2);
 
-                self -> particles -> set_draw_size(vm -> get_vector2(2));
+                auto size = vm -> get_vector2(2);
+                self -> particles -> set_draw_size(size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -514,7 +549,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> particles -> set_billboard(vm -> get_bool(2));
+                auto state = vm -> get_bool(2);
+                self -> particles -> set_billboard(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -523,7 +559,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, blend_mode_registry);
 
-                self -> particles -> get_draw_material() -> set_blend_mode(static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2)));
+                auto mode = static_cast<godot::BaseMaterial3D::BlendMode>(vm -> get_int(2));
+                self -> particles -> get_draw_material() -> set_blend_mode(mode);
                 vm -> push_value(true);
                 return 1;
             });
@@ -532,7 +569,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> particles -> get_draw_material() -> set_shading_mode(vm -> get_bool(2) ? godot::BaseMaterial3D::SHADING_MODE_UNSHADED : godot::BaseMaterial3D::SHADING_MODE_PER_PIXEL);
+                auto state = vm -> get_bool(2);
+                self -> particles -> get_draw_material() -> set_shading_mode(state ? godot::BaseMaterial3D::SHADING_MODE_UNSHADED : godot::BaseMaterial3D::SHADING_MODE_PER_PIXEL);
                 vm -> push_value(true);
                 return 1;
             });
@@ -542,8 +580,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_bool)
                     .optional(3, &Machine::is_number);
 
-                auto lifetime = vm -> is_number(3) ? vm -> get_float(3) : 0.3f;
-                self -> particles -> set_trail(vm -> get_bool(2), std::max(0.01f, lifetime));
+                auto state = vm -> get_bool(2);
+                auto lifetime = std::max(0.01f, vm -> is_number(3) ? vm -> get_float(3) : 0.3f);
+                self -> particles -> set_trail(state, lifetime);
                 vm -> push_value(true);
                 return 1;
             });
@@ -559,7 +598,8 @@ namespace Vital::Sandbox::API {
                     });
 
                 if (vm -> is_string(2)) {
-                    self -> particles -> set_material(vm -> get_string(2));
+                    auto material = vm -> get_string(2);
+                    self -> particles -> set_material(material);
                 }
                 else if (vm_module::is_userdata<API::Image::Instance>(vm, 2)) {
                     auto image = vm_module::get_userdata_object<API::Image::Instance>(vm, 2);
@@ -587,7 +627,8 @@ namespace Vital::Sandbox::API {
                     .optional(3, &Machine::is_string);
 
                 auto model = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
-                self -> particles -> set_mesh(model -> get_node(), vm -> is_string(3) ? vm -> get_string(3) : "");
+                auto component = vm -> is_string(3) ? vm -> get_string(3) : "";
+                self -> particles -> set_mesh(model -> get_node(), component);
                 vm -> push_value(true);
                 return 1;
             });
