@@ -413,6 +413,7 @@ namespace Vital::Sandbox::API {
         template<typename Instance, Type body_type = Type::Static>
         static void inject(Machine* vm) {
             API::Collision_Object::inject<Instance, API::Collision_Object::Type::Body>(vm);
+            
             vm -> scope_set_enum(Instance::Owner::base_scope, "axis", axis_registry);
         }
     };

@@ -69,6 +69,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Spot_Light>(vm);
+            
             API::Light_3D::bind<Instance, API::Light_3D::Type::Spot>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {

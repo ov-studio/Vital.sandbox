@@ -103,6 +103,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Area>(vm);
+
             API::Collision_Object::bind<Instance, API::Collision_Object::Type::Area>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -326,6 +327,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Collision_Object::inject<Instance, API::Collision_Object::Type::Area>(vm);
+            
             vm -> scope_set_enum(base_scope, "space_override", space_override_registry);
         }
 

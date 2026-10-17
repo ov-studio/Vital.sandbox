@@ -81,6 +81,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Directional_Light>(vm);
+
             API::Light_3D::bind<Instance, API::Light_3D::Type::Directional>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -232,6 +233,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             API::Light_3D::inject<Instance, API::Light_3D::Type::Directional>(vm);
+            
             vm -> scope_set_enum(base_scope, "shadow_mode", shadow_mode_registry);
             vm -> scope_set_enum(base_scope, "sky_mode", sky_mode_registry);
         }
