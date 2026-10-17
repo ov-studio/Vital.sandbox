@@ -24,7 +24,6 @@
 // Vital: API: Space //
 ////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Space : vm_module {
         inline static const std::vector<std::string> base_scope = {"physics", "space"};
@@ -100,7 +99,6 @@ namespace Vital::Sandbox::API {
         static godot::PhysicsDirectSpaceState3D* get_space_state(int dimension = 0) {
             auto core = Vital::Engine::Core::get_singleton();
             if (!core || !core -> get_viewport() || !core -> get_viewport() -> get_world_3d().is_valid()) return nullptr;
-            // find, not get: querying an unused dimension must not allocate (and keep stepping) a physics space
             auto space = Vital::Engine::Dimension::find_space(dimension);
             if (!space.is_valid()) return nullptr;
             return godot::PhysicsServer3D::get_singleton() -> space_get_direct_state(space);
