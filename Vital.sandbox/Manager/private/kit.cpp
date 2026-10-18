@@ -205,16 +205,8 @@ namespace Vital::Manager {
 
     // Misc //
     bool Kit::download(const std::string& url, const std::string& dest_path) const {
-        std::string data;
-        try { data = Tool::HTTP::get(url, {}, 120); }
+        try { return Tool::HTTP::download(url, dest_path, download_max_size, 120); }
         catch (const std::exception& e) { log("error", fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
-        if (data.empty()) return false;
-        
-        std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
-        std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
-        if (!out) return false;
-        out.write(data.data(), static_cast<std::streamsize>(data.size()));
-        return out.good();
     }
 
     bool Kit::extract(const std::string& zip_path, const std::string& dest_dir) const {
@@ -262,28 +254,28 @@ namespace Vital::Manager {
             zip_stat_init(&st);
             if (zip_stat_index(archive, i, 0, &st) != 0 || !(st.valid & ZIP_STAT_SIZE)) return fail(fmt::format("unknown entry size | entry ~ {}", entry));
             if (st.size > extract_max_entry_size || st.size > extract_max_total_size - total_size) return fail(fmt::format("entry too large | entry ~ {}", entry));
+            if ((st.valid & ZIP_STAT_COMP_SIZE) && st.size > (1ull << 20) && st.size / std::max<zip_uint64_t>(st.comp_size, 1) > extract_max_ratio) return fail(fmt::format("compression ratio too high | entry ~ {}", entry));
             total_size += st.size;
 
             zip_file_t* zf = zip_fopen_index(archive, i, 0);
             if (!zf) return fail(fmt::format("unreadable entry | entry ~ {}", entry));
-            std::string contents;
-            contents.reserve(static_cast<size_t>(st.size));
+            std::filesystem::create_directories(out.parent_path(), ec);
+            if (ec) { zip_fclose(zf); return fail(fmt::format("directory creation failed | entry ~ {}", entry)); }
+            std::ofstream out_f(out, std::ios::binary | std::ios::trunc);
+            if (!out_f) { zip_fclose(zf); return fail(fmt::format("write failed | entry ~ {}", entry)); }
+            
             char buf[65536];
             zip_int64_t n;
+            zip_uint64_t written = 0;
             bool overflow = false;
             while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
-                if (contents.size() + static_cast<size_t>(n) > st.size) { overflow = true; break; }
-                contents.append(buf, static_cast<size_t>(n));
+                if (written + static_cast<zip_uint64_t>(n) > st.size) { overflow = true; break; }
+                out_f.write(buf, n);
+                written += static_cast<zip_uint64_t>(n);
             }
             zip_fclose(zf);
-            if (overflow || n < 0 || contents.size() != st.size) return fail(fmt::format("entry size mismatch | entry ~ {}", entry));
-
-            std::filesystem::create_directories(out.parent_path(), ec);
-            if (ec) return fail(fmt::format("directory creation failed | entry ~ {}", entry));
-            std::ofstream out_f(out, std::ios::binary | std::ios::trunc);
-            if (!out_f) return fail(fmt::format("write failed | entry ~ {}", entry));
-            out_f.write(contents.data(), static_cast<std::streamsize>(contents.size()));
             out_f.close();
+            if (overflow || n < 0 || written != st.size) return fail(fmt::format("entry size mismatch | entry ~ {}", entry));
             if (!out_f.good()) return fail(fmt::format("write failed | entry ~ {}", entry));
         }
         zip_close(archive);
