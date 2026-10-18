@@ -40,10 +40,6 @@
 // Vital: Tool: Version //
 ///////////////////////////
 
-namespace Vital::Manager::Kit {
-    const std::string& get_version();
-}
-
 namespace Vital::Tool {
     namespace Version {
         struct Info {
@@ -86,11 +82,13 @@ namespace Vital::Tool {
             VSDK_VERSION_LABEL
         };
 
+        std::string get_kit();
+        
         inline std::string get(const std::string& type) {
             std::string key = type;
             std::transform(key.begin(), key.end(), key.begin(), ::tolower);
             if (key == "sdk")   return SDK.to_string();
-            if (key == "kit")   return Manager::Kit::get_version();
+            if (key == "kit")   return get_kit();
             if (key == "wry")   return VSDK_WRY_VERSION;
             if (key == "godot") return VSDK_GODOT_VERSION;
             return "unknown";
