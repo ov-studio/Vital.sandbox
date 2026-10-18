@@ -479,8 +479,8 @@ namespace Vital::Sandbox {
                 env_cleaners.push_back(std::move(exec));
             }
     
-            std::string get_environment_id(int level = 0) {
-                Tool::assert_main_thread("Machine::get_environment_id");
+            bool push_environment(int level = 0) {
+                Tool::assert_main_thread("Machine::push_environment");
                 lua_Debug debug;
                 for (int idx = level; lua_getstack(state, idx, &debug); ++idx) {
                     bool found_env = false;
@@ -503,7 +503,17 @@ namespace Vital::Sandbox {
                     if (registered) return true;
                     pop(1);
                 }
-                return "";
+                return false;
+            }
+
+            std::string get_environment_id(int level = 0) {
+                Tool::assert_main_thread("Machine::get_environment_id");
+                if (!push_environment(level)) return "";
+                push(-1);
+                get_raw_table(LUA_REGISTRYINDEX);
+                std::string result = get_string(-1);
+                pop(2);
+                return result;
             }
 
             void clear_environment_id(const std::string& id) {
