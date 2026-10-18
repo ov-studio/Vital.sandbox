@@ -443,11 +443,13 @@ namespace Vital::Sandbox {
                 create_table();
                 push_global_table();
                 set_table_field("__index", -2);
+                seal_metatable();
                 set_metatable(-2);
                 push(-1);
+                for (auto& lib : whitelist) {
                 push_string(id);
-                lua_rawset(state, LUA_REGISTRYINDEX);
-                set_reference("env", id, -1);
+                set_raw_table(LUA_REGISTRYINDEX);
+                set_reference("env", id, env_idx);
             }
 
             static void register_environment_pre_cleaner(vm_env_cleaner exec) {
