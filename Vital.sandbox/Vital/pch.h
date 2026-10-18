@@ -311,6 +311,7 @@
 
 // Godot: Multiplayer //
 #include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/scene_multiplayer.hpp>
 #include <godot_cpp/classes/multiplayer_peer.hpp>
 #include <godot_cpp/classes/multiplayer_spawner.hpp>
 #include <godot_cpp/classes/multiplayer_synchronizer.hpp>
