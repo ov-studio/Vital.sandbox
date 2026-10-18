@@ -23,7 +23,7 @@
 ////////////////////////////
 
 namespace Vital::Tool {
-    class Database {
+    class Database : public std::enable_shared_from_this<Database> {
         public:
             struct Column {
                 std::string type = "VARCHAR(255)";
@@ -45,7 +45,7 @@ namespace Vital::Tool {
             };
 
             struct Query {
-                Database* db;
+                std::shared_ptr<Database> db;
                 std::string table;
                 std::string query_type;
                 std::vector<std::string> select;
@@ -54,10 +54,6 @@ namespace Vital::Tool {
                 std::vector<std::unordered_map<std::string, std::string>> insert_rows;
                 int limit = 0;
                 inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
-
-                void destroy() {
-                    delete this;
-                }
 
                 std::pair<std::string, std::vector<std::string>> build_where() {
                     std::string clause = " WHERE ";
