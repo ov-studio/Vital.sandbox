@@ -1014,7 +1014,10 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("_reparent_entity: net_id=", net_id, " -> parent_net_id=", parent_net_id);
     }
     
+    void Network::_on_auth(int id, godot::PackedByteArray data) { if (on_auth) on_auth(id, data); }
+    void Network::_on_peer_authentication_failed(int id) { if (on_peer_authentication_failed) on_peer_authentication_failed(id); }
     #if defined(VSDK_Client)
+    void Network::_on_peer_authenticating(int id) { if (on_peer_authenticating) on_peer_authenticating(id); }
     void Network::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
     void Network::_on_connection_failed() { if (on_connection_failed) on_connection_failed(); }
     void Network::_on_server_disconnected() { if (on_server_disconnected) on_server_disconnected(); }

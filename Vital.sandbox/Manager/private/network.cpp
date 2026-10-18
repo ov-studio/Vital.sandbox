@@ -160,6 +160,13 @@ namespace Vital::Manager {
             return false;
         }
 
+        if (!nm -> setup_authentication()) {
+            nm -> peer.unref();
+            Tool::Stack status;
+            status.object["reason"] = Tool::StackValue(std::string("connect-error"));
+            Tool::Event::emit("network:connect:failed", status);
+            return false;
+        }
         tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
         nm -> wire_signals();
         nm -> reconnect_ip = ip;
@@ -240,6 +247,8 @@ namespace Vital::Manager {
         }
         auto tree = get_scene_tree();
         if (!tree) { nm -> peer.unref(); nm -> server_config = nullptr; return false; }
+        // Fail closed: never accept peers without the authentication step in place
+        if (!nm -> setup_authentication()) { nm -> peer.unref(); nm -> server_config = nullptr; return false; }
         tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
         nm -> wire_signals();
         try {
@@ -362,7 +371,10 @@ namespace Vital::Manager {
         node->set_name("VitalNetwork");
         Engine::Core::get_scene_root()->add_child(node);
         node->setup_rpc();
+        node->on_auth = [this](int id, const godot::PackedByteArray& data) { _on_auth_data(id, data); };
+        node->on_peer_authentication_failed = [this](int id) { _on_peer_authentication_failed(id); };
         #if defined(VSDK_Client)
+            node->on_peer_authenticating = [this](int id) { _on_peer_authenticating(id); };
             node->on_connected_to_server = [this]() { _on_connected_to_server(); };
             node->on_connection_failed   = [this]() { _on_connection_failed(); };
             node->on_server_disconnected = [this]() { _on_server_disconnected(); };
@@ -382,7 +394,9 @@ namespace Vital::Manager {
         if (!node) return;
         auto mp = get_scene_tree()->get_multiplayer();
         if (!mp.is_valid()) return;
+        mp->connect("peer_authentication_failed", godot::Callable(node, "_on_peer_authentication_failed"));
         #if defined(VSDK_Client)
+            mp->connect("peer_authenticating",   godot::Callable(node, "_on_peer_authenticating"));
             mp->connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
             mp->connect("connection_failed",   godot::Callable(node, "_on_connection_failed"));
             mp->connect("server_disconnected", godot::Callable(node, "_on_server_disconnected"));
@@ -401,7 +415,9 @@ namespace Vital::Manager {
             godot::Callable cb(node, method);
             if (mp->is_connected(signal, cb)) mp->disconnect(signal, cb);
         };
+        try_disconnect("peer_authentication_failed", "_on_peer_authentication_failed");
         #if defined(VSDK_Client)
+            try_disconnect("peer_authenticating", "_on_peer_authenticating");
             try_disconnect("connected_to_server", "_on_connected_to_server");
             try_disconnect("connection_failed",   "_on_connection_failed");
             try_disconnect("server_disconnected", "_on_server_disconnected");
@@ -410,6 +426,81 @@ namespace Vital::Manager {
             try_disconnect("peer_disconnected", "_on_peer_disconnected");
         #endif
     }
+
+
+    //-------------------------//
+    //    Authentication       //
+    //-------------------------//
+
+    godot::SceneMultiplayer* Network::get_scene_multiplayer() {
+        auto tree = get_scene_tree();
+        if (!tree) return nullptr;
+        auto mp = tree->get_multiplayer();
+        if (!mp.is_valid()) return nullptr;
+        return godot::Object::cast_to<godot::SceneMultiplayer>(mp.ptr());
+    }
+
+    // Must run on every host/connect, right before the peer is assigned: the callback targets the live network node,
+    // and SceneMultiplayer admits peers without any authentication if the callback is not valid.
+    bool Network::setup_authentication() {
+        auto sm = get_scene_multiplayer();
+        if (!sm || !node) {
+            log("error", "authentication unavailable - multiplayer API is not a SceneMultiplayer");
+            return false;
+        }
+        sm->set_auth_callback(godot::Callable(node, "_on_auth"));
+        sm->set_auth_timeout(AUTH_TIMEOUT);
+        return true;
+    }
+
+    void Network::_on_peer_authentication_failed(int id) {
+        log("warn", fmt::format("authentication failed / timed out <- peer {}", id));
+    }
+
+    #if defined(VSDK_Client)
+    // Client: send our credentials, then mark our side complete. The server decides whether the connection is admitted.
+    void Network::_on_peer_authenticating(int id) {
+        auto sm = get_scene_multiplayer();
+        if (!sm) return;
+        const std::string fingerprint = Tool::Inspect::fingerprint();
+        godot::PackedByteArray payload;
+        payload.push_back(AUTH_VERSION);
+        for (const char c : fingerprint) payload.push_back(static_cast<uint8_t>(c));
+        if (sm->send_auth(id, payload) != godot::OK) { log("error", "failed to send authentication data"); return; }
+        sm->complete_auth(id);
+    }
+
+    // The server never sends authentication data - nothing to process on the client
+    void Network::_on_auth_data(int id, const godot::PackedByteArray& data) {}
+    #else
+    // Server: strict, bounded format - [version:u8][fingerprint: printable ASCII, 1..AUTH_MAX_FINGERPRINT bytes]
+    static bool parse_auth_payload(const godot::PackedByteArray& data, std::string& fingerprint) {
+        const int size = data.size();
+        if (size < 2 || size > Network::AUTH_MAX_PAYLOAD || size - 1 > Network::AUTH_MAX_FINGERPRINT) return false;
+        const uint8_t* bytes = data.ptr();
+        if (bytes[0] != Network::AUTH_VERSION) return false;
+        fingerprint.clear();
+        fingerprint.reserve(static_cast<size_t>(size - 1));
+        for (int i = 1; i < size; ++i) {
+            if (bytes[i] < 0x21 || bytes[i] > 0x7E) return false;
+            fingerprint.push_back(static_cast<char>(bytes[i]));
+        }
+        return true;
+    }
+
+    void Network::_on_auth_data(int id, const godot::PackedByteArray& data) {
+        auto sm = get_scene_multiplayer();
+        if (!sm) return;
+        std::string fingerprint;
+        if (id <= 0 || !parse_auth_payload(data, fingerprint)) {
+            log("warn", fmt::format("authentication rejected <- peer {} (malformed data)", id));
+            sm->disconnect_peer(id);
+            return;
+        }
+        peer_serials[id] = fingerprint;
+        sm->complete_auth(id);
+    }
+    #endif
 
 
     //----------------------------//
@@ -1031,7 +1122,6 @@ namespace Vital::Manager {
 
         Tool::Event::emit("network:packet", stack);
     }
-
 
 
     //-----------------------------------//
@@ -1760,12 +1850,16 @@ namespace Vital::Manager {
         #if defined(VSDK_Client)
         // Handshake
         if (pending_handshake && is_connected()) {
-            pending_handshake = false;
-            log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-            Internal::send(Tool::Stack::make_packet(Network::Name, { 
-                Tool::StackValue(std::string("ping")),
-                Tool::StackValue(Tool::Inspect::fingerprint())
-            }), 1);
+            // Only once authentication has completed - peers that are still authenticating are not part of get_peers()
+            auto sm = get_scene_multiplayer();
+            if (sm && sm->get_peers().has(1)) {
+                pending_handshake = false;
+                log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
+                Internal::send(Tool::Stack::make_packet(Network::Name, { 
+                    Tool::StackValue(std::string("ping")),
+                    Tool::StackValue(Tool::Inspect::fingerprint())
+                }), 1);
+            }
         }
         #endif
 

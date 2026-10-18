@@ -49,7 +49,10 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_component_render", "net_id", "component", "state"), &Network::_sync_component_render);
                 godot::ClassDB::bind_method(godot::D_METHOD("_force_transform", "net_id", "pos", "rot", "scale"), &Network::_force_transform);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_dimension", "net_id", "dimension"), &Network::_sync_dimension);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_auth", "id", "data"), &Network::_on_auth);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_authentication_failed", "id"), &Network::_on_peer_authentication_failed);
                 #if defined(VSDK_Client)
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_authenticating", "id"), &Network::_on_peer_authenticating);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
@@ -93,7 +96,14 @@ namespace Vital::Engine {
             void _sync_component_render(int net_id, godot::String component, bool state);
             void _force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale = godot::Vector3(1,1,1));
             void _sync_dimension(int net_id, int dimension);
+            // Authentication (SceneMultiplayer auth_callback) - peers are only admitted after the server accepts them //
+            std::function<void(int, const godot::PackedByteArray&)> on_auth;
+            std::function<void(int)> on_peer_authentication_failed;
+            void _on_auth(int id, godot::PackedByteArray data);
+            void _on_peer_authentication_failed(int id);
             #if defined(VSDK_Client)
+            std::function<void(int)> on_peer_authenticating;
+            void _on_peer_authenticating(int id);
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
             std::function<void()> on_server_disconnected;

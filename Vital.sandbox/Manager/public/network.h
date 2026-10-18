@@ -133,6 +133,8 @@ namespace Vital::Manager {
             void destroy();
             void wire_signals();
             void unwire_signals();
+            static godot::SceneMultiplayer* get_scene_multiplayer();
+            bool setup_authentication();
         public:
             // Instantiators //
             Network() = default;
@@ -276,6 +278,19 @@ namespace Vital::Manager {
             const Config::Server& get_server_config() const;
             const Engine::ISyncable::Config& get_sync_config() const { return Engine::ISyncable::sync_config; }
             std::string get_server_ip() const;
+            #endif
+
+
+            // Authentication //
+            // Runs through SceneMultiplayer's auth step: a peer can only exchange auth packets (no RPCs) until the server accepts it.
+            static constexpr uint8_t AUTH_VERSION = 1;
+            static constexpr int AUTH_MAX_PAYLOAD = 512;
+            static constexpr int AUTH_MAX_FINGERPRINT = 256;
+            static constexpr double AUTH_TIMEOUT = 5.0;
+            void _on_auth_data(int id, const godot::PackedByteArray& data);
+            void _on_peer_authentication_failed(int id);
+            #if defined(VSDK_Client)
+            void _on_peer_authenticating(int id);
             #endif
 
 
