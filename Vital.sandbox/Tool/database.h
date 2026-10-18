@@ -160,8 +160,8 @@ namespace Vital::Tool {
             Database() = default;
             ~Database() = default;
 
-            static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
-                auto db = new Database();
+            static std::shared_ptr<Database> create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
+                auto db = std::make_shared<Database>();
                 std::string connection = fmt::format("host={} port={} user={} dbname={}", escape_connection_value(host), port, escape_connection_value(user), escape_connection_value(database));
                 if (!password.empty()) connection += fmt::format(" password={}", escape_connection_value(password));
                 db -> session = std::make_unique<soci::session>(soci::mysql, connection);
@@ -209,11 +209,11 @@ namespace Vital::Tool {
                 }
             }
 
-            Query* table(const std::string& name) {
+            std::shared_ptr<Query> table(const std::string& name) {
                 std::lock_guard<std::mutex> lock(mutex);
                 assert_table(name);
-                auto query = new Query();
-                query -> db = this;
+                auto query = std::make_shared<Query>();
+                query -> db = shared_from_this();
                 query -> table = name;
                 return query;
             }
