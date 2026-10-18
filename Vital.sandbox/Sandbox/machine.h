@@ -445,8 +445,27 @@ namespace Vital::Sandbox {
                 set_table_field("__index", -2);
                 seal_metatable();
                 set_metatable(-2);
-                push(-1);
-                for (auto& lib : whitelist) {
+                const int env_idx = get_absolute_index(-1);
+                push(env_idx);
+                set_table_field("_G", env_idx);
+                create_table();
+                const int memo_idx = get_count();
+                push_global_table();
+                const int globals_idx = get_count();
+                push(globals_idx);
+                push(env_idx);
+                set_raw_table(memo_idx);
+                push_nil();
+                while (next(globals_idx)) {
+                    if (is_table(-1) && !(is_string(-2) && get_string(-2) == "_G")) {
+                        push(-2);
+                        copy_table(-2, true, memo_idx);
+                        set_raw_table(env_idx);
+                    }
+                    pop(1);
+                }
+                pop(2);
+                push(env_idx);
                 push_string(id);
                 set_raw_table(LUA_REGISTRYINDEX);
                 set_reference("env", id, env_idx);
