@@ -48,13 +48,14 @@ namespace Vital::Manager {
 
                 template<typename... Keys>
                 static const rapidjson::Value* get_json_detail(const rapidjson::Value* node, Keys&&... keys) {
-                    std::vector<std::string> key_list;
-                    (key_list.push_back([](auto&& k) -> std::string {
+                    auto to_key = [](auto&& k) -> std::string {
                         using T = std::decay_t<decltype(k)>;
                         if constexpr (std::is_integral_v<T>) return std::to_string(k);
                         else return std::string(k);
-                    }(std::forward<Keys>(keys))), ...);
-                    
+                    };
+                
+                    std::vector<std::string> key_list;
+                    (key_list.push_back(to_key(std::forward<Keys>(keys))), ...);
                     for (const std::string& key : key_list) {
                         bool is_idx = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
                         if (is_idx) {
