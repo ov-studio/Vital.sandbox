@@ -467,22 +467,21 @@ namespace Vital::Sandbox {
                     bool found_env = false;
                     lua_getinfo(state, "f", &debug);
                     for (int i = 1; ; ++i) {
-                        const char* upname = lua_getupvalue(state, -1, i);
+                        const char* upname = get_upvalue(-1, i);
                         if (!upname) break;
                         if (std::strcmp(upname, "_ENV") == 0) {
                             found_env = true;
-                            lua_remove(state, -2);
+                            remove(-2);
                             break;
                         }
                         pop(1);
                     }
                     if (!found_env || !is_table(-1)) { pop(1); continue; }
-                    lua_rawget(state, LUA_REGISTRYINDEX);
-                    if (is_string(-1)) {
-                        std::string result = get_string(-1);
-                        pop(1);
-                        return result;
-                    }
+                    push(-1);
+                    get_raw_table(LUA_REGISTRYINDEX);
+                    const bool registered = is_string(-1);
+                    pop(1);
+                    if (registered) return true;
                     pop(1);
                 }
                 return "";
