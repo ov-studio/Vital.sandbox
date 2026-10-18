@@ -75,7 +75,12 @@ namespace Vital::Sandbox {
                     push_nil();
                     push_global(value);
                 }
+                push_string("");
+                if (get_metatable(-1)) {
                     seal_metatable();
+                    pop(1);
+                }
+                pop(1);
                 hook("init");
                 hook("bind");
                 load_modules(this);
