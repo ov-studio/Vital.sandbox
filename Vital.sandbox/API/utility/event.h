@@ -181,13 +181,14 @@ namespace Vital::Sandbox::API {
             send_packet(reply, reply_peer);
         }
 
-        static std::shared_ptr<API::Promise::Instance> send_remote_emit(Machine* vm, const std::string& name, Tool::Stack payload, int peer_id, bool wants_callback) {
+        static std::shared_ptr<API::Promise::Instance> send_remote_emit(Machine* vm, const std::string& name, Tool::Stack payload, int peer_id, bool wants_callback, bool collect_all = false) {
             payload.object["__event"] = Tool::StackValue(name);
             payload.object["__source_resource"] = Tool::StackValue(Manager::Resource::get_resource_from_vm(vm));
             std::shared_ptr<API::Promise::Instance> promise;
             if (wants_callback) {
                 uint32_t serial = ++serial_counter;
                 payload.object["__serial"] = Tool::StackValue(static_cast<double>(serial));
+                if (collect_all) payload.object["__collect_all"] = Tool::StackValue(true);
                 promise = API::Promise::make(vm);
                 {
                     std::lock_guard lock(pending_remote_mutex);
@@ -439,6 +440,8 @@ namespace Vital::Sandbox::API {
             if (wants_reply && !to_serial(serial_ptr -> as<double>(), serial)) wants_reply = false;
             int reply_peer = 0;
             get_sender(payload, reply_peer);
+            auto collect_ptr = payload.get("__collect_all");
+            bool collect_all = wants_reply && collect_ptr && collect_ptr -> is<bool>() && collect_ptr -> as<bool>();
             std::vector<std::pair<int, Handler>> snapshot;
             {
                 std::lock_guard lock(buffer_mutex);
@@ -459,7 +462,7 @@ namespace Vital::Sandbox::API {
             }
 
             std::vector<std::shared_ptr<API::Promise::Instance>> promises;
-            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
+            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises, collect_all);
             vm -> del_raw_reference(args_ref);
             if (promises.empty()) return;
 
@@ -682,7 +685,7 @@ namespace Vital::Sandbox::API {
                     // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
                     verify_peer("event.emit_callback", opts.peer_id, true);
                     #endif
-                    auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true);
+                    auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true, opts.collect_all);
                     push_promise(vm, promise);
                     return 1;
                 }
