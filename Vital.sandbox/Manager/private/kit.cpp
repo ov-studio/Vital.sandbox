@@ -70,7 +70,6 @@ namespace Vital::Manager::Kit {
         const std::filesystem::path checksum_file = root/"checksum.json";
         if (!std::filesystem::is_regular_file(checksum_file, ec)) { log("error", "verify ~ checksum.json missing from archive"); return false; }
         if (!remote_hash.empty() && to_lower(Tool::Crypto::hash_file("sha256", checksum_file.string())) != to_lower(remote_hash)) { log("error", "verify ~ checksum.json does not match release asset"); return false; }
-
         if (verify_exact_allowlist) {
             for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
                 const auto status = std::filesystem::symlink_status(it -> path(), ec);
