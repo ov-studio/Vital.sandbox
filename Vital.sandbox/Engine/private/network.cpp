@@ -36,39 +36,56 @@
 
 namespace Vital::Engine {
     // Managers //
+    #if defined(VSDK_Client)
+    // Peer id of the RPC currently being handled (0 when called locally).
+    static int rpc_sender() {
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        return tree ? tree -> get_multiplayer() -> get_remote_sender_id() : 0;
+    }
+    #endif
+
     void Network::setup_rpc() {
+        // Bidirectional: clients may call these on the server (their handlers validate the sender).
         godot::Dictionary reliable;
         reliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         reliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
         reliable["call_local"] = false;
         reliable["channel"] = 0;
         rpc_config("_receive", reliable);
-        rpc_config("_spawn_entity", reliable);
-        rpc_config("_destroy_entity", reliable);
-        rpc_config("_sync_state", reliable);
-        rpc_config("_sync_config", reliable);
-        rpc_config("_sync_fps_limit", reliable);
-        rpc_config("_set_authority", reliable);
-        rpc_config("_sync_shape", reliable);
-        rpc_config("_reparent_entity", reliable);
-        rpc_config("_spawn_wheel", reliable);
-        rpc_config("_sync_wheel_config", reliable);
-        rpc_config("_sync_wheel_transform", reliable);
         rpc_config("_sync_anim_layer", reliable);
         rpc_config("_sync_anim_layer_filter", reliable);
-        rpc_config("_sync_component_visible", reliable);
-        rpc_config("_sync_component_render", reliable);
-        rpc_config("_force_transform", reliable);
         rpc_config("_sync_dimension", reliable);
-        rpc_config("_wake_sync", reliable);
+
+        // Server -> client only: Godot rejects these from any peer except the node's authority (the server),
+        // so a client can neither call them on the server nor on other clients.
+        godot::Dictionary server_reliable = reliable.duplicate();
+        server_reliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_AUTHORITY;
+        rpc_config("_spawn_entity", server_reliable);
+        rpc_config("_destroy_entity", server_reliable);
+        rpc_config("_sync_state", server_reliable);
+        rpc_config("_sync_config", server_reliable);
+        rpc_config("_sync_fps_limit", server_reliable);
+        rpc_config("_set_authority", server_reliable);
+        rpc_config("_sync_shape", server_reliable);
+        rpc_config("_reparent_entity", server_reliable);
+        rpc_config("_spawn_wheel", server_reliable);
+        rpc_config("_sync_wheel_config", server_reliable);
+        rpc_config("_sync_wheel_transform", server_reliable);
+        rpc_config("_sync_component_visible", server_reliable);
+        rpc_config("_sync_component_render", server_reliable);
+        rpc_config("_force_transform", server_reliable);
+        rpc_config("_wake_sync", server_reliable);
 
         godot::Dictionary unreliable;
         unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         unreliable["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
         unreliable["call_local"] = false;
         unreliable["channel"] = 0;
-        rpc_config("_sync_entities", unreliable);
         rpc_config("_sync_client", unreliable);
+
+        godot::Dictionary server_unreliable = unreliable.duplicate();
+        server_unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_AUTHORITY;
+        rpc_config("_sync_entities", server_unreliable);
     }
 
 
@@ -360,6 +377,7 @@ namespace Vital::Engine {
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         #if defined(VSDK_Client)
+        if (rpc_sender() != 1) return;
         if (!entity) {
             // Entity not registered yet — most commonly the late-joiner state-dump
             // RPC (send_full_state_to_peer step 2.7) racing that same player's own
@@ -411,6 +429,7 @@ namespace Vital::Engine {
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         #if defined(VSDK_Client)
+        if (rpc_sender() != 1) return;
         if (!entity) {
             // Entity not registered yet — defer so replay_pending_syncs applies it on spawn.
             std::vector<std::string> paths;
@@ -532,6 +551,7 @@ namespace Vital::Engine {
         if (!mgr) return;
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         #if defined(VSDK_Client)
+        if (rpc_sender() != 1) return;
         if (!entity) {
             mgr->defer_dimension_sync((uint32_t)net_id, dimension);
             return;
