@@ -33,6 +33,7 @@ namespace Vital::Manager::Kit {
         inline std::unordered_map<std::string, std::string> content_cache;
         inline std::unordered_map<std::string, rapidjson::Document> json_cache;
     
+        // Helpers //
         inline const std::string& fetch_content(std::string_view path) {
             std::string key(path);
             auto it = content_cache.find(key);
@@ -75,6 +76,10 @@ namespace Vital::Manager::Kit {
             if (doc.HasMember("version") && doc["version"].IsString()) version = doc["version"].GetString();
             return version;
         }
+
+        std::string to_lower(std::string value);
+        bool resolve_entry(const std::filesystem::path& root, const std::string& entry, std::filesystem::path& out);
+        bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash);
     }
 
     inline const std::string& get_version() {
