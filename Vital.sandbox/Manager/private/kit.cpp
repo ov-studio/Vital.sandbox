@@ -33,6 +33,7 @@ namespace Vital::Manager {
         const std::string checksum_path = fmt::format("{}/{}/checksum.json", std::string(toolkit_base), std::string(toolkit_name));
         std::ifstream file(checksum_path, std::ios::binary);
         if (!file) return km -> version;
+
         std::string raw{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
         rapidjson::Document doc;
         doc.Parse(raw.c_str());
@@ -46,6 +47,7 @@ namespace Vital::Manager {
         std::string key(path);
         auto it = km -> content_cache.find(key);
         if (it != km -> content_cache.end()) return it -> second;
+
         std::filesystem::path full = std::filesystem::path(toolkit_base)/toolkit_name/path;
         std::ifstream file(full, std::ios::binary);
         if (!file) {
@@ -64,6 +66,7 @@ namespace Vital::Manager {
         auto km = Kit::get_singleton();
         auto it = km -> json_cache.find(name);
         if (it != km -> json_cache.end()) return it -> second;
+        
         rapidjson::Document document;
         document.Parse(get_content(fmt::format("{}.json", name)).c_str());
         if (document.HasParseError()) {
@@ -96,6 +99,7 @@ namespace Vital::Manager {
     bool Kit::Internal::verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash) {
         auto km = Kit::get_singleton();
         if (!checksum_doc.IsObject() || !checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { km -> log("error", "verify ~ invalid checksum | reason ~ missing files"); return false; }
+
         std::unordered_set<std::string> listed;
         const auto& files = checksum_doc["files"];
         for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
@@ -113,7 +117,6 @@ namespace Vital::Manager {
         const std::filesystem::path checksum_file = root/"checksum.json";
         if (!std::filesystem::is_regular_file(checksum_file, ec)) { km -> log("error", "verify ~ checksum.json missing from archive"); return false; }
         if (!remote_hash.empty() && to_lower(Tool::Crypto::hash_file("sha256", checksum_file.string())) != to_lower(remote_hash)) { km -> log("error", "verify ~ checksum.json does not match release asset"); return false; }
-    
         for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
             const auto status = std::filesystem::symlink_status(it -> path(), ec);
             if (ec) return false;
@@ -151,6 +154,7 @@ namespace Vital::Manager {
         const std::string path = fmt::format("module/{}", name);
         auto& document = Internal::get_json(fmt::format("{}/manifest", path));
         if (document.HasParseError() || !document.IsObject() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
+
         for (auto& i : document["sources"].GetArray()) {
             if (!i.IsString()) continue;
             std::string src = i.GetString();
@@ -187,6 +191,7 @@ namespace Vital::Manager {
     rapidjson::Document Kit::get_checksum(const std::string& checksum_url, std::string& checksum_hash) const {
         rapidjson::Document doc;
         if (checksum_url.empty()) return doc;
+        
         std::string data;
         try { data = Tool::HTTP::get(checksum_url); }
         catch (...) {}
