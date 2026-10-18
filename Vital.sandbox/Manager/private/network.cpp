@@ -172,7 +172,6 @@ namespace Vital::Manager {
         nm -> reconnect_ip = ip;
         nm -> reconnect_port = port;
         nm -> reconnect_http_port = http_port;
-        nm -> pending_handshake = false;
         nm -> log("sbox", fmt::format("connecting to {}:{}", ip, port));
         Tool::Event::emit("network:connect", {});
         return true;
@@ -196,7 +195,6 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Network::Internal::disconnect_from_server");
         auto nm = Network::get_singleton();
         if (!nm -> peer.is_valid()) return false;
-        nm -> pending_handshake = false;
         nm -> unwire_signals();
         Internal::send(Tool::Stack::make_packet(Network::Name, { 
             Tool::StackValue(std::string("quit")) 
@@ -1085,7 +1083,12 @@ namespace Vital::Manager {
         auto mp = tree->get_multiplayer();
         int32_t sender = mp.is_valid() ? mp->get_remote_sender_id() : 0;
 
-        godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
+        // Only authenticated and admitted peers get this far (see setup_authentication / _on_peer_connected)
+        #if !defined(VSDK_Client)
+        if (sender <= 0 || !connected_peers.count(sender)) return;
+        #endif
+
+        godot::Dictionary obj = (data.has("object") && data["object"].get_type() == godot::Variant::DICTIONARY) ? (godot::Dictionary)data["object"] : godot::Dictionary();
         obj["sender"] = (int64_t)sender;
         data["object"] = obj;
 
@@ -1093,22 +1096,12 @@ namespace Vital::Manager {
 
         #if !defined(VSDK_Client)
         if (stack.is_packet(Network::Name)) {
-            if (!stack.array.empty() && stack.array[0].as<std::string>() == "ping") {
-                if (stack.array.size() > 1 && stack.array[1].is<std::string>()) peer_serials[sender] = stack.array[1].as<std::string>();
-                if (!connected_peers.count(sender)) {
-                    connected_peers.insert(sender);
-                    log("sbox", fmt::format("handshake confirmed <- peer {}", sender));
-                    Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)sender));
-                }
-            }
-            else if (stack.array[0].as<std::string>() == "quit") {
+            // The only internal command left is "quit" - strictly ["quit"], nothing else
+            if (stack.array.size() == 1 && stack.array[0].is<std::string>() && stack.array[0].as<std::string>() == "quit") {
                 if (peer.is_valid()) peer->disconnect_peer(sender);
-                return;
             }
             return;
         }
-        // Drop all other packets from peers that haven't completed handshake yet.
-        if (!connected_peers.count(sender)) return;
         #else
         // Internal protocol packets are never forwarded to scripts.
         if (stack.is_packet(Network::Name)) return;
@@ -1290,14 +1283,12 @@ namespace Vital::Manager {
 
     void Network::_on_connected_to_server() {
         _apply_peer_timeout(_enet_peer_for(peer, 1));
-        pending_handshake  = true;
-        log("sbox", "connected (handshake deferred)");
+        log("sbox", "connected (authenticated)");
         Tool::Event::emit("network:connect:success", {});
     }
 
     void Network::_on_connection_failed() {
         log("sbox", "connection failed");
-        pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         Tool::Stack status;
@@ -1307,7 +1298,6 @@ namespace Vital::Manager {
 
     void Network::_on_server_disconnected() {
         log("sbox", "server dropped connection");
-        pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         auto tree = get_scene_tree();
@@ -1418,7 +1408,7 @@ namespace Vital::Manager {
 
     void Network::_on_peer_connected(int id) {
         _apply_peer_timeout(_enet_peer_for(peer, id));
-        log("sbox", fmt::format("peer connecting -> {} (awaiting handshake)", id));
+        log("sbox", fmt::format("peer connecting -> {} (authenticated)", id));
 
         // 0. Tell the joining peer our real sync rate. Reliable + channel 0, sent
         //    before the spawn/state-dump RPCs below on the same channel, so ENet's
@@ -1755,19 +1745,21 @@ namespace Vital::Manager {
         wake_all_syncables();
         if (node) node->rpc("_wake_sync");
 
-        // network:peer:join is now deferred — it fires in _on_packet_received once
-        // the client's handshake ping arrives, not here. This ensures Lua scripts only
-        // see fully-ready peers (connected + handshaked), not raw ENet connections.
+        // The peer already passed authentication (peer_connected only fires afterwards), so admit it now.
+        // Done last so scripts see the peer only after it has been sent the full world state.
+        connected_peers.insert(id);
+        log("sbox", fmt::format("peer admitted <- peer {}", id));
+        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)id));
     }
 
     void Network::_on_peer_disconnected(int id) {
-        bool was_handshaked = connected_peers.erase(id) > 0;
+        bool was_admitted = connected_peers.erase(id) > 0;
         peer_serials.erase(id);
         log("sbox", fmt::format("peer left -> {}  remaining: {}", id, (int)connected_peers.size()));
 
-        // Auto-revoke and peer:leave only apply to peers that completed handshake —
-        // a peer that dropped before handshaking was never visible to Lua scripts.
-        if (was_handshaked) {
+        // Auto-revoke and peer:leave only apply to peers that were admitted —
+        // a peer that dropped before that was never visible to Lua scripts.
+        if (was_admitted) {
             {
                 std::vector<Engine::ISyncable*> snapshot;
                 {
@@ -1844,28 +1836,13 @@ namespace Vital::Manager {
     //   Poll   //
     //----------//
     //
-    // Render-tick housekeeping only: reconnect/handshake state, draining the
+    // Render-tick housekeeping only: reconnect state, draining the
     // pending-registration queue, and replaying anything buffered for a
     // net_id that just registered. Deliberately does NOT sample or send any
     // transform data any more — that moved to sync_tick(), driven by the
     // fixed physics tick. See sync_tick() for why.
 
     void Network::poll(double delta) {
-        #if defined(VSDK_Client)
-        // Handshake
-        if (pending_handshake && is_connected()) {
-            // Only once authentication has completed - peers that are still authenticating are not part of get_peers()
-            auto sm = get_scene_multiplayer();
-            if (sm && sm->get_peers().has(1)) {
-                pending_handshake = false;
-                log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
-                Internal::send(Tool::Stack::make_packet(Network::Name, { 
-                    Tool::StackValue(std::string("ping")),
-                    Tool::StackValue(Tool::Inspect::fingerprint())
-                }), 1);
-            }
-        }
-        #endif
 
         // Flush the pending registration queue — models posted via
         // enqueue_syncable_registration() from deferred add_child callbacks.

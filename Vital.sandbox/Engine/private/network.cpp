@@ -91,7 +91,10 @@ namespace Vital::Engine {
 
     // Signals //
     void Network::_receive(godot::Dictionary data) {
-        Manager::Network::get_singleton() -> _on_packet_received(data);
+        // Untrusted peers reach this RPC - never let a C++ exception escape into the engine
+        try { Manager::Network::get_singleton() -> _on_packet_received(data); }
+        catch (const std::exception& e) { godot::UtilityFunctions::push_warning(godot::String("Vital.network: dropped malformed packet - ") + e.what()); }
+        catch (...) { godot::UtilityFunctions::push_warning("Vital.network: dropped malformed packet"); }
     }
     
     void Network::_sync_entities(godot::PackedByteArray data) {

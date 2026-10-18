@@ -95,7 +95,6 @@ namespace Vital::Manager {
             #endif
 
             #if defined(VSDK_Client)
-            bool pending_handshake = false;
             std::string reconnect_ip;
             int reconnect_port = 0;
             int reconnect_http_port = -1;
@@ -272,7 +271,7 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             void disconnect_peer(int peer_id);
-            bool is_peer_valid(int peer_id) const;             // true if peer_id is a handshaked peer
+            bool is_peer_valid(int peer_id) const;             // true if peer_id is an authenticated and admitted peer
             void assert_peer(int peer_id) const; // throws 'request-failed' (Lua-catchable) if peer_id is not valid
             std::string get_peer_serial(int peer_id) const;
             const Config::Server& get_server_config() const;
