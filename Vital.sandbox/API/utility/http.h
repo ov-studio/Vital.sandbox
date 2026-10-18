@@ -43,11 +43,10 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
-                if (!Tool::HTTP::acquire_request()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "too many concurrent requests");
 
+                auto slot = std::make_shared<Tool::HTTP::Slot>();
                 auto promise_id = API::Promise::make(vm, true) -> id;
-                Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
-                    struct Slot { ~Slot() { Tool::HTTP::release_request(); } } slot;
+                Tool::Thread::create([promise_id, url, headers, timeout, slot](Tool::Thread*) {
                     try {
                         auto response = Tool::HTTP::get(url, headers, timeout);
                         Machine::enqueue([promise_id, response]() {
@@ -91,11 +90,10 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
-                if (!Tool::HTTP::acquire_request()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "too many concurrent requests");
 
+                auto slot = std::make_shared<Tool::HTTP::Slot>();
                 auto promise_id = API::Promise::make(vm, true) -> id;
-                Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
-                    struct Slot { ~Slot() { Tool::HTTP::release_request(); } } slot;
+                Tool::Thread::create([promise_id, url, body, headers, timeout, slot](Tool::Thread*) {
                     try {
                         auto response = Tool::HTTP::post(url, body, headers, timeout);
                         Machine::enqueue([promise_id, response]() {
