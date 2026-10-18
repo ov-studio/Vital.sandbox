@@ -560,7 +560,9 @@ namespace Vital::Sandbox {
             bool next(int idx = 1) { return lua_next(state, idx) != 0; }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
             void rotate(int idx, int n) { lua_rotate(state, idx, n); }
+            void remove(int idx) { lua_remove(state, idx); }
             void set_table(int idx = 1) { lua_settable(state, idx); }
+            void set_raw_table(int idx = 1) { lua_rawset(state, idx); }
             void set_table_field(int field, int idx = 1) { lua_seti(state, idx, field); }
             void set_table_field(const std::string& field, int idx = 1) { lua_setfield(state, idx, field.c_str()); }
             void set_metatable(int idx = 1) { lua_setmetatable(state, idx); }
