@@ -86,7 +86,7 @@ namespace Vital::Manager {
         server_config = &config;
         state = true;
         send_heartbeat();
-        auto interval = Manager::Kit::fetch_json_value("config/masterlist", "interval").as<int32_t>();
+        auto interval = Manager::Kit::get_singleton() -> fetch_json_value("config/masterlist", "interval").as<int32_t>();
         if (interval <= 0) interval = 300 * 1000;
         heartbeat_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() { send_heartbeat(); });
@@ -121,7 +121,7 @@ namespace Vital::Manager {
         std::lock_guard<std::mutex> lock(debounce_mutex);
         if (debounce_timer) return;
 
-        auto interval = Manager::Kit::fetch_json_value("config/masterlist", "debounce").as<int32_t>();
+        auto interval = Manager::Kit::get_singleton() -> fetch_json_value("config/masterlist", "debounce").as<int32_t>();
         if (interval <= 0) interval = 5 * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() {

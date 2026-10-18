@@ -94,6 +94,7 @@ void vsdk_initialize() {
         Vital::Engine::Console::free_singleton();
         Vital::Manager::Sandbox::free_singleton();
         Vital::Manager::Resource::free_singleton();
+        Vital::Manager::Kit::free_singleton();
         // Network/Masterlist/Asset teardown now lives in Core::teardown() itself
         // (Engine/private/core.cpp), which runs *before* this "core:free" event
         // even fires — see the comment there for why it moved.

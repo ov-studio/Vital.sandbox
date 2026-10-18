@@ -349,13 +349,13 @@ namespace Vital::Engine {
         }
         {
             // Menu toggle key comes from Vital.kit (config/mainmenu.json), same source the engine-side key handler uses
-            const auto bind = Manager::Kit::fetch_json_value("config/mainmenu", "bind");
+            const auto bind = Manager::Kit::get_singleton() -> fetch_json_value("config/mainmenu", "bind");
             rapidjson::Document doc;
             doc.SetObject();
             auto& a = doc.GetAllocator();
             doc.AddMember("action", "init", a);
             doc.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), a), a);
-            doc.AddMember("masterlist_refresh", Manager::Kit::fetch_json_value("config/masterlist", "refresh").as<int32_t>(), a);
+            doc.AddMember("masterlist_refresh", Manager::Kit::get_singleton() -> fetch_json_value("config/masterlist", "refresh").as<int32_t>(), a);
             rapidjson::Value versions(rapidjson::kArrayType);
             for (const auto& [label, value] : Tool::Version::get_all()) {
                 rapidjson::Value item(rapidjson::kObjectType);
@@ -469,9 +469,9 @@ namespace Vital::Engine {
             }
 
             // Vital.kit: cached kit version vs latest release tag (same source Kit::ensure uses).
-            const std::string kit_tag = std::get<0>(Manager::Kit::fetch_release());
+            const std::string kit_tag = std::get<0>(Manager::Kit::get_singleton() -> fetch_release());
             if (!kit_tag.empty()) reached = true;
-            const std::string kit_local = Manager::Kit::get_version();
+            const std::string kit_local = Manager::Kit::get_singleton() -> get_version();
             if (is_outdated(kit_local, kit_tag)) {
                 updates.push_back({ "Vital.kit", kit_local, kit_tag, kit_releases });
             }

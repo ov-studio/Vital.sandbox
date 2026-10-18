@@ -79,7 +79,7 @@ namespace Vital::Manager {
                 bool handled = false;
                 auto keycode = event_key -> get_keycode();
                 auto resolve = [](const std::string& config, const std::string& key) {
-                    const auto bind = Manager::Kit::fetch_json_value(config, key);
+                    const auto bind = Manager::Kit::get_singleton() -> fetch_json_value(config, key);
                     return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
                 };
 

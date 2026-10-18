@@ -44,8 +44,9 @@ namespace Vital::Engine {
         kit_abort.store(false);
         Tool::Event::emit("core:preready");
         Tool::print("sbox", "Core: bootstrapping Vital.kit...");
+        Manager::Kit::get_singleton();
         kit_thread = std::thread([this]() {
-            const bool kit_ok = Manager::Kit::ensure();
+            const bool kit_ok = Manager::Kit::get_singleton() -> ensure();
             if (!kit_abort.load() && !kit_ok) {
                 Tool::print("error", "Core: Vital.kit unavailable (download/verification failed and no usable cache); not starting");
                 return;
