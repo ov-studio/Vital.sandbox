@@ -766,7 +766,7 @@ namespace Vital::Sandbox {
                 return "";
             }
         
-            int load_string(const std::string& raw, const std::string& chunk_name = "", bool auto_load = true, bool use_env = false, int env_idx = 1) {
+            int load_string(const std::string& raw, const std::string& chunk_name = "", bool auto_load = true, int env_idx = 0) {
                 Tool::assert_main_thread("Machine::load_string");
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : fmt::format("@@{}", chunk_name);
@@ -775,7 +775,7 @@ namespace Vital::Sandbox {
                     pop(1);
                     return 0;
                 }
-                if (use_env) {
+                if (env_idx) {
                     push(env_idx);
                     if (!lua_setupvalue(state, -2, 1)) pop(1);
                 }
