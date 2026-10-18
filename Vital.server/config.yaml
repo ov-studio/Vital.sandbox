@@ -26,6 +26,14 @@ network:
   # Maximum concurrent clients. Default: 32
   max_peers: 32
 
+  # Join rate limit per IP: at most auth_rate_max connections may authenticate within auth_rate_window seconds.
+  # Extra attempts are rejected. Raise it if many players share one IP (LAN/NAT). 0 disables the limit.
+  # Range: 0-1000. Default: 6
+  auth_rate_max: 6
+  
+  # Range: 1-3600. Default: 10
+  auth_rate_window: 10
+
   # Physics simulation rate in Hz.
   # Sets the ceiling for sync.rate — synced entities can't update faster than physics steps them.
   # Range: 1-120. Default: 60.

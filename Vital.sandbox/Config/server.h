@@ -94,6 +94,7 @@ namespace Vital::Config {
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
                 append_field(oss, "Max Peers", std::to_string(get_max_peers()));
+                append_field(oss, "Auth Rate Limit", get_auth_rate_max() > 0 ? fmt::format("{} per {}s per IP", get_auth_rate_max(), get_auth_rate_window()) : std::string("off"));
                 append_field(oss, "Sync Rate", fmt::format("{} Hz", get_sync_rate()));
                 append_field(oss, "Physics Tick Rate", fmt::format("{} Hz", get_physics_tick_rate()));
 
@@ -133,6 +134,8 @@ namespace Vital::Config {
             int get_network_port() const { return get_int("network", "port", 7777); }
             int get_http_port() const { return get_int("http", "port", 7778); }
             int get_max_peers() const { return get_int("network", "max_peers", 32); }
+            int get_auth_rate_max() const { return std::clamp(get_int("network", "auth_rate_max", 6), 0, 1000); }
+            int get_auth_rate_window() const { return std::clamp(get_int("network", "auth_rate_window", 10), 1, 3600); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
 
 
