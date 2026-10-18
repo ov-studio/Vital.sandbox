@@ -25,10 +25,13 @@ namespace Vital::Manager::Kit {
         inline constexpr std::string_view toolkit_src = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
         inline constexpr std::string_view toolkit_base = "cache";
         inline constexpr std::string_view toolkit_name = "Vital.kit";
+        inline constexpr zip_int64_t extract_max_entries = 100000;
+        inline constexpr zip_uint64_t extract_max_entry_size = 2ull * 1024 * 1024 * 1024;
+        inline constexpr zip_uint64_t extract_max_total_size = 4ull * 1024 * 1024 * 1024;
         inline std::mutex mutex;
+        inline std::string version = "";
         inline std::unordered_map<std::string, std::string> content_cache;
         inline std::unordered_map<std::string, rapidjson::Document> json_cache;
-        inline std::string version = "";
     
         inline const std::string& fetch_content(std::string_view path) {
             std::string key(path);
