@@ -597,6 +597,41 @@ namespace Vital::Sandbox {
             void set_metatable(int idx = 1) { lua_setmetatable(state, idx); }
             void seal_metatable() { table_set_value("__metatable", false); }
 
+            void copy_table(int idx = -1, bool recursive = false, int memo_idx = 0) {
+                const int src_idx = get_absolute_index(idx);
+                if (recursive && !memo_idx) {
+                    create_table();
+                    const int memo = get_count();
+                    copy_table(src_idx, true, memo);
+                    remove(memo);
+                    return;
+                }
+                if (memo_idx) {
+                    push(src_idx);
+                    get_raw_table(memo_idx);
+                    if (is_table(-1)) return;
+                    pop(1);
+                }
+                create_table();
+                const int dst_idx = get_count();
+                if (memo_idx) {
+                    push(src_idx);
+                    push(dst_idx);
+                    set_raw_table(memo_idx);
+                }
+                push_nil();
+                while (next(src_idx)) {
+                    push(-2);
+                    if (memo_idx && is_table(-2)) {
+                        copy_table(-2, true, memo_idx);
+                        remove(-3);
+                    }
+                    else rotate(-2, 1);
+                    set_raw_table(dst_idx);
+                }
+                if (get_metatable(src_idx)) set_metatable(dst_idx);
+            }
+
             void set_reference(const std::string& scope, const std::string& name, int idx = 1) {
                 Tool::assert_main_thread("Machine::set_reference");
                 del_reference(scope, name);
