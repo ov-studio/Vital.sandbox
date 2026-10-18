@@ -464,6 +464,19 @@ namespace Vital::Sandbox::API {
             if (promises.empty()) return;
 
             auto agg = aggregate_promises(vm, promises);
+            // Synchronous handlers settle their promise before we get here, and 'promise:settle' only fires for promises that are still pending - reply right away in that case
+            if (!API::Promise::is_pending(agg)) {
+                auto root_vm = vm -> get_root();
+                Tool::Stack results;
+                std::unordered_set<const void*> visited;
+                for (int i = 1; i <= agg -> values; ++i) {
+                    root_vm -> get_raw_reference(agg -> get_reference(agg -> value_reference(i)));
+                    results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
+                    root_vm -> pop(1);
+                }
+                send_reply(serial, reply_peer, &results.array);
+                return;
+            }
             register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
                 send_reply(serial, reply_peer, &results.array);
             });
