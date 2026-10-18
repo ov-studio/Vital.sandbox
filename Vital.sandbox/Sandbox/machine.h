@@ -441,7 +441,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::create_environment");
                 create_table();
                 create_table();
-                lua_pushglobaltable(state);
+                push_global_table();
                 set_table_field("__index", -2);
                 set_metatable(-2);
                 push(-1);
