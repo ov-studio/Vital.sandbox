@@ -212,18 +212,21 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "load_string", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(input, chunk_name = \"\", auto_load = true, use_env = false, env = nil)")
+                vm_args(vm, id, "(input, chunk_name = \"\", auto_load = true, env = nil)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string)
                     .optional(3, &Machine::is_bool)
-                    .optional(4, &Machine::is_bool)
-                    .optional(5, &Machine::is_table);
+                    .optional(4, &Machine::is_table);
             
                 auto input = vm -> get_string(1);
                 auto chunk_name = vm -> is_string(2) ? vm -> get_string(2) : "";
                 bool auto_load = vm -> is_bool(3) ? vm -> get_bool(3) : true;
-                bool use_env = vm -> is_bool(4) ? vm -> get_bool(4) : false;
-                int results = vm -> load_string(input, chunk_name, auto_load, use_env, 5);
+                int env_idx = 4;
+                if (!vm -> is_table(4)) {
+                    if (!vm -> push_environment()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "no resource environment available");
+                    env_idx = vm -> get_count();
+                }
+                int results = vm -> load_string(input, chunk_name, auto_load, env_idx);
                 if (results == 0) vm -> push_value(false);
                 return results == 0 ? 1 : results;
             });
