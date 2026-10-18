@@ -40,8 +40,12 @@ namespace Vital::Manager {
             struct Internal {
                 // Helpers //
                 static std::string to_lower(std::string value);
+                static const std::string& get_version();
+                static const std::string& get_content(std::string_view path);
+                static rapidjson::Document& get_json(const std::string& name);
                 static bool resolve_entry(const std::filesystem::path& root, const std::string& entry, std::filesystem::path& out);
                 static bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash);
+
                 template<typename... Keys>
                 static const rapidjson::Value* get_json_detail(const rapidjson::Value* node, Keys&&... keys) {
                     std::vector<std::string> key_list;
@@ -65,12 +69,6 @@ namespace Vital::Manager {
                     }
                     return node;
                 }
-
-
-                // Getters //
-                static const std::string& get_version();
-                static const std::string& get_content(std::string_view path);
-                static rapidjson::Document& get_json(const std::string& name);
             };
 
 
