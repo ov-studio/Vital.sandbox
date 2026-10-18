@@ -758,7 +758,7 @@ namespace Vital::Sandbox {
                 if (top > 0) lua_settop(state, 0);
                 if (!lua_checkstack(state, 16)) return "lua stack overflow";
                 const std::string name = chunk_name.empty() ? raw : fmt::format("@@{}", chunk_name);
-                if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
+                if (luaL_loadbufferx(state, raw.c_str(), raw.size(), name.c_str(), "t") != LUA_OK) {
                     std::string err = get_string(-1);
                     lua_settop(state, 0);
                     return err;
@@ -771,7 +771,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::load_string");
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : fmt::format("@@{}", chunk_name);
-                if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
+                if (luaL_loadbufferx(state, raw.c_str(), raw.size(), name.c_str(), "t") != LUA_OK) {
                     Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                     pop(1);
                     return 0;
