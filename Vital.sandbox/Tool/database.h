@@ -176,7 +176,6 @@ namespace Vital::Tool {
                         session.reset();
                     }
                 }
-                delete this;
             }
 
             bool is_connected() {
