@@ -54,6 +54,7 @@ namespace Vital::Manager {
                         if constexpr (std::is_integral_v<T>) return std::to_string(k);
                         else return std::string(k);
                     }(std::forward<Keys>(keys))), ...);
+                    
                     for (const std::string& key : key_list) {
                         bool is_idx = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
                         if (is_idx) {
