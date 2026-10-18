@@ -194,6 +194,8 @@ namespace Vital::Sandbox {
             // Getters //
             vm_state* get_state() const { return state; }
             int get_count() { return lua_gettop(state); }
+            int get_absolute_index(int idx = -1) { return lua_absindex(state, idx); }
+            const char* get_upvalue(int func_idx, int n) { return lua_getupvalue(state, func_idx, n); }
             int get_type(int idx = 1) { return lua_type(state, idx); }
             bool get_global(const std::string& idx) { return lua_getglobal(state, idx.c_str()); }
             bool get_bool(int idx = 1) { return lua_toboolean(state, idx); }
