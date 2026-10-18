@@ -232,6 +232,7 @@ namespace Vital::Manager::Kit {
                 cleanup();
                 return false;
             }
+
             std::error_code final_ec;
             std::filesystem::remove_all(old_dir, final_ec);
             std::filesystem::remove(zip_path, final_ec);
@@ -271,7 +272,12 @@ namespace Vital::Manager::Kit {
             if (!std::filesystem::exists(kit_dir)) { log("warn", "status ~ cache missing"); return true; }
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
-            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("error", "checksum ~ fetch failed"); return true; }
+            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { 
+                log("error", "checksum ~ fetch failed"); 
+                cache_fallback_allowed = true; 
+                return true; 
+            }
+            
             std::string local_version;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
@@ -282,6 +288,12 @@ namespace Vital::Manager::Kit {
             return !validate_files(checksum_doc);
         };
 
-        return needs_download() ? do_download() : true;
+        if (!needs_download()) return true;
+        if (do_download()) return true;
+        if (cache_fallback_allowed && std::filesystem::exists(kit_dir)) {
+            log("warn", "status ~ update failed | reason ~ keeping existing cached toolkit");
+            return true;
+        }
+        return false;
     }
 }
