@@ -25,6 +25,7 @@
 // Vital: API: Event //
 ////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct Event : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "event"};
@@ -66,6 +67,7 @@ namespace Vital::Sandbox::API {
         struct PendingRemote {
             std::shared_ptr<API::Promise::Instance> promise;
             std::chrono::steady_clock::time_point created;
+            int peer = 0;
         };
 
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
@@ -155,7 +157,24 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        // Authenticated transport sender - written by Network::_on_packet_received after the payload is decoded, so it can't be spoofed by the remote side
+        static bool get_sender(const Tool::Stack& payload, int& sender) {
+            auto ptr = payload.get("sender");
+            if (!ptr || !ptr -> is<int32_t>()) return false;
+            sender = ptr -> as<int32_t>();
+            return true;
+        }
+
+        static bool to_serial(double value, uint32_t& serial) {
+            if (!(value >= 1.0 && value <= 4294967295.0)) return false;
+            serial = static_cast<uint32_t>(value);
+            return true;
+        }
+
         static void send_reply(uint32_t serial, int reply_peer, const std::vector<Tool::StackValue>* results = nullptr) {
+            #if !defined(VSDK_Client)
+            if (reply_peer <= 0) return;
+            #endif
             Tool::Stack reply;
             reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
             if (results) for (auto& v : *results) reply.array.push_back(v);
@@ -172,7 +191,12 @@ namespace Vital::Sandbox::API {
                 promise = API::Promise::make(vm);
                 {
                     std::lock_guard lock(pending_remote_mutex);
-                    pending_remote[serial] = PendingRemote { promise, std::chrono::steady_clock::now() };
+                    #if defined(VSDK_Client)
+                    int expected_peer = 1;
+                    #else
+                    int expected_peer = peer_id;
+                    #endif
+                    pending_remote[serial] = PendingRemote { promise, std::chrono::steady_clock::now(), expected_peer };
                 }
             }
             send_packet(payload, peer_id);
@@ -369,12 +393,15 @@ namespace Vital::Sandbox::API {
         static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
             auto reply_ptr = payload.get("__reply_serial");
             if (reply_ptr && reply_ptr -> is<double>()) {
-                uint32_t serial = static_cast<uint32_t>(reply_ptr -> as<double>());
+                uint32_t serial = 0;
+                int sender = 0;
+                if (!to_serial(reply_ptr -> as<double>(), serial) || !get_sender(payload, sender)) return;
                 std::shared_ptr<API::Promise::Instance> promise;
                 {
                     std::lock_guard lock(pending_remote_mutex);
                     auto it = pending_remote.find(serial);
-                    if (it != pending_remote.end()) {
+                    // Only the peer the request was sent to may settle it
+                    if (it != pending_remote.end() && it -> second.peer == sender) {
                         promise = it -> second.promise;
                         pending_remote.erase(it);
                     }
@@ -408,9 +435,10 @@ namespace Vital::Sandbox::API {
 
             auto serial_ptr = payload.get("__serial");
             bool wants_reply = serial_ptr && serial_ptr -> is<double>();
-            uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
-            auto sid = payload.get("sender_id");
-            int reply_peer = (sid && sid -> is<double>()) ? static_cast<int>(sid -> as<double>()) : 0;
+            uint32_t serial = 0;
+            if (wants_reply && !to_serial(serial_ptr -> as<double>(), serial)) wants_reply = false;
+            int reply_peer = 0;
+            get_sender(payload, reply_peer);
             std::vector<std::pair<int, Handler>> snapshot;
             {
                 std::lock_guard lock(buffer_mutex);
