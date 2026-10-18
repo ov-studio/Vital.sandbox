@@ -255,7 +255,7 @@ namespace Vital::Manager::Kit {
                 if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log("warn", fmt::format("checksum ~ malformed | file ~ {}", rel_path)); return false; }
                 const std::string expected = it -> value["sha256"].GetString();
                 if (!Tool::File::exists(kit_dir, rel_path)) { log("warn", fmt::format("file ~ missing | progress ~ {}/{} | path ~ {}", checked, total, rel_path)); return false; }
-                if (Tool::Crypto::hash_file("sha256", fmt::format("{}/{}", kit_dir, rel_path)) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
+                if (to_lower(Tool::Crypto::hash_file("sha256", fmt::format("{}/{}", kit_dir, rel_path))) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
             std::string v;
