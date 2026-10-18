@@ -30,19 +30,6 @@ namespace Vital::Manager::Kit {
         for (auto& c : value) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
         return value;
     }
-    
-    bool download(const std::string& url, const std::string& dest_path) {
-        std::string data;
-        try { data = Tool::HTTP::get(url, {}, 120); }
-        catch (const std::exception& e) { log("error", fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
-        if (data.empty()) return false;
-        
-        std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
-        std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
-        if (!out) return false;
-        out.write(data.data(), static_cast<std::streamsize>(data.size()));
-        return out.good();
-    }
 
     static bool resolve_entry(const std::filesystem::path& root, const std::string& entry, std::filesystem::path& out) {
         if (entry.empty() || entry.find('\0') != std::string::npos) return false;
@@ -62,6 +49,54 @@ namespace Vital::Manager::Kit {
         if (rel.empty() || rel == "." || rel.begin() -> string() == "..") return false;
         out = target;
         return true;
+    }
+
+    static bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash) {
+        if (!checksum_doc.IsObject() || !checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("error", "verify ~ invalid checksum | reason ~ missing files"); return false; }
+        std::unordered_set<std::string> listed;
+        const auto& files = checksum_doc["files"];
+        for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
+            const std::string rel = it -> name.GetString();
+            if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log("error", fmt::format("verify ~ malformed checksum | file ~ {}", rel)); return false; }
+            std::filesystem::path full;
+            if (!resolve_entry(root, rel, full)) { log("error", fmt::format("verify ~ unsafe path | file ~ {}", rel)); return false; }
+            std::error_code ec;
+            if (!std::filesystem::is_regular_file(full, ec)) { log("error", fmt::format("verify ~ file missing | file ~ {}", rel)); return false; }
+            if (to_lower(Tool::Crypto::hash_file("sha256", full.string())) != to_lower(it -> value["sha256"].GetString())) { log("error", fmt::format("verify ~ checksum mismatch | file ~ {}", rel)); return false; }
+            listed.insert(std::filesystem::path(rel).lexically_normal().generic_string());
+        }
+
+        std::error_code ec;
+        const std::filesystem::path checksum_file = root/"checksum.json";
+        if (!std::filesystem::is_regular_file(checksum_file, ec)) { log("error", "verify ~ checksum.json missing from archive"); return false; }
+        if (!remote_hash.empty() && to_lower(Tool::Crypto::hash_file("sha256", checksum_file.string())) != to_lower(remote_hash)) { log("error", "verify ~ checksum.json does not match release asset"); return false; }
+
+        if (verify_exact_allowlist) {
+            for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
+                const auto status = std::filesystem::symlink_status(it -> path(), ec);
+                if (ec) return false;
+                if (std::filesystem::is_directory(status)) continue;
+                const std::string rel = it -> path().lexically_relative(root).generic_string();
+                if (!std::filesystem::is_regular_file(status)) { log("error", fmt::format("verify ~ non-regular file | file ~ {}", rel)); return false; }
+                if (rel == "checksum.json") continue;
+                if (!listed.count(rel)) { log("error", fmt::format("verify ~ unlisted file | file ~ {}", rel)); return false; }
+            }
+            if (ec) return false;
+        }
+        return true;
+    }
+    
+    bool download(const std::string& url, const std::string& dest_path) {
+        std::string data;
+        try { data = Tool::HTTP::get(url, {}, 120); }
+        catch (const std::exception& e) { log("error", fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
+        if (data.empty()) return false;
+        
+        std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
+        std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
+        if (!out) return false;
+        out.write(data.data(), static_cast<std::streamsize>(data.size()));
+        return out.good();
     }
 
     bool extract(const std::string& zip_path, const std::string& dest_dir) {
@@ -142,41 +177,6 @@ namespace Vital::Manager::Kit {
             std::error_code cleanup_ec;
             std::filesystem::remove_all(stage_dir, cleanup_ec);
             return false;
-        }
-        return true;
-    }
-
-    static bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash) {
-        if (!checksum_doc.IsObject() || !checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("error", "verify ~ invalid checksum | reason ~ missing files"); return false; }
-        std::unordered_set<std::string> listed;
-        const auto& files = checksum_doc["files"];
-        for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
-            const std::string rel = it -> name.GetString();
-            if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log("error", fmt::format("verify ~ malformed checksum | file ~ {}", rel)); return false; }
-            std::filesystem::path full;
-            if (!resolve_entry(root, rel, full)) { log("error", fmt::format("verify ~ unsafe path | file ~ {}", rel)); return false; }
-            std::error_code ec;
-            if (!std::filesystem::is_regular_file(full, ec)) { log("error", fmt::format("verify ~ file missing | file ~ {}", rel)); return false; }
-            if (to_lower(Tool::Crypto::hash_file("sha256", full.string())) != to_lower(it -> value["sha256"].GetString())) { log("error", fmt::format("verify ~ checksum mismatch | file ~ {}", rel)); return false; }
-            listed.insert(std::filesystem::path(rel).lexically_normal().generic_string());
-        }
-
-        std::error_code ec;
-        const std::filesystem::path checksum_file = root/"checksum.json";
-        if (!std::filesystem::is_regular_file(checksum_file, ec)) { log("error", "verify ~ checksum.json missing from archive"); return false; }
-        if (!remote_hash.empty() && to_lower(Tool::Crypto::hash_file("sha256", checksum_file.string())) != to_lower(remote_hash)) { log("error", "verify ~ checksum.json does not match release asset"); return false; }
-
-        if (verify_exact_allowlist) {
-            for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
-                const auto status = std::filesystem::symlink_status(it -> path(), ec);
-                if (ec) return false;
-                if (std::filesystem::is_directory(status)) continue;
-                const std::string rel = it -> path().lexically_relative(root).generic_string();
-                if (!std::filesystem::is_regular_file(status)) { log("error", fmt::format("verify ~ non-regular file | file ~ {}", rel)); return false; }
-                if (rel == "checksum.json") continue;
-                if (!listed.count(rel)) { log("error", fmt::format("verify ~ unlisted file | file ~ {}", rel)); return false; }
-            }
-            if (ec) return false;
         }
         return true;
     }
