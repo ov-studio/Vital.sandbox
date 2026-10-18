@@ -20,6 +20,8 @@
 // Vital: Tool: HTTP //
 ////////////////////////
 
+// TODO: Improve
+
 namespace Vital::Tool::HTTP {
     using http_headers = std::vector<std::string>;
 
@@ -67,20 +69,23 @@ namespace Vital::Tool::HTTP {
     }
 
     inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
-    inline constexpr int max_inflight = 16;
-    inline std::atomic<int> inflight { 0 };
 
-    inline bool acquire_request() {
-        int current = inflight.load();
-        while (current < max_inflight) {
-            if (inflight.compare_exchange_weak(current, current + 1)) return true;
+    // Holds one of the limited request slots. The constructor throws when too many requests
+    // are already running, and the slot is released automatically when the object is destroyed
+    struct Slot {
+        static constexpr int max_inflight = 16;
+        inline static std::atomic<int> inflight { 0 };
+
+        Slot() {
+            if (inflight.fetch_add(1) >= max_inflight) {
+                inflight.fetch_sub(1);
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "too many concurrent requests");
+            }
         }
-        return false;
-    }
-
-    inline void release_request() {
-        inflight.fetch_sub(1);
-    }
+        ~Slot() { inflight.fetch_sub(1); }
+        Slot(const Slot&) = delete;
+        Slot& operator=(const Slot&) = delete;
+    };
 
     inline bool stream(const std::string& url, const http_headers& headers, int timeout, bool follow_redirects, const std::atomic<bool>* cancelled, size_t max_bytes, const std::function<bool(const char*, size_t)>& sink) {
         std::string path;
