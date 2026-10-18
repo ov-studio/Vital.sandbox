@@ -259,6 +259,7 @@ namespace Vital::Manager::Kit {
                 if (to_lower(Tool::Crypto::hash_file("sha256", fmt::format("{}/{}", kit_dir, rel_path))) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
+            
             std::string v;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
@@ -277,13 +278,17 @@ namespace Vital::Manager::Kit {
                 cache_fallback_allowed = true; 
                 return true; 
             }
-            
+    
             std::string local_version;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
                 local_version = Internal::get_version();
             }
-            if (local_version != tag) { log("warn", fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
+            if (local_version != tag) {
+                log("warn", fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag));
+                cache_fallback_allowed = !local_version.empty();
+                return true;
+            }
             if (!remote_hash.empty() && Tool::Crypto::hash_file("sha256", fmt::format("{}/checksum.json", kit_dir)) != remote_hash) { log("warn", "checksum ~ tampered"); return true; }
             return !validate_files(checksum_doc);
         };
