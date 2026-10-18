@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
 
         struct Instance : vm_instance<Instance> {
             using Owner = Database_Query;
-            base_class* query = nullptr;
+            std::shared_ptr<base_class> query;
 
             bool is_alive() const { 
                 return query ? true : false; 
@@ -38,10 +38,7 @@ namespace Vital::Sandbox::API {
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
-                if (instance -> query) {
-                    instance -> query -> destroy();
-                    instance -> query = nullptr;
-                }
+                instance -> query.reset();
                 instance -> release();
             }
         };
@@ -126,9 +123,10 @@ namespace Vital::Sandbox::API {
 
                 if (vm -> is_number(2)) self -> query -> limit = vm -> get_int(2);
                 auto instance_id = self -> id;
+                auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
 
-                Tool::Thread::create([instance_id, promise_id](Tool::Thread*) {
+                Tool::Thread::create([instance_id, promise_id, query](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) {
                         Machine::enqueue([promise_id]() {
@@ -142,7 +140,7 @@ namespace Vital::Sandbox::API {
                     }
 
                     try {
-                        auto rows = instance -> query -> db -> fetch(instance -> query);
+                        auto rows = query -> db -> fetch(query.get());
                         Machine::enqueue([instance_id, promise_id, rows]() {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();
@@ -304,9 +302,10 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto instance_id = self -> id;
+                auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
 
-                Tool::Thread::create([instance_id, promise_id](Tool::Thread*) {
+                Tool::Thread::create([instance_id, promise_id, query](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) {
                         Machine::enqueue([promise_id]() {
@@ -320,7 +319,7 @@ namespace Vital::Sandbox::API {
                     }
 
                     try {
-                        bool result = instance -> query -> db -> execute(instance -> query);
+                        bool result = query -> db -> execute(query.get());
                         Machine::enqueue([instance_id, promise_id, result]() {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();

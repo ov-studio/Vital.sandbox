@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
 
         struct Instance : vm_instance<Instance> {
             using Owner = Database;
-            base_class* db = nullptr;
+            std::shared_ptr<base_class> db;
 
             bool is_alive() const { 
                 return db ? true : false;
@@ -41,7 +41,7 @@ namespace Vital::Sandbox::API {
                 if (!instance -> erase()) return;
                 if (instance -> db) {
                     instance -> db -> destroy();
-                    instance -> db = nullptr;
+                    instance -> db.reset();
                 }
                 instance -> release();
             }
