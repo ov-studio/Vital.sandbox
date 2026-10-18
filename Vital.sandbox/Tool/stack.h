@@ -21,6 +21,8 @@
 /////////////////////////
 
 namespace Vital::Tool {
+    inline constexpr int stack_max_depth = 64; // Maximum nesting depth when converting untrusted Variants - deeper values are truncated to nil
+
     struct Stack;
     struct StackValue {
         using stack_value = std::variant<
@@ -124,7 +126,8 @@ namespace Vital::Tool {
         }
         
         template<typename T = void>
-        static StackValue from_variant(const godot::Variant& v) {
+        static StackValue from_variant(const godot::Variant& v, int depth = 0) {
+            if (depth > stack_max_depth) return StackValue(nullptr);
             switch (v.get_type()) {
                 case godot::Variant::NIL:    return StackValue(nullptr);
                 case godot::Variant::BOOL:   return StackValue((bool)v);
@@ -135,11 +138,11 @@ namespace Vital::Tool {
                     const godot::Array arr = v;
                     auto nested = std::make_shared<Stack>();
                     nested -> array.reserve(arr.size());
-                    for (int i = 0; i < arr.size(); ++i) nested -> array.push_back(StackValue::from_variant(arr[i]));
+                    for (int i = 0; i < arr.size(); ++i) nested -> array.push_back(StackValue::from_variant(arr[i], depth + 1));
                     return StackValue(std::move(nested));
                 }
                 case godot::Variant::DICTIONARY:
-                    return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v)));
+                    return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v, depth + 1)));
                 default: return StackValue(nullptr);
             }
         }
@@ -226,19 +229,20 @@ namespace Vital::Tool {
             return dict;
         }
 
-        static Stack from_dict(const godot::Dictionary& dict) {
+        static Stack from_dict(const godot::Dictionary& dict, int depth = 0) {
             Stack stack;
-            if (dict.has("array")) {
+            if (depth > stack_max_depth) return stack;
+            if (dict.has("array") && dict["array"].get_type() == godot::Variant::ARRAY) {
                 const godot::Array arr = dict["array"];
                 stack.array.reserve(arr.size());
-                for (int i = 0; i < arr.size(); ++i) stack.array.push_back(StackValue::from_variant(arr[i]));
+                for (int i = 0; i < arr.size(); ++i) stack.array.push_back(StackValue::from_variant(arr[i], depth + 1));
             }
-            if (dict.has("object")) {
+            if (dict.has("object") && dict["object"].get_type() == godot::Variant::DICTIONARY) {
                 const godot::Dictionary obj = dict["object"];
                 const godot::Array keys = obj.keys();
                 for (int i = 0; i < keys.size(); ++i) {
                     std::string key = ((godot::String)keys[i]).utf8().get_data();
-                    stack.object[key] = StackValue::from_variant(obj[keys[i]]);
+                    stack.object[key] = StackValue::from_variant(obj[keys[i]], depth + 1);
                 }
             }
             return stack;
