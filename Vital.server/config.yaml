@@ -26,15 +26,11 @@ network:
   # Maximum concurrent clients. Default: 32
   max_peers: 32
 
-  # Join rate limit per IP. Stops reconnect spam, since every join makes the server
-  # send the full world state. A client that authenticates more than auth_rate_max
-  # times within auth_rate_window seconds is rejected until the window passes.
-  # Raise it if many players share one IP (LAN / NAT / same house). 0 disables the limit.
+  # Join rate limit per IP: at most auth_rate_max connections may authenticate within auth_rate_window seconds.
+  # Extra attempts are rejected. Raise it if many players share one IP (LAN/NAT). 0 disables the limit.
   # Range: 0-1000. Default: 6
   auth_rate_max: 6
-
-  # Length of the join rate limit window in seconds. Only used when auth_rate_max > 0.
-  # Short = forgiving, long = stricter.
+  
   # Range: 1-3600. Default: 10
   auth_rate_window: 10
 
