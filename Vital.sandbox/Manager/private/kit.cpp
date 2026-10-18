@@ -26,6 +26,11 @@ namespace Vital::Manager::Kit {
     static constexpr zip_uint64_t extract_max_entry_size = 2ull * 1024 * 1024 * 1024;
     static constexpr zip_uint64_t extract_max_total_size = 4ull * 1024 * 1024 * 1024;
 
+    static std::string to_lower(std::string value) {
+        for (auto& c : value) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return value;
+    }
+    
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::HTTP::get(url, {}, 120); }
