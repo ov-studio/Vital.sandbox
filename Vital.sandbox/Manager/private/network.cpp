@@ -495,6 +495,25 @@ namespace Vital::Manager {
             sm->disconnect_peer(id);
             return;
         }
+        
+        auto ep = _enet_peer_for(peer, id);
+        if (ep.is_valid()) {
+            const std::string ip = Tool::to_std_string(ep->get_remote_address());
+            const auto now = std::chrono::steady_clock::now();
+            if (auth_rate.size() > 1024) {
+                for (auto it = auth_rate.begin(); it != auth_rate.end();) {
+                    if (now - it->second.start > std::chrono::seconds(AUTH_RATE_WINDOW_SEC)) it = auth_rate.erase(it);
+                    else ++it;
+                }
+            }
+            auto& rate = auth_rate[ip];
+            if (rate.count == 0 || now - rate.start > std::chrono::seconds(AUTH_RATE_WINDOW_SEC)) { rate.start = now; rate.count = 0; }
+            if (++rate.count > AUTH_RATE_MAX) {
+                log("warn", fmt::format("authentication rejected <- peer {} (too many connections from {})", id, ip));
+                sm->disconnect_peer(id);
+                return;
+            }
+        }
         peer_serials[id] = fingerprint;
         sm->complete_auth(id);
     }

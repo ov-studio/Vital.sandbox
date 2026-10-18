@@ -101,6 +101,13 @@ namespace Vital::Manager {
             #else
             std::unordered_set<int> connected_peers;
             std::unordered_map<int, std::string> peer_serials;
+
+            struct AuthRate { 
+                std::chrono::steady_clock::time_point start; 
+                int count = 0; 
+            };
+            std::unordered_map<std::string, AuthRate> auth_rate;
+            
             const Config::Server* server_config = nullptr;
             std::string server_ip;
             #endif
@@ -286,6 +293,9 @@ namespace Vital::Manager {
             static constexpr int AUTH_MAX_PAYLOAD = 512;
             static constexpr int AUTH_MAX_FINGERPRINT = 256;
             static constexpr double AUTH_TIMEOUT = 5.0;
+            // Per-IP limit on accepted authentications, so reconnect churn can't force repeated full world dumps.
+            static constexpr int AUTH_RATE_MAX = 6;
+            static constexpr int AUTH_RATE_WINDOW_SEC = 10;
             void _on_auth_data(int id, const godot::PackedByteArray& data);
             void _on_peer_authentication_failed(int id);
             #if defined(VSDK_Client)
