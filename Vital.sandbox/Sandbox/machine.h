@@ -196,6 +196,7 @@ namespace Vital::Sandbox {
             double get_double(int idx = 1) { return lua_tonumber(state, idx); }
             std::string get_string(int idx = 1) { return lua_tostring(state, idx); }
             bool get_table(int idx = 1) { return lua_gettable(state, idx); }
+            bool get_raw_table(int idx = 1) { return lua_rawget(state, idx); }
             bool get_table_field(int value, int idx = 1) { return lua_geti(state, idx, value); }
             bool get_table_field(const std::string& value, int idx = 1) { return lua_getfield(state, idx, value.c_str()); }
             bool get_metatable(int idx = 1) { return lua_getmetatable(state, idx); }
@@ -307,6 +308,7 @@ namespace Vital::Sandbox {
 
             // Pushers //
             void push_global(const std::string& idx) { lua_setglobal(state, idx.c_str()); }
+            void push_global_table() { lua_pushglobaltable(state); }
             void push_nil() { lua_pushnil(state); }
             void push_bool(bool value) { lua_pushboolean(state, value); }
             void push_number(int value) { lua_pushinteger(state, value); }
