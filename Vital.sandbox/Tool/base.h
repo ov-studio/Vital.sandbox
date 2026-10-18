@@ -28,6 +28,7 @@ namespace Vital::Tool {
         // friend class Base<Derived>;
         protected:
             inline static Derived* singleton = nullptr;
+            
             Base() = default;
             virtual ~Base() = default;
         public:
