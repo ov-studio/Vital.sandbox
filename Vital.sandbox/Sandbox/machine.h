@@ -597,7 +597,8 @@ namespace Vital::Sandbox {
             void set_metatable(const std::string& idx) { luaL_setmetatable(state, idx.c_str()); }
             void seal_metatable() { table_set_value("__metatable", false); }
 
-            void copy_table(int idx = -1, bool recursive = false, int memo_idx = 0) {
+            void copy_table(int idx = -1, bool recursive = false, int memo_idx = 0, int depth = 0) {
+                if ((depth > 200) || !lua_checkstack(state, 8)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "table nesting too deep");
                 const int src_idx = get_absolute_index(idx);
                 if (recursive && !memo_idx) {
                     create_table();
@@ -623,7 +624,7 @@ namespace Vital::Sandbox {
                 while (next(src_idx)) {
                     push(-2);
                     if (memo_idx && is_table(-2)) {
-                        copy_table(-2, true, memo_idx);
+                        copy_table(-2, true, memo_idx, depth + 1);
                         remove(-3);
                     }
                     else rotate(-2, 1);
