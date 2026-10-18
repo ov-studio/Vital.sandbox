@@ -37,7 +37,6 @@ namespace Vital::Sandbox {
                 {"table", luaopen_table},
                 {"string", luaopen_string},
                 {"math", luaopen_math},
-                {"debug", luaopen_debug},
                 {"coroutine", luaopen_coroutine},
                 {"utf8", luaopen_utf8},
                 {"json", luaopen_rapidjson}
