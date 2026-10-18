@@ -31,6 +31,8 @@ network:
   # Range: 0-1000. Default: 6
   auth_rate_max: 6
   
+  # Length of the join rate limit window in seconds. Only used when auth_rate_max > 0.
+  # Short = forgiving, long = stricter.
   # Range: 1-3600. Default: 10
   auth_rate_window: 10
 
