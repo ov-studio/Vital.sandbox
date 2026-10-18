@@ -21,7 +21,6 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    static constexpr bool verify_exact_allowlist = true; // When true, the extracted toolkit may only contain files listed in checksum.json (plus checksum.json itself)
     static constexpr zip_int64_t extract_max_entries = 100000;
     static constexpr zip_uint64_t extract_max_entry_size = 2ull * 1024 * 1024 * 1024;
     static constexpr zip_uint64_t extract_max_total_size = 4ull * 1024 * 1024 * 1024;
@@ -70,18 +69,17 @@ namespace Vital::Manager::Kit {
         const std::filesystem::path checksum_file = root/"checksum.json";
         if (!std::filesystem::is_regular_file(checksum_file, ec)) { log("error", "verify ~ checksum.json missing from archive"); return false; }
         if (!remote_hash.empty() && to_lower(Tool::Crypto::hash_file("sha256", checksum_file.string())) != to_lower(remote_hash)) { log("error", "verify ~ checksum.json does not match release asset"); return false; }
-        if (verify_exact_allowlist) {
-            for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
-                const auto status = std::filesystem::symlink_status(it -> path(), ec);
-                if (ec) return false;
-                if (std::filesystem::is_directory(status)) continue;
-                const std::string rel = it -> path().lexically_relative(root).generic_string();
-                if (!std::filesystem::is_regular_file(status)) { log("error", fmt::format("verify ~ non-regular file | file ~ {}", rel)); return false; }
-                if (rel == "checksum.json") continue;
-                if (!listed.count(rel)) { log("error", fmt::format("verify ~ unlisted file | file ~ {}", rel)); return false; }
-            }
+        
+        for (std::filesystem::recursive_directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec)) {
+            const auto status = std::filesystem::symlink_status(it -> path(), ec);
             if (ec) return false;
+            if (std::filesystem::is_directory(status)) continue;
+            const std::string rel = it -> path().lexically_relative(root).generic_string();
+            if (!std::filesystem::is_regular_file(status)) { log("error", fmt::format("verify ~ non-regular file | file ~ {}", rel)); return false; }
+            if (rel == "checksum.json") continue;
+            if (!listed.count(rel)) { log("error", fmt::format("verify ~ unlisted file | file ~ {}", rel)); return false; }
         }
+        if (ec) return false;
         return true;
     }
     
@@ -259,7 +257,7 @@ namespace Vital::Manager::Kit {
                 if (to_lower(Tool::Crypto::hash_file("sha256", fmt::format("{}/{}", kit_dir, rel_path))) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
-            
+
             std::string v;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
