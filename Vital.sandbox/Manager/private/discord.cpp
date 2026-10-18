@@ -32,10 +32,10 @@ namespace Vital::Manager {
 
     // Managers //
     void Discord::init() {
-        default_application_id = static_cast<uint64_t>(std::stoull(Manager::Kit::get_singleton() -> fetch_json_value("config/discord", "application_id").as<std::string>()));
+        default_application_id = static_cast<uint64_t>(std::stoull(Manager::Kit::get_singleton() -> get_json_value("config/discord", "application_id").as<std::string>()));
         default_activity = {
-            Manager::Kit::get_singleton() -> fetch_json_value("config/discord", "state").as<std::string>(),
-            Manager::Kit::get_singleton() -> fetch_json_value("config/discord", "details").as<std::string>()
+            Manager::Kit::get_singleton() -> get_json_value("config/discord", "state").as<std::string>(),
+            Manager::Kit::get_singleton() -> get_json_value("config/discord", "details").as<std::string>()
         };
         reset_application();
     }
