@@ -201,7 +201,8 @@ namespace Vital::Tool {
 
         // Packet //
         bool is_packet(const std::string& type) const {
-            return object.count("packet") && object.at("packet").as<std::string>() == type;
+            auto it = object.find("packet");
+            return it != object.end() && it -> second.is<std::string>() && it -> second.as<std::string>() == type;
         }
 
         static Stack make_packet(const std::string& type, std::vector<StackValue> args = {}) {
