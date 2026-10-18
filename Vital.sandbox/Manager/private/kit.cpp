@@ -183,7 +183,11 @@ namespace Vital::Manager::Kit {
     bool ensure() {
         const std::string kit_dir = fmt::format("{}/{}", std::string(Internal::toolkit_base), std::string(Internal::toolkit_name));
         const std::string zip_path = fmt::format("{}/{}.zip", std::string(Internal::toolkit_base), std::string(Internal::toolkit_name));
-        auto [tag, zip_url, checksum_url] = fetch_release();
+        const auto release = fetch_release();
+        const auto& tag = std::get<0>(release);
+        const auto& zip_url = std::get<1>(release);
+        const auto& checksum_url = std::get<2>(release);
+        bool cache_fallback_allowed = false;
 
         if (tag.empty() || zip_url.empty()) {
             log("error", "status ~ release fetch failed");
