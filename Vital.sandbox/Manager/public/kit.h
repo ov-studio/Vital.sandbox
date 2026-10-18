@@ -38,40 +38,39 @@ namespace Vital::Manager {
             std::unordered_map<std::string, rapidjson::Document> json_cache;
 
             struct Internal {
-                public:
-                    // Helpers //
-                    static std::string to_lower(std::string value);
-                    static bool resolve_entry(const std::filesystem::path& root, const std::string& entry, std::filesystem::path& out);
-                    static bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash);
-                    template<typename... Keys>
-                    static const rapidjson::Value* get_json_detail(const rapidjson::Value* node, Keys&&... keys) {
-                        std::vector<std::string> key_list;
-                        (key_list.push_back([](auto&& k) -> std::string {
-                            using T = std::decay_t<decltype(k)>;
-                            if constexpr (std::is_integral_v<T>) return std::to_string(k);
-                            else return std::string(k);
-                        }(std::forward<Keys>(keys))), ...);
-                        for (const std::string& key : key_list) {
-                            bool is_idx = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
-                            if (is_idx) {
-                                if (!node -> IsArray()) return nullptr;
-                                const auto idx = static_cast<rapidjson::SizeType>(std::stoul(key));
-                                if (idx >= node -> Size()) return nullptr;
-                                node = &(*node)[idx];
-                            }
-                            else {
-                                if (!node -> IsObject() || !node -> HasMember(key.c_str())) return nullptr;
-                                node = &(*node)[key.c_str()];
-                            }
+                // Helpers //
+                static std::string to_lower(std::string value);
+                static bool resolve_entry(const std::filesystem::path& root, const std::string& entry, std::filesystem::path& out);
+                static bool verify_tree(const std::filesystem::path& root, const rapidjson::Document& checksum_doc, const std::string& remote_hash);
+                template<typename... Keys>
+                static const rapidjson::Value* get_json_detail(const rapidjson::Value* node, Keys&&... keys) {
+                    std::vector<std::string> key_list;
+                    (key_list.push_back([](auto&& k) -> std::string {
+                        using T = std::decay_t<decltype(k)>;
+                        if constexpr (std::is_integral_v<T>) return std::to_string(k);
+                        else return std::string(k);
+                    }(std::forward<Keys>(keys))), ...);
+                    for (const std::string& key : key_list) {
+                        bool is_idx = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
+                        if (is_idx) {
+                            if (!node -> IsArray()) return nullptr;
+                            const auto idx = static_cast<rapidjson::SizeType>(std::stoul(key));
+                            if (idx >= node -> Size()) return nullptr;
+                            node = &(*node)[idx];
                         }
-                        return node;
+                        else {
+                            if (!node -> IsObject() || !node -> HasMember(key.c_str())) return nullptr;
+                            node = &(*node)[key.c_str()];
+                        }
                     }
+                    return node;
+                }
 
 
-                    // Getters //
-                    static const std::string& get_version();
-                    static const std::string& get_content(std::string_view path);
-                    static rapidjson::Document& get_json(const std::string& name);
+                // Getters //
+                static const std::string& get_version();
+                static const std::string& get_content(std::string_view path);
+                static rapidjson::Document& get_json(const std::string& name);
             };
 
 
@@ -109,7 +108,7 @@ namespace Vital::Manager {
                 else if (node -> IsBool()) return node -> GetBool();
                 return {};
             }
-            
+
             std::vector<std::pair<std::string, std::string>> get_module(const std::string& name);
             std::tuple<std::string, std::string, std::string> get_release() const;
             rapidjson::Document get_checksum(const std::string& checksum_url, std::string& checksum_hash) const;
