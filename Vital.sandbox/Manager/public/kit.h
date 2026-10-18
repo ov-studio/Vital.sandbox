@@ -82,6 +82,9 @@ namespace Vital::Manager {
             const std::string& get_version();
             const std::string& get_content(std::string_view path);
             rapidjson::Document& get_json(const std::string& name);
+            std::vector<std::pair<std::string, std::string>> get_module(const std::string& name);
+            std::tuple<std::string, std::string, std::string> get_release() const;
+            rapidjson::Document get_checksum(const std::string& checksum_url, std::string& checksum_hash) const;
 
             template<typename... Keys>
             const rapidjson::Value* get_json_node(const std::string& name, Keys&&... keys) {
@@ -108,10 +111,6 @@ namespace Vital::Manager {
                 else if (node -> IsBool()) return node -> GetBool();
                 return {};
             }
-
-            std::vector<std::pair<std::string, std::string>> get_module(const std::string& name);
-            std::tuple<std::string, std::string, std::string> get_release() const;
-            rapidjson::Document get_checksum(const std::string& checksum_url, std::string& checksum_hash) const;
 
 
             // Misc //
