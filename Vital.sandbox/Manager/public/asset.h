@@ -55,8 +55,15 @@ namespace Vital::Manager {
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
             uint32_t spawn_generation = 0;
+            static constexpr int max_manifest_assets = 10000;
+            static constexpr int max_downloads = 4;
+            static constexpr size_t max_asset_size = 1024ull * 1024 * 1024;
+            static constexpr uint64_t max_session_size = 8ull * 1024 * 1024 * 1024;
+            std::deque<std::function<void()>> download_queue;
+            int running_downloads = 0;
+            std::atomic<uint64_t> session_bytes { 0 };
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
-            void _on_download_failed(const std::string& path);
+            void pump_downloads();
             void _on_file_ready(const std::string& path, const std::string& group);
             #else
             Tool::HTTP::Server http_server;

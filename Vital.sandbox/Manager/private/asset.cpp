@@ -45,6 +45,10 @@ namespace Vital::Manager {
         std::string file = (last_sep != std::string::npos) ? path.substr(last_sep + 1) : path;
         return Tool::File::hash(base, file);
     }
+
+    static bool is_valid_asset_path(const std::string& path) {
+        return path.size() <= 512 && path.rfind("resources/", 0) == 0 && Tool::File::sanitize(path);
+    }
     
 
     //----------------//
@@ -74,6 +78,7 @@ namespace Vital::Manager {
         group_pending_counts.clear();
         group_generations.clear();
         cancel_all();
+        download_queue.clear();
         active_downloads.clear();
         #else
         pending_manifest_peers.clear();
@@ -97,6 +102,7 @@ namespace Vital::Manager {
     //--------------------//
 
     void Asset::register_asset(const std::string& path, const std::string& group, bool silenced) {
+        if (!is_valid_asset_path(path)) { log("error", fmt::format("failed to register -> {} (invalid path)", path)); return; }
         if (registered_assets.count(path)) {
             if (!group.empty()) registered_assets[path].group = group;
             return;
@@ -284,8 +290,29 @@ namespace Vital::Manager {
     }
 
     void Asset::receive_manifest(const Tool::Stack& arguments) {
-        int count = arguments.object.at("asset_count").as<int32_t>();
-        int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
+        if (!arguments.object.count("asset_count")) return;
+        const int count = arguments.object.at("asset_count").as<int32_t>();
+        const int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
+        if (count < 0 || count > max_manifest_assets || http_port <= 0 || http_port > 65535) {
+            log("error", fmt::format("manifest rejected — invalid asset count or port ({}, {})", count, http_port));
+            return;
+        }
+        try {
+            for (int i = 0; i < count; i++) {
+                const std::string path_key = fmt::format("asset_path_{}", i);
+                const std::string hash_key = fmt::format("asset_hash_{}", i);
+                const std::string group_key = fmt::format("asset_group_{}", i);
+                if (!arguments.object.count(path_key) || !arguments.object.count(hash_key)) throw std::runtime_error("incomplete entry");
+                const std::string path = arguments.object.at(path_key).as<std::string>();
+                const std::string hash = arguments.object.at(hash_key).as<std::string>();
+                const std::string group = arguments.object.count(group_key) ? arguments.object.at(group_key).as<std::string>() : "";
+                if (!is_valid_asset_path(path) || hash.empty() || hash.size() > 128 || group.size() > 256) throw std::runtime_error(fmt::format("invalid entry `{}`", path.substr(0, 128)));
+            }
+        }
+        catch (const std::exception& e) {
+            log("error", fmt::format("manifest rejected — {}", e.what()));
+            return;
+        }
 
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url = fmt::format("http://{}:{}", server_ip, http_port);
@@ -355,8 +382,8 @@ namespace Vital::Manager {
         if (!group.empty()) dl -> groups.insert(group);
         active_downloads[path] = dl;
 
-        const std::string local_base = Tool::get_directory();
-        const std::string local_path = fmt::format("{}/{}", local_base, path);
+        const std::string local_path = fmt::format("{}/{}", Tool::get_directory(), path);
+        const std::string part_path = local_path + ".part";
 
         // Capture generation per group at dispatch time. If the group is cancelled
         // before this download completes, the generation will have been bumped and
@@ -364,71 +391,70 @@ namespace Vital::Manager {
         std::unordered_map<std::string, uint32_t> dispatch_gens;
         if (!group.empty()) dispatch_gens[group] = group_generations[group];
 
-        dl -> thread = std::thread([this, dl, path, expected_hash, base_url, local_path, group, dispatch_gens]() {
-            std::string response_body;
-            try { response_body = Tool::HTTP::get(fmt::format("{}/asset?path={}", base_url, path), {}, 60, true, &dl -> cancelled); }
-            catch (const std::exception& e) {
-                log("error", fmt::format("download failed — {}\n│ reason: {}", path, e.what()));
-                _on_download_failed(path);
-                return;
-            }
-
-            if (dl -> cancelled.load()) {
-                try { std::filesystem::remove(local_path); } catch (...) {}
-                log("sbox", fmt::format("download cancelled — {}", path));
-                active_downloads.erase(path);
-                return;
-            }
-
-            try { std::filesystem::create_directories(std::filesystem::path(local_path).parent_path()); }
-            catch (...) {}
-
-            std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
-            if (!out) {
-                log("error", fmt::format("download failed — {}\n│ reason: cannot open output file", path));
-                _on_download_failed(path);
-                return;
-            }
-            out.write(response_body.data(), static_cast<std::streamsize>(response_body.size()));
-            out.close();
-
-            try {
-                const std::string actual_hash = hash_file(local_path);
-                if (actual_hash != expected_hash) {
-                    try { std::filesystem::remove(local_path); } catch (...) {}
-                    log("error", fmt::format("download failed — {}\n│ reason: hash mismatch", path));
-                    _on_download_failed(path);
-                    return;
+        download_queue.push_back([this, dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
+            bool done = false;
+            std::string failure;
+            if (!dl -> cancelled.load()) {
+                const uint64_t used = session_bytes.load();
+                if (used >= max_session_size) failure = "session download quota exceeded";
+                else {
+                    try {
+                        const size_t limit = static_cast<size_t>(std::min<uint64_t>(max_asset_size, max_session_size - used));
+                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, path), part_path, limit, 60, &dl -> cancelled);
+                        if (done) {
+                            std::error_code size_ec;
+                            const auto size = std::filesystem::file_size(part_path, size_ec);
+                            if (!size_ec) session_bytes += size;
+                            if (hash_file(part_path) != expected_hash) { done = false; failure = "hash mismatch"; }
+                        }
+                    }
+                    catch (const std::exception& e) { done = false; failure = e.what(); }
                 }
             }
-            catch (...) { _on_download_failed(path); return; }
 
-            // Capture the groups this download belonged to before erasing it,
-            // so we can decrement all of them on the main thread.
-            const std::unordered_set<std::string> dl_groups = dl -> groups;
-            active_downloads.erase(path);
-            Engine::Core::get_singleton() -> enqueue([this, path, dl_groups, dispatch_gens]() {
-                for (const auto& g : dl_groups) {
-                    // Skip if the group was cancelled after this download was dispatched.
-                    auto gen_it = dispatch_gens.find(g);
-                    if (gen_it != dispatch_gens.end() && group_generations[g] != gen_it -> second) continue;
-                    _on_file_ready(path, g);
+            std::error_code ec;
+            if (done) {
+                std::filesystem::remove(local_path, ec);
+                ec.clear();
+                std::filesystem::rename(part_path, local_path, ec);
+                if (ec) { done = false; failure = "cannot move downloaded file"; }
+            }
+            if (!done) {
+                std::error_code cleanup_ec;
+                std::filesystem::remove(part_path, cleanup_ec);
+            }
+
+            Engine::Core::get_singleton() -> enqueue([this, dl, path, done, failure, dispatch_gens]() {
+                running_downloads--;
+                auto it = active_downloads.find(path);
+                if (it != active_downloads.end() && it -> second == dl) active_downloads.erase(it);
+                if (done) {
+                    for (const auto& g : dl -> groups) {
+                        // Skip if the group was cancelled after this download was dispatched.
+                        auto gen_it = dispatch_gens.find(g);
+                        if (gen_it != dispatch_gens.end() && group_generations[g] != gen_it -> second) continue;
+                        _on_file_ready(path, g);
+                    }
+                    if (!is_downloading()) {
+                        log("sbox", "all assets ready");
+                        Tool::Event::emit("asset:ready", {});
+                    }
                 }
-                if (!is_downloading()) {
-                    log("sbox", "all assets ready");
-                    Tool::Event::emit("asset:ready", {});
-                }
+                else if (dl -> cancelled.load()) log("sbox", fmt::format("download cancelled — {}", path));
+                else log("error", fmt::format("download failed — {}\n│ reason: {}", path, failure));
+                pump_downloads();
             });
         });
-
-        dl -> thread.detach();
+        pump_downloads();
     }
 
-    void Asset::_on_download_failed(const std::string& path) {
-        active_downloads.erase(path);
-        Engine::Core::get_singleton() -> enqueue([this, path]() {
-            log("error", fmt::format("download failed — {}", path));
-        });
+    void Asset::pump_downloads() {
+        while (running_downloads < max_downloads && !download_queue.empty()) {
+            auto task = std::move(download_queue.front());
+            download_queue.pop_front();
+            running_downloads++;
+            std::thread(std::move(task)).detach();
+        }
     }
 
     void Asset::cancel(const std::string& path, const std::string& group) {

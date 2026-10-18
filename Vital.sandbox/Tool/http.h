@@ -66,22 +66,70 @@ namespace Vital::Tool::HTTP {
         return result;
     }
 
-    inline std::string get(const std::string& url, const http_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr) {
+    inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
+    inline constexpr int max_inflight = 16;
+    inline std::atomic<int> inflight { 0 };
+
+    inline bool acquire_request() {
+        int current = inflight.load();
+        while (current < max_inflight) {
+            if (inflight.compare_exchange_weak(current, current + 1)) return true;
+        }
+        return false;
+    }
+
+    inline void release_request() {
+        inflight.fetch_sub(1);
+    }
+
+    inline bool stream(const std::string& url, const http_headers& headers, int timeout, bool follow_redirects, const std::atomic<bool>* cancelled, size_t max_bytes, const std::function<bool(const char*, size_t)>& sink) {
         std::string path;
         auto cli = make_client(url, path, 10, timeout, follow_redirects);
         auto httplib_headers = make_headers(headers);
-        std::string buffer;
-        auto res = cli.Get(path.c_str(), httplib_headers, [&buffer, cancelled](const char* data, size_t len) {
-            if (cancelled && cancelled->load()) return false;
-            buffer.append(data, len);
-            return true;
-        });
+        size_t received = 0;
+        bool exceeded = false;
+        httplib::ResponseHandler on_response = [&](const httplib::Response& res) {
+            if (res.status != 200 || !res.has_header("Content-Length")) return true;
+            try { exceeded = std::stoull(res.get_header_value("Content-Length")) > max_bytes; }
+            catch (const std::exception&) { exceeded = true; }
+            return !exceeded;
+        };
+        httplib::ContentReceiver on_data = [&](const char* data, size_t len) {
+            if (cancelled && cancelled -> load()) return false;
+            if (len > max_bytes - received) { exceeded = true; return false; }
+            received += len;
+            return sink(data, len);
+        };
+        auto res = cli.Get(path.c_str(), httplib_headers, on_response, on_data);
+        if (exceeded) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("response exceeds {} byte limit", max_bytes));
         if (!res) {
-            if (cancelled && res.error() == httplib::Error::Canceled) return "";
+            if (res.error() == httplib::Error::Canceled) return false;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
         }
         if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, std::to_string(res -> status));
+        return true;
+    }
+
+    inline std::string get(const std::string& url, const http_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr, size_t max_bytes = default_max_body) {
+        std::string buffer;
+        if (!stream(url, headers, timeout, follow_redirects, cancelled, max_bytes, [&buffer](const char* data, size_t len) { buffer.append(data, len); return true; })) return "";
         return buffer;
+    }
+
+    inline bool download(const std::string& url, const std::string& dest_path, size_t max_bytes, int timeout = 60, const std::atomic<bool>* cancelled = nullptr) {
+        std::error_code ec;
+        std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path(), ec);
+        std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
+        if (!out) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot open output file");
+        bool write_failed = false;
+        const bool completed = stream(url, {}, timeout, true, cancelled, max_bytes, [&](const char* data, size_t len) {
+            out.write(data, static_cast<std::streamsize>(len));
+            write_failed = !out;
+            return !write_failed;
+        });
+        out.close();
+        if (write_failed || out.fail()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to write output file");
+        return completed;
     }
 
     inline std::string post(const std::string& url, const std::string& body, const http_headers& headers = {}, int timeout = 60) {
