@@ -30,6 +30,7 @@ namespace Vital::Sandbox {
     template<typename Derived>
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
         using std::enable_shared_from_this<Derived>::shared_from_this;
+        
         private:
             std::vector<std::string> references;
         public:
