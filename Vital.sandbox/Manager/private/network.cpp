@@ -1146,7 +1146,7 @@ namespace Vital::Manager {
         if (data.size() < 8) return;
         if (Engine::ISyncable::read_u32(data, 0) != STATE_DUMP_MAGIC) return;
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 4);
-        if ((int)data.size() < 8 + (int)payload_bytes) return;
+        if ((uint64_t)data.size() < 8ull + payload_bytes) return;
 
         int my_id = get_peer_id();
         std::lock_guard<std::mutex> lock(sync_models_mutex);
@@ -1204,7 +1204,10 @@ namespace Vital::Manager {
         if (Engine::ISyncable::read_u32(data, 4) != STATE_DUMP_MAGIC) return;
 
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 8);
-        if ((int)data.size() < 12 + (int)payload_bytes) return;
+        if ((uint64_t)data.size() < 12ull + payload_bytes) return;
+
+        // Decode only the declared frame: entries must not read or relay bytes past the logical end.
+        const godot::PackedByteArray frame = data.slice(0, 12 + (int)payload_bytes);
 
         // Relay buffer: strip sender prefix, keep VSST header + variable entries.
         godot::PackedByteArray relay;
@@ -1224,24 +1227,25 @@ namespace Vital::Manager {
             int end    = 12 + (int)payload_bytes;
             while (offset < end) {
                 if (offset + 4 > end) break;
-                uint32_t net_id = Engine::ISyncable::read_u32(data, offset);
+                uint32_t net_id = Engine::ISyncable::read_u32(frame, offset);
                 godot::Vector3 pos, rot, vel, scale;
 
                 auto it = sync_id_map.find(net_id);
                 Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
                 int consumed;
-                if (model) consumed = model->parse_sync_packet_at(data, offset, net_id, pos, rot, vel, scale);
+                if (model) consumed = model->parse_sync_packet_at(frame, offset, net_id, pos, rot, vel, scale);
                 else {
                     godot::Vector3 dp, dr, dv, ds = godot::Vector3(1,1,1);
-                    consumed = Engine::ISyncable::decode_delta(data, offset, (int)data.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
+                    consumed = Engine::ISyncable::decode_delta(frame, offset, (int)frame.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
                 }
                 if (consumed < 0) break;
 
                 if (model && model->get_sync_authority() == sender) {
+                    if (relay_cursor + consumed > (int)relay.size()) break;
                     model->apply_sync(pos, rot, vel, scale);
                     // Copy variable-length entry verbatim into relay.
-                    for (int b = 0; b < consumed; b++) relay[relay_cursor + b] = data[offset + b];
+                    for (int b = 0; b < consumed; b++) relay[relay_cursor + b] = frame[offset + b];
                     relay_cursor += consumed;
                 }
                 offset += consumed;
