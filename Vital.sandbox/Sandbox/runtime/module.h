@@ -71,6 +71,7 @@ namespace Vital::Sandbox {
                     return 0;
                 }, 0);
                 vm -> set_table_field("__gc", -2);
+                vm -> seal_metatable();
                 vm -> pop(1);
 
                 entity_pool.emplace(name, [](Machine* vm, int& count, bool streamed) {
