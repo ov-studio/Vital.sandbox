@@ -152,12 +152,45 @@ namespace Vital::Manager::Kit {
         log("sbox", fmt::format("release ~ {}", tag));
 
         auto do_download = [&]() -> bool {
-            std::filesystem::remove_all(kit_dir);
+            if (checksum_url.empty()) { log("error", "status ~ download aborted | reason ~ release has no checksum.json"); return false; }
+            std::string remote_hash;
+            auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
+            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("error", "status ~ download aborted | reason ~ checksum fetch failed"); return false; }
+
+            const std::filesystem::path verify_dir = std::filesystem::path(kit_dir + ".verify");
+            const std::filesystem::path old_dir = std::filesystem::path(kit_dir + ".old");
+            std::error_code ec;
+            auto cleanup = [&]() {
+                std::error_code cleanup_ec;
+                std::filesystem::remove(zip_path, cleanup_ec);
+                std::filesystem::remove_all(verify_dir, cleanup_ec);
+            };
+
             log("sbox", "status ~ downloading");
-            if (!download(zip_url, zip_path)) { log("error", "status ~ download failed"); return false; }
+            if (!download(zip_url, zip_path)) { log("error", "status ~ download failed"); cleanup(); return false; }
             log("sbox", "status ~ extracting");
-            if (!extract(zip_path, kit_dir)) { log("error", "status ~ extraction failed"); return false; }
-            std::filesystem::remove(zip_path);
+            if (!extract(zip_path, verify_dir.string())) { log("error", "status ~ extraction failed"); cleanup(); return false; }
+            log("sbox", "status ~ verifying");
+            if (!verify_tree(verify_dir, checksum_doc, remote_hash)) { log("error", "status ~ verification failed | toolkit not installed"); cleanup(); return false; }
+
+            std::filesystem::remove_all(old_dir, ec);
+            ec.clear();
+            const bool had_previous = std::filesystem::exists(kit_dir);
+            if (had_previous) {
+                std::filesystem::rename(kit_dir, old_dir, ec);
+                if (ec) { log("error", "status ~ promotion failed"); cleanup(); return false; }
+            }
+            std::filesystem::rename(verify_dir, kit_dir, ec);
+            if (ec) {
+                log("error", "status ~ promotion failed");
+                std::error_code restore_ec;
+                if (had_previous) std::filesystem::rename(old_dir, kit_dir, restore_ec);
+                cleanup();
+                return false;
+            }
+            std::error_code final_ec;
+            std::filesystem::remove_all(old_dir, final_ec);
+            std::filesystem::remove(zip_path, final_ec);
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
                 Internal::version.clear();
