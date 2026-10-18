@@ -36,6 +36,15 @@ namespace Vital::Sandbox::API {
         }
         
         static void bind(Machine* vm) {
+            API::bind(vm, base_scope, "clone", [](auto vm, auto& id) -> int {
+                if (!vm -> is_table(1)) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+                vm -> copy_table(1, vm -> get_bool(2));
+                return 1;
+            });
+
             API::bind(vm, base_scope, "encode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_table);
