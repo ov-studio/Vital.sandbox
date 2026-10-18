@@ -595,6 +595,7 @@ namespace Vital::Sandbox {
             void set_table_field(int field, int idx = 1) { lua_seti(state, idx, field); }
             void set_table_field(const std::string& field, int idx = 1) { lua_setfield(state, idx, field.c_str()); }
             void set_metatable(int idx = 1) { lua_setmetatable(state, idx); }
+            void set_metatable(const std::string& idx) { luaL_setmetatable(state, idx.c_str()); }
             void seal_metatable() { table_set_value("__metatable", false); }
 
             void copy_table(int idx = -1, bool recursive = false, int memo_idx = 0) {
