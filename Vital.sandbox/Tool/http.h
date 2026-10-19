@@ -25,6 +25,25 @@
 namespace Vital::Tool::HTTP {
     using http_headers = std::vector<std::string>;
 
+    inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
+
+    // Holds one of the limited request slots. The constructor throws when too many requests
+    // are already running, and the slot is released automatically when the object is destroyed
+    struct Slot {
+        static constexpr int max_inflight = 50;
+        inline static std::atomic<int> inflight { 0 };
+
+        Slot() {
+            if (inflight.fetch_add(1) >= max_inflight) {
+                inflight.fetch_sub(1);
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "too many concurrent requests");
+            }
+        }
+        ~Slot() { inflight.fetch_sub(1); }
+        Slot(const Slot&) = delete;
+        Slot& operator=(const Slot&) = delete;
+    };
+    
     inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {
         size_t protocol_end = url.find("://");
         if (protocol_end == std::string::npos) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "url missing protocol scheme");
@@ -67,25 +86,6 @@ namespace Vital::Tool::HTTP {
         }
         return result;
     }
-
-    inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
-
-    // Holds one of the limited request slots. The constructor throws when too many requests
-    // are already running, and the slot is released automatically when the object is destroyed
-    struct Slot {
-        static constexpr int max_inflight = 16;
-        inline static std::atomic<int> inflight { 0 };
-
-        Slot() {
-            if (inflight.fetch_add(1) >= max_inflight) {
-                inflight.fetch_sub(1);
-                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "too many concurrent requests");
-            }
-        }
-        ~Slot() { inflight.fetch_sub(1); }
-        Slot(const Slot&) = delete;
-        Slot& operator=(const Slot&) = delete;
-    };
 
     inline bool stream(const std::string& url, const http_headers& headers, int timeout, bool follow_redirects, const std::atomic<bool>* cancelled, size_t max_bytes, const std::function<bool(const char*, size_t)>& sink) {
         std::string path;
