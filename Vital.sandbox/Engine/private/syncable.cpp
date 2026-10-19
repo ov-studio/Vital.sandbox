@@ -105,32 +105,40 @@ namespace Vital::Engine {
         out_id = read_u32(buffer, offset);
         uint16_t mask = read_u16(buffer, offset + 4);
         int cursor = offset + 6;
+
+        // Decode into the outputs (callers discard them on failure) and only commit to the persistent delta baseline once every component passed validation, so a rejected packet can't poison it
         out_pos = last_pos;
         out_rot = last_rot;
         out_vel = last_vel;
         out_scale = last_scale;
 
-        auto maybe_read = [&](bool bit, float& out, float& last) -> bool {
+        auto maybe_read = [&](bool bit, float& out) -> bool {
             if (!bit) return true;
             if (cursor + 4 > buf_size) return false;
-            out = read_f32(buffer, cursor);
-            last = out;
+            const float value = read_f32(buffer, cursor);
+            if (!std::isfinite(value)) return false; // NaN / +-inf would propagate into transforms and physics
+            out = value;
             cursor += 4;
             return true;
         };
 
-        if (!maybe_read(mask & MASK_PX, out_pos.x, last_pos.x)) return -1;
-        if (!maybe_read(mask & MASK_PY, out_pos.y, last_pos.y)) return -1;
-        if (!maybe_read(mask & MASK_PZ, out_pos.z, last_pos.z)) return -1;
-        if (!maybe_read(mask & MASK_RX, out_rot.x, last_rot.x)) return -1;
-        if (!maybe_read(mask & MASK_RY, out_rot.y, last_rot.y)) return -1;
-        if (!maybe_read(mask & MASK_RZ, out_rot.z, last_rot.z)) return -1;
-        if (!maybe_read(mask & MASK_VX, out_vel.x, last_vel.x)) return -1;
-        if (!maybe_read(mask & MASK_VY, out_vel.y, last_vel.y)) return -1;
-        if (!maybe_read(mask & MASK_VZ, out_vel.z, last_vel.z)) return -1;
-        if (!maybe_read(mask & MASK_SX, out_scale.x, last_scale.x)) return -1;
-        if (!maybe_read(mask & MASK_SY, out_scale.y, last_scale.y)) return -1;
-        if (!maybe_read(mask & MASK_SZ, out_scale.z, last_scale.z)) return -1;
+        if (!maybe_read(mask & MASK_PX, out_pos.x)) return -1;
+        if (!maybe_read(mask & MASK_PY, out_pos.y)) return -1;
+        if (!maybe_read(mask & MASK_PZ, out_pos.z)) return -1;
+        if (!maybe_read(mask & MASK_RX, out_rot.x)) return -1;
+        if (!maybe_read(mask & MASK_RY, out_rot.y)) return -1;
+        if (!maybe_read(mask & MASK_RZ, out_rot.z)) return -1;
+        if (!maybe_read(mask & MASK_VX, out_vel.x)) return -1;
+        if (!maybe_read(mask & MASK_VY, out_vel.y)) return -1;
+        if (!maybe_read(mask & MASK_VZ, out_vel.z)) return -1;
+        if (!maybe_read(mask & MASK_SX, out_scale.x)) return -1;
+        if (!maybe_read(mask & MASK_SY, out_scale.y)) return -1;
+        if (!maybe_read(mask & MASK_SZ, out_scale.z)) return -1;
+
+        last_pos = out_pos;
+        last_rot = out_rot;
+        last_vel = out_vel;
+        last_scale = out_scale;
         return cursor - offset;
     }
 }
