@@ -266,9 +266,12 @@ namespace Vital::Sandbox::API {
                 instance -> thread_state = nullptr;
                 auto promise = weak_promise.lock();
                 if (!API::Promise::is_pending(promise)) return;
-                int base = root_vm -> get_count() + 1;
-                thread_vm -> move(root_vm, nresults);
-                API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
+                if (nresults < 0) API::Promise::settle(promise, API::Promise::State::Rejected, root_vm, 0, 0);
+                else {
+                    int base = root_vm -> get_count() + 1;
+                    thread_vm -> move(root_vm, nresults);
+                    API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
+                }
             });
             API::Thread::safe_resume(instance, n_args);
         }
