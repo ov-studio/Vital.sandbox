@@ -205,7 +205,7 @@ namespace Vital::Manager {
 
     // Misc //
     bool Kit::download(const std::string& url, const std::string& dest_path) const {
-        try { return Tool::HTTP::download(url, dest_path, download_max_size, {}, 120); }
+        try { return Tool::HTTP::download(url, dest_path, Tool::HTTP::DEFAULT_MAX_DOWNLOAD, {}, 120); }
         catch (const std::exception& e) { log("error", fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
     }
 

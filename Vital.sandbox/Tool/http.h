@@ -24,7 +24,8 @@
 
 namespace Vital::Tool::HTTP {
     using http_headers = std::vector<std::string>;
-    inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
+    inline constexpr size_t DEFAULT_MAX_BODY = 64ull * 1024 * 1024;
+    inline constexpr size_t DEFAULT_MAX_DOWNLOAD = 1024ull * 1024 * 1024;
 
     // Holds one of the limited request slots. The constructor throws when too many requests
     // are already running, and the slot is released automatically when the object is destroyed
@@ -114,7 +115,7 @@ namespace Vital::Tool::HTTP {
         return true;
     }
 
-    inline std::string get(const std::string& url, const http_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr, size_t max_bytes = default_max_body) {
+    inline std::string get(const std::string& url, const http_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr, size_t max_bytes = DEFAULT_MAX_BODY) {
         std::string buffer;
         if (!stream(url, headers, timeout, follow_redirects, cancelled, max_bytes, [&buffer](const char* data, size_t len) { buffer.append(data, len); return true; })) return "";
         return buffer;

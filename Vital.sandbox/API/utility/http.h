@@ -25,7 +25,6 @@
 namespace Vital::Sandbox::API {
     struct HTTP : public vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "http"};
-        static constexpr size_t max_download_size = 1024ull * 1024 * 1024;
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {
@@ -110,7 +109,7 @@ namespace Vital::Sandbox::API {
                     std::filesystem::path part = dest;
                     part += ".part";
                     try {
-                        Tool::HTTP::download(url, part.string(), max_download_size, headers, timeout);
+                        Tool::HTTP::download(url, part.string(), Tool::HTTP::DEFAULT_MAX_DOWNLOAD, headers, timeout);
                         std::filesystem::rename(part, dest);
                         settle(API::Promise::State::Resolved, true);
                     }

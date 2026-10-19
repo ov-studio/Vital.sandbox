@@ -29,7 +29,6 @@ namespace Vital::Manager {
             static constexpr std::string_view toolkit_src = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
             static constexpr std::string_view toolkit_base = "cache";
             static constexpr std::string_view toolkit_name = "Vital.kit";
-            static constexpr size_t download_max_size = 1024ull * 1024 * 1024;
             static constexpr zip_uint64_t extract_max_ratio = 200;
             static constexpr zip_int64_t extract_max_entries = 100000;
             static constexpr zip_uint64_t extract_max_entry_size = 2ull * 1024 * 1024 * 1024;
