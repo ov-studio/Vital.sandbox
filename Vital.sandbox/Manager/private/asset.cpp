@@ -400,7 +400,7 @@ namespace Vital::Manager {
                 else {
                     try {
                         const size_t limit = static_cast<size_t>(std::min<uint64_t>(max_asset_size, max_session_size - used));
-                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, path), part_path, limit, 60, &dl -> cancelled);
+                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, path), part_path, limit, {}, 60, &dl -> cancelled);
                         if (done) {
                             std::error_code size_ec;
                             const auto size = std::filesystem::file_size(part_path, size_ec);
