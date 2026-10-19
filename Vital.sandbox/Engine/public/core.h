@@ -27,10 +27,10 @@ namespace Vital::Config {
 #endif
 
 namespace Vital::Engine {
-    class Core : public godot::Node {
+    class Core : public godot::Node, public Tool::Base<Core> {
         GDCLASS(Core, godot::Node)
+        friend class Tool::Base<Core>;
         protected:
-            inline static Core* singleton = nullptr;
             #if defined(VSDK_Client)
             inline static godot::WorldEnvironment* environment = nullptr;
             #endif
@@ -44,6 +44,8 @@ namespace Vital::Engine {
             #else
             std::unique_ptr<Config::Server> server_config;
             #endif
+        public:
+            static constexpr const char* Name = "Core.engine";
         private:
             // Instantiators //
             Core() = default;
