@@ -684,19 +684,20 @@ namespace Vital::Sandbox::API {
                 auto opts = read_emit_options(vm);
                 if (opts.remote) {
                     #if !defined(VSDK_Client)
+                    // A peer that isn't connected is skipped: the promise is rejected right away instead of throwing,
+                    // so awaiting scripts get a failed result and keep running.
                     if (opts.peer_id > 0 && !Manager::Network::get_singleton() -> is_peer_valid(opts.peer_id)) {
                         Tool::print("warn", fmt::format("event.emit_callback: peer '{}' is not connected, skipped", opts.peer_id));
-                        auto promise = API::Promise::make(vm);
-                        API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
-                        push_promise(vm, promise);
+                        auto rejected = API::Promise::make(vm);
+                        API::Promise::settle(rejected, API::Promise::State::Rejected, vm, 0, 0);
+                        push_promise(vm, rejected);
+                        return 1;
                     }
-                    else {
-                        // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
-                        verify_peer("event.emit_callback", opts.peer_id, true);
-                        #endif
-                        auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true, opts.collect_all);
-                        push_promise(vm, promise);
-                    }
+                    // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
+                    verify_peer("event.emit_callback", opts.peer_id, true);
+                    #endif
+                    auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true, opts.collect_all);
+                    push_promise(vm, promise);
                     return 1;
                 }
 
