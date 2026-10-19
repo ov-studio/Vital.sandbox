@@ -692,7 +692,7 @@ namespace Vital::Sandbox {
                 }
                 if (result != LUA_YIELD) {
                     if (on_finish) {
-                        on_finish(this, nresults);
+                        on_finish(this, result == LUA_OK ? nresults : -1);
                         on_finish = nullptr;
                     }
                     delete this;
