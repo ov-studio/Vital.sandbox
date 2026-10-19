@@ -496,7 +496,7 @@ namespace Vital::Manager {
     bool Asset::is_group_pending(const std::string& group) const { return group_pending_counts.count(group) > 0 && group_pending_counts.at(group) > 0; }
     void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
 
-    void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
+    void Asset::queue_spawn(const std::string& name, godot::ObjectID placeholder, int authority_peer) {
         spawn_queue[name].push_back({ placeholder, authority_peer });
         log("sbox", fmt::format("queued placeholder spawn -> {} (pending {})",
             name, spawn_queue[name].size()));
@@ -522,9 +522,8 @@ namespace Vital::Manager {
             }
             int hydrated = 0;
             for (auto& entry : pending) {
-                auto placeholder = static_cast<Engine::Model*>(entry.placeholder);
+                auto placeholder = godot::Object::cast_to<Engine::Model>(godot::ObjectDB::get_instance(entry.placeholder));
                 if (!placeholder) continue;
-                if (!godot::ObjectDB::get_instance(placeholder->get_instance_id())) continue;
                 placeholder->hydrate(entry.authority_peer);
                 ++hydrated;
             }

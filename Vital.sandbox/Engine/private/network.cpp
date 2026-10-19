@@ -152,7 +152,7 @@ namespace Vital::Engine {
                     object -> set_model_name(model_name);
                     object -> placeholder = true;
                     object -> set_visible(false);
-                    Manager::Asset::get_singleton() -> queue_spawn(model_name, object, authority);
+                    Manager::Asset::get_singleton() -> queue_spawn(model_name, godot::ObjectID(object -> get_instance_id()), authority);
                 }
                 Engine::Core::get_singleton() -> add_child(object);
                 // Register immediately so get_entity_by_net_id() works inside

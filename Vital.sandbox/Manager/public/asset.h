@@ -42,7 +42,7 @@ namespace Vital::Manager {
             };
 
             struct PendingSpawn {
-                void* placeholder = nullptr;
+                godot::ObjectID placeholder;   // resolved through ObjectDB on use - the node may be freed before the asset arrives
                 int authority_peer = 1;
             };
             #endif
@@ -118,7 +118,7 @@ namespace Vital::Manager {
             bool is_downloading() const;
             bool is_group_pending(const std::string& group) const;
             // TODO: REMOVE IT? or move under Model?
-            void queue_spawn(const std::string& name, void* placeholder, int authority_peer = 1);
+            void queue_spawn(const std::string& name, godot::ObjectID placeholder, int authority_peer = 1);
             void flush_spawn_queue(const std::string& loaded_name);
             // Drop pending placeholders (e.g. resource stop / unload).
             void clear_spawn_queue(const std::string& loaded_name);
