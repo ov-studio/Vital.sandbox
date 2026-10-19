@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/utility/promise.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 ///////////////////////
