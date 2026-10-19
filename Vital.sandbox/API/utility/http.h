@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
 
                 auto url = vm -> get_string(1);
                 auto path = vm -> get_string(2);
-                const std::string base = File::get_base(vm, path, true);
+                const std::string base = API::File::get_base(vm, path, true);
                 const std::filesystem::path dest = std::filesystem::path(base) / path;
                 Tool::HTTP::http_headers headers = {};
                 int timeout = 60;
