@@ -141,6 +141,7 @@ namespace Vital::Manager {
     }
 
     void Asset::unregister_asset(const std::string& path) {
+        std::unique_lock lock(registered_assets_mutex);
         auto it = registered_assets.find(path);
         if (it == registered_assets.end()) return;
         registered_assets.erase(it);
