@@ -252,10 +252,11 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        static void spawn_thread(Machine* vm, int exec_ref, int args_ref, std::shared_ptr<API::Promise::Instance> promise = nullptr) {
+        static void spawn_thread(Machine* vm, int exec_ref, int args_ref, std::shared_ptr<API::Promise::Instance> promise = nullptr, const std::string& env = "") {
             auto root_vm = vm -> get_root();
             vm -> get_raw_reference(exec_ref);
             auto instance = API::Thread::make(vm);
+            if (!env.empty()) instance -> env = env;
             vm -> get_raw_reference(exec_ref);
             int n_args = vm -> push_args(args_ref);
             vm -> move(instance -> thread_vm, 1 + n_args);
@@ -276,18 +277,19 @@ namespace Vital::Sandbox::API {
             std::shared_ptr<API::Promise::Instance> promise;
             if (mode == FireMode::EmitCallback) promise = API::Promise::make(vm);
             if (handler.async) {
+                const int base = vm -> get_count();
                 vm -> get_raw_reference(args_ref);
+                const int orig = vm -> get_count();
                 vm -> create_table();
-                int orig = vm -> get_count() - 1, copy = vm -> get_count();
+                const int copy = vm -> get_count();
                 int n = vm -> get_length(orig);
                 for (int i = 1; i <= n; ++i) {
                     vm -> table_get_value(i, orig);
                     vm -> set_table_field(i, copy);
                 }
-                vm -> rotate(-2, -1);
-                vm -> pop(1);
-                int args_ref_copy = vm -> set_raw_reference(-1);
-                spawn_thread(vm, handler.exec_ref, args_ref_copy, promise);
+                int args_ref_copy = vm -> set_raw_reference(copy);
+                vm -> pop(vm -> get_count() - base);
+                spawn_thread(vm, handler.exec_ref, args_ref_copy, promise, handler.env);
                 vm -> del_raw_reference(args_ref_copy);
             }
             else {
