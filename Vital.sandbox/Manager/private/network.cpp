@@ -141,6 +141,7 @@ namespace Vital::Manager {
         }
 
         Internal::disconnect_from_server();
+        if (auto* am = Manager::Asset::get_singleton()) am -> set_server_id(ip, port);
         nm -> create();
         nm -> peer.instantiate();
 

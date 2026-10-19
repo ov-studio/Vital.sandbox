@@ -146,6 +146,7 @@ namespace Vital::Manager {
             std::vector<const Manifest*> get_resources(State type) const;
             int get_resource_count(State type) const;
             static std::string get_resource_base(const std::string& name, bool require_running = false);
+            static std::string get_resources_root();
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::pair<std::string, std::string> get_resource_scoped_path(Vital::Sandbox::Machine* vm, std::string path);
 

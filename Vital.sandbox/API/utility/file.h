@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, path);
             path = relative;
             if (sanitize && !Tool::File::sanitize(path)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("invalid file path `{}`", path));
-            return resource.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(resource);
+            return resource.empty() ? Tool::get_directory(Manager::Resource::get_resources_root()) : Manager::Resource::get_resource_base(resource);
         }
 
         static std::string assert_file(Machine* vm, std::string& path) {

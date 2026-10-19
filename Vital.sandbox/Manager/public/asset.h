@@ -54,6 +54,7 @@ namespace Vital::Manager {
             std::unordered_map<std::string, int> group_pending_counts;
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
+            std::string server_id;
             uint32_t spawn_generation = 0;
             static constexpr int max_downloads = 4;
             static constexpr size_t max_asset_size = 1024ull * 1024 * 1024;
@@ -110,6 +111,8 @@ namespace Vital::Manager {
             #if defined(VSDK_Client)
             void receive_manifest(const Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
+            void set_server_id(const std::string& ip, int port);
+            std::string get_resources_root() const;
             void cancel(const std::string& path, const std::string& group = "");
             void cancel_group(const std::string& group);
             void cancel_all();

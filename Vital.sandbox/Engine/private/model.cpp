@@ -429,7 +429,7 @@ namespace Vital::Engine {
         std::vector<std::string> validated;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource, file))) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("{}/{}/{}", Vital::Manager::Resource::get_resources_root(), resource, file))) continue;
             validated.push_back(file);
         }
         return validated;
@@ -442,7 +442,7 @@ namespace Vital::Engine {
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string mn = fmt::format(":{}/{}", resource, file);
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource, file))) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("{}/{}/{}", Vital::Manager::Resource::get_resources_root(), resource, file))) continue;
             try {
                 const bool was_loaded = is_model_loaded(mn);
                 const std::string before = was_loaded ? cache_hashes[mn] : "";

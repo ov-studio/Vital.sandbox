@@ -920,7 +920,14 @@ namespace Vital::Manager {
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
         if (!is_name(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid resource name");
         if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("resource `{}` not running", name));
-        return Tool::get_directory("resources", name);
+        return Tool::get_directory(get_resources_root(), name);
+    }
+
+    std::string Resource::get_resources_root() {
+        #if defined(VSDK_Client)
+            if (auto* am = Asset::get_singleton()) return am -> get_resources_root();
+        #endif
+        return "resources";
     }
 
     std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {

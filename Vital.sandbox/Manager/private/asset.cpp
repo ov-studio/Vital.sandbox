@@ -47,10 +47,10 @@ namespace Vital::Manager {
     }
 
     // Resolves symlinks and confirms the final location is still inside `resources/`
-    static bool is_within_resources(const std::string& path) {
+    static bool is_within_resources(const std::string& root_dir, const std::string& path) {
         namespace fs = std::filesystem;
         std::error_code ec;
-        const auto root = fs::weakly_canonical(fmt::format("{}/resources", Tool::get_directory()), ec);
+        const auto root = fs::weakly_canonical(fmt::format("{}/{}", Tool::get_directory(), root_dir), ec);
         if (ec) return false;
         const auto target = fs::weakly_canonical(fmt::format("{}/{}", Tool::get_directory(), path), ec);
         if (ec) return false;
@@ -195,7 +195,7 @@ namespace Vital::Manager {
                 if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
             }
 
-            if (!is_within_resources(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
+            if (!is_within_resources("resources", path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
             const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
             std::ifstream file(full_path, std::ios::binary | std::ios::ate);
             if (!file) { res.status = 500; res.set_content("File read error", "text/plain"); return; }
@@ -394,7 +394,7 @@ namespace Vital::Manager {
             }
 
             bool hash_matches = false;
-            const std::string local_path = fmt::format("{}/{}", Tool::get_directory(), path);
+            const std::string local_path = fmt::format("{}/{}/{}", Tool::get_directory(), get_resources_root(), path.substr(10));
             try {
                 if (std::filesystem::exists(local_path)) hash_matches = (hash_file(local_path) == hash);
             }
@@ -425,7 +425,9 @@ namespace Vital::Manager {
         if (!group.empty()) dl -> groups.insert(group);
         active_downloads[path] = dl;
 
-        const std::string local_path = fmt::format("{}/{}", Tool::get_directory(), path);
+        const std::string resources_root = get_resources_root();
+        const std::string local_rel = fmt::format("{}/{}", resources_root, path.substr(10));
+        const std::string local_path = fmt::format("{}/{}", Tool::get_directory(), local_rel);
         const std::string part_path = local_path + ".part";
 
         // Capture generation per group at dispatch time. If the group is cancelled
@@ -434,12 +436,12 @@ namespace Vital::Manager {
         std::unordered_map<std::string, uint32_t> dispatch_gens;
         if (!group.empty()) dispatch_gens[group] = group_generations[group];
 
-        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
+        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), dl, path, expected_hash, base_url, resources_root, local_rel, local_path, part_path, dispatch_gens]() {
             bool done = false;
             std::string failure;
             if (!dl -> cancelled.load()) {
                 try {
-                    if (!is_within_resources(path) || !is_within_resources(path + ".part")) throw std::runtime_error("path escapes resources directory");
+                    if (!is_within_resources(resources_root, local_rel) || !is_within_resources(resources_root, local_rel + ".part")) throw std::runtime_error("path escapes resources directory");
                     done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, Tool::Crypto::encode(path)), part_path, max_asset_size, {}, 60, &dl -> cancelled);
                     if (done && hash_file(part_path) != expected_hash) { done = false; failure = "hash mismatch"; }
                 }
@@ -532,6 +534,13 @@ namespace Vital::Manager {
     bool Asset::is_downloading() const { return !active_downloads.empty(); }
     bool Asset::is_group_pending(const std::string& group) const { return group_pending_counts.count(group) > 0 && group_pending_counts.at(group) > 0; }
     void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
+
+    // Each server gets its own client folder (`resources/<id>/`) so same-named resources from different servers never overwrite each other
+    // The id is the first 16 hex chars of sha256(ip:port): short, stable, unique per server and always filesystem-safe
+    void Asset::set_server_id(const std::string& ip, int port) {
+        server_id = Tool::Crypto::hash("sha256", fmt::format("{}:{}", ip, port)).substr(0, 16);
+    }
+    std::string Asset::get_resources_root() const { return server_id.empty() ? "resources" : fmt::format("resources/{}", server_id); }
 
     void Asset::queue_spawn(const std::string& name, godot::ObjectID placeholder, int authority_peer) {
         spawn_queue[name].push_back({ placeholder, authority_peer });
