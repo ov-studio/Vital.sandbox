@@ -34,6 +34,7 @@ namespace Vital::Manager {
             static constexpr zip_int64_t extract_max_entries = 100000;
             static constexpr zip_uint64_t extract_max_entry_size = 2ull * 1024 * 1024 * 1024;
             static constexpr zip_uint64_t extract_max_total_size = 4ull * 1024 * 1024 * 1024;
+            
             mutable std::mutex mutex;
             std::string version = "";
             std::unordered_map<std::string, std::string> content_cache;
