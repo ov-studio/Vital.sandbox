@@ -745,8 +745,8 @@ namespace Vital::Engine {
                 if (i + 7 > params.size()) break;
                 float px = (float)params[i++], py = (float)params[i++], pz = (float)params[i++];
                 float rx = (float)params[i++], ry = (float)params[i++], rz = (float)params[i++];
-                int   count = (int)params[i++];
-                if (i + count * 3 > params.size()) break;
+                int count = (int)params[i++];
+                if (count < 0 || count > (params.size() - i) / 3) break;
 
                 godot::PackedVector3Array verts;
                 verts.resize(count);
