@@ -120,13 +120,13 @@ namespace Vital::Tool::HTTP {
         return buffer;
     }
 
-    inline bool download(const std::string& url, const std::string& dest_path, size_t max_bytes, int timeout = 60, const std::atomic<bool>* cancelled = nullptr) {
+    inline bool download(const std::string& url, const std::string& dest_path, size_t max_bytes, const http_headers& headers = {}, int timeout = 60, const std::atomic<bool>* cancelled = nullptr) {
         std::error_code ec;
         std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path(), ec);
         std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
         if (!out) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "cannot open output file");
         bool write_failed = false;
-        const bool completed = stream(url, {}, timeout, true, cancelled, max_bytes, [&](const char* data, size_t len) {
+        const bool completed = stream(url, headers, timeout, true, cancelled, max_bytes, [&](const char* data, size_t len) {
             out.write(data, static_cast<std::streamsize>(len));
             write_failed = !out;
             return !write_failed;
