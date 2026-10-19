@@ -680,7 +680,7 @@ namespace Vital::Engine {
         // Input is read on its own thread from the first moment, but every command touches managers (kit config, resources, sandbox) that only exist once boot has finished
         auto core = Engine::Core::get_singleton();
         if (!core || !core -> is_ready()) {
-            print("warn", "Server is still starting, try again in a moment");
+            log("warn", "Server is still starting, try again in a moment");
             return;
         }
     
