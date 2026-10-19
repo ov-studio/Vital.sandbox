@@ -26,7 +26,7 @@
 namespace Vital::Engine {
     // Managers //
     godot::Variant Monitor::dispatch(const godot::String& key) {
-        auto std_key = std::string(key.utf8().get_data());
+        auto std_key = Tool::to_std_string(key);
         auto it = Sandbox::API::Monitor::buffer.find(std_key);
         if (it == Sandbox::API::Monitor::buffer.end()) return 0;
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();

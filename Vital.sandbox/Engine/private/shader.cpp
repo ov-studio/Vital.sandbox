@@ -61,7 +61,7 @@ namespace Vital::Engine {
         for (int i = 0; i < list.size(); i++) {
             auto dict = static_cast<godot::Dictionary>(list[i]);
             auto name = static_cast<godot::String>(dict.get("name", godot::String()));
-            if (std::string(name.utf8().get_data()) == SENTINEL) {
+            if (Tool::to_std_string(name) == SENTINEL) {
                 sentinel_found = true;
                 break;
             }
@@ -278,7 +278,7 @@ namespace Vital::Engine {
     }
 
     std::string Shader::get_code() const {
-        return std::string(shader -> get_code().utf8().get_data());
+        return Tool::to_std_string(shader -> get_code());
     }
 
     godot::Ref<godot::ShaderMaterial> Shader::get_material() const {
