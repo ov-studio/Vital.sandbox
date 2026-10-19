@@ -175,7 +175,9 @@ namespace Vital::Manager {
 
         http_server.get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
             if (!req.has_param("path")) { res.status = 400; res.set_content("Missing path", "text/plain"); return; }
-            const std::string path = req.get_param_value("path");
+            auto encoded = req.get_param_value("path");
+            std::replace(encoded.begin(), encoded.end(), ' ', '+'); // httplib decodes '+' as space in query values
+            const std::string path = Tool::Crypto::decode(encoded);
             {
                 std::shared_lock lock(registered_assets_mutex);
                 if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
@@ -211,18 +213,25 @@ namespace Vital::Manager {
         });
 
         http_server.get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
-            std::string body = "{\"assets\":[";
-            bool first = true;
-            std::shared_lock lock(registered_assets_mutex);
-            for (auto& [path, entry] : registered_assets) {
-                if (!first) body += ",";
-                body += fmt::format("{{\"path\":\"{}\",\"hash\":\"{}\"", path, entry.hash);
-                if (!entry.group.empty()) body += fmt::format(",\"group\":\"{}\"", entry.group);
-                body += "}";
-                first = false;
+            rapidjson::Document document;
+            document.SetObject();
+            auto& allocator = document.GetAllocator();
+            rapidjson::Value assets(rapidjson::kArrayType);
+            {
+                std::shared_lock lock(registered_assets_mutex);
+                for (auto& [path, entry] : registered_assets) {
+                    rapidjson::Value item(rapidjson::kObjectType);
+                    item.AddMember("path", rapidjson::Value(path.c_str(), static_cast<rapidjson::SizeType>(path.size()), allocator), allocator);
+                    item.AddMember("hash", rapidjson::Value(entry.hash.c_str(), static_cast<rapidjson::SizeType>(entry.hash.size()), allocator), allocator);
+                    if (!entry.group.empty()) item.AddMember("group", rapidjson::Value(entry.group.c_str(), static_cast<rapidjson::SizeType>(entry.group.size()), allocator), allocator);
+                    assets.PushBack(item, allocator);
+                }
             }
-            body += "]}";
-            res.set_content(body, "application/json");
+            document.AddMember("assets", assets, allocator);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            document.Accept(writer);
+            res.set_content(buffer.GetString(), "application/json");
         });
 
         http_server.get("/info", [this](const httplib::Request&, httplib::Response& res) {
@@ -421,7 +430,7 @@ namespace Vital::Manager {
                 else {
                     try {
                         const size_t limit = static_cast<size_t>(std::min<uint64_t>(max_asset_size, max_session_size - used));
-                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, path), part_path, limit, {}, 60, &dl -> cancelled);
+                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, Tool::Crypto::encode(path)), part_path, limit, {}, 60, &dl -> cancelled);
                         if (done) {
                             std::error_code size_ec;
                             const auto size = std::filesystem::file_size(part_path, size_ec);
