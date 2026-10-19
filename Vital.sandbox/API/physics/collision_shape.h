@@ -301,10 +301,11 @@ namespace Vital::Sandbox::API {
              *   shape_type = "none" skips the mesh entirely (no CollisionShape3D created for it).
              *
              * Sync behaviour:
-             *   Server broadcasts "mesh_ref" with all per-child shape data packed into params.
-             *   Clients reconstruct the full set of child CollisionShape3D nodes from that single RPC.
-             *   Late-joiners are covered by the existing join-sync path in Manager/private/network.cpp
-             *   which was extended to serialise ConvexPolygonShape3D and ConcavePolygonShape3D children.
+             *   Server broadcasts "mesh_ref": the model asset name, which meshes to use and where to place them.
+             *   Clients rebuild the shapes from their own loaded copy of that asset, so the model entity can be
+             *   destroyed right after this call and clients that are still downloading the asset simply wait for it.
+             *   Late-joiners receive the same reference (Collision_Shape::mesh_ref) from the join-sync path in
+             *   Manager/private/network.cpp - no geometry is ever sent over the network for model-based shapes.
              */
              // TODO: Improve
             API::Syncable::bind_method<Instance>(vm, "set_shape_mesh", [](auto vm, auto self, auto& id) -> int {
