@@ -663,7 +663,9 @@ namespace Vital::Sandbox {
                     push(idx + i);
                     set_table_field(i + 1, -2);
                 }
-                return set_raw_reference(-1);
+                int ref = set_raw_reference(-1);
+                pop(1);
+                return ref;
             }
 
             int push_args(int ref) {
