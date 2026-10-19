@@ -412,11 +412,11 @@ namespace Vital::Manager {
         std::unordered_map<std::string, uint32_t> dispatch_gens;
         if (!group.empty()) dispatch_gens[group] = group_generations[group];
 
-        download_queue.push_back([this, dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
+        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), bytes = session_bytes, dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
             bool done = false;
             std::string failure;
             if (!dl -> cancelled.load()) {
-                const uint64_t used = session_bytes.load();
+                const uint64_t used = bytes -> load();
                 if (used >= max_session_size) failure = "session download quota exceeded";
                 else {
                     try {
@@ -425,7 +425,7 @@ namespace Vital::Manager {
                         if (done) {
                             std::error_code size_ec;
                             const auto size = std::filesystem::file_size(part_path, size_ec);
-                            if (!size_ec) session_bytes += size;
+                            if (!size_ec) *bytes += size;
                             if (hash_file(part_path) != expected_hash) { done = false; failure = "hash mismatch"; }
                         }
                     }
@@ -445,7 +445,10 @@ namespace Vital::Manager {
                 std::filesystem::remove(part_path, cleanup_ec);
             }
 
-            Engine::Core::get_singleton() -> enqueue([this, dl, path, done, failure, dispatch_gens]() {
+            // The manager is gone (shutdown) - nothing left to report to
+            if (alive.expired()) return;
+            Engine::Core::get_singleton() -> enqueue([this, alive, dl, path, done, failure, dispatch_gens]() {
+                if (alive.expired()) return;
                 running_downloads--;
                 auto it = active_downloads.find(path);
                 if (it != active_downloads.end() && it -> second == dl) active_downloads.erase(it);

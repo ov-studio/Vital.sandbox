@@ -37,7 +37,6 @@ namespace Vital::Manager {
             struct Download {
                 std::string path;
                 std::unordered_set<std::string> groups;
-                std::thread thread;
                 std::atomic<bool> cancelled { false };
             };
 
@@ -62,7 +61,9 @@ namespace Vital::Manager {
             static constexpr uint64_t max_session_size = 8ull * 1024 * 1024 * 1024;
             std::deque<std::function<void()>> download_queue;
             int running_downloads = 0;
-            std::atomic<uint64_t> session_bytes { 0 };
+            // Download workers are detached, so they never touch `this`: the byte counter is shared with them and `lifetime` lets their main-thread completion callback tell whether this manager still exists
+            std::shared_ptr<std::atomic<uint64_t>> session_bytes = std::make_shared<std::atomic<uint64_t>>(0);
+            std::shared_ptr<bool> lifetime = std::make_shared<bool>(true);
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void pump_downloads();
             void _on_file_ready(const std::string& path, const std::string& group);
