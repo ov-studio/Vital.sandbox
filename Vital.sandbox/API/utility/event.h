@@ -171,12 +171,13 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static void send_reply(uint32_t serial, int reply_peer, const std::vector<Tool::StackValue>* results = nullptr) {
+        static void send_reply(uint32_t serial, int reply_peer, const std::vector<Tool::StackValue>* results = nullptr, bool failed = false) {
             #if !defined(VSDK_Client)
             if (reply_peer <= 0) return;
             #endif
             Tool::Stack reply;
             reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
+            if (failed) reply.object["__reply_error"] = Tool::StackValue(true);
             if (results) for (auto& v : *results) reply.array.push_back(v);
             send_packet(reply, reply_peer);
         }
@@ -418,6 +419,11 @@ namespace Vital::Sandbox::API {
                 int base = root_vm -> get_count() + 1;
                 int count = static_cast<int>(payload.array.size());
                 for (auto& v : payload.array) root_vm -> push_value(v);
+                auto error_ptr = payload.get("__reply_error");
+                if (error_ptr && error_ptr -> is<bool>() && error_ptr -> as<bool>()) {
+                    API::Promise::settle(promise, API::Promise::State::Rejected, root_vm, 0, 0);
+                    return;
+                }
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, count);
                 return;
             }
@@ -482,11 +488,13 @@ namespace Vital::Sandbox::API {
                     results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
                     root_vm -> pop(1);
                 }
-                send_reply(serial, reply_peer, &results.array);
+                send_reply(serial, reply_peer, &results.array, agg -> state == API::Promise::State::Rejected);
                 return;
             }
-            register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
-                send_reply(serial, reply_peer, &results.array);
+            std::weak_ptr<API::Promise::Instance> weak_agg = agg;
+            register_reply_callback(agg, [serial, reply_peer, weak_agg](Machine* root_vm, const Tool::Stack& results) {
+                auto settled = weak_agg.lock();
+                send_reply(serial, reply_peer, &results.array, settled && settled -> state == API::Promise::State::Rejected);
             });
         }
 
