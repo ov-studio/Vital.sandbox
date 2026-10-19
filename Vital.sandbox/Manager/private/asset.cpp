@@ -103,13 +103,21 @@ namespace Vital::Manager {
 
     void Asset::register_asset(const std::string& path, const std::string& group, bool silenced) {
         if (!is_valid_asset_path(path)) { log("error", fmt::format("failed to register -> {} (invalid path)", path)); return; }
-        if (registered_assets.count(path)) {
-            if (!group.empty()) registered_assets[path].group = group;
-            return;
+        {
+            std::unique_lock lock(registered_assets_mutex);
+            auto existing = registered_assets.find(path);
+            if (existing != registered_assets.end()) {
+                if (!group.empty()) existing -> second.group = group;
+                return;
+            }
         }
         try {
             const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
-            registered_assets[path] = { hash_file(full_path), group };
+            const std::string hash = hash_file(full_path);
+            {
+                std::unique_lock lock(registered_assets_mutex);
+                registered_assets[path] = { hash, group };
+            }
             if (!silenced) {
                 std::string report = fmt::format("registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
                 report += fmt::format("> `{}`", path);
@@ -140,9 +148,12 @@ namespace Vital::Manager {
 
     void Asset::unregister_group(const std::string& group) {
         int count = 0;
-        for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
-            if (it -> second.group == group) { it = registered_assets.erase(it); count++; }
-            else ++it;
+        {
+            std::unique_lock lock(registered_assets_mutex);
+            for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
+                if (it -> second.group == group) { it = registered_assets.erase(it); count++; }
+                else ++it;
+            }
         }
         log("sbox", fmt::format("unregistered group `{}` — {} asset(s) removed", group, count));
     }
@@ -159,7 +170,10 @@ namespace Vital::Manager {
         http_server.get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
             if (!req.has_param("path")) { res.status = 400; res.set_content("Missing path", "text/plain"); return; }
             const std::string path = req.get_param_value("path");
-            if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
+            {
+                std::shared_lock lock(registered_assets_mutex);
+                if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
+            }
 
             const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
             std::ifstream file(full_path, std::ios::binary | std::ios::ate);
@@ -193,6 +207,7 @@ namespace Vital::Manager {
         http_server.get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
             std::string body = "{\"assets\":[";
             bool first = true;
+            std::shared_lock lock(registered_assets_mutex);
             for (auto& [path, entry] : registered_assets) {
                 if (!first) body += ",";
                 body += fmt::format("{{\"path\":\"{}\",\"hash\":\"{}\"", path, entry.hash);

@@ -47,6 +47,7 @@ namespace Vital::Manager {
             };
             #endif
 
+            mutable std::shared_mutex registered_assets_mutex;
             std::unordered_map<std::string, AssetEntry> registered_assets;
             #if defined(VSDK_Client)
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
