@@ -43,17 +43,17 @@ namespace Vital::Engine {
 
         kit_abort.store(false);
         Tool::Event::emit("core:preready");
-        Tool::print("sbox", "Core: bootstrapping Vital.kit...");
+        log("sbox", "bootstrapping Vital.kit...");
         Manager::Kit::get_singleton();
         kit_thread = std::thread([this]() {
             const bool kit_ok = Manager::Kit::get_singleton() -> ensure();
             if (!kit_abort.load() && !kit_ok) {
-                Tool::print("error", "Core: Vital.kit unavailable (download/verification failed and no usable cache); not starting");
+                log("error", "Vital.kit unavailable (download/verification failed and no usable cache); not starting");
                 return;
             }
             if (!kit_abort.load()) {
                 enqueue([this]() {
-                    Tool::print("sbox", "Core: Vital.kit ready");
+                    log("sbox", "Vital.kit ready");
                     #if defined(VSDK_Client)
                     http_server.set_bind_address("127.0.0.1");
                     http_server.set_label("Core");
@@ -200,7 +200,7 @@ namespace Vital::Engine {
     }
 
     void Core::reset() {
-        Tool::print("sbox", "Core: resetting session...");
+        log("sbox", "resetting session...");
         Manager::Resource::get_singleton() -> stop_all();
         #if defined(VSDK_Client)
         Manager::Network::get_singleton() -> reset();
@@ -214,7 +214,7 @@ namespace Vital::Engine {
     }
 
     void Core::teardown() {
-        Tool::print("sbox", "Core: tearing down...");
+        log("sbox", "tearing down...");
         Engine::Console::get_singleton() -> teardown();
         reset();
         #if !defined(VSDK_Client)
@@ -226,10 +226,10 @@ namespace Vital::Engine {
     }
 
     void Core::shutdown() {
-        Tool::print("sbox", "Core: shutting down...");
+        log("sbox", "shutting down...");
         enqueue([this]() {
             teardown();
-            Tool::print("sbox", "Core: shut down successfully!");
+            log("sbox", "shut down successfully!");
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
         });
