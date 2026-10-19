@@ -30,7 +30,7 @@ namespace Vital::Tool::HTTP {
     // Holds one of the limited request slots. The constructor throws when too many requests
     // are already running, and the slot is released automatically when the object is destroyed
     struct Slot {
-        static constexpr int max_inflight = 50;
+        static constexpr int max_inflight = 64;
         inline static std::atomic<int> inflight { 0 };
 
         Slot() {
