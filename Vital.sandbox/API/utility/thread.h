@@ -53,12 +53,11 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static std::shared_ptr<Instance> make(Machine* vm, bool push_to_stack = false) {
-            const int exec_idx = vm -> get_absolute_index(-1);
             auto instance = Instance::init(vm);
             auto thread_vm = vm -> create_thread();
             instance -> thread_vm = thread_vm;
             instance -> thread_state = thread_vm -> get_state();
-            instance -> set_reference(instance -> value_reference("exec"), exec_idx);
+            instance -> set_reference(instance -> value_reference("exec"), vm -> get_absolute_index(-2));
             instance -> set_reference(instance -> value_reference("thread"), vm -> get_absolute_index(-1));
             vm -> pop(2);
             instance -> store(push_to_stack);
