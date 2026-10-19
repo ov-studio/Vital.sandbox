@@ -145,7 +145,7 @@ namespace Vital::Manager {
         nm -> create();
         nm -> peer.instantiate();
 
-        godot::Error err = nm -> peer->create_client(godot::String(ip.c_str()), port, 0, 0, 0);
+        godot::Error err = nm -> peer->create_client(Tool::to_godot_string(ip), port, 0, 0, 0);
         if (err != godot::OK) {
             nm -> log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             nm -> peer.unref();
@@ -1649,7 +1649,7 @@ namespace Vital::Manager {
                     node->rpc_id(id, "_spawn_wheel", (int)e->get_net_id(), wheel->get_wheel_id(), wheel->get_position(), wheel->get_rotation());
 
                     auto send_cfg = [&](const char* key, godot::Variant val) {
-                        node->rpc_id(id, "_sync_wheel_config", (int)e->get_net_id(), wheel->get_wheel_id(), godot::String(key), val);
+                        node->rpc_id(id, "_sync_wheel_config", (int)e->get_net_id(), wheel->get_wheel_id(), Tool::to_godot_string(key), val);
                     };
                     send_cfg("radius",                 wheel->get_radius());
                     send_cfg("suspension_rest_length", wheel->get_suspension_rest_length());

@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
                 }
                 
                 auto net = Manager::Network::get_singleton() -> get_node();
-                if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key), value);
+                if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), Tool::to_godot_string(key), value);
                 #endif
             }
 
@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                     pending_spawn = false;
                 }
                 for (auto& [key, value] : pending_configs) {
-                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key.c_str()), value);
+                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), Tool::to_godot_string(key), value);
                 }
                 pending_configs.clear();
                 if (pending_transform) {

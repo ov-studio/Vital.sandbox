@@ -119,7 +119,7 @@ namespace Vital::Engine {
                 if (!pending_shape_broadcast.has_value()) return;
 
                 auto net_node = Manager::Network::get_singleton() -> get_node();
-                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, godot::String(pending_shape_broadcast -> type.c_str()), pending_shape_broadcast -> params);
+                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, Tool::to_godot_string(pending_shape_broadcast -> type), pending_shape_broadcast -> params);
                 pending_shape_broadcast.reset();
             }
 
@@ -166,7 +166,7 @@ namespace Vital::Engine {
                         net_id = next_net_id++;
                         pending_authority = authority_peer;
                         uint32_t captured_id = net_id;
-                        godot::String captured_name = godot::String(get_sync_name().c_str());
+                        godot::String captured_name = Tool::to_godot_string(get_sync_name());
                         godot::ObjectID captured_oid = godot::ObjectID(get_instance_id());
                         Core::get_singleton() -> add_child(this);
                         Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {

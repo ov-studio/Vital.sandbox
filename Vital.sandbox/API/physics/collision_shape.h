@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                 }
 
                 auto net = Manager::Network::get_singleton() -> get_node();
-                if (net) net -> rpc("_sync_shape", (int)nid, godot::String(shape_type), params);
+                if (net) net -> rpc("_sync_shape", (int)nid, Tool::to_godot_string(shape_type), params);
                 #endif
             }
         };
@@ -377,9 +377,9 @@ namespace Vital::Sandbox::API {
                     #if !defined(VSDK_Client)
                     {
                         godot::Array p;
-                        p.push_back(godot::String(model_node -> get_model_name().c_str())); // the loaded model asset, not the entity - the entity may be destroyed right after
+                        p.push_back(Tool::to_godot_string(model_node -> get_model_name())); // the loaded model asset, not the entity - the entity may be destroyed right after
                         p.push_back((int)0); // mode 0: single mesh — shape goes directly on the sync target (`col`), no anchor/children involved.
-                        p.push_back(godot::String(used_component.c_str()));
+                        p.push_back(Tool::to_godot_string(used_component));
                         p.push_back(godot::String(shape_type == "concave" ? "concave" : "convex"));
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos (identity — body origin)
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // rot (euler deg)
@@ -400,7 +400,7 @@ namespace Vital::Sandbox::API {
     
                     #if !defined(VSDK_Client)
                     godot::Array sync_params;
-                    sync_params.push_back(godot::String(model_node -> get_model_name().c_str())); // the loaded model asset, not the entity
+                    sync_params.push_back(Tool::to_godot_string(model_node -> get_model_name())); // the loaded model asset, not the entity
                     sync_params.push_back((int)1); // mode 1: include_children — `col` stays the (untouched) anchor, every matched mesh becomes its own child.
                     #endif
     
@@ -424,7 +424,7 @@ namespace Vital::Sandbox::API {
                         child -> set_disabled(false);
 
                         #if !defined(VSDK_Client)
-                        sync_params.push_back(godot::String(component.c_str()));
+                        sync_params.push_back(Tool::to_godot_string(component));
                         sync_params.push_back(godot::String(resolved == "concave" ? "concave" : "convex"));
                         sync_params.push_back(rel.origin.x);
                         sync_params.push_back(rel.origin.y);
