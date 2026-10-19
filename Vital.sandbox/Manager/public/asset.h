@@ -55,14 +55,11 @@ namespace Vital::Manager {
             std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
             uint32_t spawn_generation = 0;
-            static constexpr int max_manifest_assets = 10000;
             static constexpr int max_downloads = 4;
             static constexpr size_t max_asset_size = 1024ull * 1024 * 1024;
-            static constexpr uint64_t max_session_size = 8ull * 1024 * 1024 * 1024;
             std::deque<std::function<void()>> download_queue;
             int running_downloads = 0;
-            // Download workers are detached, so they never touch `this`: the byte counter is shared with them and `lifetime` lets their main-thread completion callback tell whether this manager still exists
-            std::shared_ptr<std::atomic<uint64_t>> session_bytes = std::make_shared<std::atomic<uint64_t>>(0);
+            // Download workers are detached, so they never touch `this`: `lifetime` lets their main-thread completion callback tell whether this manager still exists
             std::shared_ptr<bool> lifetime = std::make_shared<bool>(true);
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void pump_downloads();

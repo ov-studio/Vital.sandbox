@@ -336,7 +336,7 @@ namespace Vital::Manager {
         if (!arguments.object.count("asset_count")) return;
         const int count = arguments.object.at("asset_count").as<int32_t>();
         const int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
-        if (count < 0 || count > max_manifest_assets || http_port <= 0 || http_port > 65535) {
+        if (count < 0 || http_port <= 0 || http_port > 65535) {
             log("error", fmt::format("manifest rejected — invalid asset count or port ({}, {})", count, http_port));
             return;
         }
@@ -434,26 +434,16 @@ namespace Vital::Manager {
         std::unordered_map<std::string, uint32_t> dispatch_gens;
         if (!group.empty()) dispatch_gens[group] = group_generations[group];
 
-        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), bytes = session_bytes, dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
+        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), dl, path, expected_hash, base_url, local_path, part_path, dispatch_gens]() {
             bool done = false;
             std::string failure;
             if (!dl -> cancelled.load()) {
-                const uint64_t used = bytes -> load();
-                if (used >= max_session_size) failure = "session download quota exceeded";
-                else {
-                    try {
-                        if (!is_within_resources(path) || !is_within_resources(path + ".part")) throw std::runtime_error("path escapes resources directory");
-                        const size_t limit = static_cast<size_t>(std::min<uint64_t>(max_asset_size, max_session_size - used));
-                        done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, Tool::Crypto::encode(path)), part_path, limit, {}, 60, &dl -> cancelled);
-                        if (done) {
-                            std::error_code size_ec;
-                            const auto size = std::filesystem::file_size(part_path, size_ec);
-                            if (!size_ec) *bytes += size;
-                            if (hash_file(part_path) != expected_hash) { done = false; failure = "hash mismatch"; }
-                        }
-                    }
-                    catch (const std::exception& e) { done = false; failure = e.what(); }
+                try {
+                    if (!is_within_resources(path) || !is_within_resources(path + ".part")) throw std::runtime_error("path escapes resources directory");
+                    done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, Tool::Crypto::encode(path)), part_path, max_asset_size, {}, 60, &dl -> cancelled);
+                    if (done && hash_file(part_path) != expected_hash) { done = false; failure = "hash mismatch"; }
                 }
+                catch (const std::exception& e) { done = false; failure = e.what(); }
             }
 
             std::error_code ec;
