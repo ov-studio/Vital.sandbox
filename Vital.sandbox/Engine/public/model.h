@@ -88,6 +88,8 @@ namespace Vital::Engine {
             // SHA-256 of source file at load time — used to invalidate
             // same-path updates without wiping the whole resource cache.
             inline static std::unordered_map<std::string, std::string> cache_hashes;
+            // Callers waiting for a model asset that isn't loaded yet (see when_loaded)
+            inline static std::unordered_map<std::string, std::vector<std::function<void()>>> load_waiters;
 
             
             // Asserts //
@@ -154,7 +156,13 @@ namespace Vital::Engine {
 
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
         public:
-            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
+            static godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
+            // Collision shapes built from a loaded model asset, keyed by "name|component|type" and shared by every body that uses the same mesh.
+            // Dropped together with the asset (unload / new session).
+            inline static std::unordered_map<std::string, godot::Ref<godot::Shape3D>> shape_cache;
+            static godot::Ref<godot::PackedScene> get_scene(const std::string& name);
+            // Runs `exec` once the named model asset is loaded - immediately if it already is. Dropped if the asset is unloaded first.
+            static void when_loaded(const std::string& name, std::function<void()> exec);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             // Hooks //
             void _ready() override;

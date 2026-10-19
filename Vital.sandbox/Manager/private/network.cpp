@@ -1529,6 +1529,12 @@ namespace Vital::Manager {
                 // this body into ONE combined "mesh_children" payload — mirroring
                 // how the live "mesh_ref" broadcast already batches them — and
                 // send it as a single RPC after the loop.
+                // Shapes built from a model asset (set_shape_mesh) are described by a tiny reference instead of geometry
+                godot::Array mesh_ref_params;
+                for (int i = 0; i < parent_node->get_child_count(); i++) {
+                    auto ref_col = godot::Object::cast_to<Engine::Collision_Shape>(parent_node->get_child(i));
+                    if (ref_col && ref_col->mesh_ref.size() > 0) { mesh_ref_params = ref_col->mesh_ref; break; }
+                }
                 godot::Array mesh_children_params;
                 auto pack_mesh_entry = [&](godot::Ref<godot::Shape3D> s2, godot::Transform3D t) {
                     bool is_concave = godot::Object::cast_to<godot::ConcavePolygonShape3D>(s2.ptr()) != nullptr;
@@ -1606,6 +1612,7 @@ namespace Vital::Manager {
                         // All three funnel into the same accumulator and go out
                         // together as one "mesh_children" RPC after this loop —
                         // never sent per-col (see the stomping bug explained above).
+                        if (mesh_ref_params.size() > 0) continue; // covered by the mesh_ref sent after this loop
                         bool has_mesh_children = false;
                         for (int ci = 0; ci < col->get_child_count(); ci++) {
                             if (godot::Object::cast_to<Engine::Collision_Shape>(col->get_child(ci))) { has_mesh_children = true; break; }
@@ -1627,7 +1634,9 @@ namespace Vital::Manager {
                     node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), shape_type, params);
                 }
 
-                if (mesh_children_params.size() > 0)
+                if (mesh_ref_params.size() > 0)
+                    node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), godot::String("mesh_ref"), mesh_ref_params);
+                else if (mesh_children_params.size() > 0)
                     node->rpc_id(id, "_sync_shape", (int)e->get_net_id(), godot::String("mesh_children"), mesh_children_params);
 
                 // 2.5b. Send wheel spawn + config for any Vehicle_Wheel children.

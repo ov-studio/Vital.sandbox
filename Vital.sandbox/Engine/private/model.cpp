@@ -194,6 +194,8 @@ namespace Vital::Engine {
         // server can be a different file. Runs before the handshake, so nothing of this session is loaded yet.
         cache_loaded.clear();
         cache_hashes.clear();
+        shape_cache.clear();
+        load_waiters.clear();
         next_net_id = 1;
     }
 
@@ -245,6 +247,14 @@ namespace Vital::Engine {
         cache_loaded[name] = scene;
         #if defined(VSDK_Client)
         Manager::Asset::get_singleton()->flush_spawn_queue(name);
+        // Wake whatever waited for this asset (e.g. collision shapes referencing it) on the main thread
+        Engine::Core::get_singleton()->enqueue([name]() {
+            auto it = load_waiters.find(name);
+            if (it == load_waiters.end()) return;
+            auto waiting = std::move(it->second);
+            load_waiters.erase(it);
+            for (auto& exec : waiting) exec();
+        });
         #endif
         return true;
     }
@@ -254,7 +264,22 @@ namespace Vital::Engine {
         if (it == cache_loaded.end()) return false;
         cache_loaded.erase(it);
         cache_hashes.erase(name);
+        load_waiters.erase(name);
+        for (auto sit = shape_cache.begin(); sit != shape_cache.end(); ) {
+            if (sit -> first.compare(0, name.size() + 1, name + "|") == 0) sit = shape_cache.erase(sit);
+            else ++sit;
+        }
         return true;
+    }
+
+    godot::Ref<godot::PackedScene> Model::get_scene(const std::string& name) {
+        auto it = cache_loaded.find(name);
+        return it == cache_loaded.end() ? godot::Ref<godot::PackedScene>() : it -> second;
+    }
+
+    void Model::when_loaded(const std::string& name, std::function<void()> exec) {
+        if (is_model_loaded(name)) { exec(); return; }
+        load_waiters[name].push_back(std::move(exec));
     }
 
     Model* Model::create(const std::string& name, int authority_peer) {

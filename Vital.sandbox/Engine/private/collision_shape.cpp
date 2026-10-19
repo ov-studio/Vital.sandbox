@@ -229,6 +229,7 @@ namespace Vital::Engine {
     }
 
     void Collision_Shape::assign_shape(godot::Ref<godot::Shape3D> shape) {
+        mesh_ref.clear();
         set_shape(shape);
         #if defined(VSDK_Client)
         current_shape = shape;

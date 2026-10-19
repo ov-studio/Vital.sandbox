@@ -81,11 +81,12 @@ namespace Vital::Engine {
             void _sync_shape(int net_id, godot::String shape_type, godot::Array params);
             static void apply_shape(uint32_t net_id, godot::String shape_type, godot::Array params);
             // Rebuilds "mesh_ref" shapes (see Collision_Shape::set_shape_mesh) locally
-            // from the client's own already-loaded model instead of transmitted
-            // vertex/face data. Retries itself (via Core::enqueue) until both the
-            // body and the referenced model net_ids are registered, then waits for
-            // both nodes to actually be in-tree via Core::execute_when_ready.
-            static void apply_mesh_ref(uint32_t net_id, uint32_t model_net_id, int mode, godot::Array entries);
+            // from the client's own already-loaded model *asset* (referenced by name)
+            // instead of transmitted vertex/face data. The model entity doesn't have to
+            // exist (it may already be destroyed), only the asset must be - if it isn't
+            // loaded yet the call waits for it. Retries itself (via Core::enqueue) until
+            // the body is registered, then waits for it to be in-tree via Core::execute_when_ready.
+            static void apply_mesh_ref(uint32_t net_id, const std::string& model_name, int mode, godot::Array entries, int attempt = 0);
             static void apply_reparent_entity(uint32_t net_id, uint32_t parent_net_id);
             void _spawn_wheel(int net_id, int wheel_id, godot::Vector3 position, godot::Vector3 rotation);
             void _sync_wheel_config(int net_id, int wheel_id, godot::String key, godot::Variant value);

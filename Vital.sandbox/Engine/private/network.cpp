@@ -796,16 +796,16 @@ namespace Vital::Engine {
             }
         }
         else if (type == "mesh_ref") {
-            // Layout: [int model_net_id, int mode (0=single mesh -> shape goes
+            // Layout: [String model_name (the loaded model asset), int mode (0=single mesh -> shape goes
             //          directly on the sync target, 1=include_children -> anchor
             //          + one child per matched mesh), then per entry: String
             //          component, String shape_type, float px,py,pz, float rx,ry,rz]
-            if (params.size() < 2) return;
-            uint32_t model_net_id = (uint32_t)(int)params[0];
+            if (params.size() < 2 || params[0].get_type() != godot::Variant::STRING) return;
+            const std::string model_name = Tool::to_std_string((godot::String)params[0]);
             int mode = (int)params[1];
             godot::Array entries;
             for (int i = 2; i < params.size(); i++) entries.push_back(params[i]);
-            apply_mesh_ref(net_id, model_net_id, mode, entries);
+            apply_mesh_ref(net_id, model_name, mode, entries);
         }
         else godot::UtilityFunctions::push_warning("_sync_shape: unknown type or bad params: ", shape_type);
         #endif
@@ -813,50 +813,69 @@ namespace Vital::Engine {
 
     // apply_mesh_ref: client-side counterpart of the "mesh_ref" broadcast in
     // Collision_Shape::set_shape_mesh. Instead of receiving raw convex/concave
-    // geometry over the wire (which gets large fast — a few hundred verts per
+    // geometry over the wire (which gets large fast - a few hundred verts per
     // convex hull, far more for concave/trimesh, times however many bodies use
-    // it, times every late-joining peer) we only receive which model to look at,
-    // which of its meshes to use, and where to put the resulting shape. The
-    // client already has the model's asset loaded locally (it's rendering it),
-    // so it rebuilds the exact same shape from local mesh data via the same
-    // build_convex_shape/build_concave_shape helpers the server used.
-    void Network::apply_mesh_ref(uint32_t net_id, uint32_t model_net_id, int mode, godot::Array entries) {
+    // it) we only receive which model ASSET to look at (by name), which of its
+    // meshes to use, and where to put the resulting shape. The client already
+    // has the asset loaded (it renders it), so it rebuilds the exact same shape
+    // from the local mesh data via the same build_convex_shape/build_concave_shape
+    // helpers the server used. The asset is referenced by name, not by the model
+    // entity: the entity may already be destroyed by the time this runs, and the
+    // asset may still be downloading - in that case the call waits for it.
+    void Network::apply_mesh_ref(uint32_t net_id, const std::string& model_name, int mode, godot::Array entries, int attempt) {
         #if defined(VSDK_Client)
         auto* net_mgr = Manager::Network::get_singleton();
-        Engine::ISyncable* body_entity  = net_mgr -> find_syncable(net_id);
-        Engine::ISyncable* model_entity = net_mgr -> find_syncable(model_net_id);
-        if (!body_entity || !model_entity) {
-            // One or both net_ids haven't been registered yet (their _spawn_entity
-            // RPC can arrive after this one on the same frame). Retry next frame —
-            // mirrors the existing defer_shape_sync pattern used just above for
-            // the plain-shape types, but also covers the model net_id.
-            Core::get_singleton() -> enqueue([net_id, model_net_id, mode, entries]() {
-                Network::apply_mesh_ref(net_id, model_net_id, mode, entries);
+        Engine::ISyncable* body_entity = net_mgr -> find_syncable(net_id);
+        if (!body_entity) {
+            // The body's _spawn_entity RPC can arrive after this one on the same frame. Retry next frame, but never forever.
+            if (attempt >= 600) return;
+            Core::get_singleton() -> enqueue([net_id, model_name, mode, entries, attempt]() {
+                Network::apply_mesh_ref(net_id, model_name, mode, entries, attempt + 1);
             });
             return;
         }
 
         auto* body_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(body_entity));
-        auto* model_node = godot::Object::cast_to<godot::Node3D>(dynamic_cast<godot::Object*>(model_entity));
-        if (!body_node || !model_node) return;
+        if (!body_node) return;
 
-        // A model that isn't cached yet (first start of a resource, a restart, slow downloads) spawns as a
-        // placeholder: in the tree, but without its mesh subtree until Model::hydrate(). Building the shape now
-        // would find no mesh and silently skip it, leaving the body without collision for good, so wait for it.
-        if (auto* pending = godot::Object::cast_to<Engine::Model>(model_node); pending && pending -> placeholder) {
-            pending -> hydrate_callbacks.push_back([net_id, model_net_id, mode, entries]() {
-                auto* nm = Manager::Network::get_singleton();
-                if (!nm -> find_syncable(net_id) || !nm -> find_syncable(model_net_id)) return; // destroyed while waiting
-                Network::apply_mesh_ref(net_id, model_net_id, mode, entries);
+        // The model asset isn't loaded yet (first start of a resource, a restart, slow downloads): wait for it
+        // instead of building from nothing and leaving the body without collision for good.
+        if (!Engine::Model::is_model_loaded(model_name)) {
+            Engine::Model::when_loaded(model_name, [net_id, model_name, mode, entries]() {
+                if (!Manager::Network::get_singleton() -> find_syncable(net_id)) return; // destroyed while waiting
+                Network::apply_mesh_ref(net_id, model_name, mode, entries);
             });
             return;
         }
 
-        // Wait until both nodes are actually in the scene tree before touching them.
-        Core::get_singleton() -> execute_when_ready(body_node, model_node,
-            [entries, mode](godot::Node3D* body_node, godot::Node* model_node_raw) {
-            auto* model = godot::Object::cast_to<Engine::Model>(model_node_raw);
-            if (!model) return;
+        // Wait until the body is actually in the scene tree before touching it.
+        Core::get_singleton() -> execute_when_ready(body_node, nullptr,
+            [model_name, entries, mode](godot::Node3D* body_node, godot::Node*) {
+
+            // Shapes are built from the asset and shared between every body that references the same mesh
+            auto get_shape = [&](const std::string& component, const std::string& shape_type) -> godot::Ref<godot::Shape3D> {
+                if (component.empty()) return {};
+                const std::string key = fmt::format("{}|{}|{}", model_name, component, shape_type);
+                auto cached = Engine::Model::shape_cache.find(key);
+                if (cached != Engine::Model::shape_cache.end() && cached -> second.is_valid()) return cached -> second;
+
+                auto scene = Engine::Model::get_scene(model_name);
+                if (scene.is_null()) return {};
+                godot::Node* instance = scene -> instantiate();
+                if (!instance) return {};
+                // Same layout as a Model entity: the scene root is a child of the node the component path starts from
+                auto* holder = memnew(godot::Node);
+                holder -> add_child(instance);
+                godot::Ref<godot::Shape3D> shape;
+                if (auto* mesh = Engine::Model::find_mesh_node(holder, component)) {
+                    shape = (shape_type == "concave")
+                        ? godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_concave_shape(mesh))
+                        : godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_convex_shape(mesh));
+                }
+                memdelete(holder); // never entered the tree - frees the instance with it
+                if (shape.is_valid()) Engine::Model::shape_cache[key] = shape;
+                return shape;
+            };
 
             Engine::Collision_Shape* col = nullptr;
             for (int i = 0; i < body_node -> get_child_count(); i++) {
@@ -888,10 +907,7 @@ namespace Vital::Engine {
                 float px = (float)entries[i++], py = (float)entries[i++], pz = (float)entries[i++];
                 float rx = (float)entries[i++], ry = (float)entries[i++], rz = (float)entries[i++];
 
-                godot::MeshInstance3D* mesh = component.empty() ? godot::Object::cast_to<godot::MeshInstance3D>(model) : model -> find_mesh_node(model, component);
-                if (!mesh) continue;
-
-                godot::Ref<godot::Shape3D> shape = (shape_type == "concave") ? godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_concave_shape(mesh)) : godot::Ref<godot::Shape3D>(Engine::Collision_Shape::Internal::build_convex_shape(mesh));
+                godot::Ref<godot::Shape3D> shape = get_shape(component, shape_type);
                 if (!shape.is_valid()) continue;
 
                 godot::Basis basis = godot::Basis::from_euler(godot::Vector3(rx, ry, rz) * (3.14159265358979323846f / 180.f));
@@ -912,7 +928,7 @@ namespace Vital::Engine {
                 // mode 1 (include_children): parent each per-mesh Collision_Shape
                 // DIRECTLY under the physics body (body_node), not under the
                 // intermediate anchor `col`. Nested CollisionShape3D under another
-                // CollisionShape3D often fails to register with the shape owner —
+                // CollisionShape3D often fails to register with the shape owner -
                 // debug wireframe appears but character never collides. Parenting
                 // to the body keeps the exact same local transform (visualizer
                 // stays put) while making the shape a proper direct contributor.

@@ -67,6 +67,11 @@ namespace Vital::Engine {
             void destroy();
             void assign_shape(godot::Ref<godot::Shape3D> shape);
 
+            // Server: the "mesh_ref" params this shape was built from (model asset name, mode, meshes + transforms), set by
+            // set_shape_mesh. Late joiners get this small reference instead of raw geometry. Cleared when another shape is assigned.
+            // TODO: Move to private ?
+            godot::Array mesh_ref;
+
 
             // Checkers //
             bool is_replicated() const;

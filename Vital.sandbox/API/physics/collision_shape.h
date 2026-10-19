@@ -377,13 +377,14 @@ namespace Vital::Sandbox::API {
                     #if !defined(VSDK_Client)
                     {
                         godot::Array p;
-                        p.push_back((int)model_node -> get_net_id());
+                        p.push_back(godot::String(model_node -> get_model_name().c_str())); // the loaded model asset, not the entity - the entity may be destroyed right after
                         p.push_back((int)0); // mode 0: single mesh — shape goes directly on the sync target (`col`), no anchor/children involved.
                         p.push_back(godot::String(used_component.c_str()));
                         p.push_back(godot::String(shape_type == "concave" ? "concave" : "convex"));
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // pos (identity — body origin)
                         p.push_back(0.f); p.push_back(0.f); p.push_back(0.f); // rot (euler deg)
                         self -> broadcast("mesh_ref", p);
+                        self -> body -> mesh_ref = p; // late joiners get the same reference
                     }
                     #endif
                 }
@@ -399,7 +400,7 @@ namespace Vital::Sandbox::API {
     
                     #if !defined(VSDK_Client)
                     godot::Array sync_params;
-                    sync_params.push_back((int)model_node -> get_net_id());
+                    sync_params.push_back(godot::String(model_node -> get_model_name().c_str())); // the loaded model asset, not the entity
                     sync_params.push_back((int)1); // mode 1: include_children — `col` stays the (untouched) anchor, every matched mesh becomes its own child.
                     #endif
     
@@ -436,7 +437,10 @@ namespace Vital::Sandbox::API {
                     }
     
                     #if !defined(VSDK_Client)
-                    if (sync_params.size() > 2) self -> broadcast("mesh_ref", sync_params);
+                    if (sync_params.size() > 2) {
+                        self -> broadcast("mesh_ref", sync_params);
+                        self -> body -> mesh_ref = sync_params; // late joiners get the same reference
+                    }
                     #endif
                 }
                 vm -> push_value(true);
