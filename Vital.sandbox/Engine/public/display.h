@@ -29,18 +29,18 @@ namespace Vital::Engine {
         public:
             static constexpr const char* Name = "Display.engine";
         private:
-            godot::Ref<godot::ShaderMaterial> screen_material;
+            static constexpr int LAST_FRAME_IDLE_LIMIT = 120;
 
             // Last frame: GPU-only copy of the root viewport taken in frame_post_draw.
             // last_frame_texture is a stable RenderingServer texture RID (main thread owned),
             // its content is swapped with texture_replace so shader bindings never go stale.
             // last_frame_rid/last_frame_size are render thread only.
-            static constexpr int LAST_FRAME_IDLE_LIMIT = 120;
             godot::RID viewport_rid;
             godot::RID copy_target;
             godot::RID last_frame_rid;
             godot::RID last_frame_texture;
             godot::Vector2i last_frame_size;
+            godot::Ref<godot::ShaderMaterial> screen_material;
             std::atomic<bool> last_frame_requested { false };
             std::atomic<bool> last_frame_ready { false };
             std::atomic<bool> last_frame_pinned { false };

@@ -31,6 +31,7 @@ namespace Vital::Sandbox {
             inline static constexpr bool has_remote = false;
             inline static constexpr bool has_streamed = false;
             inline static constexpr bool pre_cleanup = true;
+            
             static void init(Machine* vm) {}
             static void bind(Machine* vm) {}
             static void methods(Machine* vm) {}

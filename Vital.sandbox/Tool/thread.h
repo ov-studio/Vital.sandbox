@@ -26,6 +26,7 @@ namespace Vital::Tool {
             inline static std::mutex mutex;
             inline static std::unordered_map<std::thread::id, Thread*> buffer;
             inline static std::unordered_set<Thread*> live;
+            
             std::thread thread;
 
             Thread(std::function<void(Thread*)> exec) {

@@ -25,6 +25,8 @@ namespace Vital::Engine {
     class Webview : public godot::Node2D {
         GDCLASS(Webview, godot::Node2D)
         public:
+            static constexpr int system_z_floor = 10000;
+
             struct Options {
                 int z_index = 0;
                 bool fullscreen = true;
@@ -36,8 +38,6 @@ namespace Vital::Engine {
                 bool overlay = false;
             };
             
-            static constexpr int system_z_floor = 10000;
-
             using Payload = std::variant<
                 std::monostate, 
                 std::string, 

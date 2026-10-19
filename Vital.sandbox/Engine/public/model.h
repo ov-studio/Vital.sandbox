@@ -32,6 +32,9 @@ namespace Vital::Engine {
         friend class Network;
         friend class Manager::Network;
         public:
+            static constexpr int ANIM_LAYER_SOFT_MAX = 16;
+            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+
             enum class Format {
                 GLB,
                 UNKNOWN
@@ -40,9 +43,6 @@ namespace Vital::Engine {
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
-
-            static constexpr int ANIM_LAYER_SOFT_MAX = 16;
-            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         private:
             std::string model_name;
             int pending_authority = 1;

@@ -24,7 +24,6 @@
 
 namespace Vital::Tool::HTTP {
     using http_headers = std::vector<std::string>;
-
     inline constexpr size_t default_max_body = 64ull * 1024 * 1024;
 
     // Holds one of the limited request slots. The constructor throws when too many requests
