@@ -72,7 +72,13 @@ namespace Vital::Manager {
     }
 
     void Asset::clear() {
-        registered_assets.clear();
+        #if !defined(VSDK_Client)
+        stop_http_server();
+        #endif
+        {
+            std::unique_lock lock(registered_assets_mutex);
+            registered_assets.clear();
+        }
         #if defined(VSDK_Client)
         spawn_queue.clear();
         group_pending_counts.clear();
@@ -82,7 +88,6 @@ namespace Vital::Manager {
         active_downloads.clear();
         #else
         pending_manifest_peers.clear();
-        stop_http_server();
         #endif
     }
 
