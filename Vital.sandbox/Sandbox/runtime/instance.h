@@ -178,6 +178,7 @@ namespace Vital::Sandbox {
                         root_vm -> push(-1);
                         root_vm -> move(calling_vm, 1);
                     }
+                    root_vm -> pop(1);
                 }
                 else {
                     instance -> set_reference(instance -> self_reference(), -1);
