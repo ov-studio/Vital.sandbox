@@ -76,7 +76,6 @@ void vsdk_initialize() {
         Vital::Engine::Monitor::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
-        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
         Vital::Manager::Asset::get_singleton();
         Vital::Manager::Resource::get_singleton();
         setup();

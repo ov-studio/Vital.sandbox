@@ -222,7 +222,6 @@ namespace Vital::Engine {
         #endif
         Manager::Network::free_singleton();
         Manager::Asset::free_singleton();
-        Engine::Model::teardown_spawner();
         Tool::Event::emit("core:teardown");
     }
 

@@ -167,8 +167,6 @@ namespace Vital::Engine {
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
             static Model* create(const std::string& name, int authority_peer = 1);
-            static void setup_spawner();
-            static void teardown_spawner();
             static void cleanup_spawned();
             static void on_connected();
             void destroy();

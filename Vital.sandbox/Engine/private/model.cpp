@@ -178,15 +178,6 @@ namespace Vital::Engine {
     }
 
 
-    //---------------------------//
-    //  Spawner Setup (private)  //
-    //---------------------------//
-
-    // Spawner is no longer used — replication is handled via _spawn_entity RPC.
-    // These stubs are kept so existing call-sites (resource manager etc.) compile.
-    void Model::setup_spawner()   {}
-    void Model::teardown_spawner() {}
-
     void Model::cleanup_spawned() {
         auto core = Engine::Core::get_singleton();
         if (!core) return;
