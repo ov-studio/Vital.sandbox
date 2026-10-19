@@ -104,9 +104,16 @@ namespace Vital::Sandbox {
                     children.clear();
                     lua_close(state);
                 }
-                else if (parent) {
-                    parent -> children.erase(this);
-                    parent = nullptr;
+                else {
+                    for (auto child : children) {
+                        child -> parent = parent;
+                        if (parent) parent -> children.insert(child);
+                    }
+                    children.clear();
+                    if (parent) {
+                        parent -> children.erase(this);
+                        parent = nullptr;
+                    }
                 }
                 machines.erase(state);
                 state = nullptr;
@@ -429,8 +436,9 @@ namespace Vital::Sandbox {
 
             Machine* create_thread() {
                 Tool::assert_main_thread("Machine::create_thread");
-                auto thread = new Machine(lua_newthread(state), this);
-                children.emplace(thread);
+                Machine* root = get_root();
+                auto thread = new Machine(lua_newthread(state), root);
+                root -> children.emplace(thread);
                 return thread;
             }
 

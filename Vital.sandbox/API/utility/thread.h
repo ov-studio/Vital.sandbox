@@ -38,9 +38,10 @@ namespace Vital::Sandbox::API {
 
             void clean_thread() {
                 auto tvm = thread_vm;
+                auto tstate = thread_state;
                 thread_vm = nullptr;
                 thread_state = nullptr;
-                if (tvm) delete tvm;
+                if (tvm && tstate && Machine::fetch_machine(tstate) == tvm) delete tvm;
             }
 
             void clean() {
