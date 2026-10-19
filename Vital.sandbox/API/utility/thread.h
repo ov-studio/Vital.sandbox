@@ -59,6 +59,8 @@ namespace Vital::Sandbox::API {
             instance -> thread_state = thread_vm -> get_state();
             instance -> set_reference(instance -> value_reference("exec"), 1);
             instance -> set_reference(instance -> value_reference("thread"), 2);
+            instance -> set_reference(instance -> value_reference("exec"), exec_idx);
+            instance -> set_reference(instance -> value_reference("thread"), vm -> get_absolute_index(-1));
             vm -> pop(2);
             instance -> store(push_to_stack);
             return instance;
