@@ -46,6 +46,18 @@ namespace Vital::Manager {
         return Tool::File::hash(base, file);
     }
 
+    // Resolves symlinks and confirms the final location is still inside `resources/`
+    static bool is_within_resources(const std::string& path) {
+        namespace fs = std::filesystem;
+        std::error_code ec;
+        const auto root = fs::weakly_canonical(fmt::format("{}/resources", Tool::get_directory()), ec);
+        if (ec) return false;
+        const auto target = fs::weakly_canonical(fmt::format("{}/{}", Tool::get_directory(), path), ec);
+        if (ec) return false;
+        const auto relative = target.lexically_relative(root);
+        return !relative.empty() && *relative.begin() != "..";
+    }
+
     static bool is_valid_asset_path(const std::string& path) {
         return path.size() <= 512 && path.rfind("resources/", 0) == 0 && Tool::File::sanitize(path);
     }
@@ -183,6 +195,7 @@ namespace Vital::Manager {
                 if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
             }
 
+            if (!is_within_resources(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
             const std::string full_path = fmt::format("{}/{}", Tool::get_directory(), path);
             std::ifstream file(full_path, std::ios::binary | std::ios::ate);
             if (!file) { res.status = 500; res.set_content("File read error", "text/plain"); return; }
@@ -429,6 +442,7 @@ namespace Vital::Manager {
                 if (used >= max_session_size) failure = "session download quota exceeded";
                 else {
                     try {
+                        if (!is_within_resources(path) || !is_within_resources(path + ".part")) throw std::runtime_error("path escapes resources directory");
                         const size_t limit = static_cast<size_t>(std::min<uint64_t>(max_asset_size, max_session_size - used));
                         done = Tool::HTTP::download(fmt::format("{}/asset?path={}", base_url, Tool::Crypto::encode(path)), part_path, limit, {}, 60, &dl -> cancelled);
                         if (done) {
