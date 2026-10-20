@@ -1,4 +1,12 @@
-import sys
+import sys, subprocess, importlib.util
+if importlib.util.find_spec("SCons") is None:
+    print("[vital] SCons not found, installing ...", flush=True)
+    if subprocess.call([sys.executable, "-m", "pip", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) != 0:
+        subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--quiet", "scons"])
+    importlib.invalidate_caches()
+
+SCONS = [sys.executable, "-m", "SCons"]
 sys.path.append("./Vital.sandbox")
 from vital import *
 
@@ -50,7 +58,7 @@ class Build:
         if force:
             log_info("Cleaning previous build ...")
             subprocess.run([
-                "scons", "-C", godot_dir, "--clean",
+                *SCONS, "-C", godot_dir, "--clean",
                 f"target=template_{self.build_type.lower()}",
                 "use_static_cpp=no",
                 "use_static_crt=no"
@@ -59,7 +67,7 @@ class Build:
         process = None
         try:
             process = subprocess.Popen([
-                "scons", "-C", godot_dir,
+                *SCONS, "-C", godot_dir,
                 f"target=template_{self.build_type.lower()}",
                 "use_static_cpp=no",
                 "use_static_crt=no",
@@ -90,7 +98,7 @@ class Build:
         )
 
         cmd = [
-            "scons", "-C", b["sandbox_dir"],
+            *SCONS, "-C", b["sandbox_dir"],
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
             f"target=template_{self.build_type.lower()}",
