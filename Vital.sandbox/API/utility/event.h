@@ -201,13 +201,7 @@ namespace Vital::Sandbox::API {
                     pending_remote[serial] = PendingRemote { promise, std::chrono::steady_clock::now(), expected_peer };
                 }
             }
-            #if defined(VSDK_Client)
             send_packet(payload, peer_id);
-            #else
-            // Queue behind any entity spawn RPCs still pending from this frame (they are sent via Core::enqueue),
-            // so a remote event emitted right after creating an entity never reaches clients before the entity does
-            Engine::Core::get_singleton() -> enqueue([payload, peer_id]() { send_packet(payload, peer_id); });
-            #endif
             return promise;
         }
 
