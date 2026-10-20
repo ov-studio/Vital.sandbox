@@ -21,13 +21,14 @@ if not defined PY (
     exit /b 1
 )
 
-where git >nul 2>&1 || (
-    where winget >nul 2>&1 && (
-        echo [vital] Git not found, installing via winget ...
-        winget install -e --id Git.Git --silent --accept-package-agreements --accept-source-agreements
-        set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
-    )
-)
+where git >nul 2>&1 && goto git_ok
+if exist "%ProgramFiles%\Git\cmd\git.exe" set "PATH=%ProgramFiles%\Git\cmd;%PATH%" & goto git_ok
+if exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" set "PATH=%LOCALAPPDATA%\Programs\Git\cmd;%PATH%" & goto git_ok
+where winget >nul 2>&1 || goto git_ok
+echo [vital] Git not found, installing via winget ...
+winget install -e --id Git.Git --silent --accept-package-agreements --accept-source-agreements
+set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
+:git_ok
 
 "%PY%" %PYARGS% "%~dp0build.py" %*
 exit /b %errorlevel%
