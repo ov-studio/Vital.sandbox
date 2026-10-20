@@ -802,12 +802,14 @@ namespace Vital::Manager {
                     std::vector<std::string> dependencies;
                     Internal::unpack_manifest(arguments, scripts, files, models, dependencies);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    bool already;
-                    {
-                        std::lock_guard<std::mutex> lock(rm -> mutex);
-                        already = Internal::is_running(name);
-                    }
-                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() { Internal::register_resource(name, scripts, files, models, dependencies); });
+                    Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() {
+                        {
+                            auto rm = Resource::get_singleton();
+                            std::lock_guard<std::mutex> lock(rm -> mutex);
+                            if (Internal::is_running(name)) return;
+                        }
+                        Internal::register_resource(name, scripts, files, models, dependencies);
+                    });
                 }
                 else if (message == "resource:stopped") {
                     auto rm = Resource::get_singleton();
