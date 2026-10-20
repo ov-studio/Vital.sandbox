@@ -1,4 +1,5 @@
 import sys, subprocess, importlib.util
+
 if importlib.util.find_spec("SCons") is None:
     print("[vital] SCons not found, installing ...", flush=True)
     if subprocess.call([sys.executable, "-m", "pip", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) != 0:
