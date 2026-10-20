@@ -54,14 +54,6 @@ namespace Vital::Sandbox::API {
                 return Node_3D::is_streamed(body);
             }
             
-            uint32_t get_parent_net_id() const {
-                if (!body) return 0;
-                auto parent = body -> get_parent();
-                if (!parent) return 0;
-                auto syncable = dynamic_cast<Vital::Engine::ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-                return syncable ? syncable -> get_net_id() : 0;
-            }
-
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
@@ -74,20 +66,20 @@ namespace Vital::Sandbox::API {
 
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
-                uint32_t nid = get_parent_net_id();
+                uint32_t nid = Engine::get_parent_net_id(body);
                 if (nid == 0) {
                     pending_configs.emplace_back(key, value);
                     return;
                 }
                 
                 auto net = Manager::Network::get_singleton() -> get_node();
-                if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), Tool::to_godot_string(key), value);
+                if (net) net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key), value);
                 #endif
             }
 
             void broadcast_transform() {
                 #if !defined(VSDK_Client)
-                uint32_t nid = get_parent_net_id();
+                uint32_t nid = Engine::get_parent_net_id(body);
                 if (nid == 0) {
                     pending_transform = true;
                     return;
@@ -100,7 +92,7 @@ namespace Vital::Sandbox::API {
 
             #if !defined(VSDK_Client)
             void flush_broadcasts() {
-                uint32_t nid = get_parent_net_id();
+                uint32_t nid = Engine::get_parent_net_id(body);
                 if (nid == 0 || !body) return;
                 auto net = Manager::Network::get_singleton() -> get_node();
                 if (!net) return;
@@ -110,7 +102,7 @@ namespace Vital::Sandbox::API {
                     pending_spawn = false;
                 }
                 for (auto& [key, value] : pending_configs) {
-                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), Tool::to_godot_string(key), value);
+                    net -> rpc("_sync_wheel_config", (int)nid, body -> get_wheel_id(), godot::String(key.c_str()), value);
                 }
                 pending_configs.clear();
                 if (pending_transform) {
@@ -172,7 +164,7 @@ namespace Vital::Sandbox::API {
                 }
                 instance -> body -> set_wheel_id(idx_count - 1);
                 #if !defined(VSDK_Client)
-                uint32_t nid = instance -> get_parent_net_id();
+                uint32_t nid = Engine::get_parent_net_id(instance -> body);
                 if (nid != 0) {
                     auto net = Manager::Network::get_singleton() -> get_node();
                     if (net) net -> rpc("_spawn_wheel", (int)nid, instance -> body -> get_wheel_id(), instance -> body -> get_position(), instance -> body -> get_rotation());

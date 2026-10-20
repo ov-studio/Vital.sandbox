@@ -450,8 +450,7 @@ namespace Vital::Engine {
     uint32_t ISyncable::get_parent_net_id() const {
         auto self_node = const_cast<ISyncable*>(this) -> get_sync_node();
         if (!self_node || !self_node -> is_inside_tree()) return 0;
-        auto syncable = dynamic_cast<const ISyncable*>(self_node -> get_parent());
-        return syncable ? syncable -> get_net_id() : 0;
+        return Engine::get_parent_net_id(self_node);
     }
     #endif
 }

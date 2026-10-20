@@ -198,4 +198,15 @@ namespace Vital::Engine {
             static int decode_delta(const godot::PackedByteArray& buffer, int offset, int buf_size, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale, godot::Vector3& last_pos, godot::Vector3& last_rot, godot::Vector3& last_vel, godot::Vector3& last_scale);
             int parse_sync_packet_at(const godot::PackedByteArray& buffer, int offset, uint32_t& out_id, godot::Vector3& out_pos, godot::Vector3& out_rot, godot::Vector3& out_vel, godot::Vector3& out_scale);
     };
+
+    
+    // Net id of the replicated entity `node` is parented under, 0 if it has none (local, unparented or the parent isn't syncable).
+    // Shared by everything that needs it (collision shapes, vehicle wheels, ...) instead of each re-implementing the parent lookup.
+    inline uint32_t get_parent_net_id(const godot::Node* node) {
+        if (!node) return 0;
+        auto parent = const_cast<godot::Node*>(node) -> get_parent();
+        if (!parent) return 0;
+        auto syncable = dynamic_cast<const ISyncable*>(parent);
+        return syncable ? syncable -> get_net_id() : 0;
+    }
 }

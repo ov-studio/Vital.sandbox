@@ -256,10 +256,7 @@ namespace Vital::Engine {
 
     // Getters //
     uint32_t Collision_Shape::get_parent_net_id() const {
-        auto parent = const_cast<Collision_Shape*>(this) -> get_parent();
-        if (!parent) return 0;
-        auto syncable = dynamic_cast<ISyncable*>(godot::Object::cast_to<godot::Object>(parent));
-        return syncable ? syncable -> get_net_id() : 0;
+        return Engine::get_parent_net_id(this);
     }
 
 
