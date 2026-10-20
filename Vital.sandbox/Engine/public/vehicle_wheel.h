@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/syncable.h>
 
 
 ///////////////////////////////////
@@ -44,6 +45,7 @@ namespace Vital::Engine {
 
             // Getters //
             int get_wheel_id() const;
+            uint32_t get_parent_net_id() const;
 
 
             // Setters //

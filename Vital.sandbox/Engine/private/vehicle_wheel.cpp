@@ -47,6 +47,10 @@ namespace Vital::Engine {
         return wheel_id;
     }
 
+    uint32_t Vehicle_Wheel::get_parent_net_id() const {
+        return Engine::get_parent_net_id(this);
+    }
+
 
     // Setters //
     void Vehicle_Wheel::set_wheel_id(int index) {
