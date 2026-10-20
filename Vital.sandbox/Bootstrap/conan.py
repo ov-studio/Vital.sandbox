@@ -38,7 +38,7 @@ class Conan:
             ([*CONAN, "profile", "detect", "--force"], "Detecting profile"),
             ([*CONAN, "install", ".",
                 "--build=missing",
-                "-v", "quiet",
+                "-v", "error",
                 "--output-folder=.conan",
                 "--settings=build_type=Release",
                 "--settings=compiler.cppstd=17",
