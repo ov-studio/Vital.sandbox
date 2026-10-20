@@ -1,4 +1,7 @@
-import sys, time, threading
+import os, sys, time, threading
+
+if os.name == "nt":
+    os.system("")
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
