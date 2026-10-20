@@ -1,11 +1,14 @@
 from Bootstrap.utils import *
+import importlib.util
+
+CONAN = [sys.executable, "-m", "conans.conan"]
 
 class Conan:
     def __init__(self, env):
         self.env = env
 
     def install(self):
-        if not shutil.which("conan"):
+        if importlib.util.find_spec("conan") is None:
             log_step("Installing Conan")
             subprocess.run(
                 [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
@@ -32,8 +35,8 @@ class Conan:
         self.install()
         log_step("Building Conan")
         for cmd, label in [
-            (["conan", "profile", "detect", "--force"], "Detecting profile"),
-            (["conan", "install", ".",
+            ([*CONAN, "profile", "detect", "--force"], "Detecting profile"),
+            ([*CONAN, "install", ".",
                 "--build=missing",
                 "-v", "quiet",
                 "--output-folder=.conan",
