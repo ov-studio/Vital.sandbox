@@ -38,6 +38,7 @@ namespace Vital::Manager {
                 std::string path;
                 std::unordered_set<std::string> groups;
                 std::atomic<bool> cancelled { false };
+                std::unordered_map<std::string, uint32_t> gens;   // group -> generation this download counts for
             };
 
             struct PendingSpawn {

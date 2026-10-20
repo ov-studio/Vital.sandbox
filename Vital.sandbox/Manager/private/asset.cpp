@@ -368,11 +368,7 @@ namespace Vital::Manager {
             const std::string path  = arguments.object.at(fmt::format("asset_path_{}", i)).as<std::string>();
             const std::string group = arguments.object.count(fmt::format("asset_group_{}", i)) ? arguments.object.at(fmt::format("asset_group_{}", i)).as<std::string>() : "";
             if (group.empty()) continue;
-            if (active_downloads.count(path)) {
-                // Already in flight — attach our group and it will decrement when done.
-                active_downloads[path] -> groups.insert(group);
-            }
-            else batch_counts[group]++;
+            batch_counts[group]++;
         }
         for (auto& [group, n] : batch_counts) {
             group_generations[group]++;   // invalidate any callbacks from a prior registration
@@ -388,7 +384,14 @@ namespace Vital::Manager {
             const std::string hash  = arguments.object.at(fmt::format("asset_hash_{}", i)).as<std::string>();
             const std::string group = arguments.object.count(fmt::format("asset_group_{}", i)) ? arguments.object.at(fmt::format("asset_group_{}", i)).as<std::string>() : "";
 
-            if (active_downloads.count(path)) {
+            auto active = active_downloads.find(path);
+            if (active != active_downloads.end()) {
+                // Already in flight (possibly cancelled by a stop moments ago): attach this registration to it. It is
+                // recorded after the generation bump above so the completion credits it instead of treating it as stale
+                if (!group.empty()) {
+                    active -> second -> groups.insert(group);
+                    active -> second -> gens[group] = group_generations[group];
+                }
                 in_progress++;
                 continue;
             }
@@ -422,7 +425,10 @@ namespace Vital::Manager {
     void Asset::download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group) {
         auto dl = std::make_shared<Download>();
         dl -> path = path;
-        if (!group.empty()) dl -> groups.insert(group);
+        if (!group.empty()) {
+            dl -> groups.insert(group);
+            dl -> gens[group] = group_generations[group];
+        }
         active_downloads[path] = dl;
 
         const std::string resources_root = get_resources_root();
@@ -433,10 +439,7 @@ namespace Vital::Manager {
         // Capture generation per group at dispatch time. If the group is cancelled
         // before this download completes, the generation will have been bumped and
         // _on_file_ready will be skipped for those groups.
-        std::unordered_map<std::string, uint32_t> dispatch_gens;
-        if (!group.empty()) dispatch_gens[group] = group_generations[group];
-
-        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), dl, path, expected_hash, base_url, resources_root, local_rel, local_path, part_path, dispatch_gens]() {
+        download_queue.push_back([this, alive = std::weak_ptr<bool>(lifetime), dl, path, expected_hash, base_url, resources_root, local_rel, local_path, part_path]() {
             bool done = false;
             std::string failure;
             if (!dl -> cancelled.load()) {
@@ -462,7 +465,7 @@ namespace Vital::Manager {
 
             // The manager is gone (shutdown) - nothing left to report to
             if (alive.expired()) return;
-            Engine::Core::get_singleton() -> enqueue([this, alive, dl, path, done, failure, dispatch_gens]() {
+            Engine::Core::get_singleton() -> enqueue([this, alive, dl, path, expected_hash, base_url, done, failure]() {
                 if (alive.expired()) return;
                 running_downloads--;
                 auto it = active_downloads.find(path);
@@ -470,8 +473,8 @@ namespace Vital::Manager {
                 if (done) {
                     for (const auto& g : dl -> groups) {
                         // Skip if the group was cancelled after this download was dispatched.
-                        auto gen_it = dispatch_gens.find(g);
-                        if (gen_it != dispatch_gens.end() && group_generations[g] != gen_it -> second) continue;
+                        auto gen_it = dl -> gens.find(g);
+                        if (gen_it != dl -> gens.end() && group_generations[g] != gen_it -> second) continue;
                         _on_file_ready(path, g);
                     }
                     if (!is_downloading()) {
@@ -479,7 +482,26 @@ namespace Vital::Manager {
                         Tool::Event::emit("asset:ready", {});
                     }
                 }
-                else if (dl -> cancelled.load()) log("sbox", fmt::format("download cancelled — {}", path));
+                else if (dl -> cancelled.load()) {
+                    // A restarted resource may have attached its group after this download was cancelled, so fetch it again for those groups
+                    std::vector<std::pair<std::string, uint32_t>> live;
+                    for (const auto& g : dl -> groups) {
+                        auto gen_it = dl -> gens.find(g);
+                        if (gen_it != dl -> gens.end() && group_generations[g] == gen_it -> second) live.emplace_back(g, gen_it -> second);
+                    }
+                    if (live.empty()) log("sbox", fmt::format("download cancelled — {}", path));
+                    else {
+                        log("sbox", fmt::format("download restarted — {}", path));
+                        download_file(path, expected_hash, base_url, "");
+                        auto next = active_downloads.find(path);
+                        if (next != active_downloads.end()) {
+                            for (const auto& [g, gen] : live) {
+                                next -> second -> groups.insert(g);
+                                next -> second -> gens[g] = gen;
+                            }
+                        }
+                    }
+                }
                 else log("error", fmt::format("download failed — {}\n│ reason: {}", path, failure));
                 pump_downloads();
             });
