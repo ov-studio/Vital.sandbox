@@ -1,7 +1,7 @@
 import os, sys, time, threading
 
 if os.name == "nt":
-    os.system("")  # enable ANSI escape processing in the Windows console
+    os.system("")
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
@@ -20,7 +20,6 @@ def _supports_unicode():
         return False
 
 def _console_defaults():
-    # Use the font from the user's Windows console defaults, falling back to Consolas 16
     face, size, weight = "Consolas", 16, 400
     if os.name == "nt":
         try:
@@ -47,7 +46,6 @@ def _console_defaults():
 CONSOLE_FONT, CONSOLE_FONT_SIZE, CONSOLE_FONT_WEIGHT = _console_defaults()
 
 def _restore_console_font():
-    # Classic Windows console can fall back to Raster Fonts mid-run; put the TrueType font back
     if os.name != "nt":
         return None
     try:
@@ -96,7 +94,6 @@ def _log_line(text):
         pass
 
 def _debug_font_event(what):
-    # Diagnostic: record what was running when the console changed (font-debug.log in repo root)
     global _FONT_EVENTS
     _FONT_EVENTS += 1
     if _FONT_EVENTS > 10:
@@ -136,7 +133,6 @@ if os.name == "nt" and hasattr(sys.stdout, "isatty") and sys.stdout.isatty():
         _ORIG_CP = 0
 
 def _restore_code_page():
-    # Some tools (e.g. Conan's generated scripts run chcp 65001) change the shared console code page and leave it
     if not _ORIG_CP:
         return None
     try:
