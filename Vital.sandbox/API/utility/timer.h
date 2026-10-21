@@ -33,18 +33,15 @@ namespace Vital::Sandbox::API {
                 return timer || scheduled; 
             }
 
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
+            void destroy_resource() {
                 Tool::Timer* __timer = nullptr;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
-                    __timer = instance -> timer;
-                    instance -> timer = nullptr;
-                    instance -> scheduled = false;
+                    __timer = timer;
+                    timer = nullptr;
+                    scheduled = false;
                 }
                 if (__timer && Tool::Timer::valid(__timer)) __timer -> stop();
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;
