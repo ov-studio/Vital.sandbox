@@ -25,6 +25,18 @@ namespace Vital::Sandbox {
         virtual ~vm_instance_base() = default;
         virtual void push_self(Machine* vm) = 0;
         virtual godot::Node3D* get_node_3d() { return nullptr; }
+
+        template<typename NodeT>
+        static bool is_node_streamed(NodeT* node) {
+            #if defined(VSDK_Client)
+                if (!node || !node -> is_inside_tree() || !node -> is_visible_in_tree()) return false;
+                auto camera = Engine::Core::get_scene_root() -> get_camera_3d();
+                if (!camera) return false;
+                return camera -> is_position_in_frustum(node -> get_global_position());
+            #else
+                return true;
+            #endif
+        }
     };
 
     template<typename Derived>
@@ -44,6 +56,7 @@ namespace Vital::Sandbox {
             std::string value_reference(const std::string& idx) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_id(Derived::Owner::base_scope), id, idx); }
 
             bool is_alive() const {
+                if constexpr (has_get_node<Derived>::value) return static_cast<bool>(static_cast<Derived*>(const_cast<vm_instance*>(this)) -> get_node());
                 return true;
             }
 
@@ -52,9 +65,10 @@ namespace Vital::Sandbox {
             }
 
             bool is_streamed() const {
+                if constexpr (handle_is_node_3d<Derived>::value) return is_node_streamed(static_cast<Derived*>(const_cast<vm_instance*>(this)) -> get_node());
                 return true;
             }
-            
+
             void set_reference(const std::string& name, int idx) {
                 vm -> set_reference("runtime", name, idx);
                 if (std::find(references.begin(), references.end(), name) == references.end()) references.push_back(name);
@@ -77,9 +91,21 @@ namespace Vital::Sandbox {
         private:
             template<typename T, typename = void>
             struct has_node3d_node : std::false_type {};
-            
+
             template<typename T>
             struct has_node3d_node<T, std::void_t<decltype(static_cast<godot::Node3D*>(std::declval<T*>() -> get_node()))>> : std::true_type {};
+
+            template<typename T, typename = void>
+            struct has_get_node : std::false_type {};
+
+            template<typename T>
+            struct has_get_node<T, std::void_t<decltype(std::declval<T&>().get_node())>> : std::true_type {};
+
+            template<typename T, typename = void>
+            struct handle_is_node_3d : std::false_type {};
+
+            template<typename T>
+            struct handle_is_node_3d<T, std::enable_if_t<has_get_node<T>::value && std::is_base_of_v<godot::Node3D, std::remove_pointer_t<std::remove_reference_t<decltype(std::declval<T&>().get_node())>>>>> : std::true_type {};
         public:
             godot::Node3D* get_node_3d() override {
                 if constexpr (has_node3d_node<Derived>::value) return static_cast<godot::Node3D*>(static_cast<Derived*>(this) -> get_node());
@@ -131,7 +157,7 @@ namespace Vital::Sandbox {
                     ++it;
                     if (instance -> get_node() != ptr) continue;
                     erase_unlocked(instance);
-                    Vital::Engine::Core::get_singleton() -> execute([instance, on_release]() {
+                    Engine::Core::get_singleton() -> execute([instance, on_release]() {
                         if (on_release) on_release(instance);
                         release(instance);
                     });
@@ -225,8 +251,19 @@ namespace Vital::Sandbox {
                 return true;
             }
 
+            void destroy_resource() {
+                if constexpr (has_get_node<Derived>::value) {
+                    auto& handle = static_cast<Derived*>(this) -> get_node();
+                    if (handle) {
+                        handle -> destroy();
+                        handle = nullptr;
+                    }
+                }
+            }
+
             static void clean(const std::shared_ptr<Derived> instance) {
                 if (!erase(instance)) return;
+                instance -> destroy_resource();
                 release(instance);
             }
 
