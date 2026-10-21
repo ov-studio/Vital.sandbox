@@ -39,26 +39,15 @@ namespace Vital::Sandbox::API {
             using Owner = Shader;
             base_class* shader = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return shader;
             }
 
-            bool is_alive() const {
-                return shader ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> shader) {
-                    // Remove all persistent registrations owned by this shader
-                    // instance before tearing it down so we don't leave dangling
-                    // material overrides on live models.
-                    Shader::purge_registrations(instance.get());
-                    instance -> shader -> destroy();
-                    instance -> shader = nullptr;
-                }
-                instance -> release();
+            void destroy_resource() {
+                if (!shader) return;
+                purge_registrations(this);
+                shader -> destroy();
+                shader = nullptr;
             }
         };
         inline static vm_registry<Instance> registry;
