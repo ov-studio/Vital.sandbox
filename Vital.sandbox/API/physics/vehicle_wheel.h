@@ -47,23 +47,8 @@ namespace Vital::Sandbox::API {
                 return body;
             }
 
-            bool is_alive() const {
-                return body ? true : false;
-            }
 
-            bool is_streamed() const {
-                return Node_3D::is_streamed(body);
-            }
             
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
-            }
 
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
