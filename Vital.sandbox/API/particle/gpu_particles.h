@@ -74,26 +74,8 @@ namespace Vital::Sandbox::API {
             using Owner = GPU_Particles;
             base_class* particles = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return particles;
-            }
-
-            bool is_streamed() const {
-                return Node_3D::is_streamed(particles);
-            }
-
-            bool is_alive() const {
-                return particles ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> particles) {
-                    instance -> particles -> destroy();
-                    instance -> particles = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

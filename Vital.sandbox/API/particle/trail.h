@@ -40,26 +40,8 @@ namespace Vital::Sandbox::API {
             using Owner = Trail;
             base_class* trail = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return trail;
-            }
-
-            bool is_streamed() const {
-                return Node_3D::is_streamed(trail);
-            }
-
-            bool is_alive() const {
-                return trail ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> trail) {
-                    instance -> trail -> destroy();
-                    instance -> trail = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

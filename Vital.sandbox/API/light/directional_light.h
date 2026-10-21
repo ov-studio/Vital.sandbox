@@ -51,26 +51,12 @@ namespace Vital::Sandbox::API {
             using Owner = Directional_Light;
             base_class* light = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return light;
             }
 
             bool is_streamed() const {
                 return true;
-            }
-
-            bool is_alive() const {
-                return light ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> light) {
-                    instance -> light -> destroy();
-                    instance -> light = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

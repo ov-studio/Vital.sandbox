@@ -27,26 +27,8 @@ namespace Vital::Sandbox::API {
     struct Physics_Body_Instance : vm_instance<Derived> {
         BaseClass* body = nullptr;
 
-        auto get_node() { 
+        auto& get_node() { 
             return body; 
-        }
-
-        bool is_alive() const { 
-            return body != nullptr; 
-        }
-
-        bool is_streamed() const {
-            return Node_3D::is_streamed(body);
-        }
-
-        void clean() {
-            auto instance = this -> shared_from_this();
-            if (!instance -> erase()) return;
-            if (instance -> body) {
-                instance -> body -> destroy();
-                instance -> body = nullptr;
-            }
-            instance -> release();
         }
     };
 

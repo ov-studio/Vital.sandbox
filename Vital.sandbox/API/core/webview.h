@@ -32,18 +32,8 @@ namespace Vital::Sandbox::API {
             using Owner = Webview;
             base_class* webview = nullptr;
 
-            bool is_alive() const { 
-                return webview ? true : false; 
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> webview) {
-                    instance -> webview -> destroy();
-                    instance -> webview = nullptr;
-                }
-                instance -> release();
+            auto& get_node() {
+                return webview;
             }
         };
         inline static vm_registry<Instance> registry;

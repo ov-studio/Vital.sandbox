@@ -33,22 +33,8 @@ namespace Vital::Sandbox::API {
             using Owner = SVG;
             base_class* texture = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return texture;
-            }
-
-            bool is_alive() const { 
-                return texture ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> texture) {
-                    instance -> texture -> destroy();
-                    instance -> texture = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

@@ -49,22 +49,12 @@ namespace Vital::Sandbox::API {
             using Owner = Camera;
             base_class* camera = nullptr;
 
-            auto get_node() { 
+            auto& get_node() { 
                 return camera;
             }
 
-            bool is_alive() const {
-                return camera ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> camera) {
-                    instance -> camera -> destroy();
-                    instance -> camera = nullptr;
-                }
-                instance -> release();
+            bool is_streamed() const {
+                return true;
             }
         };
         inline static vm_registry<Instance> registry;

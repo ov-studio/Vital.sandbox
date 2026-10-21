@@ -36,19 +36,12 @@ namespace Vital::Sandbox::API {
                 return thread_state ? true : false;
             }
 
-            void clean_thread() {
+            void destroy_resource() {
                 auto tvm = thread_vm;
                 auto tstate = thread_state;
                 thread_vm = nullptr;
                 thread_state = nullptr;
                 if (tvm && tstate && Machine::fetch_machine(tstate) == tvm) delete tvm;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                instance -> clean_thread();
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

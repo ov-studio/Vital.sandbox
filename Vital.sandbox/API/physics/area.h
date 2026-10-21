@@ -40,22 +40,12 @@ namespace Vital::Sandbox::API {
             using Owner = Area;
             base_class* body = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return body;
             }
-
-            bool is_alive() const {
-                return body ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
+            
+            bool is_streamed() const {
+                return true;
             }
         };
         inline static vm_registry<Instance> registry;

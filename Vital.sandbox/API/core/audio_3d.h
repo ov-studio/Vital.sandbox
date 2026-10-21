@@ -52,22 +52,18 @@ namespace Vital::Sandbox::API {
                 return audio -> get_player();
             }
 
-            bool is_streamed() const {
-                return Node_3D::is_streamed(audio -> get_player());
-            }
-
             bool is_alive() const {
                 return audio ? true : false;
             }
+            
+            bool is_streamed() const {
+                return is_node_streamed(audio -> get_player());
+            }
 
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> audio) {
-                    instance -> audio -> destroy();
-                    instance -> audio = nullptr;
-                }
-                instance -> release();
+            void destroy_resource() {
+                if (!audio) return;
+                audio -> destroy();
+                audio = nullptr;
             }
         };
         inline static vm_registry<Instance> registry;

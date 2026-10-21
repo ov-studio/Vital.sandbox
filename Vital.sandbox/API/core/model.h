@@ -37,28 +37,9 @@ namespace Vital::Sandbox::API {
             using Owner = Model;
             base_class* model = nullptr;
 
-            auto get_node() { 
+            auto& get_node() { 
                 return model; 
             }
-
-            bool is_alive() const {
-                return model ? true : false;
-            }
-
-            bool is_streamed() const {
-                return Node_3D::is_streamed(model);
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> model) {
-                    instance -> model -> destroy();
-                    instance -> model = nullptr;
-                }
-                instance -> release();
-            }
-
         };
         inline static vm_registry<Instance> registry;
 

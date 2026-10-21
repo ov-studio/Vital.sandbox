@@ -31,22 +31,8 @@ namespace Vital::Sandbox::API {
             using Owner = Rendertarget;
             base_class* rendertarget = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return rendertarget;
-            }
-
-            bool is_alive() const { 
-                return rendertarget ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> rendertarget) {
-                    instance -> rendertarget -> destroy();
-                    instance -> rendertarget = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

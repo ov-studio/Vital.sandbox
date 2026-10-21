@@ -32,22 +32,8 @@ namespace Vital::Sandbox::API {
             using Owner = Font;
             base_class* font = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return font;
-            }
-
-            bool is_alive() const { 
-                return font ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> font) {
-                    instance -> font -> destroy();
-                    instance -> font = nullptr;
-                }
-                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

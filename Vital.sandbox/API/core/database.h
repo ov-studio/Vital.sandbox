@@ -32,18 +32,8 @@ namespace Vital::Sandbox::API {
             using Owner = Database;
             std::shared_ptr<base_class> db;
 
-            bool is_alive() const { 
-                return db ? true : false;
-            }
-            
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> db) {
-                    instance -> db -> destroy();
-                    instance -> db.reset();
-                }
-                instance -> release();
+            auto& get_node() {
+                return db;
             }
         };
         inline static vm_registry<Instance> registry;

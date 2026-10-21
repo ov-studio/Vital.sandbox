@@ -31,15 +31,12 @@ namespace Vital::Sandbox::API {
             using Owner = Database_Query;
             std::shared_ptr<base_class> query;
 
-            bool is_alive() const { 
-                return query ? true : false; 
+            auto& get_node() {
+                return query;
             }
 
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                instance -> query.reset();
-                instance -> release();
+            void destroy_resource() {
+                query.reset();
             }
         };
         inline static vm_registry<Instance> registry;

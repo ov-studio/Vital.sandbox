@@ -33,18 +33,8 @@ namespace Vital::Sandbox::API {
             using Owner = Audio_2D;
             base_class* audio = nullptr;
 
-            bool is_alive() const {
-                return audio ? true : false;
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> audio) {
-                    instance -> audio -> destroy();
-                    instance -> audio = nullptr;
-                }
-                instance -> release();
+            auto& get_node() {
+                return audio;
             }
         };
         inline static vm_registry<Instance> registry;

@@ -37,26 +37,8 @@ namespace Vital::Sandbox::API {
             using Owner = Collision_Shape;
             base_class* body = nullptr;
 
-            auto get_node() {
+            auto& get_node() {
                 return body;
-            }
-
-            bool is_alive() const {
-                return body ? true : false;
-            }
-
-            bool is_streamed() const {
-                return Node_3D::is_streamed(body);
-            }
-
-            void clean() {
-                auto instance = shared_from_this();
-                if (!instance -> erase()) return;
-                if (instance -> body) {
-                    instance -> body -> destroy();
-                    instance -> body = nullptr;
-                }
-                instance -> release();
             }
 
             void broadcast(const char* shape_type, godot::Array params) {
