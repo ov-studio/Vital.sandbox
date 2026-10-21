@@ -1130,6 +1130,18 @@ namespace Vital::Manager {
         if (stack.is_packet(Network::Name)) return;
         #endif
 
+        #if defined(VSDK_Client)
+        if (stack.has("__event")) {
+            // Run after the entity spawn work already queued this frame, so a script handling a remote event
+            // sees the entities spawned just before it (their Lua instances are created via Core::enqueue)
+            Engine::Core::get_singleton() -> enqueue([stack]() {
+                auto sandbox = Manager::Sandbox::get_singleton();
+                auto vm = sandbox ? sandbox -> get_vm() : nullptr;
+                if (vm) Vital::Sandbox::API::Event::dispatch_remote(vm, stack);
+            });
+            return;
+        }
+        #endif
         if (stack.has("__event") || stack.has("__reply_serial")) {
             auto vm = Manager::Sandbox::get_singleton()->get_vm();
             Vital::Sandbox::API::Event::dispatch_remote(vm, stack);

@@ -23,7 +23,36 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
+    // Run ids //
+    // Every start of a resource on the server gets a new run id, sent to clients in resource:started and echoed back in resource:ready.
+    // A ready that belongs to an earlier run (e.g. a quick restart) is then recognised and dropped, instead of making scripts spawn for it
+    namespace {
+        std::mutex run_id_mutex;
+        std::unordered_map<std::string, int32_t> run_ids;
+
+        int32_t get_run_id(const std::string& name) {
+            std::lock_guard<std::mutex> lock(run_id_mutex);
+            auto it = run_ids.find(name);
+            return it == run_ids.end() ? 0 : it -> second;
+        }
+
+        #if defined(VSDK_Client)
+        void set_run_id(const std::string& name, int32_t id) {
+            std::lock_guard<std::mutex> lock(run_id_mutex);
+            run_ids[name] = id;
+        }
+
+        #else 
+        int32_t next_run_id(const std::string& name) {
+            std::lock_guard<std::mutex> lock(run_id_mutex);
+            return ++run_ids[name];
+        }
+        #endif
+    }
+
+    
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
         return fmt::format("{}/{}", resource, src);
@@ -164,6 +193,9 @@ namespace Vital::Manager {
             rm -> resource_order.push_back(name);
             #endif
         }
+        #if !defined(VSDK_Client)
+        next_run_id(name);
+        #endif
         rm -> log("sbox", fmt::format("resource `{}` started", name));
 
         Internal::load_models(name);
@@ -184,12 +216,12 @@ namespace Vital::Manager {
             });
         #else
             Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
-            Manager::Network::get_singleton() -> send_to_server(
-                Tool::Stack::make_packet(Resource::Name, { 
-                    Tool::StackValue(std::string("resource:ready")), 
-                    Tool::StackValue(name) 
-                })
-            );
+            Tool::Stack ready = Tool::Stack::make_packet(Resource::Name, {
+                Tool::StackValue(std::string("resource:ready")),
+                Tool::StackValue(name)
+            });
+            ready.object["run"] = Tool::StackValue(get_run_id(name));
+            Manager::Network::get_singleton() -> send_to_server(ready);
         #endif
     }
 
@@ -342,6 +374,7 @@ namespace Vital::Manager {
         });
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
+            packet.object["run"] = Tool::StackValue(get_run_id(name));
             auto packed = Internal::pack_manifest(*manifest);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
@@ -802,12 +835,19 @@ namespace Vital::Manager {
                     std::vector<std::string> dependencies;
                     Internal::unpack_manifest(arguments, scripts, files, models, dependencies);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() {
+                    const bool has_run = arguments.object.count("run") > 0;
+                    const int32_t run = has_run ? arguments.object.at("run").as<int32_t>() : 0;
+                    
+                    // Decide inside the queue: the stop for the previous run is queued ahead of this and may not have executed yet,
+                    // so checking is_running here would wrongly ignore a quick restart and then stop the resource for good
+                    Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies, has_run, run]() {
                         {
                             auto rm = Resource::get_singleton();
                             std::lock_guard<std::mutex> lock(rm -> mutex);
                             if (Internal::is_running(name)) return;
                         }
+                        // Adopt the new run id only now, after the previous run was stopped, so a ready sent by that previous run can never carry it
+                        if (has_run) set_run_id(name, run);
                         Internal::register_resource(name, scripts, files, models, dependencies);
                     });
                 }
@@ -849,6 +889,10 @@ namespace Vital::Manager {
                     if (arguments.array.size() < 2 || !arguments.has("sender")) return;
                     const int32_t sender = arguments.object.at("sender").as<int32_t>();
                     const std::string resource_name = arguments.array[1].as<std::string>();
+                    if (arguments.object.count("run") && arguments.object.at("run").as<int32_t>() != get_run_id(resource_name)) {
+                        Resource::get_singleton() -> log("sbox", fmt::format("ignored stale ready for `{}` from peer {} (older run)", resource_name, sender));
+                        return;
+                    }
                     Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue(sender), Tool::StackValue(resource_name));
                 }
             });

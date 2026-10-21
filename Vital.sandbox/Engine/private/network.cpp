@@ -315,6 +315,9 @@ namespace Vital::Engine {
         wheel->set_position(position);
         wheel->set_rotation(rotation);
         godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_id=", wheel_id);
+        // Same as remote collision shapes: lets the API layer create the Lua instance, which fires entity:created
+        Tool::Event::emit("entity:spawned", Tool::Stack({wheel, true}));
+        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(wheel)}));
         #endif
     }
 

@@ -383,8 +383,11 @@ namespace Vital::Engine {
         #if !defined(VSDK_Client)
         // Notify all clients to remove their copy before we free server-side.
         if (net_id != 0) {
-            auto net_node = Manager::Network::get_singleton()->get_node();
-            if (net_node) net_node->rpc("_destroy_entity", (int)net_id);
+            // Queued so it can never overtake this entity's own spawn RPC (also sent via Core::enqueue)
+            Engine::Core::get_singleton() -> enqueue([captured_net_id = (int)net_id]() {
+                auto net_node = Manager::Network::get_singleton()->get_node();
+                if (net_node) net_node->rpc("_destroy_entity", captured_net_id);
+            });
         }
         #endif
         this->queue_free();
