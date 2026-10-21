@@ -49,8 +49,12 @@ namespace Vital::Sandbox::API {
             API::Physics_Body::bind<Instance, API::Physics_Body::Type::Rigid>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
+                int authority_peer = 0;
+                #if !defined(VSDK_Client)
+                if (vm -> is_number(1)) authority_peer = vm -> get_int(1);
+                #endif
                 auto instance = Instance::init(vm);
-                instance -> body = base_class::create();
+                instance -> body = base_class::create(authority_peer);
                 instance -> store(true);
                 return 1;
             });
