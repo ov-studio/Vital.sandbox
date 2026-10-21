@@ -32,6 +32,8 @@ namespace Vital::Engine {
         auto wheel = memnew(Vehicle_Wheel);
         if (body) body -> add_child(wheel);
         else Engine::Core::get_singleton() -> add_child(wheel);
+        if (auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(body)) wheel -> set_brake(vehicle -> get_brake());
+        wheel -> sync_inputs();
         Tool::Event::emit("entity:spawned", Tool::Stack({wheel, false}));
         Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(wheel)}));
         return wheel;
@@ -39,6 +41,27 @@ namespace Vital::Engine {
 
     void Vehicle_Wheel::destroy() {
         queue_free();
+    }
+
+    void Vehicle_Wheel::refresh() {
+        const godot::ObjectID oid(get_instance_id());
+        Engine::Core::get_singleton() -> execute([oid]() {
+            auto wheel = godot::Object::cast_to<Vehicle_Wheel>(godot::ObjectDB::get_instance(oid));
+            if (!wheel || !wheel -> is_inside_tree()) return;
+            auto parent = wheel -> get_parent();
+            if (!parent) return;
+            const int index = wheel -> get_index();
+            parent -> remove_child(wheel);
+            parent -> add_child(wheel);
+            parent -> move_child(wheel, index);
+        });
+    }
+
+    void Vehicle_Wheel::sync_inputs() {
+        auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(get_parent());
+        if (!vehicle) return;
+        if (is_used_as_traction()) set_engine_force(vehicle -> get_engine_force());
+        if (is_used_as_steering()) set_steering(vehicle -> get_steering());
     }
 
 

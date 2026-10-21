@@ -41,6 +41,8 @@ namespace Vital::Engine {
             // Managers //
             static Vehicle_Wheel* create(godot::Node3D* body);
             void destroy();
+            void refresh();
+            void sync_inputs();
 
 
             // Getters //

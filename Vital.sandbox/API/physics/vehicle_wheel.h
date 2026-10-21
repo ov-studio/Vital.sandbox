@@ -329,6 +329,7 @@ namespace Vital::Sandbox::API {
 
                 auto position = vm -> get_vector3(2);
                 self -> body -> set_position(position);
+                self -> body -> refresh();
                 self -> broadcast_transform();
                 vm -> push_value(true);
                 return 1;
@@ -340,6 +341,7 @@ namespace Vital::Sandbox::API {
 
                 auto rotation = vm -> get_vector3(2);
                 self -> body -> set_rotation_degrees(rotation);
+                self -> body -> refresh();
                 self -> broadcast_transform();
                 vm -> push_value(true);
                 return 1;
@@ -428,6 +430,7 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(2);
                 self -> body -> set_use_as_traction(state);
+                self -> body -> sync_inputs();
                 self -> broadcast_config("use_as_traction", state);
                 vm -> push_value(true);
                 return 1;
@@ -439,6 +442,7 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(2);
                 self -> body -> set_use_as_steering(state);
+                self -> body -> sync_inputs();
                 self -> broadcast_config("use_as_steering", state);
                 vm -> push_value(true);
                 return 1;
@@ -502,6 +506,7 @@ namespace Vital::Sandbox::API {
 
                 auto offset = vm -> get_vector3(2);
                 self -> body -> translate(offset);
+                self -> body -> refresh();
                 self -> broadcast_transform();
                 vm -> push_value(true);
                 return 1;
@@ -513,6 +518,7 @@ namespace Vital::Sandbox::API {
 
                 auto offset = vm -> get_vector3(2);
                 self -> body -> translate_object_local(offset);
+                self -> body -> refresh();
                 self -> broadcast_transform();
                 vm -> push_value(true);
                 return 1;
