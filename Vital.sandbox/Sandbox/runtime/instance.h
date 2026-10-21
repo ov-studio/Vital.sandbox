@@ -77,6 +77,7 @@ namespace Vital::Sandbox {
         private:
             template<typename T, typename = void>
             struct has_node3d_node : std::false_type {};
+            
             template<typename T>
             struct has_node3d_node<T, std::void_t<decltype(static_cast<godot::Node3D*>(std::declval<T*>() -> get_node()))>> : std::true_type {};
         public:
@@ -197,6 +198,14 @@ namespace Vital::Sandbox {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
                 Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
+                {
+                    auto node_3d = instance -> get_node_3d();
+                    if (node_3d) {
+                        std::lock_guard<std::mutex> lock(vm_registry_mutex);
+                        auto node_it = vm_node_registry.find(node_3d);
+                        if (node_it != vm_node_registry.end() && node_it -> second == instance.get()) vm_node_registry.erase(node_it);
+                    }
+                }
                 Derived::Owner::registry.buffer.erase(it);
                 instance -> destroyed = true;
                 return true;
@@ -204,9 +213,7 @@ namespace Vital::Sandbox {
 
             static bool release(const std::shared_ptr<Derived> instance) {
                 {
-                    auto node_3d = instance -> get_node_3d();
                     std::lock_guard<std::mutex> lock(vm_registry_mutex);
-                    if (node_3d) vm_node_registry.erase(node_3d);
                     vm_instance_registry.erase(static_cast<void*>(instance.get()));
                 }
                 vm_module::release_userdata_ptr(instance -> userdata);
