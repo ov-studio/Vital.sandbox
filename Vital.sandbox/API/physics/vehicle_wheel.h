@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
             std::vector<std::pair<std::string, godot::Variant>> pending_configs;
             #endif
 
-            auto get_node() {
+            auto& get_node() {
                 return body;
             }
 
