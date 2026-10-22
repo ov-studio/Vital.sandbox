@@ -170,7 +170,6 @@ namespace Vital::Engine {
                 }
                 net_mgr -> replay_pending_syncs(object);
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, true}));
-                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
@@ -233,7 +232,6 @@ namespace Vital::Engine {
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
                     Tool::Event::emit("entity:spawned", Tool::Stack({entity, (int32_t)sub_type, true}));
-                    if (auto node = entity->get_sync_node()) Tool::Event::emit("entity:ready", Tool::Stack({node}));
                 }
                 break;
             }
@@ -317,7 +315,6 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_id=", wheel_id);
         // Same as remote collision shapes: lets the API layer create the Lua instance, which fires entity:created
         Tool::Event::emit("entity:spawned", Tool::Stack({wheel, true}));
-        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(wheel)}));
         #endif
     }
 
@@ -682,7 +679,6 @@ namespace Vital::Engine {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
             Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
-            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(col)}));
         }
 
         // FIXED: now routes through Collision_Shape::assign_shape(), which sets
@@ -785,7 +781,6 @@ namespace Vital::Engine {
                 auto* child = memnew(Engine::Collision_Shape);
                 node -> add_child(child);
                 Tool::Event::emit("entity:spawned", Tool::Stack({child, true}));
-                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(child)}));
                 child -> set_disabled(false);
                 child -> assign_shape(shape);
                 godot::Basis basis = godot::Basis::from_euler(
@@ -890,7 +885,6 @@ namespace Vital::Engine {
                 col = memnew(Engine::Collision_Shape);
                 body_node -> add_child(col);
                 Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
-                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(col)}));
             }
             // Clear any previous per-mesh shapes. They may live under the anchor
             // (old hierarchy) or directly under the physics body (new hierarchy).
@@ -939,7 +933,6 @@ namespace Vital::Engine {
                 auto* dest = memnew(Engine::Collision_Shape);
                 body_node -> add_child(dest);
                 Tool::Event::emit("entity:spawned", Tool::Stack({dest, true}));
-                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(dest)}));
                 // Force shape-owner registration: enable, assign, transform, then
                 // toggle disabled so Godot re-binds the shape to the StaticBody
                 // even when everything is applied in the same tick as add_child.

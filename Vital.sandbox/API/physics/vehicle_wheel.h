@@ -116,24 +116,25 @@ namespace Vital::Sandbox::API {
         static void init(Machine* vm) {
             API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
 
-            #if !defined(VSDK_Client)
-            static Tool::Event::Handle ready_binding;
-            ready_binding.bind("entity:ready", [](Tool::Stack args) {
-                if (args.array.size() < 1) return;
-                auto entity = args.array[0].as<godot::Node3D*>();
-                if (!entity) return;
-
-                std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
-                for (auto& [uid, instance] : Vehicle_Wheel::registry.buffer) {
-                    if (!instance || !instance -> body) continue;
-                    if (instance -> body -> get_parent() != entity) continue;
-                    instance -> flush_broadcasts();
-                }
-            });
-            #endif
             
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
+                #if !defined(VSDK_Client)
+                // A physics body finished spawning (server): its wheels can now broadcast
+                if (args.array.size() >= 3 && args.array[0].is_raw_ptr<Vital::Engine::ISyncable>()) {
+                    auto sync = args.array[0].as_raw_ptr<Vital::Engine::ISyncable>();
+                    auto entity = sync ? sync -> get_sync_node() : nullptr;
+                    if (!entity) return;
+
+                    std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
+                    for (auto& [uid, instance] : Vehicle_Wheel::registry.buffer) {
+                        if (!instance || !instance -> body) continue;
+                        if (instance -> body -> get_parent() != entity) continue;
+                        instance -> flush_broadcasts();
+                    }
+                    return;
+                }
+                #endif
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto entity = args.array[0].as_raw_ptr<base_class>();

@@ -35,7 +35,6 @@ namespace Vital::Engine {
         if (auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(body)) wheel -> set_brake(vehicle -> get_brake());
         wheel -> sync_inputs();
         Tool::Event::emit("entity:spawned", Tool::Stack({wheel, false}));
-        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(wheel)}));
         return wheel;
     }
 

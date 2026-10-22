@@ -297,7 +297,6 @@ namespace Vital::Engine {
             object->add_child(instance);
             Engine::Core::get_singleton()->add_child(object);
             Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
-            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
             return object;
         #else
             // Server-side: create the model locally, assign net_id before
@@ -373,7 +372,6 @@ namespace Vital::Engine {
                 }
                 object->flush_pending_force_transform();
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
-                Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(object)}));
             });
             return object;
         #endif
@@ -443,7 +441,6 @@ namespace Vital::Engine {
         if (!sync_registered) Manager::Network::get_singleton()->enqueue_syncable_registration(this);
         Engine::Dimension::set_node_visible(this, true);
         Tool::Event::emit("entity:spawned", Tool::Stack({this, true}));
-        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
 
         // The mesh tree exists now: run whatever was waiting on it (see Network::apply_mesh_ref).

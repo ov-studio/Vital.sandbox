@@ -220,7 +220,6 @@ namespace Vital::Engine {
         if (body) body -> add_child(collision);
         else Engine::Core::get_singleton() -> add_child(collision);
         Tool::Event::emit("entity:spawned", Tool::Stack({collision, false}));
-        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(collision)}));
         return collision;
     }
 

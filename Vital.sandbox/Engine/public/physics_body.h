@@ -181,18 +181,15 @@ namespace Vital::Engine {
                             self -> flush_pending_shape_broadcast();
                             self -> flush_pending_force_transform();
                             Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
-                            Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(self) }));
                         });
                     }
                     else {
                         Core::get_singleton() -> add_child(this);
                         Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
-                        Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
                     }
                 #else
                     Core::get_singleton() -> add_child(this);
                     Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
-                    Tool::Event::emit("entity:ready", Tool::Stack({static_cast<godot::Node3D*>(this)}));
                 #endif
             }
 
