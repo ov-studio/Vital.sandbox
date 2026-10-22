@@ -134,15 +134,13 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, authority = 1)")
-                    .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_number);
+                vm_args(vm, id, "(name)")
+                    .require(1, &Machine::is_string);
 
                 auto name = vm -> get_string(1);
-                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
                 const std::string key = ref_name(Manager::Resource::get_resource_from_vm(vm), name);
                 auto instance = Instance::init(vm);
-                instance -> model = base_class::create(key, authority);
+                instance -> model = base_class::create(key);
                 instance -> store(true);
                 return 1;
             });
