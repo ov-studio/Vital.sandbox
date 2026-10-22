@@ -150,11 +150,14 @@ namespace Vital::Engine {
             void sync_push_snapshot(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel);
             void interp_process(double delta, godot::Vector3& out_pos, godot::Vector3& out_rot);
             bool has_sync_moved(const godot::Vector3& pos, const godot::Vector3& rot, const godot::Vector3& scale) const;
-            virtual godot::Node3D* get_sync_node() = 0;
             #if !defined(VSDK_Client)
             void apply_parent(godot::Node* parent_node);
             #endif
         public:
+            // Node backing this syncable (public so API/gameplay code can resolve it from an ISyncable* too)
+            virtual godot::Node3D* get_sync_node() = 0;
+
+
             // Managers //
             virtual void destroy_sync() = 0;
             virtual void apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) = 0;
