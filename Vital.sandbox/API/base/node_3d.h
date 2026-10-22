@@ -223,7 +223,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
-            {
+            if constexpr (!child_entity) {
                 vm_module::bind_method<Instance>(vm, "set_parent", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(entity = nil)", true)
                         .optional(2, &vm_module::is_node3d_userdata);
