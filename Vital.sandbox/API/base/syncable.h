@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        // Binds the methods shared by every syncable instance (get_net_id)
+        // Binds the methods shared by every syncable instance
         template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "get_net_id", [](auto vm, auto self, auto& id) -> int {
