@@ -493,7 +493,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // TODO: ..Rename better and make docs + update roadmap
             API::bind(vm, base_scope, "get_mouse_sensitivity", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(axis)")
                     .require_enum(1, mouse_axis_registry);
