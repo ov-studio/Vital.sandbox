@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 
 
 ////////////////////////
@@ -264,6 +265,11 @@ namespace Vital::Sandbox::API {
             { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED }
         };
 
+        inline static const std::vector<std::pair<std::string, int>> mouse_axis_registry = {
+            { "HORIZONTAL", 0 },
+            { "VERTICAL",   1 }
+        };
+
         struct BindHandler {
             int exec_ref = LUA_NOREF;
             bool down;
@@ -487,6 +493,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // TODO: ..Rename better and make docs + update roadmap
+            API::bind(vm, base_scope, "get_mouse_sensitivity", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(axis)")
+                    .require_enum(1, mouse_axis_registry);
+
+                auto axis = vm -> get_int(1);
+                vm -> push_value((axis == 0) ? Vital::Engine::MainMenu::get_mouse_sens_horizontal() : Vital::Engine::MainMenu::get_mouse_sens_vertical());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "set_cursor_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require_enum(1, cursor_mode_registry);
@@ -611,6 +627,7 @@ namespace Vital::Sandbox::API {
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "key", key_registry);
             vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry);
+            vm -> scope_set_enum(base_scope, "mouse_axis", mouse_axis_registry);
         }
 
         static void clean(const std::string& env) {
