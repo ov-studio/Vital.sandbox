@@ -381,7 +381,7 @@ namespace Vital::Engine {
         // Notify all clients to remove their copy before we free server-side.
         if (net_id != 0) {
             // Queued so it can never overtake this entity's own spawn RPC (also sent via Core::enqueue)
-            Manager::Network::rpc(true, "_destroy_entity", captured_net_id);
+            Manager::Network::rpc(true, "_destroy_entity", (int)net_id);
         }
         #endif
         this->queue_free();

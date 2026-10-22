@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                 // A physics body finished spawning (server): its wheels can now broadcast
                 if (args.array.size() >= 3 && args.array[0].is_raw_ptr<Vital::Engine::ISyncable>()) {
                     auto sync = args.array[0].as_raw_ptr<Vital::Engine::ISyncable>();
-                    auto entity = sync ? sync -> get_sync_node() : nullptr;
+                    auto entity = dynamic_cast<godot::Node3D*>(sync);
                     if (!entity) return;
 
                     std::lock_guard<std::mutex> lock(Vehicle_Wheel::registry.mutex);
