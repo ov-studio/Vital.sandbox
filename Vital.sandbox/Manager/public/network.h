@@ -335,6 +335,35 @@ namespace Vital::Manager {
             // Expose the Engine::Network node so Model can call rpc() on it.
             Engine::Network* get_node() const { return node; }
 
+            // RPC helpers (shared send path, no need to fetch the node at call sites).
+            // deferred: queued on Core, so it can never overtake RPCs queued earlier (e.g. the entity's own spawn RPC).
+            // Not deferred: sent immediately. `method` must be a string literal/static string (it is captured by pointer)
+            static void defer(std::function<void()> exec);
+
+            template<typename... Args>
+            static void rpc(bool deferred, const char* method, Args... args) {
+                if (deferred) defer([method, args...]() { dispatch_rpc(-1, method, args...); });
+                else dispatch_rpc(-1, method, args...);
+            }
+
+            template<typename... Args>
+            static void rpc_id(bool deferred, int peer_id, const char* method, Args... args) {
+                if (deferred) defer([peer_id, method, args...]() { dispatch_rpc(peer_id, method, args...); });
+                else dispatch_rpc(peer_id, method, args...);
+            }
+
+        private:
+            template<typename... Args>
+            static void dispatch_rpc(int peer_id, const char* method, const Args&... args) {
+                auto manager = get_singleton();
+                auto net_node = manager ? manager -> get_node() : nullptr;
+                if (!net_node) return;
+                if (peer_id < 0) net_node -> rpc(godot::StringName(method), args...);
+                else net_node -> rpc_id(peer_id, godot::StringName(method), args...);
+            }
+
+        public:
+
             void poll(double delta = 0.0);
             void sync_tick(double delta);
     };

@@ -924,6 +924,10 @@ namespace Vital::Manager {
         #endif
     }
 
+    void Network::defer(std::function<void()> exec) {
+        Engine::Core::get_singleton() -> enqueue(std::move(exec));
+    }
+
     // Posts to the pending queue — safe to call from any thread/enqueue context.
     void Network::enqueue_syncable_registration(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_pending_mutex);
