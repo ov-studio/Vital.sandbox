@@ -45,7 +45,7 @@ namespace Vital::Engine {
     // Particle distance setting: past (camera far x multiplier) Godot stops rendering the emitter.
     // At 100% the range is switched off, so the far plane stays the only limit.
     void GPU_Particles::sync_distance() {
-        const float mult = MainMenu::get_particle_distance_mult();
+        const float mult = MainMenu::get_particle_distance();
         float range = 0.0f;
         if (mult < 1.0f) {
             const float clip = get_reference_clip();

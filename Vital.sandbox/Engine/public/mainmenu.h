@@ -58,19 +58,19 @@ namespace Vital::Engine {
 
             // Client draw-distance multiplier (1.0 = Lua value as-is).
             // set_far_clip applies it; get_far_clip divides it out.
-            static float get_draw_distance_mult();
-            static void set_draw_distance_mult(float mult);
+            static float get_draw_distance();
+            static void set_draw_distance(float mult);
 
             // Client particle-distance multiplier on the active camera far plane (1.0 = no extra limit).
             // GPU_Particles reads it every frame, so nothing needs pushing when it changes.
-            static float get_particle_distance_mult();
-            static void set_particle_distance_mult(float mult);
+            static float get_particle_distance();
+            static void set_particle_distance(float mult);
 
             // Client mouse look multipliers (1.0 = default). Games read these when applying look.
             static float get_mouse_horizontal_senstivity();
-            static void set_mouse_sens_horizontal(float mult);
+            static void set_mouse_horizontal_senstivity(float mult);
             static float get_mouse_vertical_senstivity();
-            static void set_mouse_sens_vertical(float mult);
+            static void set_mouse_vertical_senstivity(float mult);
 
 
             // Events //

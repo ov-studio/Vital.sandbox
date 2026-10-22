@@ -151,9 +151,8 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_far_clip", [](auto vm, auto self, auto& id) -> int {
-                // Return Lua logical far (strip client multiplier).
-                // TODO: Improve
-                const float mult = Vital::Engine::MainMenu::get_draw_distance_mult();
+                // Return Lua logical far (strip client multiplier) /// (mult > 0.0001f ? mult : 1.0f) check should be part of mult or actually its not even needed since its never 0?
+                const float mult = Vital::Engine::MainMenu::get_draw_distance();
                 vm -> push_value(self -> camera -> get_far() / (mult > 0.0001f ? mult : 1.0f));
                 return 1;
             });
@@ -281,7 +280,7 @@ namespace Vital::Sandbox::API {
                 // TODO: Improve
                 // Apply client multiplier so settings stick after Lua sets far on join.
                 auto z_far = vm -> get_float(2);
-                self -> camera -> set_far(z_far*Vital::Engine::MainMenu::get_draw_distance_mult());
+                self -> camera -> set_far(z_far*Vital::Engine::MainMenu::get_draw_distance());
                 vm -> push_value(true);
                 return 1;
             });
