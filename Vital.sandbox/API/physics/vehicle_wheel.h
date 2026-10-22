@@ -47,9 +47,6 @@ namespace Vital::Sandbox::API {
                 return body;
             }
 
-
-            
-
             void broadcast_config(const char* key, godot::Variant value) {
                 #if !defined(VSDK_Client)
                 uint32_t nid = body -> get_parent_net_id();
