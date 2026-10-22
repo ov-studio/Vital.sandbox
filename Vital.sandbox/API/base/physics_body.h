@@ -121,7 +121,7 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(peer_id)", true)
                         .require(2, &Machine::is_number);
 
-                    auto peer_id = vm -> get_int(2);
+                    auto peer_id = API::Syncable::resolve_syncer((int)vm -> get_int(2));
                     self -> get_node() -> set_syncer(peer_id);
                     vm -> push_value(true);
                     return 1;
