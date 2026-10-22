@@ -217,6 +217,13 @@ namespace Vital::Engine {
                     as -> set_bus_volume_db(idx, db);
                 }
             }
+
+            if (settings.HasMember("mouse_sens_horizontal") && settings["mouse_sens_horizontal"].IsNumber()) {
+                MainMenu::set_mouse_sens_horizontal(static_cast<float>(settings["mouse_sens_horizontal"].GetDouble()));
+            }
+            if (settings.HasMember("mouse_sens_vertical") && settings["mouse_sens_vertical"].IsNumber()) {
+                MainMenu::set_mouse_sens_vertical(static_cast<float>(settings["mouse_sens_vertical"].GetDouble()));
+            }
         }
 
         // Update check: compares the running Vital.sandbox / Vital.kit against their latest GitHub release.
@@ -239,13 +246,6 @@ namespace Vital::Engine {
                 rapidjson::Document doc;
                 doc.Parse(Tool::HTTP::get(sandbox_src).c_str());
                 if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("tag_name") && doc["tag_name"].IsString()) return doc["tag_name"].GetString();
-            }
-
-            if (settings.HasMember("mouse_sens_horizontal") && settings["mouse_sens_horizontal"].IsNumber()) {
-                MainMenu::set_mouse_sens_horizontal(static_cast<float>(settings["mouse_sens_horizontal"].GetDouble()));
-            }
-            if (settings.HasMember("mouse_sens_vertical") && settings["mouse_sens_vertical"].IsNumber()) {
-                MainMenu::set_mouse_sens_vertical(static_cast<float>(settings["mouse_sens_vertical"].GetDouble()));
             }
             catch (...) { /* offline / rate limited: no update info */ }
             return "";
