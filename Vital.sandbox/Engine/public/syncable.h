@@ -167,6 +167,7 @@ namespace Vital::Engine {
             #if !defined(VSDK_Client)
             void force_transform_broadcast();
             void flush_pending_force_transform();
+            void set_syncer(int peer_id);
             void set_parent(godot::Node3D* parent_node);
             #endif
 

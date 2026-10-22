@@ -182,6 +182,17 @@ namespace Vital::Engine {
         pending_force_transform.reset();
     }
 
+    // Hands the entity over to `peer_id` (engine id, 1 is the server) and tells clients
+    void ISyncable::set_syncer(int peer_id) {
+        if (net_id == 0) return;
+        sync_authority = peer_id;
+        sync_sleeping = false;
+        reset_sync_state();
+        if (!sync_registered) return;
+
+        Manager::Network::rpc(true, "_set_authority", (int)net_id, sync_authority);
+    }
+
     void ISyncable::force_transform_broadcast() {
         godot::Vector3 cur_pos = get_sync_position();
         godot::Vector3 cur_rot = get_sync_rotation();

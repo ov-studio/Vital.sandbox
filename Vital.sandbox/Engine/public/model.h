@@ -231,15 +231,11 @@ namespace Vital::Engine {
             float get_animation_layer_weight(int layer) const;
             float get_animation_layer_speed(int layer) const;
             std::string get_current_animation_layer(int layer) const;
-            int get_sync_authority() const;
             uint32_t get_net_id() const;
 
 
             // Setters //
             void set_model_name(const std::string& name);
-            #if !defined(VSDK_Client)
-            void set_syncer(int peer_id);
-            #endif
 
             bool set_component_visible(const std::string& component, bool state);
             bool set_component_rendered(const std::string& component, bool state);

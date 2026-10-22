@@ -581,7 +581,6 @@ namespace Vital::Engine {
     // get_sync_position()/get_sync_rotation()/get_sync_scale(): use
     // ISyncable's shared defaults (syncable.cpp) via get_sync_node() — no
     // longer duplicated here.
-    int Model::get_sync_authority() const     { return sync_authority; }
     uint32_t Model::get_net_id() const        { return net_id; }
 
     std::vector<std::string> Model::get_components(bool include_all) {
@@ -658,17 +657,6 @@ namespace Vital::Engine {
     // set_parent() / apply_parent() / get_parent_net_id() now live on
     // ISyncable (see syncable.cpp) — Model has no override here, it just
     // inherits the shared implementation.
-
-    #if !defined(VSDK_Client)
-    void Model::set_syncer(int peer_id) {
-        sync_authority = peer_id;
-        sync_sleeping  = false;
-        godot::UtilityFunctions::print("Model net_id=", net_id, " set_syncer -> ", sync_authority);
-        if (!sync_registered) return;
-
-        Manager::Network::rpc(true, "_set_authority", (int)net_id, sync_authority);
-    }
-    #endif
 
     bool Model::set_component_visible(const std::string& component, bool state) {
         auto exec = [&](const std::string& name) -> bool {

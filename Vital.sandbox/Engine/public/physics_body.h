@@ -101,19 +101,8 @@ namespace Vital::Engine {
             }
 
             uint32_t get_net_id() const override { return net_id; }
-            int get_sync_authority() const override { return sync_authority; }
 
             #if !defined(VSDK_Client)
-            void set_syncer(int peer_id) {
-                if (net_id == 0) return;
-                sync_authority = peer_id;
-                sync_sleeping  = false;
-                reset_sync_state();
-                if (!sync_registered) return;
-
-                Manager::Network::rpc(true, "_set_authority", (int)net_id, sync_authority);
-            }
-
             void flush_pending_shape_broadcast() {
                 if (!pending_shape_broadcast.has_value()) return;
 
