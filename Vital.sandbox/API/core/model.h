@@ -485,26 +485,26 @@ namespace Vital::Sandbox::API {
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, euler_degrees)", true)
+                vm_args(vm, id, "(component, rotation)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3);
 
                 auto component = vm -> get_string(2);
-                auto euler_degrees = vm -> get_vector3(3);
-                self -> model -> get_component_node(component) -> set_rotation_degrees(euler_degrees);
+                auto rotation = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_rotation_degrees(rotation);
                 self -> model -> sync_component_transform(component);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, euler_degrees)", true)
+                vm_args(vm, id, "(component, rotation)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3);
 
                 auto component = vm -> get_string(2);
-                auto euler_degrees = vm -> get_vector3(3);
-                self -> model -> get_component_node(component) -> set_global_rotation_degrees(euler_degrees);
+                auto rotation = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_global_rotation_degrees(rotation);
                 self -> model -> sync_component_transform(component);
                 vm -> push_value(true);
                 return 1;

@@ -162,22 +162,22 @@ namespace Vital::Sandbox::API {
                 });
 
                 API::Syncable::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_degrees)", true)
+                    vm_args(vm, id, "(rotation)", true)
                         .require(2, &Machine::is_vector3);
 
-                    auto euler_degrees = vm -> get_vector3(2);
-                    self -> get_node() -> set_rotation_degrees(euler_degrees);
+                    auto rotation = vm -> get_vector3(2);
+                    self -> get_node() -> set_rotation_degrees(rotation);
                     maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
                 });
 
                 API::Syncable::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_degrees)", true)
+                    vm_args(vm, id, "(rotation)", true)
                         .require(2, &Machine::is_vector3);
 
-                    auto euler_degrees = vm -> get_vector3(2);
-                    self -> get_node() -> set_global_rotation_degrees(euler_degrees);
+                    auto rotation = vm -> get_vector3(2);
+                    self -> get_node() -> set_global_rotation_degrees(rotation);
                     maybe_force_broadcast(self -> get_node());
                     vm -> push_value(true);
                     return 1;
