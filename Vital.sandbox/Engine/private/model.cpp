@@ -282,7 +282,7 @@ namespace Vital::Engine {
         load_waiters[name].push_back(std::move(exec));
     }
 
-    Model* Model::create(const std::string& name, int authority_peer) {
+    Model* Model::create(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("model '{}' isn't loaded yet", name));
 
@@ -302,8 +302,7 @@ namespace Vital::Engine {
             // Server-side: create the model locally, assign net_id before
             // add_child so _ready() sees it, then RPC clients to mirror it.
             Model* object = memnew(Model);
-            object->net_id            = next_net_id++;
-            object->pending_authority = authority_peer;
+            object->net_id = next_net_id++;
 
             godot::Node* instance = it->second->instantiate();
             if (!instance) {
