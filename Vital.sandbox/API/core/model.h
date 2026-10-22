@@ -364,7 +364,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(peer_id)", true)
                     .require(2, &Machine::is_number);
 
-                int peer_id = (int)(vm -> get_int(2));
+                int peer_id = API::Syncable::resolve_syncer((int)(vm -> get_int(2)));
                 self -> model -> set_syncer(peer_id);
                 vm -> push_value(true);
                 return 1;
