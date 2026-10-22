@@ -499,7 +499,7 @@ namespace Vital::Sandbox::API {
                     .require_enum(1, mouse_axis_registry);
 
                 auto axis = vm -> get_int(1);
-                vm -> push_value((axis == 0) ? Vital::Engine::MainMenu::get_mouse_sens_horizontal() : Vital::Engine::MainMenu::get_mouse_sens_vertical());
+                vm -> push_value((axis == 0) ? Vital::Engine::MainMenu::get_mouse_horizontal_senstivity() : Vital::Engine::MainMenu::get_mouse_vertical_senstivity());
                 return 1;
             });
 

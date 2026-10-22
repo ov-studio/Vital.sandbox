@@ -67,9 +67,9 @@ namespace Vital::Engine {
             static void set_particle_distance_mult(float mult);
 
             // Client mouse look multipliers (1.0 = default). Games read these when applying look.
-            static float get_mouse_sens_horizontal();
+            static float get_mouse_horizontal_senstivity();
             static void set_mouse_sens_horizontal(float mult);
-            static float get_mouse_sens_vertical();
+            static float get_mouse_vertical_senstivity();
             static void set_mouse_sens_vertical(float mult);
 
 

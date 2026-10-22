@@ -548,7 +548,7 @@ namespace Vital::Engine {
         particle_distance_mult.store(std::clamp(mult, 0.1f, 2.0f));
     }
 
-    float MainMenu::get_mouse_sens_horizontal() {
+    float MainMenu::get_mouse_horizontal_senstivity() {
         return mouse_sens_horizontal.load();
     }
 
@@ -556,7 +556,7 @@ namespace Vital::Engine {
         mouse_sens_horizontal.store(std::clamp(mult, 0.01f, 2.0f));
     }
 
-    float MainMenu::get_mouse_sens_vertical() {
+    float MainMenu::get_mouse_vertical_senstivity() {
         return mouse_sens_vertical.load();
     }
 
