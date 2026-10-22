@@ -242,6 +242,76 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_component_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_position());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_global_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_global_position());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_scale());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_global_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_global_transform().basis.get_scale());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_rotation_degrees());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_global_rotation_degrees());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_quaternion", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                auto node = self -> model -> get_component_node(component);
+                vm -> push_value(node -> get_quaternion());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_materials", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
@@ -372,6 +442,84 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(2);
                 auto state = vm -> get_bool(3);
                 vm -> push_value(self -> model -> set_component_rendered(component, state));
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, position)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_vector3);
+
+                auto component = vm -> get_string(2);
+                auto position = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_position(position);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_global_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, position)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_vector3);
+
+                auto component = vm -> get_string(2);
+                auto position = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_global_position(position);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, scale)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_vector3);
+
+                auto component = vm -> get_string(2);
+                auto scale = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_scale(scale);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, euler_degrees)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_vector3);
+
+                auto component = vm -> get_string(2);
+                auto euler_degrees = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_rotation_degrees(euler_degrees);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, euler_degrees)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_vector3);
+
+                auto component = vm -> get_string(2);
+                auto euler_degrees = vm -> get_vector3(3);
+                self -> model -> get_component_node(component) -> set_global_rotation_degrees(euler_degrees);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_component_quaternion", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, quaternion)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_quaternion);
+
+                auto component = vm -> get_string(2);
+                auto quaternion = vm -> get_quaternion(3);
+                self -> model -> get_component_node(component) -> set_quaternion(quaternion);
+                self -> model -> sync_component_transform(component);
+                vm -> push_value(true);
                 return 1;
             });
 

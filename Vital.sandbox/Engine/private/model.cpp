@@ -120,6 +120,12 @@ namespace Vital::Engine {
         return nullptr;
     }
 
+    godot::MeshInstance3D* Model::find_component(const std::string& component) {
+        if (auto mesh = find_mesh_node(this, component)) return mesh;
+        auto it = detached_components.find(component);
+        return it != detached_components.end() ? it->second : nullptr;
+    }
+
     int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return -1;
@@ -428,6 +434,13 @@ namespace Vital::Engine {
             mesh->set_process(false);
             parent->remove_child(mesh);
             detached_components[name] = mesh;
+        }
+
+        // Re-apply component transforms that arrived while this model was a placeholder
+        // (after the detach pass so detached components keep theirs too).
+        for (const auto& [name, transform] : component_transforms) {
+            godot::MeshInstance3D* mesh = find_component(name);
+            if (mesh) mesh->set_transform(transform);
         }
 
         sync_authority = authority_peer;
@@ -879,6 +892,48 @@ namespace Vital::Engine {
     void Model::broadcast_component_rendered(const std::string& component, bool state) {
         if (net_id == 0) return;
         Manager::Network::rpc(true, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
+    }
+
+    // Records the component's current local transform (late-join / hydrate) and replicates it.
+    // Skipped when it matches what peers already have, so a script re-setting the same value every frame costs nothing.
+    void Model::sync_component_transform(const std::string& component) {
+        auto transform = assert_component(component)->get_transform();
+        auto it = component_transforms.find(component);
+        if (it != component_transforms.end() && it->second.is_equal_approx(transform)) return;
+        component_transforms[component] = transform;
+        broadcast_component_transform(component, transform);
+    }
+
+    // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
+    // While `placeholder` (mesh tree not instanced yet) it only stores the transform, hydrate() applies it.
+    bool Model::apply_component_transform(const std::string& component, const godot::Transform3D& transform) {
+        if (!transform.origin.is_finite() || !transform.basis.get_column(0).is_finite() || !transform.basis.get_column(1).is_finite() || !transform.basis.get_column(2).is_finite()) return false;
+        if (placeholder) {
+            component_transforms[component] = transform;
+            return true;
+        }
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_component_transform — component '", Tool::to_godot_string(component),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        mesh->set_transform(transform);
+        component_transforms[component] = transform;
+        return true;
+    }
+
+    void Model::broadcast_component_transform(const std::string& component, const godot::Transform3D& transform) {
+        if (net_id == 0) return;
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
+        #else
+        // Only the owning client reports its own components, always to the server (rpc_id(1)), which relays to everyone else.
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
+        #endif
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {

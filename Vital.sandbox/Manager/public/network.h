@@ -65,6 +65,10 @@ namespace Vital::Manager {
             std::unordered_map<uint32_t, std::vector<std::pair<godot::String, bool>>> pending_component_render_syncs;
             std::mutex pending_component_render_mutex;
 
+            // component_transform: net_id → list of (component, local transform) pairs, applied in order.
+            std::unordered_map<uint32_t, std::vector<std::pair<godot::String, godot::Transform3D>>> pending_component_transform_syncs;
+            std::mutex pending_component_transform_mutex;
+
             // dimension: net_id → last dimension received before the entity registered.
             std::unordered_map<uint32_t, int> pending_dimension_syncs;
             std::mutex pending_dimension_mutex;
@@ -235,6 +239,7 @@ namespace Vital::Manager {
             // entity registers. See pending_component_visible_syncs / pending_component_render_syncs.
             void defer_component_visible_sync(uint32_t net_id, const godot::String& component, bool state);
             void defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state);
+            void defer_component_transform_sync(uint32_t net_id, const godot::String& component, const godot::Transform3D& transform);
 
             // Buffers a _sync_dimension for a net_id not yet registered (last write wins);
             // replay_pending_syncs() applies it once the entity registers.

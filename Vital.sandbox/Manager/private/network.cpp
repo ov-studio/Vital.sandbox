@@ -726,6 +726,25 @@ namespace Vital::Manager {
             }
         }
 
+        // 6b. Component transforms (_sync_component_transform that arrived before
+        //     this entity registered).
+        {
+            std::vector<std::pair<godot::String, godot::Transform3D>> entries;
+            {
+                std::lock_guard<std::mutex> lock(pending_component_transform_mutex);
+                auto it = pending_component_transform_syncs.find(nid);
+                if (it != pending_component_transform_syncs.end()) {
+                    entries = std::move(it->second);
+                    pending_component_transform_syncs.erase(it);
+                }
+            }
+            auto model = dynamic_cast<Engine::Model*>(entity);
+            if (model) {
+                for (const auto& [comp, transform] : entries)
+                    model->apply_component_transform(Tool::to_std_string(comp), transform);
+            }
+        }
+
         // 7. Animation-layer state (_sync_anim_layer that arrived before this
         //    entity registered — most commonly the state-dump RPC send_full_state_to_peer
         //    sends a late-joiner for every OTHER player's current pose, which can win the
@@ -837,6 +856,10 @@ namespace Vital::Manager {
             pending_component_render_syncs.clear();
         }
         {
+            std::lock_guard<std::mutex> lock(pending_component_transform_mutex);
+            pending_component_transform_syncs.clear();
+        }
+        {
             std::lock_guard<std::mutex> lock(pending_dimension_mutex);
             pending_dimension_syncs.clear();
         }
@@ -908,6 +931,10 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(pending_component_render_mutex);
             pending_component_render_syncs.erase(nid);
+        }
+        {
+            std::lock_guard<std::mutex> lock(pending_component_transform_mutex);
+            pending_component_transform_syncs.erase(nid);
         }
         {
             std::lock_guard<std::mutex> lock(pending_dimension_mutex);
@@ -1003,6 +1030,11 @@ namespace Vital::Manager {
     void Network::defer_component_render_sync(uint32_t net_id, const godot::String& component, bool state) {
         std::lock_guard<std::mutex> lock(pending_component_render_mutex);
         pending_component_render_syncs[net_id].emplace_back(component, state);
+    }
+
+    void Network::defer_component_transform_sync(uint32_t net_id, const godot::String& component, const godot::Transform3D& transform) {
+        std::lock_guard<std::mutex> lock(pending_component_transform_mutex);
+        pending_component_transform_syncs[net_id].emplace_back(component, transform);
     }
 
     void Network::defer_dimension_sync(uint32_t net_id, int dimension) {
@@ -1772,6 +1804,8 @@ namespace Vital::Manager {
                     node->rpc_id(id, "_sync_component_visible", (int)e->get_net_id(), Tool::to_godot_string(name), false);
                 for (const auto& name : model->get_components_detached())
                     node->rpc_id(id, "_sync_component_render", (int)e->get_net_id(), Tool::to_godot_string(name), false);
+                for (const auto& [name, transform] : model->get_component_transforms())
+                    node->rpc_id(id, "_sync_component_transform", (int)e->get_net_id(), Tool::to_godot_string(name), transform);
             }
         }
 

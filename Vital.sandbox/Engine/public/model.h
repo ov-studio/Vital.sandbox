@@ -83,6 +83,11 @@ namespace Vital::Engine {
             std::unordered_set<std::string> component_hidden;
             std::unordered_set<std::string> component_detached;
 
+            // Local transforms set via set_component_position/rotation/scale/quaternion (+ global variants).
+            // Keyed by component path; only components that were explicitly transformed are present.
+            // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
+            std::unordered_map<std::string, godot::Transform3D> component_transforms;
+
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
@@ -155,6 +160,8 @@ namespace Vital::Engine {
             }
 
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
+            // Live or detached component, nullptr if neither exists. Non-throwing, used by the network apply path.
+            godot::MeshInstance3D* find_component(const std::string& component);
         public:
             static godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             // Collision shapes built from a loaded model asset, keyed by "name|component|type" and shared by every body that uses the same mesh.
@@ -263,6 +270,17 @@ namespace Vital::Engine {
             // Late-join accessors used by Manager::Network::send_full_state_to_peer.
             const std::unordered_set<std::string>& get_components_hidden() const { return component_hidden; }
             const std::unordered_set<std::string>& get_components_detached() const { return component_detached; }
+            const std::unordered_map<std::string, godot::Transform3D>& get_component_transforms() const { return component_transforms; }
+
+            // Component transforms.
+            // get_component_node(): the live component's node, throws if it doesn't exist (API getters/setters work on it directly).
+            // sync_component_transform(): call after changing that node's transform - records it and replicates it.
+            // apply_component_transform(): pure local application of a received transform, never broadcasts, never throws.
+            // broadcast_component_transform(): server -> all clients, owning client -> server (which validates and relays).
+            godot::MeshInstance3D* get_component_node(const std::string& component) { return assert_component(component); }
+            void sync_component_transform(const std::string& component);
+            bool apply_component_transform(const std::string& component, const godot::Transform3D& transform);
+            void broadcast_component_transform(const std::string& component, const godot::Transform3D& transform);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);

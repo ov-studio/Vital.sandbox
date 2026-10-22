@@ -47,6 +47,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_anim_layer_filter", "net_id", "layer", "enabled", "bones"), &Network::_sync_anim_layer_filter);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_component_visible", "net_id", "component", "state"), &Network::_sync_component_visible);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_component_render", "net_id", "component", "state"), &Network::_sync_component_render);
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_component_transform", "net_id", "component", "transform"), &Network::_sync_component_transform);
                 godot::ClassDB::bind_method(godot::D_METHOD("_force_transform", "net_id", "pos", "rot", "scale"), &Network::_force_transform);
                 godot::ClassDB::bind_method(godot::D_METHOD("_sync_dimension", "net_id", "dimension"), &Network::_sync_dimension);
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_auth", "id", "data"), &Network::_on_auth);
@@ -95,6 +96,7 @@ namespace Vital::Engine {
             void _sync_anim_layer_filter(int net_id, int layer, bool enabled, godot::PackedStringArray bones);
             void _sync_component_visible(int net_id, godot::String component, bool state);
             void _sync_component_render(int net_id, godot::String component, bool state);
+            void _sync_component_transform(int net_id, godot::String component, godot::Transform3D transform);
             void _force_transform(int net_id, godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 scale = godot::Vector3(1,1,1));
             void _sync_dimension(int net_id, int dimension);
             // Authentication (SceneMultiplayer auth_callback) - peers are only admitted after the server accepts them //
