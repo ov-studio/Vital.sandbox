@@ -33,9 +33,9 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Vehicle_Body* Vehicle_Body::create(int authority_peer) {
+    Vehicle_Body* Vehicle_Body::create() {
         auto body = memnew(Vehicle_Body);
-        body -> setup_create(authority_peer);
+        body -> setup_create();
         return body;
     }
 

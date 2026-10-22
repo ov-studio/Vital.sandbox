@@ -33,9 +33,9 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Animatable_Body* Animatable_Body::create(int authority_peer) {
+    Animatable_Body* Animatable_Body::create() {
         auto body = memnew(Animatable_Body);
-        body -> setup_create(authority_peer);
+        body -> setup_create();
         return body;
     }
 

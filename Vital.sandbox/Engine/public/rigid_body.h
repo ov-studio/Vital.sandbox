@@ -41,7 +41,7 @@ namespace Vital::Engine {
 
             
             // Managers //
-            static Rigid_Body* create(int authority_peer = 0);
+            static Rigid_Body* create();
             void destroy();
 
 

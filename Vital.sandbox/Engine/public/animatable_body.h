@@ -41,7 +41,7 @@ namespace Vital::Engine {
 
             
             // Managers //
-            static Animatable_Body* create(int authority_peer = 0);
+            static Animatable_Body* create();
             void destroy();
 
 

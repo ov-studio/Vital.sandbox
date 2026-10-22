@@ -41,7 +41,7 @@ namespace Vital::Engine {
 
             
             // Managers //
-            static Vehicle_Body* create(int authority_peer = 0);
+            static Vehicle_Body* create();
             void destroy();
 
 
