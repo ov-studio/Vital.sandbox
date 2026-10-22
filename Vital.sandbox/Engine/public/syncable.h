@@ -27,6 +27,13 @@ namespace Vital::Manager {
 
 namespace Vital::Engine {
     class Network;
+    // Marker for children that have no authority of their own and follow the ISyncable they are attached to (collision shapes, vehicle wheels, ...).
+    // Inherit it from any new child type, authority checks then resolve to its parent automatically
+    class ISyncChild {
+        public:
+            virtual ~ISyncChild() = default;
+    };
+
     class ISyncable {
         friend class Manager::Network;
         friend class Network;

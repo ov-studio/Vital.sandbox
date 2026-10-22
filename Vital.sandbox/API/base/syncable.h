@@ -15,8 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
-#include <Vital.sandbox/Engine/public/collision_shape.h>
-#include <Vital.sandbox/Engine/public/vehicle_wheel.h>
 #include <Vital.sandbox/Manager/public/network.h>
 
 
@@ -30,12 +28,12 @@ namespace Vital::Sandbox::API {
         // A replicated entity is owned by the server or by exactly one client. The server is always trusted,
         // a client may only modify a replicated entity it owns, and client-local entities (net_id == 0) are unrestricted
         //
-        // Returns the syncable that governs authority over `node`: the node itself if it is one, or the parent body for
-        // collision shapes and vehicle wheels (they have no authority of their own). Any other node is unrestricted (nullptr)
+        // Returns the syncable that governs authority over `node`: the node itself if it is one, or its parent for
+        // children marked ISyncChild (shapes, wheels, ...). Any other node is unrestricted (nullptr)
         static Vital::Engine::ISyncable* resolve_syncable(godot::Node* node) {
             if (!node) return nullptr;
             if (auto sync = dynamic_cast<Vital::Engine::ISyncable*>(node)) return sync;
-            if (godot::Object::cast_to<Vital::Engine::Collision_Shape>(node) || godot::Object::cast_to<Vital::Engine::Vehicle_Wheel>(node)) return dynamic_cast<Vital::Engine::ISyncable*>(node -> get_parent());
+            if (dynamic_cast<Vital::Engine::ISyncChild*>(node)) return dynamic_cast<Vital::Engine::ISyncable*>(node -> get_parent());
             return nullptr;
         }
 
