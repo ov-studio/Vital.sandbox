@@ -54,6 +54,17 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        #if !defined(VSDK_Client)
+        // Resolves the peer passed to set_syncer(): 0 means the server, anything else must be a connected peer.
+        // Throws (surfaced to Lua as a VM error) for an unknown peer, same as event.emit's peer check.
+        // Returns the engine-side authority id (the server owns an entity as authority 1 internally)
+        static int resolve_syncer(int peer_id) {
+            if (peer_id == 0) return 1;
+            Manager::Network::get_singleton() -> assert_peer(peer_id);
+            return peer_id;
+        }
+        #endif
+
         // Throws (surfaced to Lua as a VM error) when the caller may not modify `node`.
         static void require_authority(godot::Node* node) {
             #if defined(VSDK_Client)
