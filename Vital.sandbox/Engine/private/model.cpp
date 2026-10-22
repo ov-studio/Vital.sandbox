@@ -339,8 +339,7 @@ namespace Vital::Engine {
                 if (!object) return;
 
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
-                auto net_node = Manager::Network::get_singleton()->get_node();
-                if (net_node) {
+                {
                     // FIXED: was object->get_global_position()/get_global_rotation_degrees()
                     // — this reads the model's raw global transform, completely
                     // ignoring whether it's parented. This RPC is deferred one
@@ -368,7 +367,7 @@ namespace Vital::Engine {
                     // value survives the reparent untouched once it lands.
                     godot::Vector3 spawn_pos = object->get_sync_position();
                     godot::Vector3 spawn_rot = object->get_sync_rotation();
-                    net_node->rpc("_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
+                    Manager::Network::rpc(false, "_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
                 }
                 object->flush_pending_force_transform();
                 Tool::Event::emit("entity:spawned", Tool::Stack({object, false}));
@@ -382,10 +381,7 @@ namespace Vital::Engine {
         // Notify all clients to remove their copy before we free server-side.
         if (net_id != 0) {
             // Queued so it can never overtake this entity's own spawn RPC (also sent via Core::enqueue)
-            Engine::Core::get_singleton() -> enqueue([captured_net_id = (int)net_id]() {
-                auto net_node = Manager::Network::get_singleton()->get_node();
-                if (net_node) net_node->rpc("_destroy_entity", captured_net_id);
-            });
+            Manager::Network::rpc(true, "_destroy_entity", captured_net_id);
         }
         #endif
         this->queue_free();
@@ -670,8 +666,7 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("Model net_id=", net_id, " set_syncer -> ", sync_authority);
         if (!sync_registered) return;
 
-        auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) net_node->rpc("_set_authority", (int)net_id, sync_authority);
+        Manager::Network::rpc(false, "_set_authority", (int)net_id, sync_authority);
     }
     #endif
 
@@ -739,8 +734,7 @@ namespace Vital::Engine {
 
     void Model::broadcast_component_visible(const std::string& component, bool state) {
         if (net_id == 0) return;
-        auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) net_node->rpc("_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
+        Manager::Network::rpc(false, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
     }
 
     bool Model::is_component_rendered(const std::string& component) {
@@ -897,8 +891,7 @@ namespace Vital::Engine {
 
     void Model::broadcast_component_rendered(const std::string& component, bool state) {
         if (net_id == 0) return;
-        auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) net_node->rpc("_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
+        Manager::Network::rpc(false, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
@@ -1236,9 +1229,7 @@ namespace Vital::Engine {
         #if !defined(VSDK_Client)
         // Server: genuine broadcast to every connected client — same
         // pattern as broadcast_sync()/_wake_sync.
-        auto net_node = Manager::Network::get_singleton()->get_node();
-        if (!net_node) return;
-        net_node->rpc("_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        Manager::Network::rpc(false, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #else
         // Client: only the peer holding sync authority over this model may
         // send its own animation state — and it must go to the server via
@@ -1251,9 +1242,7 @@ namespace Vital::Engine {
         // other client (see Network::_sync_anim_layer's server branch).
         auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        auto net_node = net_mgr->get_node();
-        if (!net_node) return;
-        net_node->rpc_id(1, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        Manager::Network::rpc_id(false, 1, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #endif
     }
 
@@ -1332,14 +1321,11 @@ namespace Vital::Engine {
         for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
 
         #if !defined(VSDK_Client)
-        auto net_node = Manager::Network::get_singleton()->get_node();
-        if (net_node) net_node->rpc("_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        Manager::Network::rpc(false, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #else
         auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        auto net_node = net_mgr->get_node();
-        if (!net_node) return;
-        net_node->rpc_id(1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        Manager::Network::rpc_id(false, 1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #endif
     }
 

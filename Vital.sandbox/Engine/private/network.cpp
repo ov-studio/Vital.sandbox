@@ -401,8 +401,7 @@ namespace Vital::Engine {
                 " is not the sync authority for net_id=", net_id);
             return;
         }
-        auto node = mgr->get_node();
-        if (node) node->rpc("_sync_anim_layer", net_id, layer, mode, name, loop, speed, weight, blend_time);
+        Manager::Network::rpc(false, "_sync_anim_layer", net_id, layer, mode, name, loop, speed, weight, blend_time);
         #else
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
@@ -461,8 +460,7 @@ namespace Vital::Engine {
             for (int i = 0; i < bones.size(); ++i) paths.push_back(Tool::to_std_string(bones[i]));
             model->apply_set_animation_layer_filter(layer, enabled, paths);
         }
-        auto node = mgr->get_node();
-        if (node) node->rpc("_sync_anim_layer_filter", net_id, layer, enabled, bones);
+        Manager::Network::rpc(false, "_sync_anim_layer_filter", net_id, layer, enabled, bones);
         #else
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
         if (!model) return;
@@ -478,8 +476,7 @@ namespace Vital::Engine {
         if (!mgr) return;
 
         #if !defined(VSDK_Client)
-        auto node = mgr->get_node();
-        if (node) node->rpc("_sync_component_visible", net_id, component, state);
+        Manager::Network::rpc(false, "_sync_component_visible", net_id, component, state);
         #else
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
@@ -506,8 +503,7 @@ namespace Vital::Engine {
         if (!mgr) return;
 
         #if !defined(VSDK_Client)
-        auto node = mgr->get_node();
-        if (node) node->rpc("_sync_component_render", net_id, component, state);
+        Manager::Network::rpc(false, "_sync_component_render", net_id, component, state);
         #else
         Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
         if (!entity) {
@@ -584,8 +580,7 @@ namespace Vital::Engine {
             return;
         }
         Engine::Dimension::set(node, dimension);
-        auto net_node = mgr->get_node();
-        if (net_node) net_node->rpc("_sync_dimension", net_id, dimension);
+        Manager::Network::rpc(false, "_sync_dimension", net_id, dimension);
         #endif
     }
 

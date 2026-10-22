@@ -178,8 +178,7 @@ namespace Vital::Engine {
             return;
         }
         
-        auto net_node = Manager::Network::get_singleton() -> get_node();
-        if (net_node) net_node -> rpc("_force_transform", (int)net_id, pending_force_transform -> pos, pending_force_transform -> rot, pending_force_transform -> scale);
+        Manager::Network::rpc(false, "_force_transform", (int)net_id, pending_force_transform -> pos, pending_force_transform -> rot, pending_force_transform -> scale);
         pending_force_transform.reset();
     }
 
@@ -221,22 +220,17 @@ namespace Vital::Engine {
 
         Manager::Network::get_singleton() -> broadcast_sync(buf);
         if (sync_authority > 1) {
-            auto net_node = Manager::Network::get_singleton() -> get_node();
-            if (net_node) net_node -> rpc("_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
+            Manager::Network::rpc(false, "_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
         }
     }
     #endif
 
     void ISyncable::sync_dimension(int dimension) {
         if (!is_replicated()) return;
-        auto network = Manager::Network::get_singleton();
-        auto net_node = network ? network -> get_node() : nullptr;
-        if (!net_node) return;
-        
         #if !defined(VSDK_Client)
-        net_node -> rpc("_sync_dimension", (int)net_id, dimension);
+        Manager::Network::rpc(false, "_sync_dimension", (int)net_id, dimension);
         #else
-        net_node -> rpc_id(1, "_sync_dimension", (int)net_id, dimension);
+        Manager::Network::rpc_id(false, 1, "_sync_dimension", (int)net_id, dimension);
         #endif
     }
 
@@ -434,9 +428,8 @@ namespace Vital::Engine {
         uint32_t captured_parent_id = parent_net_id;
         godot::ObjectID captured_oid = godot::ObjectID(self_node -> get_instance_id());
         core -> enqueue([captured_net_id, captured_parent_id, captured_oid, captured_dimension]() {
-            auto net_node = Manager::Network::get_singleton() -> get_node();
-            if (net_node) net_node -> rpc("_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
-            if (net_node) net_node -> rpc("_sync_dimension", (int)captured_net_id, captured_dimension);
+            Manager::Network::rpc(false, "_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
+            Manager::Network::rpc(false, "_sync_dimension", (int)captured_net_id, captured_dimension);
             godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
             auto node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;

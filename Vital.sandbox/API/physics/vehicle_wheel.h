@@ -61,10 +61,7 @@ namespace Vital::Sandbox::API {
                 // Queued, like the vehicle body's own spawn RPC, so it can never reach clients before the body does
                 const int wheel_id = body -> get_wheel_id();
                 const godot::String captured_key(key);
-                Vital::Engine::Core::get_singleton() -> enqueue([nid, wheel_id, captured_key, value]() {
-                    auto net = Manager::Network::get_singleton() -> get_node();
-                    if (net) net -> rpc("_sync_wheel_config", (int)nid, wheel_id, captured_key, value);
-                });
+                Vital::Manager::Network::rpc(true, "_sync_wheel_config", (int)nid, wheel_id, captured_key, value);
                 #endif
             }
 
@@ -79,10 +76,7 @@ namespace Vital::Sandbox::API {
                 const int wheel_id = body -> get_wheel_id();
                 const godot::Vector3 position = body -> get_position();
                 const godot::Vector3 rotation = body -> get_rotation();
-                Vital::Engine::Core::get_singleton() -> enqueue([nid, wheel_id, position, rotation]() {
-                    auto net = Manager::Network::get_singleton() -> get_node();
-                    if (net) net -> rpc("_sync_wheel_transform", (int)nid, wheel_id, position, rotation);
-                });
+                Vital::Manager::Network::rpc(true, "_sync_wheel_transform", (int)nid, wheel_id, position, rotation);
                 #endif
             }
 
@@ -101,13 +95,9 @@ namespace Vital::Sandbox::API {
                 pending_spawn = false;
                 pending_transform = false;
                 pending_configs.clear();
-                Vital::Engine::Core::get_singleton() -> enqueue([nid, wheel_id, position, rotation, spawn, transform, configs = std::move(configs)]() {
-                    auto net = Manager::Network::get_singleton() -> get_node();
-                    if (!net) return;
-                    if (spawn) net -> rpc("_spawn_wheel", (int)nid, wheel_id, position, rotation);
-                    for (auto& [key, value] : configs) net -> rpc("_sync_wheel_config", (int)nid, wheel_id, godot::String(key.c_str()), value);
-                    if (transform) net -> rpc("_sync_wheel_transform", (int)nid, wheel_id, position, rotation);
-                });
+                if (spawn) Vital::Manager::Network::rpc(true, "_spawn_wheel", (int)nid, wheel_id, position, rotation);
+                for (auto& [key, value] : configs) Vital::Manager::Network::rpc(true, "_sync_wheel_config", (int)nid, wheel_id, godot::String(key.c_str()), value);
+                if (transform) Vital::Manager::Network::rpc(true, "_sync_wheel_transform", (int)nid, wheel_id, position, rotation);
             }
             #endif
         };
@@ -193,10 +183,7 @@ namespace Vital::Sandbox::API {
                     const int wheel_id = instance -> body -> get_wheel_id();
                     const godot::Vector3 position = instance -> body -> get_position();
                     const godot::Vector3 rotation = instance -> body -> get_rotation();
-                    Vital::Engine::Core::get_singleton() -> enqueue([nid, wheel_id, position, rotation]() {
-                        auto net = Manager::Network::get_singleton() -> get_node();
-                        if (net) net -> rpc("_spawn_wheel", (int)nid, wheel_id, position, rotation);
-                    });
+                    Vital::Manager::Network::rpc(true, "_spawn_wheel", (int)nid, wheel_id, position, rotation);
                 }
                 else instance -> pending_spawn = true;
                 #endif

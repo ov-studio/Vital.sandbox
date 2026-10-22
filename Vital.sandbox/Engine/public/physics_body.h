@@ -111,15 +111,13 @@ namespace Vital::Engine {
                 reset_sync_state();
                 if (!sync_registered) return;
 
-                auto net_node = Manager::Network::get_singleton() -> get_node();
-                if (net_node) net_node -> rpc("_set_authority", (int)net_id, sync_authority);
+                Manager::Network::rpc(false, "_set_authority", (int)net_id, sync_authority);
             }
 
             void flush_pending_shape_broadcast() {
                 if (!pending_shape_broadcast.has_value()) return;
 
-                auto net_node = Manager::Network::get_singleton() -> get_node();
-                if (net_node) net_node -> rpc("_sync_shape", (int)net_id, Tool::to_godot_string(pending_shape_broadcast -> type), pending_shape_broadcast -> params);
+                Manager::Network::rpc(false, "_sync_shape", (int)net_id, Tool::to_godot_string(pending_shape_broadcast -> type), pending_shape_broadcast -> params);
                 pending_shape_broadcast.reset();
             }
 
@@ -176,8 +174,7 @@ namespace Vital::Engine {
                             if (!self) return;
 
                             Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
-                            auto net_node = Manager::Network::get_singleton() -> get_node();
-                            if (net_node) net_node -> rpc("_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
+                            Manager::Network::rpc(false, "_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
                             self -> flush_pending_shape_broadcast();
                             self -> flush_pending_force_transform();
                             Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
@@ -197,10 +194,7 @@ namespace Vital::Engine {
                 #if !defined(VSDK_Client)
                 if (net_id != 0) {
                     // Queued so it can never overtake this entity's own spawn RPC (also sent via Core::enqueue)
-                    Core::get_singleton() -> enqueue([captured_net_id = (int)net_id]() {
-                        auto net_node = Manager::Network::get_singleton() -> get_node();
-                        if (net_node) net_node -> rpc("_destroy_entity", captured_net_id);
-                    });
+                    Manager::Network::rpc(true, "_destroy_entity", captured_net_id);
                 }
                 #endif
                 Base::queue_free();
