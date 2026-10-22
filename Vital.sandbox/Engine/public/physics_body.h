@@ -111,7 +111,7 @@ namespace Vital::Engine {
                 reset_sync_state();
                 if (!sync_registered) return;
 
-                Manager::Network::rpc(false, "_set_authority", (int)net_id, sync_authority);
+                Manager::Network::rpc(true, "_set_authority", (int)net_id, sync_authority);
             }
 
             void flush_pending_shape_broadcast() {

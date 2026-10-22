@@ -666,7 +666,7 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("Model net_id=", net_id, " set_syncer -> ", sync_authority);
         if (!sync_registered) return;
 
-        Manager::Network::rpc(false, "_set_authority", (int)net_id, sync_authority);
+        Manager::Network::rpc(true, "_set_authority", (int)net_id, sync_authority);
     }
     #endif
 
@@ -734,7 +734,7 @@ namespace Vital::Engine {
 
     void Model::broadcast_component_visible(const std::string& component, bool state) {
         if (net_id == 0) return;
-        Manager::Network::rpc(false, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
+        Manager::Network::rpc(true, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
     }
 
     bool Model::is_component_rendered(const std::string& component) {
@@ -891,7 +891,7 @@ namespace Vital::Engine {
 
     void Model::broadcast_component_rendered(const std::string& component, bool state) {
         if (net_id == 0) return;
-        Manager::Network::rpc(false, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
+        Manager::Network::rpc(true, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
@@ -1229,7 +1229,7 @@ namespace Vital::Engine {
         #if !defined(VSDK_Client)
         // Server: genuine broadcast to every connected client — same
         // pattern as broadcast_sync()/_wake_sync.
-        Manager::Network::rpc(false, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        Manager::Network::rpc(true, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
         #else
         // Client: only the peer holding sync authority over this model may
         // send its own animation state — and it must go to the server via
@@ -1321,7 +1321,7 @@ namespace Vital::Engine {
         for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
 
         #if !defined(VSDK_Client)
-        Manager::Network::rpc(false, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        Manager::Network::rpc(true, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
         #else
         auto net_mgr = Manager::Network::get_singleton();
         if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;

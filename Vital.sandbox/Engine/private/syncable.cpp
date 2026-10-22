@@ -220,7 +220,7 @@ namespace Vital::Engine {
 
         Manager::Network::get_singleton() -> broadcast_sync(buf);
         if (sync_authority > 1) {
-            Manager::Network::rpc(false, "_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
+            Manager::Network::rpc(true, "_force_transform", (int)net_id, cur_pos, cur_rot, cur_scale);
         }
     }
     #endif
@@ -228,7 +228,7 @@ namespace Vital::Engine {
     void ISyncable::sync_dimension(int dimension) {
         if (!is_replicated()) return;
         #if !defined(VSDK_Client)
-        Manager::Network::rpc(false, "_sync_dimension", (int)net_id, dimension);
+        Manager::Network::rpc(true, "_sync_dimension", (int)net_id, dimension);
         #else
         Manager::Network::rpc_id(false, 1, "_sync_dimension", (int)net_id, dimension);
         #endif

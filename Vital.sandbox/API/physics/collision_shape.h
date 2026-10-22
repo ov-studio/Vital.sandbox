@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
                     return;
                 }
 
-                Vital::Manager::Network::rpc(false, "_sync_shape", (int)nid, Tool::to_godot_string(shape_type), params);
+                Vital::Manager::Network::rpc(true, "_sync_shape", (int)nid, Tool::to_godot_string(shape_type), params);
                 #endif
             }
         };
