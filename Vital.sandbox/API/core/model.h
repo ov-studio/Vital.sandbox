@@ -230,11 +230,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_sync_authority());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_components", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(include_all = false)", true)
                     .optional(2, &Machine::is_bool);
@@ -358,18 +353,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> model -> get_animation_layer_count());
                 return 1;
             });
-
-            #if !defined(VSDK_Client)
-            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)", true)
-                    .require(2, &Machine::is_number);
-
-                int peer_id = API::Syncable::resolve_syncer((int)(vm -> get_int(2)));
-                self -> model -> set_syncer(peer_id);
-                vm -> push_value(true);
-                return 1;
-            });
-            #endif
 
             API::Syncable::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, state)", true)

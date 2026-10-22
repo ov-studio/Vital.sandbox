@@ -107,7 +107,7 @@ namespace Vital::Engine {
             };
         protected:
             inline static uint32_t next_net_id = 1;
-            int sync_authority = 1; // 1 = server, N = client N
+            int sync_authority = 1; // Engine-side owner: 1 = server (Godot's server peer id), N = client peer N. Scripts see the server as 0
             uint32_t net_id = 0;
             uint32_t sync_parent_net_id = 0;
             bool sync_registered = false;

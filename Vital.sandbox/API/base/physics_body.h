@@ -85,12 +85,6 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                #if !defined(VSDK_Client)
-                vm_module::bind_method<Instance>(vm, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> get_node() -> get_sync_authority());
-                    return 1;
-                });
-                #endif
             }
             if constexpr (body_type == Type::Static || body_type == Type::Animatable) {
                 vm_module::bind_method<Instance>(vm, "get_constant_linear_velocity", [](auto vm, auto self, auto& id) -> int {
@@ -115,18 +109,6 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
-
-                #if !defined(VSDK_Client)
-                vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(peer_id)", true)
-                        .require(2, &Machine::is_number);
-
-                    auto peer_id = API::Syncable::resolve_syncer((int)vm -> get_int(2));
-                    self -> get_node() -> set_syncer(peer_id);
-                    vm -> push_value(true);
-                    return 1;
-                });
-                #endif
             }
             if constexpr (body_type == Type::Rigid || body_type == Type::Static || body_type == Type::Animatable) {
                 API::Syncable::bind_method<Instance>(vm, "set_physics_material", [](auto vm, auto self, auto& id) -> int {

@@ -106,7 +106,7 @@ namespace Vital::Engine {
             #if !defined(VSDK_Client)
             void set_syncer(int peer_id) {
                 if (net_id == 0) return;
-                sync_authority = (peer_id <= 1) ? 1 : peer_id;
+                sync_authority = peer_id;
                 sync_sleeping  = false;
                 reset_sync_state();
                 if (!sync_registered) return;

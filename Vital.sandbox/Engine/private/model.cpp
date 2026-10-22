@@ -661,7 +661,7 @@ namespace Vital::Engine {
 
     #if !defined(VSDK_Client)
     void Model::set_syncer(int peer_id) {
-        sync_authority = (peer_id <= 1) ? 1 : peer_id;
+        sync_authority = peer_id;
         sync_sleeping  = false;
         godot::UtilityFunctions::print("Model net_id=", net_id, " set_syncer -> ", sync_authority);
         if (!sync_registered) return;
