@@ -90,6 +90,24 @@ namespace Vital::Sandbox::API {
                 else vm -> push_value(false);
                 return 1;
             });
+
+            vm_module::bind_method<Instance>(vm, "get_syncer", [](auto vm, auto self, auto& id) -> int {
+                auto authority = self -> get_node() -> get_sync_authority();
+                vm -> push_value(authority == 1 ? 0 : authority);
+                return 1;
+            });
+            
+            #if !defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "set_syncer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)", true)
+                    .require(2, &Machine::is_number);
+
+                auto peer_id = resolve_syncer((int)vm -> get_int(2));
+                self -> get_node() -> set_syncer(peer_id);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
         }
     };
 }
