@@ -33,6 +33,8 @@
 namespace Vital::Engine {
     std::atomic<float> MainMenu::draw_distance_mult { 1.0f };
     std::atomic<float> MainMenu::particle_distance_mult { 1.0f };
+    std::atomic<float> MainMenu::mouse_sens_horizontal { 1.0f };
+    std::atomic<float> MainMenu::mouse_sens_vertical { 1.0f };
 
     namespace {
         // TODO: Move to internal namespace like resource
@@ -51,7 +53,9 @@ namespace Vital::Engine {
             doc.AddMember("vsync", true, a);
             doc.AddMember("draw_distance_mult", 1.0, a);
             doc.AddMember("particle_distance_mult", 1.0, a);
-            doc.AddMember("volume", 0.8, a);
+            doc.AddMember("volume", 1.0, a);
+            doc.AddMember("mouse_sens_horizontal", 1.0, a);
+            doc.AddMember("mouse_sens_vertical", 1.0, a);
             return doc;
         }
 
@@ -235,6 +239,13 @@ namespace Vital::Engine {
                 rapidjson::Document doc;
                 doc.Parse(Tool::HTTP::get(sandbox_src).c_str());
                 if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("tag_name") && doc["tag_name"].IsString()) return doc["tag_name"].GetString();
+            }
+
+            if (settings.HasMember("mouse_sens_horizontal") && settings["mouse_sens_horizontal"].IsNumber()) {
+                MainMenu::set_mouse_sens_horizontal(static_cast<float>(settings["mouse_sens_horizontal"].GetDouble()));
+            }
+            if (settings.HasMember("mouse_sens_vertical") && settings["mouse_sens_vertical"].IsNumber()) {
+                MainMenu::set_mouse_sens_vertical(static_cast<float>(settings["mouse_sens_vertical"].GetDouble()));
             }
             catch (...) { /* offline / rate limited: no update info */ }
             return "";
@@ -535,6 +546,22 @@ namespace Vital::Engine {
     // 0 would also be a trap: Godot reads a visibility range of 0 as "no limit".
     void MainMenu::set_particle_distance_mult(float mult) {
         particle_distance_mult.store(std::clamp(mult, 0.1f, 2.0f));
+    }
+
+    float MainMenu::get_mouse_sens_horizontal() {
+        return mouse_sens_horizontal.load();
+    }
+
+    void MainMenu::set_mouse_sens_horizontal(float mult) {
+        mouse_sens_horizontal.store(std::clamp(mult, 0.01f, 2.0f));
+    }
+
+    float MainMenu::get_mouse_sens_vertical() {
+        return mouse_sens_vertical.load();
+    }
+
+    void MainMenu::set_mouse_sens_vertical(float mult) {
+        mouse_sens_vertical.store(std::clamp(mult, 0.01f, 2.0f));
     }
 
 

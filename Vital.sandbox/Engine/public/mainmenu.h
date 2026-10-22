@@ -31,6 +31,8 @@ namespace Vital::Engine {
             std::atomic<bool> webview_ready { false };
             static std::atomic<float> draw_distance_mult;
             static std::atomic<float> particle_distance_mult;
+            static std::atomic<float> mouse_sens_horizontal;
+            static std::atomic<float> mouse_sens_vertical;
             std::atomic<bool> scan_running { false };
             std::atomic<bool> masterlist_running { false };
 
@@ -63,6 +65,12 @@ namespace Vital::Engine {
             // GPU_Particles reads it every frame, so nothing needs pushing when it changes.
             static float get_particle_distance_mult();
             static void set_particle_distance_mult(float mult);
+
+            // Client mouse look multipliers (1.0 = default). Games read these when applying look.
+            static float get_mouse_sens_horizontal();
+            static void set_mouse_sens_horizontal(float mult);
+            static float get_mouse_sens_vertical();
+            static void set_mouse_sens_vertical(float mult);
 
 
             // Events //
