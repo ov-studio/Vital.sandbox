@@ -283,54 +283,71 @@ namespace Vital::Sandbox::API {
             API::Thread::safe_resume(instance, n_args);
         }
 
-        // Exposes the authenticated transport sender to a handler as the `client` global of the handler's own resource environment.
+        // Exposes the authenticated transport sender to a handler as the `client` global of the environment the handler function itself runs in
+        // (its own `_ENV` upvalue, which can differ from the environment that registered it, e.g. a function passed in from another resource).
         // `sender` > 0: remote-triggered (server build only), `client` = peer id. `sender` == 0: local emit, `client` = nil.
         // The previous value is restored on scope exit, so nested emits and a resource's own `client` global stay intact.
         // Note: for async handlers the value is only guaranteed until the handler's first yield - copy it into a local first.
         struct ClientScope {
             Machine* vm = nullptr;
-            int env_idx = 0;
+            int env_ref = LUA_NOREF;
             int prev_ref = LUA_NOREF;
             bool active = false;
-            std::string env;
 
-            ClientScope(Machine* vm, const std::string& env_id, int sender) : vm(vm), env(env_id) {
-                if (env.empty() || !vm -> is_reference("env", env)) return;
+            ClientScope(Machine* vm, int exec_ref, int sender) : vm(vm) {
                 auto L = vm -> get_state();
-                vm -> get_reference("env", env, true);
-                env_idx = lua_gettop(L);
-                if (!lua_istable(L, env_idx)) { lua_pop(L, 1); return; }
+                const int base = lua_gettop(L);
+                lua_rawgeti(L, LUA_REGISTRYINDEX, exec_ref);
+                if (!lua_isfunction(L, -1)) { lua_settop(L, base); return; }
+                // Find the handler's own environment; a function that never touches globals has no _ENV upvalue and cannot read `client`
+                bool found = false;
+                for (int i = 1; ; ++i) {
+                    const char* upname = lua_getupvalue(L, -1, i);
+                    if (!upname) break;
+                    if (std::strcmp(upname, "_ENV") == 0) { found = true; break; }
+                    lua_pop(L, 1);
+                }
+                if (!found || !lua_istable(L, -1)) { lua_settop(L, base); return; }
+                // Only resource environments are touched, never an arbitrary table
+                lua_pushvalue(L, -1);
+                lua_rawget(L, LUA_REGISTRYINDEX);
+                const bool registered = lua_type(L, -1) == LUA_TSTRING;
+                lua_pop(L, 1);
+                if (!registered) { lua_settop(L, base); return; }
+                const int env_idx = lua_gettop(L);
                 lua_pushstring(L, "client");
                 lua_rawget(L, env_idx);
                 const bool had_prev = !lua_isnil(L, -1);
                 // Local emit with nothing to hide: leave the environment untouched
-                if (sender <= 0 && !had_prev) { lua_pop(L, 2); return; }
+                if (sender <= 0 && !had_prev) { lua_settop(L, base); return; }
                 prev_ref = luaL_ref(L, LUA_REGISTRYINDEX); // pops the previous value (LUA_REFNIL for nil)
                 lua_pushstring(L, "client");
                 if (sender > 0) lua_pushinteger(L, sender);
                 else lua_pushnil(L);
                 lua_rawset(L, env_idx);
-                lua_pop(L, 1); // env table
+                lua_pushvalue(L, env_idx);
+                env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+                lua_settop(L, base);
                 active = true;
             }
 
             ~ClientScope() {
                 if (!active) return;
                 auto L = vm -> get_state();
-                if (!vm -> is_reference("env", env)) { luaL_unref(L, LUA_REGISTRYINDEX, prev_ref); return; }
-                vm -> get_reference("env", env, true);
-                const int idx = lua_gettop(L);
+                lua_rawgeti(L, LUA_REGISTRYINDEX, env_ref);
+                const int env_idx = lua_gettop(L);
                 lua_pushstring(L, "client");
                 if (prev_ref == LUA_REFNIL || prev_ref == LUA_NOREF) lua_pushnil(L);
                 else lua_rawgeti(L, LUA_REGISTRYINDEX, prev_ref);
-                lua_rawset(L, idx);
+                lua_rawset(L, env_idx);
                 lua_pop(L, 1);
                 luaL_unref(L, LUA_REGISTRYINDEX, prev_ref);
+                luaL_unref(L, LUA_REGISTRYINDEX, env_ref);
             }
         };
 
         static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& handler, int args_ref, FireMode mode, int sender = 0) {
-            ClientScope client_scope(vm, handler.env, sender);
+            ClientScope client_scope(vm, handler.exec_ref, sender);
             std::shared_ptr<API::Promise::Instance> promise;
             if (mode == FireMode::EmitCallback) promise = API::Promise::make(vm);
             if (handler.async) {
