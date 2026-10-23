@@ -283,7 +283,54 @@ namespace Vital::Sandbox::API {
             API::Thread::safe_resume(instance, n_args);
         }
 
-        static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& handler, int args_ref, FireMode mode) {
+        // Exposes the authenticated transport sender to a handler as the `client` global of the handler's own resource environment.
+        // `sender` > 0: remote-triggered (server build only), `client` = peer id. `sender` == 0: local emit, `client` = nil.
+        // The previous value is restored on scope exit, so nested emits and a resource's own `client` global stay intact.
+        // Note: for async handlers the value is only guaranteed until the handler's first yield - copy it into a local first.
+        struct ClientScope {
+            Machine* vm = nullptr;
+            int env_idx = 0;
+            int prev_ref = LUA_NOREF;
+            bool active = false;
+            std::string env;
+
+            ClientScope(Machine* vm, const std::string& env_id, int sender) : vm(vm), env(env_id) {
+                if (env.empty() || !vm -> is_reference("env", env)) return;
+                auto L = vm -> get_state();
+                vm -> get_reference("env", env, true);
+                env_idx = lua_gettop(L);
+                if (!lua_istable(L, env_idx)) { lua_pop(L, 1); return; }
+                lua_pushstring(L, "client");
+                lua_rawget(L, env_idx);
+                const bool had_prev = !lua_isnil(L, -1);
+                // Local emit with nothing to hide: leave the environment untouched
+                if (sender <= 0 && !had_prev) { lua_pop(L, 2); return; }
+                prev_ref = luaL_ref(L, LUA_REGISTRYINDEX); // pops the previous value (LUA_REFNIL for nil)
+                lua_pushstring(L, "client");
+                if (sender > 0) lua_pushinteger(L, sender);
+                else lua_pushnil(L);
+                lua_rawset(L, env_idx);
+                lua_pop(L, 1); // env table
+                active = true;
+            }
+
+            ~ClientScope() {
+                if (!active) return;
+                auto L = vm -> get_state();
+                if (!vm -> is_reference("env", env)) { luaL_unref(L, LUA_REGISTRYINDEX, prev_ref); return; }
+                vm -> get_reference("env", env, true);
+                const int idx = lua_gettop(L);
+                lua_pushstring(L, "client");
+                if (prev_ref == LUA_REFNIL || prev_ref == LUA_NOREF) lua_pushnil(L);
+                else lua_rawgeti(L, LUA_REGISTRYINDEX, prev_ref);
+                lua_rawset(L, idx);
+                lua_pop(L, 1);
+                luaL_unref(L, LUA_REGISTRYINDEX, prev_ref);
+            }
+        };
+
+        static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& handler, int args_ref, FireMode mode, int sender = 0) {
+            ClientScope client_scope(vm, handler.env, sender);
             std::shared_ptr<API::Promise::Instance> promise;
             if (mode == FireMode::EmitCallback) promise = API::Promise::make(vm);
             if (handler.async) {
@@ -318,11 +365,11 @@ namespace Vital::Sandbox::API {
             return promise;
         }
 
-        static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false) {
+        static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false, int sender = 0) {
             std::vector<int> exhausted;
             ++dispatch_depth;
             for (auto& [ref, handler] : snapshot) {
-                auto promise = fire_one(vm, handler, args_ref, mode);
+                auto promise = fire_one(vm, handler, args_ref, mode, sender);
                 if (promise && promises) promises -> push_back(promise);
                 if (handler.subscription_limit > 0) bump_subscription(name, ref, exhausted);
                 if (mode == FireMode::EmitCallback && !collect_all) break;
@@ -457,6 +504,12 @@ namespace Vital::Sandbox::API {
             if (wants_reply && !to_serial(serial_ptr -> as<double>(), serial)) wants_reply = false;
             int reply_peer = 0;
             get_sender(payload, reply_peer);
+            // Handlers see `client` only for packets received by the server; the client never sees a sender
+            #if defined(VSDK_Client)
+            const int client_peer = 0;
+            #else
+            const int client_peer = reply_peer;
+            #endif
             auto collect_ptr = payload.get("__collect_all");
             bool collect_all = wants_reply && collect_ptr && collect_ptr -> is<bool>() && collect_ptr -> as<bool>();
             std::vector<std::pair<int, Handler>> snapshot;
@@ -473,13 +526,13 @@ namespace Vital::Sandbox::API {
                 return;
             }
             if (!wants_reply) {
-                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit, nullptr, false, client_peer);
                 vm -> del_raw_reference(args_ref);
                 return;
             }
 
             std::vector<std::shared_ptr<API::Promise::Instance>> promises;
-            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises, collect_all);
+            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises, collect_all, client_peer);
             vm -> del_raw_reference(args_ref);
             if (promises.empty()) return;
 
