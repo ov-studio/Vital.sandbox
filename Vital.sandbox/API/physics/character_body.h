@@ -242,15 +242,15 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "apply_floor_snap", [](auto vm, auto self, auto& id) -> int {
-                self -> body -> apply_floor_snap();
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::Syncable::bind_method<Instance>(vm, "move_and_slide", [](auto vm, auto self, auto& id) -> int {
                 auto collided = self -> body -> move_and_slide();
                 vm -> push_value(collided);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "apply_floor_snap", [](auto vm, auto self, auto& id) -> int {
+                self -> body -> apply_floor_snap();
+                vm -> push_value(true);
                 return 1;
             });
         }

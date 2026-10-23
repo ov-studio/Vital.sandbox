@@ -301,6 +301,32 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
+
+                vm_module::bind_method<Instance>(vm, "move_and_collide", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(motion, test_only = false)", true)
+                        .require(2, &Machine::is_vector3)
+                        .optional(3, &Machine::is_bool);
+
+                    auto motion = vm -> get_vector3(2);
+                    auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
+                    if (!test_only) API::Syncable::require_authority(self -> get_node());
+                    auto collision = self -> get_node() -> move_and_collide(motion, test_only);
+                    if (!collision.is_valid()) vm -> push_value(false);
+                    else {
+                        vm -> create_table();
+                        vm -> push_value(collision -> get_position());
+                        vm -> set_table_field("position", -2);
+                        vm -> push_value(collision -> get_normal());
+                        vm -> set_table_field("normal", -2);
+                        vm -> push_value(collision -> get_travel());
+                        vm -> set_table_field("travel", -2);
+                        vm -> push_value(collision -> get_remainder());
+                        vm -> set_table_field("remainder", -2);
+                        vm -> push_value(collision -> get_depth());
+                        vm -> set_table_field("depth", -2);
+                    }
+                    return 1;
+                });
             }
             if constexpr (body_type == Type::Rigid) {
                 API::Syncable::bind_method<Instance>(vm, "apply_central_impulse", [](auto vm, auto self, auto& id) -> int {
@@ -344,33 +370,6 @@ namespace Vital::Sandbox::API {
                     auto position = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(0, 0, 0);
                     self -> body -> apply_force(force, position);
                     vm -> push_value(true);
-                    return 1;
-                });
-            }
-            {
-                vm_module::bind_method<Instance>(vm, "move_and_collide", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(motion, test_only = false)", true)
-                        .require(2, &Machine::is_vector3)
-                        .optional(3, &Machine::is_bool);
-
-                    auto motion = vm -> get_vector3(2);
-                    auto test_only = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                    if (!test_only) API::Syncable::require_authority(self -> get_node());
-                    auto collision = self -> get_node() -> move_and_collide(motion, test_only);
-                    if (!collision.is_valid()) vm -> push_value(false);
-                    else {
-                        vm -> create_table();
-                        vm -> push_value(collision -> get_position());
-                        vm -> set_table_field("position", -2);
-                        vm -> push_value(collision -> get_normal());
-                        vm -> set_table_field("normal", -2);
-                        vm -> push_value(collision -> get_travel());
-                        vm -> set_table_field("travel", -2);
-                        vm -> push_value(collision -> get_remainder());
-                        vm -> set_table_field("remainder", -2);
-                        vm -> push_value(collision -> get_depth());
-                        vm -> set_table_field("depth", -2);
-                    }
                     return 1;
                 });
             }
