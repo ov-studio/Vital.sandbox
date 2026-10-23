@@ -157,6 +157,7 @@ namespace Vital::Sandbox {
             bool is_userdata(int idx = 1) { return (get_type(idx) == LUA_TUSERDATA) || (get_type(idx) == LUA_TLIGHTUSERDATA); }
             bool is_pointer(int idx = 1) { return lua_topointer(state, idx) != nullptr; }
             bool is_function(int idx = 1) { return get_type(idx) == LUA_TFUNCTION; }
+            bool is_raw_equal(int idx1, int idx2) { return lua_rawequal(state, idx1, idx2); }
             bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
             bool is_color(int idx = 1) {

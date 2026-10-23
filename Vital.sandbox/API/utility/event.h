@@ -701,7 +701,7 @@ namespace Vital::Sandbox::API {
                         for (auto vit = vec.begin(); vit != vec.end(); ++vit) {
                             vm -> get_raw_reference(lookup_ref);
                             vm -> get_raw_reference(vit -> second.exec_ref);
-                            bool eq = lua_rawequal(vm -> get_state(), -1, -2);
+                            bool eq = vm -> is_raw_equal(-1, -2);
                             vm -> pop(2);
                             if (!eq) continue;
                             vm -> del_raw_reference(vit -> second.exec_ref);
