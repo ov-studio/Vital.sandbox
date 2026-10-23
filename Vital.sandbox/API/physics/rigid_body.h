@@ -183,6 +183,26 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::Syncable::bind_method<Instance>(vm, "set_constant_force", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(force)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto force = vm -> get_vector3(2);
+                self -> body -> set_constant_force(force);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::Syncable::bind_method<Instance>(vm, "set_constant_torque", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(torque)", true)
+                    .require(2, &Machine::is_vector3);
+
+                auto torque = vm -> get_vector3(2);
+                self -> body -> set_constant_torque(torque);
+                vm -> push_value(true);
+                return 1;
+            });
+
             API::Syncable::bind_method<Instance>(vm, "apply_torque_impulse", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(impulse)", true)
                     .require(2, &Machine::is_vector3);
@@ -231,26 +251,6 @@ namespace Vital::Sandbox::API {
 
                 auto torque = vm -> get_vector3(2);
                 self -> body -> add_constant_torque(torque);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_constant_force", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(force)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto force = vm -> get_vector3(2);
-                self -> body -> set_constant_force(force);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_constant_torque", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(torque)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto torque = vm -> get_vector3(2);
-                self -> body -> set_constant_torque(torque);
                 vm -> push_value(true);
                 return 1;
             });
