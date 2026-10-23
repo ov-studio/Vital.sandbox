@@ -280,7 +280,29 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
+            }
+            {
+                API::Syncable::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(body)", true)
+                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
 
+                    auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                    self -> get_node() -> add_collision_exception_with(instance -> get_node());
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                API::Syncable::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(body)", true)
+                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
+
+                    auto body = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
+                    self -> get_node() -> remove_collision_exception_with(body -> get_node());
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
+            if constexpr (body_type == Type::Rigid) {
                 API::Syncable::bind_method<Instance>(vm, "apply_central_impulse", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(impulse)", true)
                         .require(2, &Machine::is_vector3);
@@ -326,26 +348,6 @@ namespace Vital::Sandbox::API {
                 });
             }
             {
-                API::Syncable::bind_method<Instance>(vm, "add_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(body)", true)
-                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
-
-                    auto instance = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                    self -> get_node() -> add_collision_exception_with(instance -> get_node());
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                API::Syncable::bind_method<Instance>(vm, "remove_collision_exception_with", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(body)", true)
-                        .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<typename Instance::Owner::Instance>(vm, idx); });
-
-                    auto body = vm_module::get_userdata_object<typename Instance::Owner::Instance>(vm, 2);
-                    self -> get_node() -> remove_collision_exception_with(body -> get_node());
-                    vm -> push_value(true);
-                    return 1;
-                });
-
                 vm_module::bind_method<Instance>(vm, "move_and_collide", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(motion, test_only = false)", true)
                         .require(2, &Machine::is_vector3)
