@@ -216,24 +216,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "overlaps_body", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(body)", true)
-                    .require(2, [](Machine* vm, int idx) { return Physics_Entity::is_body(vm, idx); });
-
-                auto target = Physics_Entity::resolve_body(vm, 2);
-                vm -> push_value(self -> body -> overlaps_body(target));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "overlaps_area", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(area)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Area::Instance>(vm, idx); });
-
-                auto area = vm_module::get_userdata_object<Area::Instance>(vm, 2);
-                vm -> push_value(self -> body -> overlaps_area(area -> get_node()));
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_gravity", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(gravity)", true)
                     .require(2, &Machine::is_number);
@@ -311,6 +293,24 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(2);
                 self -> body -> set_monitorable(state);
                 vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "overlaps_body", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(body)", true)
+                    .require(2, [](Machine* vm, int idx) { return Physics_Entity::is_body(vm, idx); });
+
+                auto target = Physics_Entity::resolve_body(vm, 2);
+                vm -> push_value(self -> body -> overlaps_body(target));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "overlaps_area", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(area)", true)
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Area::Instance>(vm, idx); });
+
+                auto area = vm_module::get_userdata_object<Area::Instance>(vm, 2);
+                vm -> push_value(self -> body -> overlaps_area(area -> get_node()));
                 return 1;
             });
         }
