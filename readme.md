@@ -77,4 +77,5 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 ## Privacy Policy
 
 - Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes.
-- No personal data is collected, stored or shared with any third party.
+- When you connect to a multiplayer server, the client sends it a hashed hardware identifier (derived from your disk, CPU and system identifiers). The raw hardware values are never sent. Servers use this identifier to recognise returning players (for example, to enforce bans). It is the same on every server, so server owners could compare it across servers.
+- Vital.sandbox does not collect or store any other personal data, and shares nothing with third parties, apart from the masterlist information above and the hashed identifier sent to servers you choose to join.
