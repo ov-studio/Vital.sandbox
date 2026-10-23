@@ -509,6 +509,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "reset_color_ramp", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_color_ramp();
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_scale_curve", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(from, to)", true)
                     .require(2, &Machine::is_number)
@@ -517,6 +523,12 @@ namespace Vital::Sandbox::API {
                 auto from = std::max(0.0f, vm -> get_float(2));
                 auto to = std::max(0.0f, vm -> get_float(3));
                 self -> particles -> set_scale_curve(from, to);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_scale_curve", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_scale_curve();
                 vm -> push_value(true);
                 return 1;
             });
@@ -607,6 +619,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "reset_material", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_material();
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, component = all)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })
@@ -615,6 +633,12 @@ namespace Vital::Sandbox::API {
                 auto model = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
                 auto component = vm -> is_string(3) ? vm -> get_string(3) : "";
                 self -> particles -> set_mesh(model -> get_node(), component);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_mesh", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> reset_mesh();
                 vm -> push_value(true);
                 return 1;
             });
@@ -639,30 +663,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "burst", [](auto vm, auto self, auto& id) -> int {
                 self -> particles -> burst();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_color_ramp", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_color_ramp();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_scale_curve", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_scale_curve();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_material", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_material();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_mesh", [](auto vm, auto self, auto& id) -> int {
-                self -> particles -> reset_mesh();
                 vm -> push_value(true);
                 return 1;
             });
