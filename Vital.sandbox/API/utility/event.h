@@ -38,6 +38,7 @@ namespace Vital::Sandbox::API {
             int subscription_limit = 0;
             int subscription_count = 0;
             int priority = 0;
+            bool remote = false;
         };
 
         struct EventEntry {
@@ -93,6 +94,7 @@ namespace Vital::Sandbox::API {
             vm -> table_get_value("priority", idx);
             if (vm -> is_number(-1)) handler.priority = vm -> get_int(-1);
             vm -> pop(1);
+            vm -> table_get_value("remote", idx); handler.remote = vm -> get_bool(-1); vm -> pop(1);
         }
 
         static void insert_ordered(EventEntry& entry, int ref, Handler handler) {
@@ -533,6 +535,11 @@ namespace Vital::Sandbox::API {
                 auto it = buffer.find(name);
                 if (it != buffer.end()) snapshot = it -> second.handlers;
             }
+            #if !defined(VSDK_Client)
+            // Server: clients can only reach handlers registered with `remote = true`, every other handler is local-only.
+            // A callback with no remote handler left resolves empty instead of hanging
+            snapshot.erase(std::remove_if(snapshot.begin(), snapshot.end(), [](const std::pair<int, Handler>& entry) { return !entry.second.remote; }), snapshot.end());
+            #endif
 
             int args_ref = store_stack_args(vm, payload.array);
             if (snapshot.empty()) {
