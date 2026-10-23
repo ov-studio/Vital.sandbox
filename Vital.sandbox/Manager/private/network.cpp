@@ -1297,15 +1297,18 @@ namespace Vital::Manager {
                 auto it = sync_id_map.find(net_id);
                 Engine::ISyncable* model = (it != sync_id_map.end()) ? it->second : nullptr;
 
+                // Only the entity's syncer may touch its real delta baseline. Entries from anyone else (and for unknown entities)
+                // are decoded against a throwaway one just to find where the next entry starts, so they can't skew the owner's deltas
+                const bool authorized = model && model->get_sync_authority() == sender;
                 int consumed;
-                if (model) consumed = model->parse_sync_packet_at(frame, offset, net_id, pos, rot, vel, scale);
+                if (authorized) consumed = model->parse_sync_packet_at(frame, offset, net_id, pos, rot, vel, scale);
                 else {
                     godot::Vector3 dp, dr, dv, ds = godot::Vector3(1,1,1);
                     consumed = Engine::ISyncable::decode_delta(frame, offset, (int)frame.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
                 }
                 if (consumed < 0) break;
 
-                if (model && model->get_sync_authority() == sender) {
+                if (authorized) {
                     if (relay_cursor + consumed > (int)relay.size()) break;
                     model->apply_sync(pos, rot, vel, scale);
                     // Copy variable-length entry verbatim into relay.
