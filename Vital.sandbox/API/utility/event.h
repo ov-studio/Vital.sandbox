@@ -295,54 +295,52 @@ namespace Vital::Sandbox::API {
             bool active = false;
 
             ClientScope(Machine* vm, int exec_ref, int sender) : vm(vm) {
-                auto L = vm -> get_state();
-                const int base = lua_gettop(L);
-                lua_rawgeti(L, LUA_REGISTRYINDEX, exec_ref);
-                if (!lua_isfunction(L, -1)) { lua_settop(L, base); return; }
+                const int base = vm -> get_count();
+                vm -> get_raw_reference(exec_ref);
+                if (!vm -> is_function(-1)) { vm -> pop(vm -> get_count() - base); return; }
                 // Find the handler's own environment; a function that never touches globals has no _ENV upvalue and cannot read `client`
                 bool found = false;
                 for (int i = 1; ; ++i) {
-                    const char* upname = lua_getupvalue(L, -1, i);
+                    const char* upname = vm -> get_upvalue(-1, i);
                     if (!upname) break;
                     if (std::strcmp(upname, "_ENV") == 0) { found = true; break; }
-                    lua_pop(L, 1);
+                    vm -> pop(1);
                 }
-                if (!found || !lua_istable(L, -1)) { lua_settop(L, base); return; }
+                if (!found || !vm -> is_table(-1)) { vm -> pop(vm -> get_count() - base); return; }
                 // Only resource environments are touched, never an arbitrary table
-                lua_pushvalue(L, -1);
-                lua_rawget(L, LUA_REGISTRYINDEX);
-                const bool registered = lua_type(L, -1) == LUA_TSTRING;
-                lua_pop(L, 1);
-                if (!registered) { lua_settop(L, base); return; }
-                const int env_idx = lua_gettop(L);
-                lua_pushstring(L, "client");
-                lua_rawget(L, env_idx);
-                const bool had_prev = !lua_isnil(L, -1);
+                vm -> push(-1);
+                vm -> get_raw_table(LUA_REGISTRYINDEX);
+                const bool registered = vm -> is_string(-1);
+                vm -> pop(1);
+                if (!registered) { vm -> pop(vm -> get_count() - base); return; }
+                const int env_idx = vm -> get_count();
+                vm -> push_string("client");
+                vm -> get_raw_table(env_idx);
+                const bool had_prev = !vm -> is_nil(-1);
                 // Local emit with nothing to hide: leave the environment untouched
-                if (sender <= 0 && !had_prev) { lua_settop(L, base); return; }
-                prev_ref = luaL_ref(L, LUA_REGISTRYINDEX); // pops the previous value (LUA_REFNIL for nil)
-                lua_pushstring(L, "client");
-                if (sender > 0) lua_pushinteger(L, sender);
-                else lua_pushnil(L);
-                lua_rawset(L, env_idx);
-                lua_pushvalue(L, env_idx);
-                env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-                lua_settop(L, base);
+                if (sender <= 0 && !had_prev) { vm -> pop(vm -> get_count() - base); return; }
+                prev_ref = vm -> set_raw_reference(-1); // LUA_REFNIL when there was no previous value
+                vm -> pop(1);
+                vm -> push_string("client");
+                if (sender > 0) vm -> push_value(sender);
+                else vm -> push_nil();
+                vm -> set_raw_table(env_idx);
+                env_ref = vm -> set_raw_reference(env_idx);
+                vm -> pop(vm -> get_count() - base);
                 active = true;
             }
 
             ~ClientScope() {
                 if (!active) return;
-                auto L = vm -> get_state();
-                lua_rawgeti(L, LUA_REGISTRYINDEX, env_ref);
-                const int env_idx = lua_gettop(L);
-                lua_pushstring(L, "client");
-                if (prev_ref == LUA_REFNIL || prev_ref == LUA_NOREF) lua_pushnil(L);
-                else lua_rawgeti(L, LUA_REGISTRYINDEX, prev_ref);
-                lua_rawset(L, env_idx);
-                lua_pop(L, 1);
-                luaL_unref(L, LUA_REGISTRYINDEX, prev_ref);
-                luaL_unref(L, LUA_REGISTRYINDEX, env_ref);
+                vm -> get_raw_reference(env_ref);
+                const int env_idx = vm -> get_count();
+                vm -> push_string("client");
+                if (prev_ref == LUA_REFNIL || prev_ref == LUA_NOREF) vm -> push_nil();
+                else vm -> get_raw_reference(prev_ref);
+                vm -> set_raw_table(env_idx);
+                vm -> pop(1);
+                vm -> del_raw_reference(prev_ref);
+                vm -> del_raw_reference(env_ref);
             }
         };
 
