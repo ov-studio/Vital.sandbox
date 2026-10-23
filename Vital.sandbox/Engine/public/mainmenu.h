@@ -29,10 +29,10 @@ namespace Vital::Engine {
         private:
             Webview* webview = nullptr;
             std::atomic<bool> webview_ready { false };
-            static std::atomic<float> draw_distance_mult;
-            static std::atomic<float> particle_distance_mult;
-            static std::atomic<float> mouse_sens_horizontal;
-            static std::atomic<float> mouse_sens_vertical;
+            static std::atomic<float> draw_distance;
+            static std::atomic<float> particle_distance;
+            static std::atomic<float> mouse_horizontal_senstivity;
+            static std::atomic<float> mouse_vertical_senstivity;
             std::atomic<bool> scan_running { false };
             std::atomic<bool> masterlist_running { false };
 

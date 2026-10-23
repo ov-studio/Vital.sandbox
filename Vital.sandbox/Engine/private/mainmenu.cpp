@@ -31,10 +31,10 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    std::atomic<float> MainMenu::draw_distance_mult { 1.0f };
-    std::atomic<float> MainMenu::particle_distance_mult { 1.0f };
-    std::atomic<float> MainMenu::mouse_sens_horizontal { 1.0f };
-    std::atomic<float> MainMenu::mouse_sens_vertical { 1.0f };
+    std::atomic<float> MainMenu::draw_distance { 1.0f };
+    std::atomic<float> MainMenu::particle_distance { 1.0f };
+    std::atomic<float> MainMenu::mouse_horizontal_senstivity { 1.0f };
+    std::atomic<float> MainMenu::mouse_vertical_senstivity { 1.0f };
 
     namespace {
         // TODO: Move to internal namespace like resource
@@ -51,11 +51,11 @@ namespace Vital::Engine {
             doc.AddMember("resolution", "1600x900", a);
             doc.AddMember("window_mode", "borderless", a);
             doc.AddMember("vsync", true, a);
-            doc.AddMember("draw_distance_mult", 1.0, a);
-            doc.AddMember("particle_distance_mult", 1.0, a);
+            doc.AddMember("draw_distance", 1.0, a);
+            doc.AddMember("particle_distance", 1.0, a);
             doc.AddMember("volume", 1.0, a);
-            doc.AddMember("mouse_sens_horizontal", 1.0, a);
-            doc.AddMember("mouse_sens_vertical", 1.0, a);
+            doc.AddMember("mouse_horizontal_senstivity", 1.0, a);
+            doc.AddMember("mouse_vertical_senstivity", 1.0, a);
             return doc;
         }
 
@@ -197,13 +197,13 @@ namespace Vital::Engine {
                 );
             }
 
-            if (settings.HasMember("draw_distance_mult") && settings["draw_distance_mult"].IsNumber()) {
-                const float mult = std::clamp(static_cast<float>(settings["draw_distance_mult"].GetDouble()), 0.1f, 2.0f);
-                MainMenu::set_draw_distance_mult(mult);
+            if (settings.HasMember("draw_distance") && settings["draw_distance"].IsNumber()) {
+                const float mult = std::clamp(static_cast<float>(settings["draw_distance"].GetDouble()), 0.1f, 2.0f);
+                MainMenu::set_draw_distance(mult);
             }
 
-            if (settings.HasMember("particle_distance_mult") && settings["particle_distance_mult"].IsNumber()) {
-                MainMenu::set_particle_distance_mult(static_cast<float>(settings["particle_distance_mult"].GetDouble()));
+            if (settings.HasMember("particle_distance") && settings["particle_distance"].IsNumber()) {
+                MainMenu::set_particle_distance(static_cast<float>(settings["particle_distance"].GetDouble()));
             }
 
             if (settings.HasMember("volume") && settings["volume"].IsNumber()) {
@@ -218,11 +218,11 @@ namespace Vital::Engine {
                 }
             }
 
-            if (settings.HasMember("mouse_sens_horizontal") && settings["mouse_sens_horizontal"].IsNumber()) {
-                MainMenu::set_mouse_sens_horizontal(static_cast<float>(settings["mouse_sens_horizontal"].GetDouble()));
+            if (settings.HasMember("mouse_horizontal_senstivity") && settings["mouse_horizontal_senstivity"].IsNumber()) {
+                MainMenu::set_mouse_horizontal_senstivity(static_cast<float>(settings["mouse_horizontal_senstivity"].GetDouble()));
             }
-            if (settings.HasMember("mouse_sens_vertical") && settings["mouse_sens_vertical"].IsNumber()) {
-                MainMenu::set_mouse_sens_vertical(static_cast<float>(settings["mouse_sens_vertical"].GetDouble()));
+            if (settings.HasMember("mouse_vertical_senstivity") && settings["mouse_vertical_senstivity"].IsNumber()) {
+                MainMenu::set_mouse_vertical_senstivity(static_cast<float>(settings["mouse_vertical_senstivity"].GetDouble()));
             }
         }
 
@@ -328,8 +328,8 @@ namespace Vital::Engine {
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 apply_settings(load_settings());
-                webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
-                //webview -> load_url("http://localhost:5173/"); // TODO: SWAP FOR ABOVE IN PRODUCTION
+                //webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/mainmenu/build/index.html"));
+                webview -> load_url("http://localhost:5173/"); // TODO: SWAP FOR ABOVE IN PRODUCTION
             });
         });
     }
@@ -525,43 +525,43 @@ namespace Vital::Engine {
         Sandbox::API::Input::pop_sandbox_ui_visible();
     }
 
-    float MainMenu::get_draw_distance_mult() {
-        return draw_distance_mult.load();
+    float MainMenu::get_draw_distance() {
+        return draw_distance.load();
     }
 
-    void MainMenu::set_draw_distance_mult(float mult) {
+    void MainMenu::set_draw_distance(float mult) {
         mult = std::clamp(mult, 0.1f, 2.0f);
-        const float prev = draw_distance_mult.exchange(mult);
+        const float prev = draw_distance.exchange(mult);
         if (auto* cam = Camera::get_active()) {
             const float logical = (prev > 0.0001f) ? (cam -> get_far() / prev) : cam -> get_far();
             cam -> set_far(logical * mult);
         }
     }
 
-    float MainMenu::get_particle_distance_mult() {
-        return particle_distance_mult.load();
+    float MainMenu::get_particle_distance() {
+        return particle_distance.load();
     }
 
     // Same 0.1 floor as the draw distance, so the slider's 0% still shows nearby particles.
     // 0 would also be a trap: Godot reads a visibility range of 0 as "no limit".
-    void MainMenu::set_particle_distance_mult(float mult) {
-        particle_distance_mult.store(std::clamp(mult, 0.1f, 2.0f));
+    void MainMenu::set_particle_distance(float mult) {
+        particle_distance.store(std::clamp(mult, 0.1f, 2.0f));
     }
 
     float MainMenu::get_mouse_horizontal_senstivity() {
-        return mouse_sens_horizontal.load();
+        return mouse_horizontal_senstivity.load();
     }
 
-    void MainMenu::set_mouse_sens_horizontal(float mult) {
-        mouse_sens_horizontal.store(std::clamp(mult, 0.01f, 2.0f));
+    void MainMenu::set_mouse_horizontal_senstivity(float mult) {
+        mouse_horizontal_senstivity.store(std::clamp(mult, 0.01f, 2.0f));
     }
 
     float MainMenu::get_mouse_vertical_senstivity() {
-        return mouse_sens_vertical.load();
+        return mouse_vertical_senstivity.load();
     }
 
-    void MainMenu::set_mouse_sens_vertical(float mult) {
-        mouse_sens_vertical.store(std::clamp(mult, 0.01f, 2.0f));
+    void MainMenu::set_mouse_vertical_senstivity(float mult) {
+        mouse_vertical_senstivity.store(std::clamp(mult, 0.01f, 2.0f));
     }
 
 
