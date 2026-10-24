@@ -38,11 +38,11 @@ namespace Vital::Manager {
                 std::string path;
                 std::unordered_set<std::string> groups;
                 std::atomic<bool> cancelled { false };
-                std::unordered_map<std::string, uint32_t> gens;   // group -> generation this download counts for
+                std::unordered_map<std::string, uint32_t> gens;
             };
 
             struct PendingSpawn {
-                godot::ObjectID placeholder;   // resolved through ObjectDB on use - the node may be freed before the asset arrives
+                godot::ObjectID placeholder;
                 int authority_peer = 1;
             };
             #endif
@@ -61,7 +61,6 @@ namespace Vital::Manager {
             static constexpr size_t max_asset_size = 1024ull * 1024 * 1024;
             std::deque<std::function<void()>> download_queue;
             int running_downloads = 0;
-            // Download workers are detached, so they never touch `this`: `lifetime` lets their main-thread completion callback tell whether this manager still exists
             std::shared_ptr<bool> lifetime = std::make_shared<bool>(true);
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void pump_downloads();

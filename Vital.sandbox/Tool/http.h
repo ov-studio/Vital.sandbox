@@ -20,8 +20,6 @@
 // Vital: Tool: HTTP //
 ////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Tool::HTTP {
     using http_headers = std::vector<std::string>;
     inline constexpr size_t DEFAULT_MAX_BODY = 64ull * 1024 * 1024;
