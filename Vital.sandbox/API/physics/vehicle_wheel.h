@@ -153,6 +153,13 @@ namespace Vital::Sandbox::API {
                     instance -> body = nullptr;
                 });
             });
+
+            #if defined(VSDK_Client)
+            static Tool::Event::Handle reset_binding;
+            reset_binding.bind("environment:free", [](Tool::Stack) {
+                base_class::set_debug_all(false);
+            });
+            #endif
         }
 
         static void bind(Machine* vm) {
@@ -187,10 +194,44 @@ namespace Vital::Sandbox::API {
                 instance -> store(true);
                 return 1;
             });
+
+            #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "is_debug_all", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::is_debug_all());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_debug_all", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(1, &Machine::is_bool);
+
+                auto state = vm -> get_bool(1);
+                base_class::set_debug_all(state);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
         }
 
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, API::Node_3D::Type::Spatial, true>(vm);
+
+            #if defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "is_debug_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> body -> is_debug_visible());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_debug_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> body -> set_debug_visible(state);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<Instance>(vm, "is_used_as_traction", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> body -> is_used_as_traction());
