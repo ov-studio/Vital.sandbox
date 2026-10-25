@@ -49,6 +49,9 @@ namespace Vital::Engine {
             bool is_visible();
             void ready();
             void check_updates();
+            void push_updates();
+            void download_update(const std::string& name);
+            void apply_update();
             void scan_local_servers();
             void fetch_masterlist();
             void send_connection();

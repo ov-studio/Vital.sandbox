@@ -232,23 +232,79 @@ namespace Vital::Engine {
         constexpr const char* kit_releases = "https://github.com/ov-studio/Vital.kit/releases";
         constexpr int64_t update_cooldown_ms = 10 * 60 * 1000; // min delay between checks (GitHub API is rate limited per IP)
         constexpr int64_t update_retry_ms = 60 * 1000;         // shorter delay after a failed (offline) check
+
+        // One outdated component. state: idle | downloading | ready | installing | error
+        struct UpdateEntry {
+            std::string name, current, latest, url;
+            std::string state = "idle";
+            std::string message;
+            uint64_t received = 0;
+            uint64_t total = 0;
+            std::string asset_name, asset_url, digest;         // Vital.sandbox only (release zip for this platform)
+        };
+
         std::mutex update_mutex;
         std::string update_json;                               // last result, re-sent when the UI reloads
+        std::vector<UpdateEntry> update_entries;               // guarded by update_mutex
         std::atomic<bool> update_running { false };
         std::atomic<int64_t> update_next { 0 };                // earliest time (steady clock, ms) of the next check
+        bool staged_loaded = false;
+        std::string staged_tag, staged_file;                   // update already downloaded into updates/ by an earlier session
 
         int64_t now_ms() {
             return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
         }
 
-        std::string fetch_sandbox_tag() {
+        const char* platform_name() {
+            #if defined(_WIN32)
+            return "windows";
+            #elif defined(__APPLE__)
+            return "macos";
+            #else
+            return "linux";
+            #endif
+        }
+
+        // Names that come from the network end up in file paths: letters, digits, '.', '_' and '-' only.
+        bool is_safe_name(const std::string& value) {
+            if (value.empty() || value.size() > 128 || value.front() == '.') return false;
+            for (const char c : value) {
+                if (!(std::isalnum(static_cast<unsigned char>(c)) || c == '.' || c == '_' || c == '-')) return false;
+            }
+            return true;
+        }
+
+        struct SandboxRelease {
+            std::string tag, asset_name, asset_url, digest;
+            uint64_t size = 0;
+        };
+
+        SandboxRelease fetch_sandbox_release() {
+            SandboxRelease out;
             try {
                 rapidjson::Document doc;
                 doc.Parse(Tool::HTTP::get(sandbox_src).c_str());
-                if (!doc.HasParseError() && doc.IsObject() && doc.HasMember("tag_name") && doc["tag_name"].IsString()) return doc["tag_name"].GetString();
+                if (doc.HasParseError() || !doc.IsObject()) return out;
+                if (doc.HasMember("tag_name") && doc["tag_name"].IsString()) out.tag = doc["tag_name"].GetString();
+                const std::string suffix = fmt::format("-{}-client.zip", platform_name());
+                if (doc.HasMember("assets") && doc["assets"].IsArray()) {
+                    for (const auto& asset : doc["assets"].GetArray()) {
+                        if (!asset.IsObject() || !asset.HasMember("name") || !asset["name"].IsString()) continue;
+                        if (!asset.HasMember("browser_download_url") || !asset["browser_download_url"].IsString()) continue;
+                        const std::string name = asset["name"].GetString();
+                        if (name.rfind("Vital.sandbox-", 0) != 0 || name.size() <= suffix.size()) continue;
+                        if (name.compare(name.size() - suffix.size(), suffix.size(), suffix) != 0) continue;
+                        if (!is_safe_name(name)) continue;
+                        out.asset_name = name;
+                        out.asset_url = asset["browser_download_url"].GetString();
+                        if (asset.HasMember("size") && asset["size"].IsUint64()) out.size = asset["size"].GetUint64();
+                        if (asset.HasMember("digest") && asset["digest"].IsString()) out.digest = asset["digest"].GetString();
+                        break;
+                    }
+                }
             }
             catch (...) { /* offline / rate limited: no update info */ }
-            return "";
+            return out;
         }
 
         // Same rule Kit::ensure() uses: any difference from the latest release tag means "not the latest".
@@ -256,14 +312,60 @@ namespace Vital::Engine {
             return !local.empty() && !remote.empty() && local != remote;
         }
 
-        // Untagged local builds (CI never injected a version) never show the update button.
+        // Untagged local builds (CI never injected a version) never show updates.
         bool is_dev_build() {
             const auto& sdk = Tool::Version::SDK;
             return sdk.major == 0 && sdk.minor == 0 && sdk.patch == 0 && sdk.label == "dev";
         }
 
-        // Only outdated components are listed; an empty list means "up to date" (or unknown) and the UI hides the button.
-        std::string update_to_json(const std::vector<std::array<std::string, 4>>& updates) {
+        // Downloaded updates live next to the executable: <install>/updates
+        std::filesystem::path updates_dir() {
+            return std::filesystem::path(Tool::get_directory("updates"));
+        }
+
+        void write_pending(const std::string& tag, const std::string& file) {
+            rapidjson::Document doc;
+            doc.SetObject();
+            auto& a = doc.GetAllocator();
+            doc.AddMember("name", "Vital.sandbox", a);
+            doc.AddMember("tag", rapidjson::Value(tag.c_str(), a), a);
+            doc.AddMember("file", rapidjson::Value(file.c_str(), a), a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+            std::ofstream out(updates_dir() / "pending.json", std::ios::binary | std::ios::trunc);
+            if (out) out << buffer.GetString();
+        }
+
+        // Remembers a finished download across restarts, and cleans up once that version is actually running.
+        void load_staged() {
+            if (staged_loaded) return;
+            staged_loaded = true;
+            std::ifstream in(updates_dir() / "pending.json", std::ios::binary);
+            if (!in) return;
+            std::string raw{ std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>() };
+            rapidjson::Document doc;
+            doc.Parse(raw.c_str());
+            if (doc.HasParseError() || !doc.IsObject()) return;
+            if (!doc.HasMember("tag") || !doc["tag"].IsString() || !doc.HasMember("file") || !doc["file"].IsString()) return;
+            const std::string tag = doc["tag"].GetString();
+            const std::string file = doc["file"].GetString();
+            std::error_code ec;
+            if (tag == Tool::Version::SDK.to_string()) {
+                std::filesystem::remove_all(updates_dir(), ec); // update was applied: drop the leftovers
+                return;
+            }
+            if (!is_safe_name(file) || !std::filesystem::exists(updates_dir() / file, ec)) return;
+            staged_tag = tag;
+            staged_file = file;
+        }
+
+        UpdateEntry* find_entry(const std::string& name) {
+            for (auto& e : update_entries) if (e.name == name) return &e;
+            return nullptr;
+        }
+
+        std::string update_to_json(const std::vector<UpdateEntry>& updates) {
             rapidjson::Document envelope;
             envelope.SetObject();
             auto& a = envelope.GetAllocator();
@@ -271,10 +373,14 @@ namespace Vital::Engine {
             rapidjson::Value list(rapidjson::kArrayType);
             for (const auto& u : updates) {
                 rapidjson::Value item(rapidjson::kObjectType);
-                item.AddMember("name", rapidjson::Value(u[0].c_str(), a), a);
-                item.AddMember("current", rapidjson::Value(u[1].c_str(), a), a);
-                item.AddMember("latest", rapidjson::Value(u[2].c_str(), a), a);
-                item.AddMember("url", rapidjson::Value(u[3].c_str(), a), a);
+                item.AddMember("name", rapidjson::Value(u.name.c_str(), a), a);
+                item.AddMember("current", rapidjson::Value(u.current.c_str(), a), a);
+                item.AddMember("latest", rapidjson::Value(u.latest.c_str(), a), a);
+                item.AddMember("url", rapidjson::Value(u.url.c_str(), a), a);
+                item.AddMember("state", rapidjson::Value(u.state.c_str(), a), a);
+                item.AddMember("message", rapidjson::Value(u.message.c_str(), a), a);
+                item.AddMember("received", static_cast<uint64_t>(u.received), a);
+                item.AddMember("total", static_cast<uint64_t>(u.total), a);
                 list.PushBack(item, a);
             }
             envelope.AddMember("updates", list, a);
@@ -282,6 +388,95 @@ namespace Vital::Engine {
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             envelope.Accept(writer);
             return buffer.GetString();
+        }
+
+        std::string to_native(std::string path) {
+            #if defined(_WIN32)
+            std::replace(path.begin(), path.end(), '/', '\\');
+            #endif
+            return path;
+        }
+
+        // Hands over to a detached script: it waits for this process to exit, copies the extracted update over
+        // the install folder (the running exe/dlls are locked until then) and starts the game again.
+        bool launch_updater(const std::filesystem::path& src, const std::filesystem::path& zip, const std::filesystem::path& pending) {
+            auto* os = godot::OS::get_singleton();
+            const std::string exe = to_native(Tool::to_std_string(os -> get_executable_path()));
+            const std::string dst = to_native(Tool::to_std_string(os -> get_executable_path().get_base_dir()));
+            const int64_t pid = os -> get_process_id();
+            const auto dir = updates_dir();
+            std::error_code ec;
+            std::filesystem::create_directories(dir, ec);
+            const std::string src_s = src.empty() ? "" : to_native(src.string());
+            const std::string zip_s = zip.empty() ? "" : to_native(zip.string());
+            const std::string pending_s = to_native(pending.string());
+
+            #if defined(_WIN32)
+            auto esc = [](std::string v) {
+                std::string out;
+                for (const char c : v) { out += c; if (c == '%') out += '%'; }
+                return out;
+            };
+            const auto script = dir / "apply_update.bat";
+            std::ofstream f(script, std::ios::binary | std::ios::trunc);
+            if (!f) return false;
+            f << "@echo off\r\n"
+              << "setlocal\r\n"
+              << "set \"PID=" << pid << "\"\r\n"
+              << "set \"SRC=" << esc(src_s) << "\"\r\n"
+              << "set \"ZIP=" << esc(zip_s) << "\"\r\n"
+              << "set \"PENDING=" << esc(pending_s) << "\"\r\n"
+              << "set \"DST=" << esc(dst) << "\"\r\n"
+              << "set \"EXE=" << esc(exe) << "\"\r\n"
+              << "set tries=0\r\n"
+              << ":wait\r\n"
+              << "tasklist /FI \"PID eq %PID%\" /FO CSV /NH 2>nul | find \"\"\"%PID%\"\"\" >nul\r\n"
+              << "if not errorlevel 1 (\r\n"
+              << "  timeout /t 1 /nobreak >nul\r\n"
+              << "  goto wait\r\n"
+              << ")\r\n"
+              << "if not defined SRC goto launch\r\n"
+              << "if not exist \"%SRC%\" goto launch\r\n"
+              << ":copy\r\n"
+              << "robocopy \"%SRC%\" \"%DST%\" /E /IS /IT /R:5 /W:1 /NFL /NDL /NJH /NJS /NP >nul\r\n"
+              << "if %ERRORLEVEL% LSS 8 goto done\r\n"
+              << "set /a tries+=1\r\n"
+              << "if %tries% GEQ 5 goto launch\r\n"
+              << "timeout /t 2 /nobreak >nul\r\n"
+              << "goto copy\r\n"
+              << ":done\r\n"
+              << "rmdir /s /q \"%SRC%\" 2>nul\r\n"
+              << "if defined ZIP del /q \"%ZIP%\" 2>nul\r\n"
+              << "del /q \"%PENDING%\" 2>nul\r\n"
+              << ":launch\r\n"
+              << "start \"\" /D \"%DST%\" \"%EXE%\"\r\n"
+              << "(goto) 2>nul & del \"%~f0\"\r\n";
+            f.close();
+            godot::PackedStringArray args;
+            args.push_back("/c");
+            args.push_back(Tool::to_godot_string(to_native(script.string())));
+            return os -> create_process("cmd.exe", args, false) > 0;
+            #else
+            auto quote = [](const std::string& v) {
+                std::string out = "'";
+                for (const char c : v) { if (c == '\'') out += "'\\''"; else out += c; }
+                return out + "'";
+            };
+            const auto script = dir / "apply_update.sh";
+            std::ofstream f(script, std::ios::binary | std::ios::trunc);
+            if (!f) return false;
+            f << "#!/bin/sh\n"
+              << "while kill -0 " << pid << " 2>/dev/null; do sleep 1; done\n"
+              << "if [ -n " << quote(src_s) << " ] && [ -d " << quote(src_s) << " ]; then\n"
+              << "  cp -Rf " << quote(src_s) << "/. " << quote(dst) << "/ && rm -rf " << quote(src_s) << " " << quote(zip_s) << " " << quote(pending_s) << "\n"
+              << "fi\n"
+              << "cd " << quote(dst) << " && nohup " << quote(exe) << " >/dev/null 2>&1 &\n"
+              << "rm -f -- \"$0\"\n";
+            f.close();
+            godot::PackedStringArray args;
+            args.push_back(Tool::to_godot_string(script.string()));
+            return os -> create_process("/bin/sh", args, false) > 0;
+            #endif
         }
 
         std::string settings_to_json(const rapidjson::Value& settings) {
@@ -460,6 +655,17 @@ namespace Vital::Engine {
         });
     }
 
+    // Serializes the current update list, remembers it for UI reloads and pushes it to the menu.
+    void MainMenu::push_updates() {
+        std::string json;
+        {
+            std::lock_guard<std::mutex> lock(update_mutex);
+            json = update_to_json(update_entries);
+            update_json = json;
+        }
+        if (webview) webview -> emit(json);
+    }
+
     // Throttled: runs at most once per cooldown, never concurrently, and never blocks the main thread.
     void MainMenu::check_updates() {
         if (is_dev_build()) return; // dev builds: no update info (sandbox or kit)
@@ -468,35 +674,214 @@ namespace Vital::Engine {
         if (update_running.exchange(true)) return;
         update_next.store(now + update_cooldown_ms);
         Tool::Thread::create([this](Tool::Thread*) {
-            std::vector<std::array<std::string, 4>> updates;
+            load_staged();
+            std::vector<UpdateEntry> found;
             bool reached = false;
 
             // Vital.sandbox: running version (to_string, e.g. v1.2.3) vs latest release tag.
             const auto& sdk = Tool::Version::SDK;
-            const std::string sandbox_tag = fetch_sandbox_tag();
-            if (!sandbox_tag.empty()) reached = true;
-            if (is_outdated(sdk.to_string(), sandbox_tag)) {
-                updates.push_back({ "Vital.sandbox", sdk.to_string(), sandbox_tag, sandbox_releases });
+            const SandboxRelease release = fetch_sandbox_release();
+            if (!release.tag.empty()) reached = true;
+            if (is_outdated(sdk.to_string(), release.tag)) {
+                UpdateEntry e;
+                e.name = "Vital.sandbox";
+                e.current = sdk.to_string();
+                e.latest = release.tag;
+                e.url = sandbox_releases;
+                e.asset_name = release.asset_name;
+                e.asset_url = release.asset_url;
+                e.digest = release.digest;
+                e.total = release.size;
+                if (!staged_tag.empty() && staged_tag == release.tag) {
+                    e.state = "ready";
+                    e.message = "Ready to install";
+                    e.received = e.total;
+                }
+                found.push_back(std::move(e));
             }
 
             // Vital.kit: cached kit version vs latest release tag (same source Kit::ensure uses).
+            // Kit::ensure() already re-downloads and verifies it on every launch, so a restart is all it needs.
             const std::string kit_tag = std::get<0>(Manager::Kit::get_singleton() -> get_release());
             if (!kit_tag.empty()) reached = true;
             const std::string kit_local = Manager::Kit::get_singleton() -> get_version();
             if (is_outdated(kit_local, kit_tag)) {
-                updates.push_back({ "Vital.kit", kit_local, kit_tag, kit_releases });
+                UpdateEntry e;
+                e.name = "Vital.kit";
+                e.current = kit_local;
+                e.latest = kit_tag;
+                e.url = kit_releases;
+                found.push_back(std::move(e));
             }
 
             if (reached) {
-                const std::string json = update_to_json(updates);
                 {
                     std::lock_guard<std::mutex> lock(update_mutex);
-                    update_json = json;
+                    // A re-check must not reset a download/install that is already in flight for the same release.
+                    for (auto& n : found) {
+                        const auto* old = find_entry(n.name);
+                        if (old && old -> latest == n.latest) {
+                            n.state = old -> state;
+                            n.message = old -> message;
+                            n.received = old -> received;
+                            n.total = old -> total;
+                        }
+                    }
+                    update_entries = std::move(found);
                 }
-                if (webview) webview -> emit(json);
+                push_updates();
             }
             else update_next.store(now_ms() + update_retry_ms); // offline: retry sooner
             update_running.store(false);
+        });
+    }
+
+    // Downloads the release zip into <install>/updates with live progress. Nothing is installed yet.
+    void MainMenu::download_update(const std::string& name) {
+        UpdateEntry job;
+        bool start = false;
+        {
+            std::lock_guard<std::mutex> lock(update_mutex);
+            auto* e = find_entry(name);
+            if (!e || e -> state == "downloading" || e -> state == "installing" || e -> state == "ready") return;
+            if (e -> name != "Vital.sandbox") {
+                e -> state = "ready";
+                e -> message = "Installs automatically on restart";
+            }
+            else if (e -> asset_url.empty() || e -> asset_name.empty()) {
+                e -> state = "error";
+                e -> message = "No download available for this platform";
+            }
+            else {
+                e -> state = "downloading";
+                e -> message.clear();
+                e -> received = 0;
+                job = *e;
+                start = true;
+            }
+        }
+        push_updates();
+        if (!start) return;
+
+        Tool::Thread::create([this, job](Tool::Thread*) {
+            auto set_state = [&](const std::string& state, const std::string& message) {
+                {
+                    std::lock_guard<std::mutex> lock(update_mutex);
+                    auto* e = find_entry(job.name);
+                    if (!e || e -> latest != job.latest) return;
+                    e -> state = state;
+                    e -> message = message;
+                }
+                push_updates();
+            };
+
+            std::error_code ec;
+            const auto dir = updates_dir();
+            std::filesystem::create_directories(dir, ec);
+            const auto part = dir / (job.asset_name + ".part");
+            const auto dest = dir / job.asset_name;
+            try {
+                std::ofstream out(part, std::ios::binary | std::ios::trunc);
+                if (!out) throw std::runtime_error("cannot write to the updates folder");
+                uint64_t received = 0;
+                int64_t last_emit = 0;
+                bool write_failed = false;
+                const bool completed = Tool::HTTP::stream(job.asset_url, {}, 120, true, nullptr, Tool::HTTP::DEFAULT_MAX_DOWNLOAD, [&](const char* data, size_t len) {
+                    out.write(data, static_cast<std::streamsize>(len));
+                    if (!out) { write_failed = true; return false; }
+                    received += len;
+                    const int64_t t = now_ms();
+                    if (t - last_emit >= 150) {
+                        last_emit = t;
+                        {
+                            std::lock_guard<std::mutex> lock(update_mutex);
+                            auto* e = find_entry(job.name);
+                            if (e && e -> latest == job.latest) e -> received = received;
+                        }
+                        push_updates();
+                    }
+                    return true;
+                });
+                out.close();
+                if (write_failed) throw std::runtime_error("disk write failed");
+                if (!completed) throw std::runtime_error("download interrupted");
+
+                // GitHub publishes a sha256 digest for release assets; verify it when present.
+                if (job.digest.rfind("sha256:", 0) == 0) {
+                    std::string expected = job.digest.substr(7);
+                    std::string actual = Tool::Crypto::hash_file("sha256", part.string());
+                    for (auto& c : expected) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                    for (auto& c : actual) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                    if (expected != actual) throw std::runtime_error("checksum mismatch, download discarded");
+                }
+                else if (job.total > 0 && received != job.total) throw std::runtime_error("incomplete download, size mismatch");
+
+                std::filesystem::remove(dest, ec);
+                ec.clear();
+                std::filesystem::rename(part, dest, ec);
+                if (ec) throw std::runtime_error("cannot finalise the download");
+                write_pending(job.latest, job.asset_name);
+                {
+                    std::lock_guard<std::mutex> lock(update_mutex);
+                    auto* e = find_entry(job.name);
+                    if (e && e -> latest == job.latest) { e -> received = received; e -> total = received; }
+                }
+                set_state("ready", "Ready to install");
+            }
+            catch (const std::exception& ex) {
+                std::filesystem::remove(part, ec);
+                set_state("error", ex.what());
+            }
+        });
+    }
+
+    // Extracts the downloaded zip (same hardened extractor Vital.kit uses), then restarts into the updater script.
+    void MainMenu::apply_update() {
+        std::string tag, file;
+        {
+            std::lock_guard<std::mutex> lock(update_mutex);
+            bool any = false;
+            for (const auto& e : update_entries) {
+                if (e.state == "installing") return;
+                if (e.state != "ready") continue;
+                any = true;
+                if (e.name == "Vital.sandbox") { tag = e.latest; file = e.asset_name; }
+            }
+            if (!any) return;
+            if (auto* s = find_entry("Vital.sandbox"); s && !file.empty()) {
+                s -> state = "installing";
+                s -> message = "Extracting update...";
+            }
+        }
+        push_updates();
+
+        Tool::Thread::create([this, tag, file](Tool::Thread*) {
+            std::error_code ec;
+            const auto dir = updates_dir();
+            const auto zip = file.empty() ? std::filesystem::path() : dir / file;
+            const auto src = file.empty() ? std::filesystem::path() : dir / "extracted";
+            if (!file.empty()) {
+                const bool ok = std::filesystem::exists(zip, ec) && Manager::Kit::get_singleton() -> extract(zip.string(), src.string());
+                if (!ok) {
+                    std::filesystem::remove(zip, ec);
+                    std::filesystem::remove(dir / "pending.json", ec);
+                    {
+                        std::lock_guard<std::mutex> lock(update_mutex);
+                        if (auto* s = find_entry("Vital.sandbox")) { s -> state = "error"; s -> message = "Extraction failed, download it again"; }
+                    }
+                    push_updates();
+                    return;
+                }
+            }
+            if (!launch_updater(src, zip, dir / "pending.json")) {
+                {
+                    std::lock_guard<std::mutex> lock(update_mutex);
+                    if (auto* s = find_entry("Vital.sandbox")) { s -> state = "error"; s -> message = "Could not start the updater"; }
+                }
+                push_updates();
+                return;
+            }
+            Engine::Core::get_singleton() -> shutdown();
         });
     }
 
@@ -598,6 +983,11 @@ namespace Vital::Engine {
             const int http_port = (document.HasMember("http_port") && document["http_port"].IsInt()) ? document["http_port"].GetInt() : -1;
             Manager::Network::get_singleton() -> connect_to_server(document["ip"].GetString(), port, http_port);
         }
+        else if (action == "update_download") {
+            if (!document.HasMember("name") || !document["name"].IsString()) return;
+            download_update(document["name"].GetString());
+        }
+        else if (action == "update_apply") apply_update();
         else if (action == "escape") toggle();
         else if (action == "localservers") scan_local_servers();
         else if (action == "masterlist") fetch_masterlist();
