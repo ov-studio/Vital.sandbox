@@ -968,6 +968,7 @@ namespace Vital::Engine {
             }
             ds -> window_start_drag();
         }
+        else if (action == "minimize") Core::get_display_server() -> window_set_mode(godot::DisplayServer::WINDOW_MODE_MINIMIZED);
         else if (action == "exit") Core::get_singleton() -> shutdown();
         else if (action == "open_url") {
             // Opens in the OS default browser. Web links only: never hand arbitrary schemes/paths to the shell.
