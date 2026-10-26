@@ -531,6 +531,13 @@ namespace Vital::Engine {
             webview -> emit(buffer.GetString());
         });
 
+        // Leaving a server (console `disconnect`, or the server dropping us) returns to the menu, as there is no game left to show.
+        for (const char* name : { "network:disconnect", "network:server:disconnect" }) {
+            Tool::Event::bind(name, [this](Tool::Stack) {
+                if (webview && is_ready() && !is_visible()) show();
+            });
+        }
+
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 apply_settings(load_settings());
