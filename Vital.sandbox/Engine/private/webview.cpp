@@ -268,6 +268,7 @@ namespace Vital::Engine {
 
     // Events //
     void Webview::on_preload(godot::String url) {
+        eval(is_fullscreen() ? "window.__vital_fullscreen = true;" : "window.__vital_fullscreen = false;");
         std::ostringstream js;
         js << "(function() {";
         for (const auto& [src, content] : Manager::Kit::get_singleton() -> get_module("js")) js << content << "\n";
