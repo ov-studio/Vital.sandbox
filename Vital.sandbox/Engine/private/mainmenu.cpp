@@ -515,10 +515,21 @@ namespace Vital::Engine {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
 
-        // Keep the menu's Connect/Disconnect button in sync with the real connection state.
         for (const char* name : { "network:connect", "network:connect:success", "network:connect:failed", "network:disconnect", "network:server:disconnect" }) {
             Tool::Event::bind(name, [this](Tool::Stack) { send_connection(); });
         }
+
+        Tool::Event::bind("network:connect:success", [this](Tool::Stack) {
+            if (!is_visible() || !webview) return;
+            rapidjson::Document doc;
+            doc.SetObject();
+            auto& a = doc.GetAllocator();
+            doc.AddMember("action", "fadeout", a);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+            webview -> emit(buffer.GetString());
+        });
 
         Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
             Engine::Core::get_singleton() -> enqueue([this]() {
