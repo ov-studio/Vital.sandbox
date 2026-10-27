@@ -56,6 +56,7 @@ namespace Vital::Engine {
             doc.AddMember("volume", 1.0, a);
             doc.AddMember("mouse_horizontal_senstivity", 1.0, a);
             doc.AddMember("mouse_vertical_senstivity", 1.0, a);
+            doc.AddMember("favorites", rapidjson::Value(rapidjson::kArrayType), a);
             return doc;
         }
 
