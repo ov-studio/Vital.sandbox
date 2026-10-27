@@ -45,7 +45,7 @@ namespace Vital::Engine {
     }
 
     void Camera::apply_draw_distance() {
-        const float mult = MainMenu::get_draw_distance();
+        const float mult = Engine::MainMenu::get_draw_distance();
         if (mult == applied_draw_distance) return;
         set_far(get_logical_far()*mult);
         applied_draw_distance = mult;
@@ -87,7 +87,7 @@ namespace Vital::Engine {
     }
 
     void Camera::set_logical_far(float z_far) {
-        applied_draw_distance = MainMenu::get_draw_distance();
+        applied_draw_distance = Engine::MainMenu::get_draw_distance();
         set_far(z_far*applied_draw_distance);
     }
 }
