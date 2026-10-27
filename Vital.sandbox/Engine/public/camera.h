@@ -26,6 +26,7 @@ namespace Vital::Engine {
         GDCLASS(Camera, godot::Camera3D)
         private:
             godot::Ref<godot::CameraAttributesPractical> attributes;
+            float applied_draw_distance = 1.0f;
 
             
             // Instantiators //
@@ -36,6 +37,7 @@ namespace Vital::Engine {
             // Managers //
             static Camera* create();
             void destroy();
+            void apply_draw_distance();
 
 
             // Checkers //
@@ -45,10 +47,12 @@ namespace Vital::Engine {
             // Getters //
             static Camera* get_active();
             godot::Ref<godot::CameraAttributesPractical> get_attributes() const;
+            float get_logical_far() const;
 
 
             // Setters //
             static void set_active(Camera* camera = nullptr);
+            void set_logical_far(float z_far);
     };
 }
 #endif

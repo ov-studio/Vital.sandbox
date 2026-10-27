@@ -934,11 +934,9 @@ namespace Vital::Engine {
 
     void MainMenu::set_draw_distance(float mult) {
         mult = std::clamp(mult, 0.1f, 2.0f);
-        const float prev = draw_distance.exchange(mult);
-        if (auto* cam = Camera::get_active()) {
-            const float logical = (prev > 0.0001f) ? (cam -> get_far() / prev) : cam -> get_far();
-            cam -> set_far(logical * mult);
-        }
+        draw_distance.store(mult);
+        // Only the active camera is touched here, any other camera picks the new value up in Camera::set_active
+        if (auto* cam = Camera::get_active()) cam -> apply_draw_distance();
     }
 
     float MainMenu::get_particle_distance() {

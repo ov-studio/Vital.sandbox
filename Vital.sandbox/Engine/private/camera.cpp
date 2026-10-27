@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Engine/public/dimension.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 
 
 ////////////////////////////
@@ -35,11 +36,19 @@ namespace Vital::Engine {
         Engine::Core::get_singleton() -> add_child(camera);
         camera -> attributes.instantiate();
         camera -> set_attributes(camera -> attributes);
+        camera -> apply_draw_distance();
         return camera;
     }
 
     void Camera::destroy() {
         queue_free();
+    }
+
+    void Camera::apply_draw_distance() {
+        const float mult = MainMenu::get_draw_distance();
+        if (mult == applied_draw_distance) return;
+        set_far(get_logical_far()*mult);
+        applied_draw_distance = mult;
     }
 
 
@@ -59,15 +68,27 @@ namespace Vital::Engine {
         return attributes;
     }
 
+    float Camera::get_logical_far() const {
+        return get_far()/(applied_draw_distance > 0.0001f ? applied_draw_distance : 1.0f);
+    }
+
 
     // Setters //
     void Camera::set_active(Camera* camera) {
-        if (camera) camera -> make_current();
+        if (camera) {
+            camera -> apply_draw_distance();
+            camera -> make_current();
+        }
         else {
             auto active = get_active();
             if (active) active -> clear_current(false);
         }
         Engine::Dimension::refresh();
+    }
+
+    void Camera::set_logical_far(float z_far) {
+        applied_draw_distance = MainMenu::get_draw_distance();
+        set_far(z_far*applied_draw_distance);
     }
 }
 #endif
