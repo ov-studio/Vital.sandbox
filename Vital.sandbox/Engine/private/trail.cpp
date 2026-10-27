@@ -102,6 +102,21 @@ namespace Vital::Engine {
             clear();
             return;
         }
+
+        // Particle distance setting: past (camera far x multiplier) from the camera the ribbon is skipped.
+        // Measured from the trail node: the ribbon is a top level mesh at the world origin, so a visibility range would measure from the wrong place.
+        // At 100% there is no extra limit, the camera far plane stays the only one
+        const float mult = Engine::MainMenu::get_particle_distance();
+        if (mult < 1.0f) {
+            auto camera = Engine::Camera::get_active();
+            if (camera) {
+                const float range = camera -> get_far()*mult;
+                if (get_global_position().distance_squared_to(camera -> get_global_position()) > range*range) {
+                    clear();
+                    return;
+                }
+            }
+        }
         rebuild();
     }
 
