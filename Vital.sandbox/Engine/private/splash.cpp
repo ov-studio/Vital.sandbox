@@ -88,7 +88,7 @@ namespace Vital::Engine {
         options.overlay = false;
         webview = Engine::Webview::create(options);
         webview -> set_position({0, 0});
-        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
+        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/ui/splash/build/index.html"));
         webview -> set_visible(true);
         Sandbox::API::Input::push_sandbox_ui_visible();
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
