@@ -38,7 +38,7 @@ namespace Vital::Engine {
 
     namespace {
         // TODO: Move to internal namespace like resource
-        constexpr const char* settings_file = "client_settings.json";
+        constexpr const char* settings_file = "settings.json";
 
         std::string settings_base() {
             return Tool::get_directory("data");
