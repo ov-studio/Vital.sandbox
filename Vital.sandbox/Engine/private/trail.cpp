@@ -15,6 +15,8 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/trail.h>
+#include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 
 
 // TODO: Improve
