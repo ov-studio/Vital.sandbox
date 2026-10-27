@@ -942,8 +942,6 @@ namespace Vital::Engine {
         return particle_distance.load();
     }
 
-    // Same 0.1 floor as the draw distance, so the slider's 0% still shows nearby particles.
-    // 0 would also be a trap: Godot reads a visibility range of 0 as "no limit".
     void MainMenu::set_particle_distance(float mult) {
         particle_distance.store(std::clamp(mult, 0.1f, 2.0f));
     }
