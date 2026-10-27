@@ -1009,7 +1009,7 @@ namespace Vital::Engine {
         else if (action == "disconnect") Manager::Network::get_singleton() -> disconnect_from_server();
         else if (action == "settings_update") {
             if (!document.HasMember("settings") || !document["settings"].IsObject()) return;
-            auto merged = default_settings();
+            auto merged = load_settings();
             const auto& incoming = document["settings"];
             for (auto it = incoming.MemberBegin(); it != incoming.MemberEnd(); ++it) {
                 rapidjson::Value key(it->name, merged.GetAllocator());
