@@ -935,7 +935,6 @@ namespace Vital::Engine {
     void MainMenu::set_draw_distance(float mult) {
         mult = std::clamp(mult, 0.1f, 2.0f);
         draw_distance.store(mult);
-        // Only the active camera is touched here, any other camera picks the new value up in Camera::set_active
         if (auto* cam = Engine::Camera::get_active()) cam -> apply_draw_distance();
     }
 
