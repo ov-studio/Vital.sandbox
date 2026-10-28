@@ -615,7 +615,7 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
-            Tool::Event::bind("resource:started", [](Tool::Stack args) {
+            Tool::Event::bind("resource:start", [](Tool::Stack args) {
                 if (args.array.empty() || !args.array[0].is<std::string>()) return;
                 std::string resource_name = args.array[0].as<std::string>();
                 std::vector<Tool::Stack> queued;
@@ -636,7 +636,7 @@ namespace Vital::Sandbox::API {
                 }
             });
 
-            Tool::Event::bind("resource:stopped", [](Tool::Stack args) {
+            Tool::Event::bind("resource:stop", [](Tool::Stack args) {
                 if (args.array.empty() || !args.array[0].is<std::string>()) return;
                 std::string resource_name = args.array[0].as<std::string>();
                 std::lock_guard lock(pending_resource_remote_mutex);

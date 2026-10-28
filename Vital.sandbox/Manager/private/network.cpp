@@ -129,7 +129,7 @@ namespace Vital::Manager {
                         status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
                         status.object["server_sdk"] = Tool::StackValue(server_sdk);
                         status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
-                        Tool::Event::emit("network:connect:failed", status);
+                        Tool::Event::emit("network:connect:fail", status);
                         return false;
                     }
                     if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
@@ -151,7 +151,7 @@ namespace Vital::Manager {
             nm -> peer.unref();
             Tool::Stack status;
             status.object["reason"] = Tool::StackValue(std::string("connect-error"));
-            Tool::Event::emit("network:connect:failed", status);
+            Tool::Event::emit("network:connect:fail", status);
             return false;
         }
 
@@ -165,7 +165,7 @@ namespace Vital::Manager {
             nm -> peer.unref();
             Tool::Stack status;
             status.object["reason"] = Tool::StackValue(std::string("connect-error"));
-            Tool::Event::emit("network:connect:failed", status);
+            Tool::Event::emit("network:connect:fail", status);
             return false;
         }
         tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
@@ -185,7 +185,7 @@ namespace Vital::Manager {
             nm -> log("sbox", "reconnect failed — no previous server");
             Tool::Stack status;
             status.object["reason"] = Tool::StackValue(std::string("no-previous-server"));
-            Tool::Event::emit("network:connect:failed", status);
+            Tool::Event::emit("network:connect:fail", status);
             return false;
         }
         nm -> log("sbox", fmt::format("reconnecting to {}:{}", nm -> reconnect_ip, nm -> reconnect_port));
@@ -541,7 +541,7 @@ namespace Vital::Manager {
 
     // Public entry point — acquires sync_models_mutex then delegates.
     // Safe to call from any thread / Lua callback that does NOT already hold
-    // sync_models_mutex (e.g. _spawn_entity -> "entity:spawned" -> entity:created).
+    // sync_models_mutex (e.g. _spawn_entity -> "entity:spawn" -> entity:create).
     void Network::register_syncable(Engine::ISyncable* entity) {
         std::lock_guard<std::mutex> lock(sync_models_mutex);
         register_syncable_locked(entity);
@@ -1367,7 +1367,7 @@ namespace Vital::Manager {
         if (peer.is_valid()) peer.unref();
         Tool::Stack status;
         status.object["reason"] = Tool::StackValue(std::string("timed-out"));
-        Tool::Event::emit("network:connect:failed", status);
+        Tool::Event::emit("network:connect:fail", status);
     }
 
     void Network::_on_server_disconnected() {
@@ -1834,7 +1834,7 @@ namespace Vital::Manager {
         // Done last so scripts see the peer only after it has been sent the full world state.
         connected_peers.insert(id);
         log("sbox", fmt::format("peer admitted <- peer {}", id));
-        Manager::Sandbox::get_singleton() -> signal("network:peer:join", Tool::StackValue((int32_t)id));
+        Manager::Sandbox::get_singleton() -> signal("peer:join", Tool::StackValue((int32_t)id));
     }
 
     void Network::_on_peer_disconnected(int id) {
@@ -1861,7 +1861,7 @@ namespace Vital::Manager {
                     }
                 }
             }
-            Manager::Sandbox::get_singleton() -> signal("network:peer:leave", Tool::StackValue((int32_t)id));
+            Manager::Sandbox::get_singleton() -> signal("peer:leave", Tool::StackValue((int32_t)id));
         }
     }
 

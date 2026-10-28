@@ -26,7 +26,7 @@
 // TODO: Improve
 namespace Vital::Manager {
     // Run ids //
-    // Every start of a resource on the server gets a new run id, sent to clients in resource:started and echoed back in resource:ready.
+    // Every start of a resource on the server gets a new run id, sent to clients in resource:start and echoed back in resource:ready.
     // A ready that belongs to an earlier run (e.g. a quick restart) is then recognised and dropped, instead of making scripts spawn for it
     namespace {
         std::mutex run_id_mutex;
@@ -209,13 +209,13 @@ namespace Vital::Manager {
                     if (!Internal::is_running(name)) return;
                     const Manifest* resource = Internal::get_resource(name);
                     if (!resource) return;
-                    packet = Internal::build_packet("resource:started", name, resource);
+                    packet = Internal::build_packet("resource:start", name, resource);
                 }
                 Manager::Network::get_singleton() -> broadcast(std::move(packet));
-                Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
+                Manager::Sandbox::get_singleton() -> signal("resource:start", Tool::StackValue(name));
             });
         #else
-            Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
+            Manager::Sandbox::get_singleton() -> signal("resource:start", Tool::StackValue(name));
             Tool::Stack ready = Tool::Stack::make_packet(Resource::Name, {
                 Tool::StackValue(std::string("resource:ready")),
                 Tool::StackValue(name)
@@ -588,11 +588,11 @@ namespace Vital::Manager {
 
         #if !defined(VSDK_Client)
             Engine::Core::get_singleton() -> enqueue([name]() {
-                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:stopped", name));
-                Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
+                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:stop", name));
+                Manager::Sandbox::get_singleton() -> signal("resource:stop", Tool::StackValue(name));
             });
         #else
-            if (was_running) Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
+            if (was_running) Manager::Sandbox::get_singleton() -> signal("resource:stop", Tool::StackValue(name));
         #endif
         return true;
     }
@@ -827,7 +827,7 @@ namespace Vital::Manager {
 
                 const std::string message = arguments.array[0].as<std::string>();
                 const std::string name = arguments.object.at("name").as<std::string>();
-                if (message == "resource:started") {
+                if (message == "resource:start") {
                     auto rm = Resource::get_singleton();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
@@ -851,7 +851,7 @@ namespace Vital::Manager {
                         Internal::register_resource(name, scripts, files, models, dependencies);
                     });
                 }
-                else if (message == "resource:stopped") {
+                else if (message == "resource:stop") {
                     auto rm = Resource::get_singleton();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
@@ -874,7 +874,7 @@ namespace Vital::Manager {
                 rm -> log("sbox", fmt::format("bootstrap complete — {} resource(s) started", count));
             });
     
-            Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
+            Tool::Event::bind("peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
@@ -893,7 +893,7 @@ namespace Vital::Manager {
                         Resource::get_singleton() -> log("sbox", fmt::format("ignored stale ready for `{}` from peer {} (older run)", resource_name, sender));
                         return;
                     }
-                    Manager::Sandbox::get_singleton() -> signal("peer:resource:started", Tool::StackValue(sender), Tool::StackValue(resource_name));
+                    Manager::Sandbox::get_singleton() -> signal("peer:resource:start", Tool::StackValue(sender), Tool::StackValue(resource_name));
                 }
             });
         #endif
@@ -906,7 +906,7 @@ namespace Vital::Manager {
         for (const auto& name : resource_order) {
             auto resource = Internal::get_resource(name);
             if (!resource) continue;
-            Manager::Network::get_singleton() -> send(Internal::build_packet("resource:started", name, resource), peer_id);
+            Manager::Network::get_singleton() -> send(Internal::build_packet("resource:start", name, resource), peer_id);
         }
     }
     #endif

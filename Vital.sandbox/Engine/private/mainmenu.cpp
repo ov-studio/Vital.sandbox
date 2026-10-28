@@ -524,7 +524,7 @@ namespace Vital::Engine {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
 
-        for (const char* name : { "network:connect", "network:connect:success", "network:connect:failed", "network:disconnect", "network:server:disconnect" }) {
+        for (const char* name : { "network:connect", "network:connect:success", "network:connect:fail", "network:disconnect", "network:server:disconnect" }) {
             Tool::Event::bind(name, [this](Tool::Stack) { send_connection(); });
         }
 
@@ -991,7 +991,7 @@ namespace Vital::Engine {
             }
         }
         if (old_name == new_name) return;
-        Manager::Sandbox::get_singleton() -> signal("peer:nickname:changed", Tool::StackValue(old_name), Tool::StackValue(new_name));
+        Manager::Sandbox::get_singleton() -> signal("peer:nickname:change", Tool::StackValue(old_name), Tool::StackValue(new_name));
     }
 
 

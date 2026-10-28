@@ -157,7 +157,7 @@ namespace Vital::Engine {
                 }
                 Engine::Core::get_singleton() -> add_child(object);
                 // Register immediately so get_entity_by_net_id() works inside
-                // the entity:created Lua handler fired by "entity:spawned".
+                // the entity:create Lua handler fired by "entity:spawn".
                 // register_syncable() is idempotent, so poll() will skip it.
                 auto net_mgr = Manager::Network::get_singleton();
                 net_mgr -> register_syncable(object);
@@ -170,7 +170,7 @@ namespace Vital::Engine {
                     object->delta_last_rot = init_rot;
                 }
                 net_mgr -> replay_pending_syncs(object);
-                Tool::Event::emit("entity:spawned", Tool::Stack({object, true}));
+                Tool::Event::emit("entity:spawn", Tool::Stack({object, true}));
                 godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
@@ -215,7 +215,7 @@ namespace Vital::Engine {
                     entity -> sync_authority = authority;
                     entity -> reset_sync_state();
                     // Register immediately so get_entity_by_net_id() works inside
-                    // the entity:created Lua handler fired by "entity:spawned".
+                    // the entity:create Lua handler fired by "entity:spawn".
                     // register_syncable() is idempotent, so poll() will skip it.
                     auto net_mgr = Manager::Network::get_singleton();
                     net_mgr -> register_syncable(entity);
@@ -232,7 +232,7 @@ namespace Vital::Engine {
                     }
                     net_mgr -> replay_pending_syncs(entity);
                     godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
-                    Tool::Event::emit("entity:spawned", Tool::Stack({entity, (int32_t)sub_type, true}));
+                    Tool::Event::emit("entity:spawn", Tool::Stack({entity, (int32_t)sub_type, true}));
                 }
                 break;
             }
@@ -314,8 +314,8 @@ namespace Vital::Engine {
         wheel->set_rotation(rotation);
         vehicle->add_child(wheel);
         godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_id=", wheel_id);
-        // Same as remote collision shapes: lets the API layer create the Lua instance, which fires entity:created
-        Tool::Event::emit("entity:spawned", Tool::Stack({wheel, true}));
+        // Same as remote collision shapes: lets the API layer create the Lua instance, which fires entity:create
+        Tool::Event::emit("entity:spawn", Tool::Stack({wheel, true}));
         #endif
     }
 
@@ -714,7 +714,7 @@ namespace Vital::Engine {
         if (!col) {
             col = memnew(Engine::Collision_Shape);
             node -> add_child(col);
-            Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
+            Tool::Event::emit("entity:spawn", Tool::Stack({col, true}));
         }
 
         // FIXED: now routes through Collision_Shape::assign_shape(), which sets
@@ -816,7 +816,7 @@ namespace Vital::Engine {
                 // the town floor while everyone already connected was fine.
                 auto* child = memnew(Engine::Collision_Shape);
                 node -> add_child(child);
-                Tool::Event::emit("entity:spawned", Tool::Stack({child, true}));
+                Tool::Event::emit("entity:spawn", Tool::Stack({child, true}));
                 child -> set_disabled(false);
                 child -> assign_shape(shape);
                 godot::Basis basis = godot::Basis::from_euler(
@@ -920,7 +920,7 @@ namespace Vital::Engine {
             if (!col) {
                 col = memnew(Engine::Collision_Shape);
                 body_node -> add_child(col);
-                Tool::Event::emit("entity:spawned", Tool::Stack({col, true}));
+                Tool::Event::emit("entity:spawn", Tool::Stack({col, true}));
             }
             // Clear any previous per-mesh shapes. They may live under the anchor
             // (old hierarchy) or directly under the physics body (new hierarchy).
@@ -968,7 +968,7 @@ namespace Vital::Engine {
                 // stays put) while making the shape a proper direct contributor.
                 auto* dest = memnew(Engine::Collision_Shape);
                 body_node -> add_child(dest);
-                Tool::Event::emit("entity:spawned", Tool::Stack({dest, true}));
+                Tool::Event::emit("entity:spawn", Tool::Stack({dest, true}));
                 // Force shape-owner registration: enable, assign, transform, then
                 // toggle disabled so Godot re-binds the shape to the StaticBody
                 // even when everything is applied in the same tick as add_child.

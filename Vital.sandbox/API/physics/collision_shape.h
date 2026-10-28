@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
             API::Node_3D::init<Instance, API::Node_3D::Type::Spatial>(vm);
 
             static Tool::Event::Handle spawned_binding;
-            spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
+            spawned_binding.bind("entity:spawn", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 auto entity = args.array[0].as_raw_ptr<base_class>();
@@ -105,7 +105,7 @@ namespace Vital::Sandbox::API {
             });
 
             static Tool::Event::Handle unspawned_binding;
-            unspawned_binding.bind("entity:unspawned", [](Tool::Stack args) {
+            unspawned_binding.bind("entity:unspawn", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<base_class>()) return;
                 

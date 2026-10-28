@@ -34,7 +34,7 @@ void setup() {
     Vital::Tool::Event::bind("network:connect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Connecting...");
     });
-    Vital::Tool::Event::bind("network:connect:failed", [](Vital::Tool::Stack) {
+    Vital::Tool::Event::bind("network:connect:fail", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
     Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
@@ -44,11 +44,11 @@ void setup() {
     Vital::Tool::Event::bind("network:host", [](Vital::Tool::Stack) {
         Vital::Manager::Masterlist::get_singleton() -> start(Vital::Engine::Core::get_singleton() -> get_server_config());
     });
-    Vital::Tool::Event::bind("network:peer:join", [](Vital::Tool::Stack arguments) {
+    Vital::Tool::Event::bind("peer:join", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
         Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
-    Vital::Tool::Event::bind("network:peer:leave", [](Vital::Tool::Stack arguments) {
+    Vital::Tool::Event::bind("peer:leave", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player left: ", arguments.array[0].as<int32_t>());
         Vital::Manager::Masterlist::get_singleton() -> refresh();
     });

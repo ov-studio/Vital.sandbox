@@ -64,7 +64,7 @@ namespace Vital::Engine {
         if (emit_handler) emit_handler();
     }
 
-    // Every particle of a one-shot cycle is gone: fires "particle:finished"
+    // Every particle of a one-shot cycle is gone: fires "particle:finish"
     void GPU_Particles::notify_finished() {
         if (finished_handler) finished_handler();
     }

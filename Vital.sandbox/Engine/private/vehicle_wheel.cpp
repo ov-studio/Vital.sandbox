@@ -74,7 +74,7 @@ namespace Vital::Engine {
             if (debug_all && !debug_visible) set_debug_visible(true);
         }
         #endif
-        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
+        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
     }
 
     #if defined(VSDK_Client)
@@ -91,7 +91,7 @@ namespace Vital::Engine {
         else Engine::Core::get_singleton() -> add_child(wheel);
         if (auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(body)) wheel -> set_brake(vehicle -> get_brake());
         wheel -> sync_inputs();
-        Tool::Event::emit("entity:spawned", Tool::Stack({wheel, false}));
+        Tool::Event::emit("entity:spawn", Tool::Stack({wheel, false}));
         return wheel;
     }
 

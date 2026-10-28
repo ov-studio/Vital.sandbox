@@ -79,7 +79,7 @@ namespace Vital::Engine {
             static void set_mouse_vertical_senstivity(float mult);
 
             // Player nickname chosen in the main menu; empty falls back to the OS username.
-            // set_nickname signals "nickname:change" (old_nickname, new_nickname) once the value actually changes.
+            // set_nickname signals "peer:nickname:change" (old_nickname, new_nickname) once the value actually changes.
             static std::string get_nickname();
             static void set_nickname(const std::string& value);
 

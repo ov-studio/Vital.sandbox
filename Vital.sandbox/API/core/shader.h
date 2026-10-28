@@ -246,9 +246,9 @@ namespace Vital::Sandbox::API {
         }
 
         static void init(Machine* vm) {
-            // Hook entity:spawned so every new model gets the assignments that cover it
+            // Hook entity:spawn so every new model gets the assignments that cover it
             static Tool::Event::Handle spawned_binding;
-            spawned_binding.bind("entity:spawned", [](Tool::Stack args) {
+            spawned_binding.bind("entity:spawn", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_raw_ptr<Vital::Engine::Model>()) return;
                 auto entity = args.array[0].as_raw_ptr<Vital::Engine::Model>();

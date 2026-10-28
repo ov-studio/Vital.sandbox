@@ -211,7 +211,7 @@ namespace Vital::Sandbox {
                     instance -> set_reference(instance -> self_reference(), -1);
                     if (!push_to_stack) calling_vm -> pop(1);
                 }
-                Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
+                Manager::Sandbox::get_singleton() -> signal("entity:create", Tool::StackValue(instance));
                 return true;
             }
 
@@ -223,7 +223,7 @@ namespace Vital::Sandbox {
             static bool erase_unlocked(const std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
-                Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
+                Manager::Sandbox::get_singleton() -> signal("entity:destroy", Tool::StackValue(instance));
                 {
                     auto node_3d = instance -> get_node_3d();
                     if (node_3d) {

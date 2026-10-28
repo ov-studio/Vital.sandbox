@@ -140,7 +140,7 @@ namespace Vital::Engine {
             }
 
             void _notify_predelete_sync() {
-                Tool::Event::emit("entity:unspawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type()}));
+                Tool::Event::emit("entity:unspawn", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type()}));
                 Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }
@@ -165,11 +165,11 @@ namespace Vital::Engine {
                         Manager::Network::rpc(false, "_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
                         self -> flush_pending_shape_broadcast();
                         self -> flush_pending_force_transform();
-                        Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
+                        Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
                     });
                 #else
                     Core::get_singleton() -> add_child(this);
-                    Tool::Event::emit("entity:spawned", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
+                    Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
                 #endif
             }
 

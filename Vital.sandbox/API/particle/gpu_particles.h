@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                     };
                 };
                 instance -> particles -> set_emit_handler(wire("particle:emit"));
-                instance -> particles -> set_finished_handler(wire("particle:finished"));
+                instance -> particles -> set_finished_handler(wire("particle:finish"));
                 instance -> store(true);
                 return 1;
             });

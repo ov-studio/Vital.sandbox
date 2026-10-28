@@ -210,7 +210,7 @@ namespace Vital::Engine {
 
     // Hooks //
     void Collision_Shape::_notification(int what) {
-        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawned", Tool::Stack({this}));
+        if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
     }
 
 
@@ -219,7 +219,7 @@ namespace Vital::Engine {
         auto collision = memnew(Collision_Shape);
         if (body) body -> add_child(collision);
         else Engine::Core::get_singleton() -> add_child(collision);
-        Tool::Event::emit("entity:spawned", Tool::Stack({collision, false}));
+        Tool::Event::emit("entity:spawn", Tool::Stack({collision, false}));
         return collision;
     }
 
