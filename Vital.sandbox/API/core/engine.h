@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/syncable.h>
 #include <Vital.sandbox/API/utility/file.h>
 
@@ -96,6 +97,15 @@ namespace Vital::Sandbox::API {
             
             API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_username", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(os_username = false)")
+                    .optional(1, &Machine::is_bool);
+
+                auto os_username = vm -> is_bool(1) ? vm -> get_bool(1) : false;
+                vm -> push_value(os_username ? Vital::Tool::get_username() : Vital::Engine::MainMenu::get_nickname());
                 return 1;
             });
             #endif
