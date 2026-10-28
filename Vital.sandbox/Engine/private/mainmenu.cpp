@@ -48,6 +48,7 @@ namespace Vital::Engine {
             rapidjson::Document doc;
             doc.SetObject();
             auto& a = doc.GetAllocator();
+            doc.AddMember("nickname", "", a);
             doc.AddMember("resolution", "1600x900", a);
             doc.AddMember("window_mode", "borderless", a);
             doc.AddMember("vsync", true, a);
