@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Tool/http.h>
@@ -35,6 +36,9 @@ namespace Vital::Engine {
     std::atomic<float> MainMenu::particle_distance { 1.0f };
     std::atomic<float> MainMenu::mouse_horizontal_senstivity { 1.0f };
     std::atomic<float> MainMenu::mouse_vertical_senstivity { 1.0f };
+    std::string MainMenu::nickname;
+    std::mutex MainMenu::nickname_mutex;
+    bool MainMenu::nickname_loaded = false;
 
     namespace {
         // TODO: Move to internal namespace like resource
@@ -220,6 +224,9 @@ namespace Vital::Engine {
                 }
             }
 
+            if (settings.HasMember("nickname") && settings["nickname"].IsString()) {
+                MainMenu::set_nickname(settings["nickname"].GetString());
+            }
             if (settings.HasMember("mouse_horizontal_senstivity") && settings["mouse_horizontal_senstivity"].IsNumber()) {
                 MainMenu::set_mouse_horizontal_senstivity(static_cast<float>(settings["mouse_horizontal_senstivity"].GetDouble()));
             }
@@ -962,6 +969,29 @@ namespace Vital::Engine {
 
     void MainMenu::set_mouse_vertical_senstivity(float mult) {
         mouse_vertical_senstivity.store(std::clamp(mult, 0.01f, 2.0f));
+    }
+
+    std::string MainMenu::get_nickname() {
+        std::lock_guard lock(nickname_mutex);
+        return nickname.empty() ? Tool::get_username() : nickname;
+    }
+
+    void MainMenu::set_nickname(const std::string& value) {
+        const auto first = value.find_first_not_of(" \t\r\n");
+        const auto trimmed = first == std::string::npos ? std::string() : value.substr(first, value.find_last_not_of(" \t\r\n") - first + 1);
+        std::string old_name, new_name;
+        {
+            std::lock_guard lock(nickname_mutex);
+            old_name = nickname.empty() ? Tool::get_username() : nickname;
+            nickname = trimmed;
+            new_name = nickname.empty() ? Tool::get_username() : nickname;
+            if (!nickname_loaded) {
+                nickname_loaded = true;
+                return;
+            }
+        }
+        if (old_name == new_name) return;
+        Manager::Sandbox::get_singleton() -> signal("peer:nickname:changed", Tool::StackValue(old_name), Tool::StackValue(new_name));
     }
 
 

@@ -33,6 +33,9 @@ namespace Vital::Engine {
             static std::atomic<float> particle_distance;
             static std::atomic<float> mouse_horizontal_senstivity;
             static std::atomic<float> mouse_vertical_senstivity;
+            static std::string nickname;
+            static std::mutex nickname_mutex;
+            static bool nickname_loaded;
             std::atomic<bool> scan_running { false };
             std::atomic<bool> masterlist_running { false };
 
@@ -74,6 +77,11 @@ namespace Vital::Engine {
             static void set_mouse_horizontal_senstivity(float mult);
             static float get_mouse_vertical_senstivity();
             static void set_mouse_vertical_senstivity(float mult);
+
+            // Player nickname chosen in the main menu; empty falls back to the OS username.
+            // set_nickname signals "nickname:change" (old_nickname, new_nickname) once the value actually changes.
+            static std::string get_nickname();
+            static void set_nickname(const std::string& value);
 
 
             // Events //
