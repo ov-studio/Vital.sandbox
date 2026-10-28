@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_username", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_nickname", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(os_username = false)")
                     .optional(1, &Machine::is_bool);
 
