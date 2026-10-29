@@ -54,7 +54,7 @@ namespace Vital::Manager {
         }
         catch (const std::exception& e) {
             if (std::string(e.what()).find("409") != std::string::npos) {
-                log("warn", "masterlist token already in use — another server is already listed with this token, this server will not be listed");
+                log("warn", "masterlist token already in use by another running server — not listing this server (each server needs its own token)");
                 halt();
                 return false;
             }
