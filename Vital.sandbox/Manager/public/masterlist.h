@@ -41,8 +41,9 @@ namespace Vital::Manager {
 
 
             // Helpers //
-            void send_heartbeat() const;
+            bool send_heartbeat();
             void send_offline() const;
+            void halt();
         public:
             // Managers //
             bool is_active() const;

@@ -27,9 +27,9 @@
 
 namespace Vital::Manager {
     // Helpers //
-    void Masterlist::send_heartbeat() const {
-        if (!server_config) return;
-        auto nm = Network::get_singleton();
+    bool Masterlist::send_heartbeat() {
+        if (!server_config) return false;
+        auto nm = Manager::Network::get_singleton();
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
@@ -52,8 +52,16 @@ namespace Vital::Manager {
                 log("warn", fmt::format("unknown server tags ignored — {} (valid tags: https://vital-sandbox.com/docs/server/config#server)", ignored));
             }
         }
-        catch (const std::exception& e) { log("warn", fmt::format("heartbeat failed — {}", e.what())); }
+        catch (const std::exception& e) {
+            if (std::string(e.what()).find("409") != std::string::npos) {
+                log("warn", "masterlist token already in use — another server is already listed with this token, this server will not be listed");
+                halt();
+                return false;
+            }
+            log("warn", fmt::format("heartbeat failed — {}", e.what()));
+        }
         catch (...) { log("warn", "heartbeat failed — unknown error"); }
+        return true;
     }
 
     void Masterlist::send_offline() const {
@@ -61,7 +69,11 @@ namespace Vital::Manager {
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
+        auto nm = Manager::Network::get_singleton();
         document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
+        document.AddMember(rapidjson::StringRef("ip"), rapidjson::Value(nm -> get_server_ip().c_str(), alloc), alloc);
+        document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(server_config -> get_network_port()), alloc);
+        
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.Accept(writer);
@@ -85,13 +97,29 @@ namespace Vital::Manager {
 
         server_config = &config;
         state = true;
-        send_heartbeat();
+        if (!send_heartbeat()) return;
         auto interval = Manager::Kit::get_singleton() -> get_json_value("config/masterlist", "interval").as<int32_t>();
         if (interval <= 0) interval = 300 * 1000;
         heartbeat_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             Engine::Core::get_singleton() -> execute([this]() { send_heartbeat(); });
         }, interval, 0);
         log("sbox", fmt::format("reporting to masterlist every {}s", interval / 1000));
+    }
+
+    void Masterlist::halt() {
+        if (heartbeat_timer) {
+            heartbeat_timer -> stop();
+            heartbeat_timer = nullptr;
+        }
+        {
+            std::lock_guard<std::mutex> lock(debounce_mutex);
+            if (debounce_timer) {
+                debounce_timer -> stop();
+                debounce_timer = nullptr;
+            }
+        }
+        state = false;
+        server_config = nullptr;
     }
 
     void Masterlist::stop() {
