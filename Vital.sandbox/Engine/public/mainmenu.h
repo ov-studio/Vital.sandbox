@@ -57,7 +57,7 @@ namespace Vital::Engine {
             void apply_update();
             void scan_local_servers();
             void fetch_masterlist();
-            void send_connection();
+            void send_connection(const std::string& failure = "", const std::string& ip = "", int port = 0);
             void show();
             void hide();
             void toggle();
