@@ -294,7 +294,8 @@ namespace Vital::Manager {
 
             // Authentication //
             // Runs through SceneMultiplayer's auth step: a peer can only exchange auth packets (no RPCs) until the server accepts it.
-            static constexpr uint8_t AUTH_VERSION = 1;
+            // Auth packet: [AUTH_VERSION:u8][sdk major:u8][fingerprint]. Bumped to 2 when the sdk major byte was added.
+            static constexpr uint8_t AUTH_VERSION = 2;
             static constexpr int AUTH_MAX_PAYLOAD = 512;
             static constexpr int AUTH_MAX_FINGERPRINT = 256;
             static constexpr double AUTH_TIMEOUT = 5.0;

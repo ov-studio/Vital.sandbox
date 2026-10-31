@@ -464,6 +464,7 @@ namespace Vital::Manager {
         const std::string fingerprint = Tool::Inspect::fingerprint();
         godot::PackedByteArray payload;
         payload.push_back(AUTH_VERSION);
+        payload.push_back(static_cast<uint8_t>(std::min(Vital::Tool::Version::SDK.get_major(), 255)));
         for (const char c : fingerprint) payload.push_back(static_cast<uint8_t>(c));
         if (sm->send_auth(id, payload) != godot::OK) { log("error", "failed to send authentication data"); return; }
         sm->complete_auth(id);
@@ -472,15 +473,16 @@ namespace Vital::Manager {
     // The server never sends authentication data - nothing to process on the client
     void Network::_on_auth_data(int id, const godot::PackedByteArray& data) {}
     #else
-    // Server: strict, bounded format - [version:u8][fingerprint: printable ASCII, 1..AUTH_MAX_FINGERPRINT bytes]
-    static bool parse_auth_payload(const godot::PackedByteArray& data, std::string& fingerprint) {
+    // Server: strict, bounded format - [version:u8][sdk major:u8][fingerprint: printable ASCII, 1..AUTH_MAX_FINGERPRINT bytes]
+    static bool parse_auth_payload(const godot::PackedByteArray& data, int& client_major, std::string& fingerprint) {
         const int size = data.size();
-        if (size < 2 || size > Network::AUTH_MAX_PAYLOAD || size - 1 > Network::AUTH_MAX_FINGERPRINT) return false;
+        if (size < 3 || size > Network::AUTH_MAX_PAYLOAD || size - 2 > Network::AUTH_MAX_FINGERPRINT) return false;
         const uint8_t* bytes = data.ptr();
         if (bytes[0] != Network::AUTH_VERSION) return false;
+        client_major = bytes[1];
         fingerprint.clear();
-        fingerprint.reserve(static_cast<size_t>(size - 1));
-        for (int i = 1; i < size; ++i) {
+        fingerprint.reserve(static_cast<size_t>(size - 2));
+        for (int i = 2; i < size; ++i) {
             if (bytes[i] < 0x21 || bytes[i] > 0x7E) return false;
             fingerprint.push_back(static_cast<char>(bytes[i]));
         }
@@ -491,8 +493,22 @@ namespace Vital::Manager {
         auto sm = get_scene_multiplayer();
         if (!sm) return;
         std::string fingerprint;
-        if (id <= 0 || !parse_auth_payload(data, fingerprint)) {
+        int client_major = -1;
+        // A client on an older/newer build speaks a different auth packet layout: say so instead of "malformed data"
+        if (id > 0 && data.size() > 0 && data[0] != AUTH_VERSION) {
+            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client auth protocol {}, server {} - sdk {})", id, static_cast<int>(data[0]), static_cast<int>(AUTH_VERSION), Vital::Tool::Version::SDK.to_string()));
+            sm->disconnect_peer(id);
+            return;
+        }
+        if (id <= 0 || !parse_auth_payload(data, client_major, fingerprint)) {
             log("warn", fmt::format("authentication rejected <- peer {} (malformed data)", id));
+            sm->disconnect_peer(id);
+            return;
+        }
+        // Server-side backstop for the client's HTTP /info pre-check, which fails open when the HTTP port is unreachable
+        const int server_major = std::min(Vital::Tool::Version::SDK.get_major(), 255);
+        if (client_major != server_major) {
+            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client sdk major {}, server sdk {})", id, client_major, Vital::Tool::Version::SDK.to_string()));
             sm->disconnect_peer(id);
             return;
         }
