@@ -90,27 +90,29 @@ namespace Vital::Config {
                 for (const auto& tag : get_server_tags()) tags += fmt::format("{}{}", tags.empty() ? "" : ", ", tag);
                 append_field(oss, "Tags", tags);
 
-                oss << "• Network:\n";
-                append_field(oss, "Port", std::to_string(get_network_port()));
-                append_field(oss, "HTTP Port", std::to_string(get_http_port()));
-                append_field(oss, "Max Peers", std::to_string(get_max_peers()));
-                append_field(oss, "Auth Rate Limit", get_auth_rate_max() > 0 ? fmt::format("{} per {}s per IP", get_auth_rate_max(), get_auth_rate_window()) : std::string("off"));
-                append_field(oss, "Sync Rate", fmt::format("{} Hz", get_sync_rate()));
-                append_field(oss, "Physics Tick Rate", fmt::format("{} Hz", get_physics_tick_rate()));
-
-                oss << "• Sync:\n";
-                append_field(oss, "Buffer Delay Max", fmt::format("{:.0f}ms", get_sync_buffer_delay_max() * 1000.0f));
-                append_field(oss, "Jitter Margin",    fmt::format("{:.2f}x", get_sync_jitter_margin()));
-                append_field(oss, "Snap Threshold",   fmt::format("{:.1f}u", get_sync_snap_threshold()));
-
                 oss << "• Social:\n";
                 append_field(oss, "Website", get_website());
                 append_field(oss, "Discord", get_discord());
+
+                oss << "• Network:\n";
+                append_field(oss, "Port", std::to_string(get_network_port()));
+                append_field(oss, "Max Peers", std::to_string(get_max_peers()));
+                append_field(oss, "Auth Rate Limit", get_auth_rate_max() > 0 ? fmt::format("{} per {}s per IP", get_auth_rate_max(), get_auth_rate_window()) : std::string("off"));
+                append_field(oss, "Physics Tick Rate", fmt::format("{} Hz", get_physics_tick_rate()));
+
+                oss << "• HTTP:\n";
+                append_field(oss, "Port", std::to_string(get_http_port()));
+
+                oss << "• Sync:\n";
+                append_field(oss, "Rate", fmt::format("{} Hz", get_sync_rate()));
+                append_field(oss, "Buffer Delay Max", fmt::format("{:.0f}ms", get_sync_buffer_delay_max() * 1000.0f));
+                append_field(oss, "Jitter Margin",    fmt::format("{:.2f}x", get_sync_jitter_margin()));
+                append_field(oss, "Snap Threshold",   fmt::format("{:.1f}u", get_sync_snap_threshold()));
                 return oss.str();
             }
 
 
-            // Identity //
+            // Server //
             std::string get_server_name() const { return get_str("server", "name", "Vital.sandbox Server"); }
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
@@ -130,13 +132,21 @@ namespace Vital::Config {
             }
 
 
+            // Social //
+            std::string get_discord() const { return get_str("social", "discord", ""); }
+            std::string get_website() const { return get_str("social", "website", ""); }
+
+
             // Network //
             int get_network_port() const { return get_int("network", "port", 7777); }
-            int get_http_port() const { return get_int("http", "port", 7778); }
             int get_max_peers() const { return get_int("network", "max_peers", 32); }
             int get_auth_rate_max() const { return std::clamp(get_int("network", "auth_rate_max", 6), 0, 1000); }
             int get_auth_rate_window() const { return std::clamp(get_int("network", "auth_rate_window", 10), 1, 3600); }
             int get_physics_tick_rate() const { return std::clamp(get_int("network", "physics_tick_rate", 60), 1, 120); }
+
+
+            // HTTP //
+            int get_http_port() const { return get_int("http", "port", 7778); }
 
 
             // Sync //
@@ -144,6 +154,12 @@ namespace Vital::Config {
             float get_sync_buffer_delay_max() const { return std::clamp(get_float("sync", "buffer_delay_max", 0.30f), 0.05f, 1.0f); }
             float get_sync_jitter_margin() const { return std::clamp(get_float("sync", "jitter_margin", 1.5f), 0.5f, 5.0f); }
             float get_sync_snap_threshold() const { return std::clamp(get_float("sync", "snap_threshold", 5.0f), 0.5f, 100.0f); }
+
+
+            // Masterlist //
+            bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
+            std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
+            std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://api.vital-sandbox.com/masterlist"); }
 
 
             // Bootstrap //
@@ -160,17 +176,6 @@ namespace Vital::Config {
                 return result;
             }
 
-
-            // Social //
-            std::string get_discord() const { return get_str("social", "discord", ""); }
-            std::string get_website() const { return get_str("social", "website", ""); }
-
-
-            // Masterlist //
-            bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
-            std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
-            std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://api.vital-sandbox.com/masterlist"); }
-
             
             // Shared public identity — used by /info and masterlist heartbeat
             // so both endpoints expose the same fields without duplicated builders.
@@ -184,13 +189,13 @@ namespace Vital::Config {
                 for (const auto& tag : get_server_tags()) tags.PushBack(rapidjson::Value(tag.c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("tags"), tags, alloc);
 
+                obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
+                obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
+
                 obj.AddMember(rapidjson::StringRef("sdk_version"), rapidjson::Value(Vital::Tool::Version::SDK.to_string().c_str(), alloc), alloc);
                 obj.AddMember(rapidjson::StringRef("port"), rapidjson::Value(get_network_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(get_http_port()), alloc);
                 obj.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(get_max_peers()), alloc);
-
-                obj.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(get_discord().c_str(), alloc), alloc);
-                obj.AddMember(rapidjson::StringRef("website"), rapidjson::Value(get_website().c_str(), alloc), alloc);
             }
     };
 }

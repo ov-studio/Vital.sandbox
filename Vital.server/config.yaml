@@ -18,6 +18,12 @@ server:
   tags: []
 
 
+# Social
+social:
+  discord: ""
+  website: ""
+
+
 # Network
 network:
   # TCP port for ENet multiplayer. Default: 7777
@@ -72,20 +78,14 @@ sync:
   snap_threshold: 5.0
 
 
-# Bootstrapper
-bootstrap:
-  # Resources auto-started after scan, in order.
-  #- "runcode"
-
-
-# Socials
-social:
-  discord: ""
-  website: ""
-
-
 # Masterlist
 masterlist:
   enabled: false
   token: ""
   url: "https://api.vital-sandbox.com/masterlist"
+
+
+# Bootstrapper
+bootstrap:
+  # Resources auto-started after scan, in order.
+  #- "runcode"
