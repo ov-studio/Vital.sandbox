@@ -26,11 +26,6 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    // GLTFState::HANDLE_BINARY_DISCARD_TEXTURES - drop embedded textures and use untextured materials.
-    // Used by the server only (see Model::load_from_buffer).
-    inline constexpr int GLTF_DISCARD_TEXTURES = 0;
-
-
     //------------------//
     //  Hooks / Notify  //
     //------------------//
@@ -241,10 +236,11 @@ namespace Vital::Engine {
                 // The server never renders: skip decoding the embedded textures, the bulk of a model's RAM.
                 // Meshes, skeleton, animations and material names/flags are all kept, so server-side checks
                 // (components, bones, animations, collision shapes) behave exactly as before.
-                state->set_handle_binary_image(GLTF_DISCARD_TEXTURES);
+                // Set through the property (handle_binary_image_mode) rather than the deprecated
+                // set_handle_binary_image() alias, so it keeps working when the alias is removed.
+                state->set("handle_binary_image_mode", 0);
                 #endif
-                if (document->append_from_buffer(buffer, "", state) != godot::OK)
-                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid model buffer");
+                if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid model buffer");
                 godot::Node* root = document->generate_scene(state);
                 if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate scene");
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
