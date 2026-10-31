@@ -111,6 +111,15 @@ namespace Vital::Manager {
                 int count = 0; 
             };
             std::unordered_map<std::string, AuthRate> auth_rate;
+
+            // Throttle for the anticheat:* signals (see report_violation): per peer, category and reason, so a flood of bad packets reaches scripts as a few counted signals
+            struct ViolationRate {
+                std::chrono::steady_clock::time_point last_emit;
+                int pending = 0;
+                bool emitted = false;
+            };
+            std::map<std::tuple<int, std::string, std::string>, ViolationRate> violation_rate;
+            std::mutex violation_mutex;
             
             const Config::Server* server_config = nullptr;
             std::string server_ip;
@@ -283,6 +292,9 @@ namespace Vital::Manager {
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
             void disconnect_peer(int peer_id);
+            // Tells server scripts that a peer sent something it is not allowed to, as the signal anticheat:<category> (peer, reason, net_id, count).
+            // Thread-safe. Never kicks by itself: scripts decide what to do.
+            void report_violation(int peer_id, const std::string& category, const std::string& reason, uint32_t net_id = 0);
             bool is_peer_valid(int peer_id) const;             // true if peer_id is an authenticated and admitted peer
             void assert_peer(int peer_id) const; // throws 'request-failed' (Lua-catchable) if peer_id is not valid
             std::string get_peer_serial(int peer_id) const;

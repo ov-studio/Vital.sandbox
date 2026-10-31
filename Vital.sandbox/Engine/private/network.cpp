@@ -400,6 +400,7 @@ namespace Vital::Engine {
         if (sender != 0 && sender != entity->get_sync_authority()) {
             godot::UtilityFunctions::push_warning("_sync_anim_layer: rejected — sender ", sender,
                 " is not the sync authority for net_id=", net_id);
+            mgr->report_violation(sender, "animation", "unauthorized", (uint32_t)net_id);
             return;
         }
         Manager::Network::rpc(false, "_sync_anim_layer", net_id, layer, mode, name, loop, speed, weight, blend_time);
@@ -452,6 +453,7 @@ namespace Vital::Engine {
         if (sender != 0 && sender != entity->get_sync_authority()) {
             godot::UtilityFunctions::push_warning("_sync_anim_layer_filter: rejected — sender ", sender,
                 " is not the sync authority for net_id=", net_id);
+            mgr->report_violation(sender, "animation", "unauthorized", (uint32_t)net_id);
             return;
         }
         // Persist on server model state if present (for late-join dump).
@@ -567,6 +569,7 @@ namespace Vital::Engine {
         if (sender != 0 && sender != entity->get_sync_authority()) {
             godot::UtilityFunctions::push_warning("_sync_component_transform: rejected — sender ", sender,
                 " is not the sync authority for net_id=", net_id);
+            mgr->report_violation(sender, "component", "unauthorized", (uint32_t)net_id);
             return;
         }
         auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
@@ -606,11 +609,13 @@ namespace Vital::Engine {
         if (sender != 0 && sender != entity->get_sync_authority()) {
             godot::UtilityFunctions::push_warning("_sync_dimension: rejected — sender ", sender,
                 " is not the sync authority for net_id=", net_id);
+            mgr->report_violation(sender, "dimension", "unauthorized", (uint32_t)net_id);
             return;
         }
         if (sender != 0 && !Engine::Dimension::is_valid(dimension)) {
             godot::UtilityFunctions::push_warning("_sync_dimension: rejected — dimension ", dimension, " is outside 0-", Engine::Dimension::LIMIT,
                 " from sender ", sender, " for net_id=", net_id);
+            mgr->report_violation(sender, "dimension", "invalid", (uint32_t)net_id);
             return;
         }
         auto node = godot::Object::cast_to<godot::Node>(dynamic_cast<godot::Object*>(entity));
@@ -618,6 +623,7 @@ namespace Vital::Engine {
         if (sender != 0 && Engine::Dimension::is_attached(node)) {
             godot::UtilityFunctions::push_warning("_sync_dimension: rejected — net_id=", net_id,
                 " is attached to a parent and follows its dimension");
+            mgr->report_violation(sender, "dimension", "attached", (uint32_t)net_id);
             return;
         }
         Engine::Dimension::set(node, dimension);

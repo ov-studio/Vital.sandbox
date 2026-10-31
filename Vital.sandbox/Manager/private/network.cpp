@@ -1284,7 +1284,7 @@ namespace Vital::Manager {
         #if !defined(VSDK_Client)
         if (data.size() < 12) return;
         if (connected_peers.find(sender) == connected_peers.end()) return;
-        if ((int)Engine::ISyncable::read_u32(data, 0) != sender) return; // anti-spoof
+        if ((int)Engine::ISyncable::read_u32(data, 0) != sender) { report_violation(sender, "sync", "spoofed"); return; } // anti-spoof
         if (Engine::ISyncable::read_u32(data, 4) != STATE_DUMP_MAGIC) return;
 
         uint32_t payload_bytes = Engine::ISyncable::read_u32(data, 8);
@@ -1320,13 +1320,15 @@ namespace Vital::Manager {
                 // Only the entity's syncer may touch its real delta baseline. Entries from anyone else (and for unknown entities)
                 // are decoded against a throwaway one just to find where the next entry starts, so they can't skew the owner's deltas
                 const bool authorized = model && model->get_sync_authority() == sender;
+                // An entity that exists but belongs to someone else. Unknown ids are not reported: entities can be destroyed while a client's packet is in flight
+                if (model && !authorized) report_violation(sender, "sync", "unauthorized", net_id);
                 int consumed;
                 if (authorized) consumed = model->parse_sync_packet_at(frame, offset, net_id, pos, rot, vel, scale);
                 else {
                     godot::Vector3 dp, dr, dv, ds = godot::Vector3(1,1,1);
                     consumed = Engine::ISyncable::decode_delta(frame, offset, (int)frame.size(), net_id, pos, rot, vel, scale, dp, dr, dv, ds);
                 }
-                if (consumed < 0) break;
+                if (consumed < 0) { report_violation(sender, "sync", "malformed", net_id); break; }
 
                 if (authorized) {
                     if (relay_cursor + consumed > (int)relay.size()) break;
@@ -1860,6 +1862,13 @@ namespace Vital::Manager {
     void Network::_on_peer_disconnected(int id) {
         bool was_admitted = connected_peers.erase(id) > 0;
         peer_serials.erase(id);
+        {
+            std::lock_guard<std::mutex> lock(violation_mutex);
+            for (auto it = violation_rate.begin(); it != violation_rate.end(); ) {
+                if (std::get<0>(it -> first) == id) it = violation_rate.erase(it);
+                else ++it;
+            }
+        }
         log("sbox", fmt::format("peer left -> {}  remaining: {}", id, (int)connected_peers.size()));
 
         // Auto-revoke and peer:leave only apply to peers that were admitted —
@@ -1883,6 +1892,31 @@ namespace Vital::Manager {
             }
             Manager::Sandbox::get_singleton() -> signal("peer:leave", Tool::StackValue((int32_t)id));
         }
+    }
+
+    void Network::report_violation(int peer_id, const std::string& category, const std::string& reason, uint32_t net_id) {
+        if (peer_id <= 0) return;
+        constexpr auto window = std::chrono::seconds(1);
+        int count = 0;
+        {
+            std::lock_guard<std::mutex> lock(violation_mutex);
+            if (violation_rate.size() > 1024) violation_rate.clear(); // peers that left are erased on disconnect, this only bounds a pathological case
+            auto& rate = violation_rate[{ peer_id, category, reason }];
+            const auto now = std::chrono::steady_clock::now();
+            ++rate.pending;
+            // First one goes out immediately, the rest are counted and sent at most once per window
+            if (rate.emitted && now - rate.last_emit < window) return;
+            rate.emitted = true;
+            rate.last_emit = now;
+            count = rate.pending;
+            rate.pending = 0;
+        }
+        log("warn", fmt::format("peer {} anticheat: {}:{} (net_id={}, x{})", peer_id, category, reason, net_id, count));
+        // Always deferred to the core queue: callers sit inside RPC handlers and inside the sync loop (which holds sync_models_mutex),
+        // and a script handler must not run there (it could destroy the entity being processed or take the same lock)
+        Engine::Core::get_singleton() -> enqueue([peer_id, category, reason, net_id, count]() {
+            Manager::Sandbox::get_singleton() -> signal("anticheat:" + category, Tool::StackValue((int32_t)peer_id), Tool::StackValue(reason), Tool::StackValue((int32_t)net_id), Tool::StackValue((int32_t)count));
+        });
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
