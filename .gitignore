@@ -33,3 +33,9 @@ vital.wry/
 *.exp
 *.log
 *.gen.*
+
+# Fetched logos (build.py)
+Vital.client/icon.png
+Vital.client/icon.png.import
+Vital.server/icon.png
+Vital.server/icon.png.import

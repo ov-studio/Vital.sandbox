@@ -11,6 +11,8 @@ SCONS = [sys.executable, "-m", "SCons"]
 sys.path.append("./Vital.sandbox")
 from vital import *
 
+LOGO_URL = "https://vital-sandbox.com/logo/{name}.png"
+
 class Build:
     def __init__(self, script_dir, platform_type, build_type, verbose=False, wry_version=None, godot_version=None):
         self.script_dir = script_dir
@@ -295,6 +297,39 @@ class Build:
         if not copied_any:
             log_info("No resources/ or scripts/ folders found")
 
+    def fetch_logo(self):
+        b = self.init()
+        icon = os.path.join(b["project_dir"], "icon.png")
+        url = LOGO_URL.format(name=self.platform_type.lower())
+        log_info(f"Fetching logo: {url}")
+        try:
+            import urllib.request
+            req = urllib.request.Request(url, headers={"User-Agent": "Vital.sandbox-build"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = r.read()
+            if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+                raise ValueError("response is not a PNG")
+        except Exception as e:
+            if os.path.exists(icon):
+                log_warn(f"Logo fetch failed ({e}) — using existing icon.png")
+                return False
+            log_error(f"Logo fetch failed ({e}) and no icon.png present")
+            sys.exit(1)
+        if os.path.exists(icon) and os.path.exists(icon + ".import"):
+            with open(icon, "rb") as f:
+                if f.read() == data:
+                    return False
+        with open(icon, "wb") as f:
+            f.write(data)
+        return True
+
+    def import_project(self, godot_bin, env):
+        b = self.init()
+        log_info("Importing logo ...")
+        subprocess.run([godot_bin, "--headless", "--path", b["project_dir"], "--import"],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env,
+                       start_new_session=(os.name != "nt"))
+
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
@@ -311,6 +346,9 @@ class Build:
             os.path.join(b["project_dir"], "bin"),
         ]
         env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
+
+        if self.platform_type in ("Client", "Server") and self.fetch_logo():
+            self.import_project(godot_bin, env)
 
         process = None
         try:
