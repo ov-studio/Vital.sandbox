@@ -524,9 +524,25 @@ namespace Vital::Engine {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
 
-        for (const char* name : { "network:connect", "network:connect:success", "network:connect:fail", "network:disconnect", "network:server:disconnect" }) {
+        for (const char* name : { "network:connect", "network:connect:success", "network:disconnect", "network:server:disconnect" }) {
             Tool::Event::bind(name, [this](Tool::Stack) { send_connection(); });
         }
+
+        // A failed connect carries its reason, so the menu can tell the player why instead of a generic message
+        Tool::Event::bind("network:connect:fail", [this](Tool::Stack arguments) {
+            auto text = [&](const char* key) -> std::string {
+                auto it = arguments.object.find(key);
+                return it == arguments.object.end() ? std::string() : it -> second.as<std::string>();
+            };
+            // ip / port are sent as strings by the network manager (the attempted target, which is not the connected one yet)
+            const std::string reason = text("reason");
+            std::string message;
+            if (reason == "version-mismatch") message = fmt::format("Version mismatch: the server runs {} and this client is {}. Update so both are on the same major version.", text("server_sdk"), text("client_sdk"));
+            else if (reason == "connect-error") message = "Could not reach the server. Check the address and port.";
+            else if (reason == "no-previous-server") message = "There is no previous server to reconnect to.";
+            else message = "The server did not respond or refused the connection. If the server was just updated, check that both run the same version.";
+            send_connection(message, text("ip"), text("port").empty() ? 0 : std::atoi(text("port").c_str()));
+        });
 
         Tool::Event::bind("network:connect:success", [this](Tool::Stack) {
             if (!is_visible() || !webview) return;
@@ -607,7 +623,7 @@ namespace Vital::Engine {
     }
 
     // Pushes { action: "connection", state, ip, port }: state is "idle" | "connecting" | "connected".
-    void MainMenu::send_connection() {
+    void MainMenu::send_connection(const std::string& failure, const std::string& ip, int port) {
         if (!webview || !webview_ready.load()) return;
         auto* nm = Manager::Network::get_singleton();
         const char* state = nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "idle");
@@ -616,8 +632,12 @@ namespace Vital::Engine {
         auto& a = doc.GetAllocator();
         doc.AddMember("action", "connection", a);
         doc.AddMember("state", rapidjson::Value(state, a), a);
-        doc.AddMember("ip", rapidjson::Value(nm -> get_server_ip().c_str(), a), a);
-        doc.AddMember("port", nm -> get_server_port(), a);
+        doc.AddMember("ip", rapidjson::Value((ip.empty() ? nm -> get_server_ip() : ip).c_str(), a), a);
+        doc.AddMember("port", port > 0 ? port : nm -> get_server_port(), a);
+        if (!failure.empty()) {
+            doc.AddMember("event", "failed", a);
+            doc.AddMember("reason", rapidjson::Value(failure.c_str(), a), a);
+        }
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         doc.Accept(writer);
