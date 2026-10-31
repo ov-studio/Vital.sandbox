@@ -127,6 +127,8 @@ namespace Vital::Manager {
                         nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
                         Tool::Stack status;
                         status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
+                        status.object["ip"] = Tool::StackValue(ip);
+                        status.object["port"] = Tool::StackValue(std::to_string(port));
                         status.object["server_sdk"] = Tool::StackValue(server_sdk);
                         status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
                         Tool::Event::emit("network:connect:fail", status);
@@ -151,6 +153,8 @@ namespace Vital::Manager {
             nm -> peer.unref();
             Tool::Stack status;
             status.object["reason"] = Tool::StackValue(std::string("connect-error"));
+            status.object["ip"] = Tool::StackValue(ip);
+            status.object["port"] = Tool::StackValue(std::to_string(port));
             Tool::Event::emit("network:connect:fail", status);
             return false;
         }
