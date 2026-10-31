@@ -26,6 +26,7 @@
 #include <Vital.sandbox/Tool/http.h>
 #include <Vital.sandbox/Tool/inspect.h>
 #include <Vital.sandbox/Tool/localserver.h>
+#include <godot_cpp/classes/project_settings.hpp>
 
 
 //////////////////////////////
@@ -35,6 +36,52 @@
 // TODO: Improve
 namespace Vital::Manager {
     // Helpers //
+    #if defined(VSDK_Client)
+    // Server logo shown as the window/taskbar icon while connected; the default (project) icon is restored otherwise
+    static std::string _pending_logo;
+    static bool _icon_custom = false;
+
+    static std::string _fetch_logo(const std::string& url) {
+        if (url.rfind("https://", 0) != 0) return "";
+        try { return Tool::HTTP::get(url, {}, 3, true, nullptr, 2ull * 1024 * 1024); }
+        catch (...) { return ""; }
+    }
+
+    static void _reset_window_icon() {
+        if (!_icon_custom) return;
+        _icon_custom = false;
+        auto ds = godot::DisplayServer::get_singleton();
+        auto ps = godot::ProjectSettings::get_singleton();
+        auto loader = godot::ResourceLoader::get_singleton();
+        if (!ds || !ps || !loader) return;
+        godot::Ref<godot::Texture2D> texture = loader -> load(ps -> get_setting("application/config/icon"));
+        if (!texture.is_valid()) return;
+        godot::Ref<godot::Image> image = texture -> get_image();
+        if (!image.is_valid()) return;
+        if (image -> is_compressed()) image -> decompress();
+        ds -> set_icon(image);
+    }
+
+    static void _apply_window_icon(const std::string& data) {
+        if (data.size() < 12) return;
+        auto ds = godot::DisplayServer::get_singleton();
+        if (!ds) return;
+        godot::PackedByteArray buffer;
+        buffer.resize(data.size());
+        memcpy(buffer.ptrw(), data.data(), data.size());
+        const unsigned char* b = reinterpret_cast<const unsigned char*>(data.data());
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        godot::Error status = godot::ERR_FILE_UNRECOGNIZED;
+        if (b[0] == 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') status = image -> load_png_from_buffer(buffer);
+        else if (b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF) status = image -> load_jpg_from_buffer(buffer);
+        else if (memcmp(b, "RIFF", 4) == 0 && memcmp(b + 8, "WEBP", 4) == 0) status = image -> load_webp_from_buffer(buffer);
+        if (status != godot::OK) return;
+        ds -> set_icon(image);
+        _icon_custom = true;
+    }
+    #endif
+
     static godot::Ref<godot::ENetPacketPeer> _enet_peer_for(const godot::Ref<godot::ENetMultiplayerPeer>& peer, int peer_id) {
         if (!peer.is_valid()) return {};
         if (peer->get_connection_status() != godot::MultiplayerPeer::CONNECTION_CONNECTED) return {};
@@ -108,6 +155,7 @@ namespace Vital::Manager {
     bool Network::Internal::connect_to_server(const std::string& ip, int port, int http_port) {
         Tool::assert_main_thread("Network::Internal::connect_to_server");
         auto nm = Network::get_singleton();
+        _pending_logo.clear();
         if (http_port > 0) {
             const std::string info_url = fmt::format("http://{}:{}/info", ip, http_port);
             try {
@@ -135,6 +183,7 @@ namespace Vital::Manager {
                         return false;
                     }
                     if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
+                    if (doc.HasMember("logo") && doc["logo"].IsString()) _pending_logo = _fetch_logo(doc["logo"].GetString());
                     nm -> log("sbox", fmt::format("version pre-check ok (sdk={})", server_sdk));
                 }
             }
@@ -208,6 +257,7 @@ namespace Vital::Manager {
         nm -> peer.unref();
         auto tree = get_scene_tree();
         if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
+        _reset_window_icon();
         nm -> log("sbox", "disconnected");
         Tool::Event::emit("network:disconnect", {});
         Engine::Core::get_singleton() -> reset();
@@ -1380,11 +1430,13 @@ namespace Vital::Manager {
     void Network::_on_connected_to_server() {
         _apply_peer_timeout(_enet_peer_for(peer, 1));
         log("sbox", "connected (authenticated)");
+        _apply_window_icon(_pending_logo);
         Tool::Event::emit("network:connect:success", {});
     }
 
     void Network::_on_connection_failed() {
         log("sbox", "connection failed");
+        _pending_logo.clear();
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         Tool::Stack status;
@@ -1394,6 +1446,7 @@ namespace Vital::Manager {
 
     void Network::_on_server_disconnected() {
         log("sbox", "server dropped connection");
+        _reset_window_icon();
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         auto tree = get_scene_tree();
