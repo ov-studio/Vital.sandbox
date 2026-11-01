@@ -51,6 +51,33 @@ namespace Vital::Sandbox::API {
             });
         }
 
+        template<typename Instance, typename Attach>
+        static void spawn_deferred(godot::ObjectID oid, bool remote, Attach attach) {
+            Vital::Engine::Core::get_singleton() -> enqueue([oid, remote, attach]() {
+                using entity_type = typename Instance::Owner::base_class;
+                godot::Object* obj = godot::ObjectDB::get_instance(oid);
+                if (!obj) return;
+                auto entity = godot::Object::cast_to<entity_type>(obj);
+                if (!entity) return;
+                if (Instance::find_by_ptr(entity)) return;
+
+                auto instance = Instance::init(nullptr, remote);
+                attach(*instance, entity);
+                instance -> store(false);
+            });
+        }
+
+        template<typename Instance, typename Attach>
+        static void on_spawn(Tool::Stack& args, Attach attach) {
+            using entity_type = typename Instance::Owner::base_class;
+            if (args.array.size() < 2) return;
+            if (!args.array[0].is_raw_ptr<entity_type>()) return;
+            auto entity = args.array[0].as_raw_ptr<entity_type>();
+            if (!args.array[1].is<bool>()) return;
+            if (Instance::find_by_ptr(entity)) return;
+            spawn_deferred<Instance>(godot::ObjectID(entity -> get_instance_id()), args.array[1].as<bool>(), attach);
+        }
+
         template<typename Instance, Type node_type = Type::Spatial>
         static void init(Machine* vm) {
             using entity_type = typename Instance::Owner::base_class;
