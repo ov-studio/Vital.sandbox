@@ -26,7 +26,7 @@ namespace Vital::Engine {
         private:
             // Instantiators //
             Area() = default;
-            ~Area() override = default;
+            ~Area() override;
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_body_entered", "body"), &Area::on_body_entered);

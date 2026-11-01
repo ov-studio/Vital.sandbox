@@ -47,7 +47,7 @@ namespace Vital::Engine {
 
             // Instantiators //
             Trail() = default;
-            ~Trail() override = default;
+            ~Trail() override;
             static void _bind_methods() {}
 
             // Utilities //

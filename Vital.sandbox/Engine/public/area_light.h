@@ -27,7 +27,7 @@ namespace Vital::Engine {
         private:
             // Instantiators //
             Area_Light() = default;
-            ~Area_Light() override = default;
+            ~Area_Light() override;
             static void _bind_methods() {}
         public:
             // Managers //
