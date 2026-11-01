@@ -71,25 +71,13 @@ namespace Vital::Sandbox::API {
 
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 bool remote = args.array[2].as<bool>();
-                switch (sub_type) {
-                    case Vital::Engine::PhysicsType::Rigid:
-                        spawn_body<Rigid_Body, Vital::Engine::Rigid_Body>(godot::ObjectID(static_cast<Vital::Engine::Rigid_Body*>(entity) -> get_instance_id()), remote);
-                        break;
-                    case Vital::Engine::PhysicsType::Static:
-                        spawn_body<Static_Body, Vital::Engine::Static_Body>(godot::ObjectID(static_cast<Vital::Engine::Static_Body*>(entity) -> get_instance_id()), remote);
-                        break;
-                    case Vital::Engine::PhysicsType::Character:
-                        spawn_body<Character_Body, Vital::Engine::Character_Body>(godot::ObjectID(static_cast<Vital::Engine::Character_Body*>(entity) -> get_instance_id()), remote);
-                        break;
-                    case Vital::Engine::PhysicsType::Animatable:
-                        spawn_body<Animatable_Body, Vital::Engine::Animatable_Body>(godot::ObjectID(static_cast<Vital::Engine::Animatable_Body*>(entity) -> get_instance_id()), remote);
-                        break;
-                    case Vital::Engine::PhysicsType::Vehicle:
-                        spawn_body<Vehicle_Body, Vital::Engine::Vehicle_Body>(godot::ObjectID(static_cast<Vital::Engine::Vehicle_Body*>(entity) -> get_instance_id()), remote);
-                        break;
-                    default: 
-                        break;
-                }
+                dispatch(sub_type, [&](auto tag) {
+                    using API_Type = typename decltype(tag)::API_Type;
+                    auto typed = static_cast<typename API_Type::base_class*>(entity);
+                    Node_3D::spawn_deferred<typename API_Type::Instance>(godot::ObjectID(typed -> get_instance_id()), remote, [](auto& instance, auto* body) {
+                        instance.body = body;
+                    });
+                });
             });
 
             static Tool::Event::Handle unspawned_binding;
