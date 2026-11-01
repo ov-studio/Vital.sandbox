@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void bind(Machine* vm) {}
-
+ 
         template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
