@@ -122,25 +122,7 @@ namespace Vital::Sandbox::API {
                     return;
                 }
                 #endif
-                if (args.array.size() < 2) return;
-                if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto entity = args.array[0].as_raw_ptr<base_class>();
-                if (!args.array[1].is<bool>()) return;
-                bool remote = args.array[1].as<bool>();
-                if (Instance::find_by_ptr(entity)) return;
-
-                const godot::ObjectID oid(entity -> get_instance_id());
-                Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
-                    godot::Object* obj = godot::ObjectDB::get_instance(oid);
-                    if (!obj) return;
-                    auto wheel = godot::Object::cast_to<base_class>(obj);
-                    if (!wheel) return;
-                    if (Instance::find_by_ptr(wheel)) return;
-
-                    auto instance = Instance::init(nullptr, remote);
-                    instance -> body = wheel;
-                    instance -> store(false);
-                });
+                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) { instance.body = entity; });
             });
 
             #if defined(VSDK_Client)

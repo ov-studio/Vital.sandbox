@@ -60,25 +60,7 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawn", [](Tool::Stack args) {
-                if (args.array.size() < 2) return;
-                if (!args.array[0].is_raw_ptr<base_class>()) return;
-                auto entity = args.array[0].as_raw_ptr<base_class>();
-                if (!args.array[1].is<bool>()) return;
-                bool remote = args.array[1].as<bool>();
-                if (Instance::find_by_ptr(entity)) return;
-
-                const godot::ObjectID oid(entity -> get_instance_id());
-                Vital::Engine::Core::get_singleton() -> enqueue([oid, remote]() {
-                    godot::Object* obj = godot::ObjectDB::get_instance(oid);
-                    if (!obj) return;
-                    auto model = godot::Object::cast_to<base_class>(obj);
-                    if (!model) return;
-                    if (Instance::find_by_ptr(model)) return;
-                    
-                    auto instance = Instance::init(nullptr, remote);
-                    instance -> model = model;
-                    instance -> store();
-                });
+                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) { instance.model = entity; });
             });
         }
 
