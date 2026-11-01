@@ -22,12 +22,12 @@
 /////////////////////////////////
 
 namespace Vital::Engine {
-    class Point_Light : public godot::OmniLight3D {
+    class Point_Light : public godot::OmniLight3D, public Entity<Point_Light> {
         GDCLASS(Point_Light, godot::OmniLight3D)
         private:
             // Instantiators //
             Point_Light() = default;
-            ~Point_Light() override;
+            ~Point_Light() override = default;
             static void _bind_methods() {}
         public:
             // Managers //

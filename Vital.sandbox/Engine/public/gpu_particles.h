@@ -28,7 +28,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    class GPU_Particles : public godot::GPUParticles3D {
+    class GPU_Particles : public godot::GPUParticles3D, public Entity<GPU_Particles> {
         GDCLASS(GPU_Particles, godot::GPUParticles3D)
         private:
             // Built-in resources. Each emitter owns its own copies so
@@ -60,7 +60,7 @@ namespace Vital::Engine {
 
             // Instantiators //
             GPU_Particles() = default;
-            ~GPU_Particles() override;
+            ~GPU_Particles() override = default;
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &GPU_Particles::on_finished);
             }

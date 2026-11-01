@@ -27,7 +27,7 @@
 // a bone) and the ribbon follows it: full width and color at the node, thinning out and fading with age.
 // Built on the CPU from sampled positions, Godot's particle trails only follow a particle's own path
 namespace Vital::Engine {
-    class Trail : public godot::Node3D {
+    class Trail : public godot::Node3D, public Entity<Trail> {
         GDCLASS(Trail, godot::Node3D)
         private:
             struct Point {
@@ -47,7 +47,7 @@ namespace Vital::Engine {
 
             // Instantiators //
             Trail() = default;
-            ~Trail() override;
+            ~Trail() override = default;
             static void _bind_methods() {}
 
             // Utilities //

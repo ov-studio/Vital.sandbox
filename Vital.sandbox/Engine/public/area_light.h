@@ -22,12 +22,12 @@
 ////////////////////////////////
 
 namespace Vital::Engine {
-    class Area_Light : public godot::AreaLight3D {
+    class Area_Light : public godot::AreaLight3D, public Entity<Area_Light> {
         GDCLASS(Area_Light, godot::AreaLight3D)
         private:
             // Instantiators //
             Area_Light() = default;
-            ~Area_Light() override;
+            ~Area_Light() override = default;
             static void _bind_methods() {}
         public:
             // Managers //

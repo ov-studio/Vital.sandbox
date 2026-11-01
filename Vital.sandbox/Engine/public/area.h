@@ -21,12 +21,12 @@
 //////////////////////////
 
 namespace Vital::Engine {
-    class Area : public godot::Area3D {
+    class Area : public godot::Area3D, public Entity<Area> {
         GDCLASS(Area, godot::Area3D)
         private:
             // Instantiators //
             Area() = default;
-            ~Area() override;
+            ~Area() override = default;
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_body_entered", "body"), &Area::on_body_entered);

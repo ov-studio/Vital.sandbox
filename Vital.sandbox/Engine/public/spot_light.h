@@ -22,12 +22,12 @@
 ////////////////////////////////
 
 namespace Vital::Engine {
-    class Spot_Light : public godot::SpotLight3D {
+    class Spot_Light : public godot::SpotLight3D, public Entity<Spot_Light> {
         GDCLASS(Spot_Light, godot::SpotLight3D)
         private:
             // Instantiators //
             Spot_Light() = default;
-            ~Spot_Light() override;
+            ~Spot_Light() override = default;
             static void _bind_methods() {}
         public:
             // Managers //
