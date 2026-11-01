@@ -96,6 +96,12 @@ namespace Vital::Sandbox {
             struct has_node3d_node<T, std::void_t<decltype(static_cast<godot::Node3D*>(std::declval<T*>() -> get_node()))>> : std::true_type {};
 
             template<typename T, typename = void>
+            struct has_get_entity : std::false_type {};
+
+            template<typename T>
+            struct has_get_entity<T, std::void_t<decltype(std::declval<T&>().get_entity())>> : std::true_type {};
+
+            template<typename T, typename = void>
             struct has_get_node : std::false_type {};
 
             template<typename T>
@@ -138,12 +144,23 @@ namespace Vital::Sandbox {
                 return Derived::clean(static_cast<Derived*>(this) -> shared_from_this());
             }
 
+            template<typename P>
+            static bool is_entity(Derived& instance, P* ptr) {
+                if constexpr (has_get_entity<Derived>::value) return instance.get_entity() == ptr;
+                else return instance.get_node() == ptr;
+            }
+
+            static void clear_entity(Derived& instance) {
+                if constexpr (has_get_entity<Derived>::value) instance.get_entity() = nullptr;
+                else if constexpr (std::is_lvalue_reference_v<decltype(instance.get_node())>) instance.get_node() = nullptr;
+            }
+
             template<typename T = Derived, typename = typename T::Owner::base_class>
             static std::shared_ptr<Derived> find_by_ptr(typename T::Owner::base_class* ptr) {
                 if (!ptr) return nullptr;
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 for (auto& [id, instance] : Derived::Owner::registry.buffer) {
-                    if (find_unlocked(instance) && (instance -> get_node() == ptr)) return instance;
+                    if (find_unlocked(instance) && is_entity(*instance, ptr)) return instance;
                 }
                 return nullptr;
             }
@@ -155,7 +172,7 @@ namespace Vital::Sandbox {
                 for (auto it = Derived::Owner::registry.buffer.begin(); it != Derived::Owner::registry.buffer.end();) {
                     auto& instance = it -> second;
                     ++it;
-                    if (instance -> get_node() != ptr) continue;
+                    if (!is_entity(*instance, ptr)) continue;
                     erase_unlocked(instance);
                     Engine::Core::get_singleton() -> execute([instance, on_release]() {
                         if (on_release) on_release(instance);

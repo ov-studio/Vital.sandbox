@@ -52,6 +52,10 @@ namespace Vital::Sandbox::API {
                 return audio -> get_player();
             }
 
+            auto& get_entity() {
+                return audio;
+            }
+
             bool is_alive() const {
                 return audio ? true : false;
             }

@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
             unspawned_binding.bind("entity:unspawn", [](Tool::Stack args) {
                 if (args.array.empty() || !args.array[0].is_raw_ptr<entity_type>()) return;
                 Instance::destroy_by_ptr(args.array[0].as_raw_ptr<entity_type>(), [](std::shared_ptr<Instance> instance) {
-                    if constexpr (std::is_lvalue_reference_v<decltype(instance -> get_node())>) instance -> get_node() = nullptr;
+                    Instance::clear_entity(*instance);
                 });
             });
         }
