@@ -111,9 +111,9 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "sync", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> db;
                 auto promise_id = API::Promise::make(vm, true) -> id;
-                API::Promise::run_async(promise_id, [db]() { 
-                    db -> sync(); 
-                    return true; 
+                API::Promise::run_async(promise_id, [db]() {
+                    db -> sync();
+                    return true;
                 });
                 return 1;
             });
