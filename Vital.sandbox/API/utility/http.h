@@ -42,25 +42,11 @@ namespace Vital::Sandbox::API {
             return vm -> is_number(idx) ? vm -> get_int(idx) : 60;
         }
 
-        template<typename Id, typename T>
-        static void settle(Id promise_id, API::Promise::State state, T value) {
-            Machine::enqueue([promise_id, state, value]() {
-                auto promise = API::Promise::Instance::find(promise_id);
-                if (!API::Promise::is_pending(promise)) return;
-                auto vm = promise -> vm;
-                vm -> push_value(value);
-                API::Promise::settle(promise, state, vm, vm -> get_count(), 1);
-            });
-        }
-
         template<typename Work>
         static void request(Machine* vm, Work work) {
             auto slot = std::make_shared<Tool::HTTP::Slot>();
             auto promise_id = API::Promise::make(vm, true) -> id;
-            Tool::Thread::create([promise_id, work, slot](Tool::Thread*) {
-                try { settle(promise_id, API::Promise::State::Resolved, work()); }
-                catch (const std::exception& error) { settle(promise_id, API::Promise::State::Rejected, std::string(error.what())); }
-            }) -> detach();
+            API::Promise::run_async(promise_id, [work, slot]() { return work(); });
         }
 
         static void bind(Machine* vm) {
