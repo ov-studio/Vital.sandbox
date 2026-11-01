@@ -33,6 +33,7 @@ namespace Vital::Engine {
     }
 
     Audio_3D::~Audio_3D() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
         destroy_bus();
         if (!player) return;
         player -> queue_free();
