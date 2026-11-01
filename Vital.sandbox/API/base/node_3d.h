@@ -52,7 +52,17 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance, Type node_type = Type::Spatial>
-        static void init(Machine* vm) {}
+        static void init(Machine* vm) {
+            using entity_type = typename Instance::Owner::base_class;
+
+            static Tool::Event::Handle unspawned_binding;
+            unspawned_binding.bind("entity:unspawn", [](Tool::Stack args) {
+                if (args.array.empty() || !args.array[0].is_raw_ptr<entity_type>()) return;
+                Instance::destroy_by_ptr(args.array[0].as_raw_ptr<entity_type>(), [](std::shared_ptr<Instance> instance) {
+                    if constexpr (std::is_lvalue_reference_v<decltype(instance -> get_node())>) instance -> get_node() = nullptr;
+                });
+            });
+        }
 
         template<typename Instance, Type node_type = Type::Spatial>
         static void bind(Machine* vm) {}
