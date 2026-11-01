@@ -11,7 +11,7 @@ SCONS = [sys.executable, "-m", "SCons"]
 sys.path.append("./Vital.sandbox")
 from vital import *
 
-LOGO_URL = "https://vital-sandbox.com/logo/{name}.png"
+LOGO_URL = "https://vital-sandbox.com/icon/{name}.png"
 
 class Build:
     def __init__(self, script_dir, platform_type, build_type, verbose=False, wry_version=None, godot_version=None):
