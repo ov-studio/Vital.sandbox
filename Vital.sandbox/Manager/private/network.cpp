@@ -192,6 +192,8 @@ namespace Vital::Manager {
         }
 
         Internal::disconnect_from_server();
+        nm -> kicked = false;
+        nm -> kick_reason.clear();
         if (auto* am = Manager::Asset::get_singleton()) am -> set_server_id(ip, port);
         nm -> create();
         nm -> peer.instantiate();
@@ -366,7 +368,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    void Network::Internal::disconnect_peer(int peer_id) {
+    void Network::Internal::disconnect_peer(int peer_id, const std::string& reason) {
         Tool::assert_main_thread("Network::Internal::disconnect_peer");
         auto nm = Network::get_singleton();
         // Unknown/stale ids must not reach ENetMultiplayerPeer::get_peer() — it
@@ -374,6 +376,8 @@ namespace Vital::Manager {
         if (!nm -> is_peer_valid(peer_id)) { Tool::print("warn", fmt::format("Peer `{}` is not connected", peer_id)); return; }
         auto ep = _enet_peer_for(nm -> peer, peer_id);
         if (!ep.is_valid()) return;
+        // Sent before the graceful disconnect so the reliable RPC is flushed first
+        Network::rpc_id(false, peer_id, "_kick", Tool::to_godot_string(reason).substr(0, 200));
         nm -> peer -> disconnect_peer(peer_id, false);
     }
     #endif
@@ -1427,6 +1431,11 @@ namespace Vital::Manager {
         Engine::Core::get_singleton() -> execute([]() { Internal::disconnect_from_server(); });
     }
 
+    void Network::set_kicked(const std::string& reason) {
+        kicked = true;
+        kick_reason = reason;
+    }
+
     void Network::_on_connected_to_server() {
         _apply_peer_timeout(_enet_peer_for(peer, 1));
         log("sbox", "connected (authenticated)");
@@ -1451,7 +1460,15 @@ namespace Vital::Manager {
         if (peer.is_valid()) peer.unref();
         auto tree = get_scene_tree();
         if (tree) tree->get_multiplayer()->set_multiplayer_peer(nullptr);
-        Tool::Event::emit("network:server:disconnect", {});
+        Tool::Stack status;
+        if (kicked) {
+            status.object["kicked"] = Tool::StackValue(true);
+            status.object["reason"] = Tool::StackValue(kick_reason);
+            log("sbox", kick_reason.empty() ? std::string("kicked by the server") : fmt::format("kicked by the server: {}", kick_reason));
+        }
+        kicked = false;
+        kick_reason.clear();
+        Tool::Event::emit("network:server:disconnect", status);
         Engine::Core::get_singleton() -> reset();
     }
 
@@ -1988,8 +2005,8 @@ namespace Vital::Manager {
         if (!is_peer_valid(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("peer '{}' is not connected", peer_id));
     }
 
-    void Network::disconnect_peer(int peer_id) {
-        Engine::Core::get_singleton() -> execute([peer_id]() { Internal::disconnect_peer(peer_id); });
+    void Network::disconnect_peer(int peer_id, const std::string& reason) {
+        Engine::Core::get_singleton() -> execute([peer_id, reason]() { Internal::disconnect_peer(peer_id, reason); });
     }
 
     const Config::Server& Network::get_server_config() const { return *server_config; }

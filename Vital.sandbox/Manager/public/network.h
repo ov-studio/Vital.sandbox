@@ -102,6 +102,9 @@ namespace Vital::Manager {
             std::string reconnect_ip;
             int reconnect_port = 0;
             int reconnect_http_port = -1;
+            // Set by the server's _kick RPC, consumed on disconnect
+            bool kicked = false;
+            std::string kick_reason;
             #else
             std::unordered_set<int> connected_peers;
             std::unordered_map<int, std::string> peer_serials;
@@ -141,7 +144,7 @@ namespace Vital::Manager {
                     #else
                     static bool host(Config::Server& config);
                     static bool close();
-                    static void disconnect_peer(int peer_id);
+                    static void disconnect_peer(int peer_id, const std::string& reason);
                     #endif
             };
 
@@ -277,6 +280,7 @@ namespace Vital::Manager {
 
             #if defined(VSDK_Client)
             void connect_to_server(const std::string& ip, int port, int http_port = -1);
+            void set_kicked(const std::string& reason);
             void reconnect();
             void disconnect_from_server();
             void _on_connected_to_server();
@@ -291,7 +295,7 @@ namespace Vital::Manager {
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
-            void disconnect_peer(int peer_id);
+            void disconnect_peer(int peer_id, const std::string& reason = "");
             // Tells server scripts that a peer sent something it is not allowed to, as the signal anticheat:<category> (peer, reason, net_id, count).
             // Thread-safe. Never kicks by itself: scripts decide what to do.
             void report_violation(int peer_id, const std::string& category, const std::string& reason, uint32_t net_id = 0);

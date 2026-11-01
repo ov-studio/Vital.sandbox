@@ -524,9 +524,15 @@ namespace Vital::Engine {
             if (auto content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
 
-        for (const char* name : { "network:connect", "network:connect:success", "network:disconnect", "network:server:disconnect" }) {
+        for (const char* name : { "network:connect", "network:connect:success", "network:disconnect" }) {
             Tool::Event::bind(name, [this](Tool::Stack) { send_connection(); });
         }
+
+        // A kick shows a "Kicked from server" alert with the reason
+        Tool::Event::bind("network:server:disconnect", [this](Tool::Stack arguments) {
+            if (!arguments.object.count("kicked")) { send_connection(); return; }
+            send_connection(arguments.object.at("reason").as<std::string>(), "", 0, "kicked");
+        });
 
         // A failed connect carries its reason, so the menu can tell the player why instead of a generic message
         Tool::Event::bind("network:connect:fail", [this](Tool::Stack arguments) {
@@ -623,7 +629,7 @@ namespace Vital::Engine {
     }
 
     // Pushes { action: "connection", state, ip, port }: state is "idle" | "connecting" | "connected".
-    void MainMenu::send_connection(const std::string& failure, const std::string& ip, int port) {
+    void MainMenu::send_connection(const std::string& failure, const std::string& ip, int port, const std::string& event) {
         if (!webview || !webview_ready.load()) return;
         auto* nm = Manager::Network::get_singleton();
         const char* state = nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "idle");
@@ -634,10 +640,9 @@ namespace Vital::Engine {
         doc.AddMember("state", rapidjson::Value(state, a), a);
         doc.AddMember("ip", rapidjson::Value((ip.empty() ? nm -> get_server_ip() : ip).c_str(), a), a);
         doc.AddMember("port", port > 0 ? port : nm -> get_server_port(), a);
-        if (!failure.empty()) {
-            doc.AddMember("event", "failed", a);
-            doc.AddMember("reason", rapidjson::Value(failure.c_str(), a), a);
-        }
+        const std::string event_name = !event.empty() ? event : (failure.empty() ? std::string() : std::string("failed"));
+        if (!event_name.empty()) doc.AddMember("event", rapidjson::Value(event_name.c_str(), a), a);
+        if (!failure.empty()) doc.AddMember("reason", rapidjson::Value(failure.c_str(), a), a);
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         doc.Accept(writer);

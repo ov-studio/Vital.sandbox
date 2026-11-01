@@ -251,12 +251,14 @@ namespace Vital::Sandbox::API {
 
             #if !defined(VSDK_Client)
             API::bind(vm, base_scope, "disconnect_peer", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)")
-                    .require(1, &Machine::is_number);
+                vm_args(vm, id, "(peer_id, reason = nil)")
+                    .require(1, &Machine::is_number)
+                    .optional(2, &Machine::is_string);
 
                 auto peer_id = vm -> get_int(1);
+                const std::string reason = vm -> is_string(2) ? vm -> get_string(2) : "";
                 Manager::Network::get_singleton() -> assert_peer(peer_id);
-                Manager::Network::get_singleton() -> disconnect_peer(peer_id);
+                Manager::Network::get_singleton() -> disconnect_peer(peer_id, reason);
                 vm -> push_value(true);
                 return 1;
             });

@@ -76,6 +76,7 @@ namespace Vital::Engine {
         rpc_config("_sync_component_render", server_reliable);
         rpc_config("_force_transform", server_reliable);
         rpc_config("_wake_sync", server_reliable);
+        rpc_config("_kick", server_reliable);
 
         godot::Dictionary unreliable;
         unreliable["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
@@ -126,6 +127,14 @@ namespace Vital::Engine {
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         if (!tree || tree -> get_multiplayer() -> get_remote_sender_id() != 1) return;
         Manager::Network::get_singleton() -> apply_server_fps_limit(limit);
+        #endif
+    }
+
+    // Server -> client, right before it drops us
+    void Network::_kick(godot::String reason) {
+        #if defined(VSDK_Client)
+        if (rpc_sender() != 1) return;
+        Manager::Network::get_singleton() -> set_kicked(Tool::to_std_string(reason));
         #endif
     }
 
