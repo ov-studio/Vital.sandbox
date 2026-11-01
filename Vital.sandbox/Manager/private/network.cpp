@@ -376,9 +376,9 @@ namespace Vital::Manager {
         if (!nm -> is_peer_valid(peer_id)) { Tool::print("warn", fmt::format("Peer `{}` is not connected", peer_id)); return; }
         auto ep = _enet_peer_for(nm -> peer, peer_id);
         if (!ep.is_valid()) return;
-        // Sent before the graceful disconnect so the reliable RPC is flushed first
+        // disconnect_peer() drops packets still queued for the peer, so the _kick RPC would never leave. Disconnect later, once the queue is sent
         Network::rpc_id(false, peer_id, "_kick", Tool::to_godot_string(reason).substr(0, 200));
-        nm -> peer -> disconnect_peer(peer_id, false);
+        ep -> peer_disconnect_later();
     }
     #endif
 }
