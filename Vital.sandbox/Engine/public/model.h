@@ -244,8 +244,8 @@ namespace Vital::Engine {
             // Setters //
             void set_model_name(const std::string& name);
 
-            bool set_component_visible(const std::string& component, bool state);
-            bool set_component_rendered(const std::string& component, bool state);
+            bool set_component_visible(const std::string& component, bool state, bool sync = true);
+            bool set_component_rendered(const std::string& component, bool state, bool sync = true);
             bool is_component_rendered(const std::string& component);
 
             // Pure local application — never broadcasts, never throws. Same
@@ -278,7 +278,7 @@ namespace Vital::Engine {
             // apply_component_transform(): pure local application of a received transform, never broadcasts, never throws.
             // broadcast_component_transform(): server -> all clients, owning client -> server (which validates and relays).
             godot::MeshInstance3D* get_component_node(const std::string& component) { return assert_component(component); }
-            void sync_component_transform(const std::string& component);
+            void sync_component_transform(const std::string& component, bool sync = true);
             bool apply_component_transform(const std::string& component, const godot::Transform3D& transform);
             void broadcast_component_transform(const std::string& component, const godot::Transform3D& transform);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);

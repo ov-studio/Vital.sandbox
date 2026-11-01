@@ -396,102 +396,118 @@ namespace Vital::Sandbox::API {
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, state)", true)
+                vm_args(vm, id, "(component, state, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_bool);
+                    .require(3, &Machine::is_bool)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto state = vm -> get_bool(3);
-                self -> model -> set_component_visible(component, state);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                self -> model -> set_component_visible(component, state, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_rendered", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, state)", true)
+                vm_args(vm, id, "(component, state, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_bool);
+                    .require(3, &Machine::is_bool)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto state = vm -> get_bool(3);
-                vm -> push_value(self -> model -> set_component_rendered(component, state));
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
+                vm -> push_value(self -> model -> set_component_rendered(component, state, sync));
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, position)", true)
+                vm_args(vm, id, "(component, position, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_vector3);
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto position = vm -> get_vector3(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_position(position);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_global_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, position)", true)
+                vm_args(vm, id, "(component, position, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_vector3);
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto position = vm -> get_vector3(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_global_position(position);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_scale", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, scale)", true)
+                vm_args(vm, id, "(component, scale, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_vector3);
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto scale = vm -> get_vector3(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_scale(scale);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, rotation)", true)
+                vm_args(vm, id, "(component, rotation, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_vector3);
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto rotation = vm -> get_vector3(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_rotation_degrees(rotation);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, rotation)", true)
+                vm_args(vm, id, "(component, rotation, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_vector3);
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto rotation = vm -> get_vector3(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_global_rotation_degrees(rotation);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::Syncable::bind_method<Instance>(vm, "set_component_quaternion", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, quaternion)", true)
+                vm_args(vm, id, "(component, quaternion, sync = true)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_quaternion);
+                    .require(3, &Machine::is_quaternion)
+                    .optional(4, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto quaternion = vm -> get_quaternion(3);
+                auto sync = vm -> is_bool(4) ? vm -> get_bool(4) : true;
                 self -> model -> get_component_node(component) -> set_quaternion(quaternion);
-                self -> model -> sync_component_transform(component);
+                self -> model -> sync_component_transform(component, sync);
                 vm -> push_value(true);
                 return 1;
             });

@@ -674,7 +674,7 @@ namespace Vital::Engine {
     // ISyncable (see syncable.cpp) — Model has no override here, it just
     // inherits the shared implementation.
 
-    bool Model::set_component_visible(const std::string& component, bool state) {
+    bool Model::set_component_visible(const std::string& component, bool state, bool sync) {
         auto exec = [&](const std::string& name) -> bool {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (!mesh) return false;
@@ -688,7 +688,7 @@ namespace Vital::Engine {
         if (!apply_wildcard(component, [&]{ return get_components(); }, exec))
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         #if !defined(VSDK_Client)
-        broadcast_component_visible(component, state);
+        if (sync) broadcast_component_visible(component, state);
         #endif
         return true;
     }
@@ -752,7 +752,7 @@ namespace Vital::Engine {
 
     // set_component_rendered(component, true)  → reattach (make rendered)
     // set_component_rendered(component, false) → detach   (stop rendering)
-    bool Model::set_component_rendered(const std::string& component, bool state) {
+    bool Model::set_component_rendered(const std::string& component, bool state, bool sync) {
         if (state) {
             // Reattach: move from detached map back into the scene tree.
             auto exec = [&](const std::string& name) -> bool {
@@ -805,7 +805,7 @@ namespace Vital::Engine {
         }
 
         #if !defined(VSDK_Client)
-        broadcast_component_rendered(component, state);
+        if (sync) broadcast_component_rendered(component, state);
         #endif
         return true;
     }
@@ -900,12 +900,12 @@ namespace Vital::Engine {
 
     // Records the component's current local transform (late-join / hydrate) and replicates it.
     // Skipped when it matches what peers already have, so a script re-setting the same value every frame costs nothing.
-    void Model::sync_component_transform(const std::string& component) {
+    void Model::sync_component_transform(const std::string& component, bool sync) {
         auto transform = assert_component(component)->get_transform();
         auto it = component_transforms.find(component);
         if (it != component_transforms.end() && it->second.is_equal_approx(transform)) return;
         component_transforms[component] = transform;
-        broadcast_component_transform(component, transform);
+        if (sync) broadcast_component_transform(component, transform);
     }
 
     // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
