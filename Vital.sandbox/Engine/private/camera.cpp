@@ -27,6 +27,7 @@ namespace Vital::Engine {
     // Instantiators //
     Camera::~Camera() {
         if (is_current()) clear_current();
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
     }
 
 

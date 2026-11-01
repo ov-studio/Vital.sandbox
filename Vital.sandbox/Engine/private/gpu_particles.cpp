@@ -25,6 +25,12 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    // Instantiators //
+    GPU_Particles::~GPU_Particles() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     namespace {
         // Far plane of the active camera (already includes the draw distance), looked up once per frame for all emitters
         float get_reference_clip() {

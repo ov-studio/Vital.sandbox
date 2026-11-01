@@ -22,6 +22,12 @@
 ///////////////////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Directional_Light::~Directional_Light() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     // Managers //
     Directional_Light* Directional_Light::create() {
         auto light = memnew(Directional_Light);

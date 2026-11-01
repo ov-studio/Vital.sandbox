@@ -22,6 +22,12 @@
 /////////////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Point_Light::~Point_Light() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     // Managers //
     Point_Light* Point_Light::create() {
         auto light = memnew(Point_Light);

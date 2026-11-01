@@ -22,6 +22,12 @@
 ////////////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Spot_Light::~Spot_Light() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     // Managers //
     Spot_Light* Spot_Light::create() {
         auto light = memnew(Spot_Light);

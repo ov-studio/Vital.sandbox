@@ -21,6 +21,12 @@
 //////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Area::~Area() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     // Managers //
     Area* Area::create() {
         auto body = memnew(Area);

@@ -32,6 +32,13 @@ namespace Vital::Engine {
         constexpr int    SUBDIVISIONS = 3;    // Smoothing subdivisions per segment
     }
 
+    
+    // Instantiators //
+    Trail::~Trail() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+
     // Utilities //
     // Samples the node position, drops samples older than the lifetime and rebuilds the ribbon:
     // a camera facing strip, full width and color at the node, thinning out and fading with age

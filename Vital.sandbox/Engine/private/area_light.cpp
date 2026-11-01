@@ -22,6 +22,12 @@
 ////////////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Area_Light::~Area_Light() {
+        Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
+    }
+
+    
     // Managers //
     Area_Light* Area_Light::create() {
         auto light = memnew(Area_Light);
