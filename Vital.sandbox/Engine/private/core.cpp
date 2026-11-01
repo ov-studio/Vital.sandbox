@@ -215,6 +215,21 @@ namespace Vital::Engine {
 
     void Core::teardown() {
         log("sbox", "tearing down...");
+        #if defined(VSDK_Client)
+        static bool covered = false;
+        if (!covered) {
+            covered = true;
+            auto* rs = godot::RenderingServer::get_singleton();
+            if (rs) rs -> set_default_clear_color(godot::Color(0, 0, 0, 1));
+            auto* cover = memnew(godot::ColorRect);
+            cover -> set_color(godot::Color(0, 0, 0, 1));
+            cover -> set_as_top_level(true);
+            cover -> set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
+            add_child(cover);
+            cover -> set_anchors_and_offsets_preset(godot::Control::PRESET_FULL_RECT);
+            if (rs) rs -> force_draw();
+        }
+        #endif
         Engine::Console::get_singleton() -> teardown();
         reset();
         #if !defined(VSDK_Client)
