@@ -46,7 +46,9 @@ namespace Vital::Sandbox::API {
         static void request(Machine* vm, Work work) {
             auto slot = std::make_shared<Tool::HTTP::Slot>();
             auto promise_id = API::Promise::make(vm, true) -> id;
-            API::Promise::run_async(promise_id, [work, slot]() { return work(); });
+            API::Promise::run_async(promise_id, [work, slot]() {
+                return work();
+            });
         }
 
         static void bind(Machine* vm) {
