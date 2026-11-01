@@ -129,7 +129,7 @@ namespace Vital::Sandbox::API {
                 auto instance_id = self -> id;
                 auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
-                
+
                 API::Promise::run_async_with(promise_id, [instance_id, query]() {
                     auto instance = Instance::find(instance_id);
                     if (!instance) throw std::runtime_error("query instance was destroyed");
@@ -185,8 +185,10 @@ namespace Vital::Sandbox::API {
                 auto table = self -> query -> table;
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
-
-                API::Promise::run_async(promise_id, [db, table, actions]() { db -> alter(table, actions); return true; });
+                API::Promise::run_async(promise_id, [db, table, actions]() {
+                    db -> alter(table, actions);
+                    return true;
+                });
                 return 1;
             });
 
@@ -195,8 +197,10 @@ namespace Vital::Sandbox::API {
                 auto table = self -> query -> table;
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
-
-                API::Promise::run_async(promise_id, [db, table]() { db -> drop(table); return true; });
+                API::Promise::run_async(promise_id, [db, table]() {
+                    db -> drop(table);
+                    return true;
+                });
                 return 1;
             });
 
@@ -205,8 +209,10 @@ namespace Vital::Sandbox::API {
                 auto table = self -> query -> table;
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
-
-                API::Promise::run_async(promise_id, [db, table]() { db -> truncate(table); return true; });
+                API::Promise::run_async(promise_id, [db, table]() {
+                    db -> truncate(table);
+                    return true;
+                });
                 return 1;
             });
 
@@ -214,7 +220,6 @@ namespace Vital::Sandbox::API {
                 auto instance_id = self -> id;
                 auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
-
                 API::Promise::run_async(promise_id, [instance_id, query]() {
                     auto instance = Instance::find(instance_id);
                     if (!instance) throw std::runtime_error("query instance was destroyed");
