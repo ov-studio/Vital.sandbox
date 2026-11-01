@@ -189,6 +189,17 @@ namespace Vital::Engine {
             void hydrate(int authority_peer);
             #endif
 
+            // Every `sync` argument goes through this: the server is the source of truth, so it always replicates
+            // and ignores sync = false. Only a client (owning the entity) can keep a change local.
+            static constexpr bool resolve_sync(bool sync) {
+                #if !defined(VSDK_Client)
+                return true;
+                #else
+                return sync;
+                #endif
+            }
+
+
             static std::vector<std::string> filter_resource_models(const std::string& resource, const std::vector<std::string>& files);
             static void load_resource_models(const std::string& resource, const std::vector<std::string>& files);
             // Keep cache warm across restarts, but drop entries no longer listed
@@ -243,7 +254,6 @@ namespace Vital::Engine {
 
             // Setters //
             void set_model_name(const std::string& name);
-
             bool set_component_visible(const std::string& component, bool state, bool sync = true);
             bool set_component_rendered(const std::string& component, bool state, bool sync = true);
             bool is_component_rendered(const std::string& component);

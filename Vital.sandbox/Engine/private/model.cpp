@@ -688,7 +688,7 @@ namespace Vital::Engine {
         if (!apply_wildcard(component, [&]{ return get_components(); }, exec))
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         #if !defined(VSDK_Client)
-        if (sync) broadcast_component_visible(component, state);
+        if (resolve_sync(sync)) broadcast_component_visible(component, state);
         #endif
         return true;
     }
@@ -805,7 +805,7 @@ namespace Vital::Engine {
         }
 
         #if !defined(VSDK_Client)
-        if (sync) broadcast_component_rendered(component, state);
+        if (resolve_sync(sync)) broadcast_component_rendered(component, state);
         #endif
         return true;
     }
@@ -905,7 +905,7 @@ namespace Vital::Engine {
         auto it = component_transforms.find(component);
         if (it != component_transforms.end() && it->second.is_equal_approx(transform)) return;
         component_transforms[component] = transform;
-        if (sync) broadcast_component_transform(component, transform);
+        if (resolve_sync(sync)) broadcast_component_transform(component, transform);
     }
 
     // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
@@ -1352,7 +1352,7 @@ namespace Vital::Engine {
         if (layer < 1) return false;
         if (!ensure_animation_layer(layer)) return false;
         apply_set_animation_layer_filter(layer, enabled, bone_paths);
-        if (sync) broadcast_animation_layer_filter(layer, enabled, bone_paths);
+        if (resolve_sync(sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
         return true;
     }
 
@@ -1373,24 +1373,24 @@ namespace Vital::Engine {
 
     bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
         if (!apply_play_animation_layer(layer, name, loop, speed, weight, blend_time)) return false;
-        if (sync) broadcast_animation_layer(0, layer, name, loop, speed, weight, blend_time);
+        if (resolve_sync(sync)) broadcast_animation_layer(0, layer, name, loop, speed, weight, blend_time);
         return true;
     }
 
     void Model::stop_animation_layer(int layer, float blend_time, bool sync) {
         apply_stop_animation_layer(layer, blend_time);
-        if (sync) broadcast_animation_layer(1, layer, "", true, 1.0f, 0.0f, blend_time);
+        if (resolve_sync(sync)) broadcast_animation_layer(1, layer, "", true, 1.0f, 0.0f, blend_time);
     }
 
     bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
         if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
-        if (sync) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
+        if (resolve_sync(sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
         return true;
     }
 
     void Model::set_animation_layer_speed(int layer, float speed, bool sync) {
         apply_set_animation_layer_speed(layer, speed);
-        if (sync) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
+        if (resolve_sync(sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
     }
 
     float Model::get_animation_layer_weight(int layer) const {
