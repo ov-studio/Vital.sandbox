@@ -104,17 +104,6 @@ namespace Vital::Sandbox::API {
                 });
             });
 
-            static Tool::Event::Handle unspawned_binding;
-            unspawned_binding.bind("entity:unspawn", [](Tool::Stack args) {
-                if (args.array.size() < 1) return;
-                if (!args.array[0].is_raw_ptr<base_class>()) return;
-                
-                auto entity = args.array[0].as_raw_ptr<base_class>();
-                Instance::destroy_by_ptr(entity, [](std::shared_ptr<Instance> instance) {
-                    instance -> body = nullptr;
-                });
-            });
-
             #if defined(VSDK_Client)
             static Tool::Event::Handle reset_binding;
             reset_binding.bind("environment:free", [](Tool::Stack) {
