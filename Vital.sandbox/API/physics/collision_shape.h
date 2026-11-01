@@ -83,7 +83,9 @@ namespace Vital::Sandbox::API {
 
             static Tool::Event::Handle spawned_binding;
             spawned_binding.bind("entity:spawn", [](Tool::Stack args) {
-                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) { instance.body = entity; });
+                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) {
+                    instance.body = entity;
+                });
             });
 
             #if defined(VSDK_Client)
