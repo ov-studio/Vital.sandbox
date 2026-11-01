@@ -122,7 +122,9 @@ namespace Vital::Sandbox::API {
                     return;
                 }
                 #endif
-                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) { instance.body = entity; });
+                API::Node_3D::on_spawn<Instance>(args, [](auto& instance, auto* entity) {
+                    instance.body = entity;
+                });
             });
 
             #if defined(VSDK_Client)
