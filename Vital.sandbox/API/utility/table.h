@@ -37,11 +37,12 @@ namespace Vital::Sandbox::API {
         
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "clone", [](auto vm, auto& id) -> int {
-                if (!vm -> is_table(1)) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-                vm -> copy_table(1, vm -> get_bool(2));
+                vm_args(vm, id, "(table, recursive = false)")
+                    .require(1, &Machine::is_table)
+                    .optional(2, &Machine::is_bool);
+
+                auto recursive = vm -> is_bool(2) ? vm -> get_bool(2) : false;
+                vm -> copy_table(1, recursive);
                 return 1;
             });
 
