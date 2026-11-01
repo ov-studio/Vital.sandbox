@@ -332,8 +332,6 @@ namespace Vital::Engine {
             object->add_child(instance);
             Engine::Core::get_singleton()->add_child(object);
 
-            godot::UtilityFunctions::print("Model::create -> net_id=", object->net_id, " name=", Tool::to_godot_string(name));
-
             // Defer only the network side-effects (RPC + sync registration)
             // to the next frame so the _spawn_entity RPC goes out after _ready()
             // has run and the node is fully initialised on the server.
@@ -456,7 +454,6 @@ namespace Vital::Engine {
         if (!sync_registered) Manager::Network::get_singleton()->enqueue_syncable_registration(this);
         Engine::Dimension::set_node_visible(this, true);
         Tool::Event::emit("entity:spawn", Tool::Stack({this, true}));
-        godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
 
         // The mesh tree exists now: run whatever was waiting on it (see Network::apply_mesh_ref).
         auto waiting = std::move(hydrate_callbacks);
@@ -1349,10 +1346,6 @@ namespace Vital::Engine {
             // Also register bare name as fallback (some GLBs author tracks that way).
             blend->set_filter_path(godot::NodePath(bone), true);
         }
-
-        godot::UtilityFunctions::print(
-            "Model::set_animation_layer_filter layer=", layer,
-            " skeleton_path='", skel_rel, "' bones=", (int)bone_paths.size());
     }
 
     bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths, bool sync) {

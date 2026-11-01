@@ -441,7 +441,6 @@ namespace Vital::Engine {
         core -> enqueue([captured_net_id, captured_parent_id, captured_oid, captured_dimension]() {
             Manager::Network::rpc(false, "_reparent_entity", (int)captured_net_id, (int)captured_parent_id);
             Manager::Network::rpc(false, "_sync_dimension", (int)captured_net_id, captured_dimension);
-            godot::UtilityFunctions::print("ISyncable::apply_parent net_id=", captured_net_id, " -> parent_net_id=", captured_parent_id);
             auto node = godot::Object::cast_to<godot::Node3D>(godot::ObjectDB::get_instance(captured_oid));
             if (!node) return;
             

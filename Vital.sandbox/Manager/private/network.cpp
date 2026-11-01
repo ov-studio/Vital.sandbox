@@ -738,7 +738,6 @@ namespace Vital::Manager {
                 entity->delta_last_vel = godot::Vector3();
                 entity->sync_sleeping  = false;
                 entity->sync_accum     = 0.0f;
-                godot::UtilityFunctions::print("replay _force_transform: net_id=", nid, " pos=", pos);
             }
         }
 

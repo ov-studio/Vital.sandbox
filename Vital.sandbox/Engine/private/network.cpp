@@ -180,7 +180,6 @@ namespace Vital::Engine {
                 }
                 net_mgr -> replay_pending_syncs(object);
                 Tool::Event::emit("entity:spawn", Tool::Stack({object, true}));
-                godot::UtilityFunctions::print("_spawn_entity [Model]: net_id=", net_id, " name=", name);
                 break;
             }
             case ST::PhysicsBody: {
@@ -240,7 +239,6 @@ namespace Vital::Engine {
                         entity->delta_last_rot = init_rot;
                     }
                     net_mgr -> replay_pending_syncs(entity);
-                    godot::UtilityFunctions::print("_spawn_entity [PhysicsBody/", name, "]: net_id=", net_id);
                     Tool::Event::emit("entity:spawn", Tool::Stack({entity, (int32_t)sub_type, true}));
                 }
                 break;
@@ -260,7 +258,6 @@ namespace Vital::Engine {
         Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
         if (!entity) return;
         entity -> set_sync_authority(peer_id);
-        godot::UtilityFunctions::print("_set_authority: net_id=", net_id, " -> peer_id=", peer_id);
         #endif
     }
 
@@ -269,7 +266,6 @@ namespace Vital::Engine {
         Engine::ISyncable* entity = Manager::Network::get_singleton() -> find_syncable((uint32_t)net_id);
         if (!entity) return;
         entity -> destroy_sync();
-        godot::UtilityFunctions::print("_destroy_entity: net_id=", net_id);
         #endif
     }
 
@@ -286,7 +282,6 @@ namespace Vital::Engine {
         if (child_ready && parent_ready) apply_reparent_entity((uint32_t)net_id, (uint32_t)parent_net_id);
         else {
             mgr->buffer_reparent((uint32_t)net_id, (uint32_t)parent_net_id);
-            godot::UtilityFunctions::print("_reparent_entity: buffering net_id=", net_id, " -> parent_net_id=", parent_net_id, " (child_ready=", child_ready, " parent_ready=", parent_ready, ")");
         }
         #endif
     }
@@ -322,7 +317,6 @@ namespace Vital::Engine {
         wheel->set_position(position);
         wheel->set_rotation(rotation);
         vehicle->add_child(wheel);
-        godot::UtilityFunctions::print("_spawn_wheel: net_id=", net_id, " wheel_id=", wheel_id);
         // Same as remote collision shapes: lets the API layer create the Lua instance, which fires entity:create
         Tool::Event::emit("entity:spawn", Tool::Stack({wheel, true}));
         #endif
@@ -658,8 +652,6 @@ namespace Vital::Engine {
         // parent-relative space after reparent zeros local position.
         if (entity->get_sync_parent_net_id() == 0 && mgr->has_pending_reparent((uint32_t)net_id)) {
             mgr->buffer_force_transform((uint32_t)net_id, pos, rot, scale);
-            godot::UtilityFunctions::print(
-                "_force_transform: buffering until reparent net_id=", net_id, " pos=", pos);
             return;
         }
 
@@ -689,7 +681,6 @@ namespace Vital::Engine {
         entity->delta_last_vel = godot::Vector3();
         entity->sync_sleeping  = false;
         entity->sync_accum     = 0.0f;
-        godot::UtilityFunctions::print("_force_transform: net_id=", net_id, " pos=", pos);
         #endif
     }
 
@@ -1094,11 +1085,9 @@ namespace Vital::Engine {
                 child_sync->delta_last_rot = frot;
                 child_sync->sync_sleeping  = false;
                 child_sync->sync_accum     = 0.0f;
-                godot::UtilityFunctions::print("_reparent_entity: applied buffered force net_id=", net_id, " pos=", fpos);
             }
         }
         #endif
-        godot::UtilityFunctions::print("_reparent_entity: net_id=", net_id, " -> parent_net_id=", parent_net_id);
     }
     
     void Network::_on_auth(int id, godot::PackedByteArray data) { if (on_auth) on_auth(id, data); }
