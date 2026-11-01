@@ -162,6 +162,7 @@
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/classes/visual_instance3d.hpp>
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/color_rect.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
