@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 if (args.array.size() < 3) return;
                 auto entity = args.array[0].as<Vital::Engine::ISyncable*>();
                 if (!entity) return;
-                
+
                 auto sub_type = (Vital::Engine::PhysicsType)args.array[1].as<int32_t>();
                 bool remote = args.array[2].as<bool>();
                 switch (sub_type) {
