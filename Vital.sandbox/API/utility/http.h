@@ -61,7 +61,9 @@ namespace Vital::Sandbox::API {
                 auto url = vm -> get_string(1);
                 auto headers = read_headers(vm, 2);
                 auto timeout = read_timeout(vm, 3);
-                request(vm, [url, headers, timeout]() { return Tool::HTTP::get(url, headers, timeout); });
+                request(vm, [url, headers, timeout]() { 
+                    return Tool::HTTP::get(url, headers, timeout); 
+                });
                 return 1;
             });
 
@@ -106,7 +108,9 @@ namespace Vital::Sandbox::API {
                 auto body = vm -> get_string(2);
                 auto headers = read_headers(vm, 3);
                 auto timeout = read_timeout(vm, 4);
-                request(vm, [url, body, headers, timeout]() { return Tool::HTTP::post(url, body, headers, timeout); });
+                request(vm, [url, body, headers, timeout]() { 
+                    return Tool::HTTP::post(url, body, headers, timeout); 
+                });
                 return 1;
             });
         }
