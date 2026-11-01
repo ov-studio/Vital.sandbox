@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Vital/sandbox.h>
+#include <Vital.sandbox/Engine/public/entity.h>
 
 
 //////////////////////////
