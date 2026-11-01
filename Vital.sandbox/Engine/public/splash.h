@@ -26,7 +26,7 @@ namespace Vital::Engine {
     class Splash : public godot::Control, public Tool::Base<Splash> {
         friend class Tool::Base<Splash>;
         private:
-            Webview* webview = nullptr;
+            Engine::Webview* webview = nullptr;
             godot::ColorRect* blackcover = nullptr;
             std::atomic<bool> webview_ready { false };
 

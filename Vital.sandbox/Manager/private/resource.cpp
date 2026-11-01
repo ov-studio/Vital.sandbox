@@ -971,7 +971,7 @@ namespace Vital::Manager {
 
     std::string Resource::get_resources_root() {
         #if defined(VSDK_Client)
-            if (auto* am = Asset::get_singleton()) return am -> get_resources_root();
+            if (auto* am = Manager::Asset::get_singleton()) return am -> get_resources_root();
         #endif
         return "resources";
     }

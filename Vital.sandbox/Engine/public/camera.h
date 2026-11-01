@@ -22,7 +22,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    class Camera : public godot::Camera3D, public Entity<Camera> {
+    class Camera : public godot::Camera3D, public Engine::Entity<Camera> {
         GDCLASS(Camera, godot::Camera3D)
         private:
             godot::Ref<godot::CameraAttributesPractical> attributes;

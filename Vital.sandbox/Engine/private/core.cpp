@@ -136,18 +136,18 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     bool Core::is_sandbox_ui_ready() {
         static const std::vector<std::function<bool()>> checks = {
-            [] { return Console::has_singleton()  && Console::get_singleton()  -> is_ready(); },
-            [] { return Splash::has_singleton()   && Splash::get_singleton()   -> is_ready(); },
-            [] { return MainMenu::has_singleton() && MainMenu::get_singleton() -> is_ready(); }
+            [] { return Engine::Console::has_singleton()  && Engine::Console::get_singleton()  -> is_ready(); },
+            [] { return Engine::Splash::has_singleton()   && Engine::Splash::get_singleton()   -> is_ready(); },
+            [] { return Engine::MainMenu::has_singleton() && Engine::MainMenu::get_singleton() -> is_ready(); }
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
 
     bool Core::is_sandbox_ui_visible() {
         static const std::vector<std::function<bool()>> checks = {
-            [] { return Console::has_singleton()  && Console::get_singleton()  -> is_visible(); },
-            [] { return Splash::has_singleton()   && Splash::get_singleton()   -> is_visible(); },
-            [] { return MainMenu::has_singleton() && MainMenu::get_singleton() -> is_visible(); }
+            [] { return Engine::Console::has_singleton()  && Engine::Console::get_singleton()  -> is_visible(); },
+            [] { return Engine::Splash::has_singleton()   && Engine::Splash::get_singleton()   -> is_visible(); },
+            [] { return Engine::MainMenu::has_singleton() && Engine::MainMenu::get_singleton() -> is_visible(); }
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
@@ -216,6 +216,8 @@ namespace Vital::Engine {
     void Core::teardown() {
         log("sbox", "tearing down...");
         #if defined(VSDK_Client)
+        // Webviews (main menu / splash) are native overlays; once destroyed the window would flash
+        // Godot's default grey clear colour. Cover with black and present a frame before teardown.
         static bool covered = false;
         if (!covered) {
             covered = true;

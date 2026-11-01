@@ -879,7 +879,7 @@ namespace Vital::Engine {
         if (!body_entity) {
             // The body's _spawn_entity RPC can arrive after this one on the same frame. Retry next frame, but never forever.
             if (attempt >= 600) return;
-            Core::get_singleton() -> enqueue([net_id, model_name, mode, entries, attempt]() {
+            Engine::Core::get_singleton() -> enqueue([net_id, model_name, mode, entries, attempt]() {
                 Network::apply_mesh_ref(net_id, model_name, mode, entries, attempt + 1);
             });
             return;
@@ -899,7 +899,7 @@ namespace Vital::Engine {
         }
 
         // Wait until the body is actually in the scene tree before touching it.
-        Core::get_singleton() -> execute_when_ready(body_node, nullptr,
+        Engine::Core::get_singleton() -> execute_when_ready(body_node, nullptr,
             [model_name, entries, mode](godot::Node3D* body_node, godot::Node*) {
 
             // Shapes are built from the asset and shared between every body that references the same mesh

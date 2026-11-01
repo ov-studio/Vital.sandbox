@@ -22,7 +22,7 @@
 ////////////////////////////////
 
 namespace Vital::Engine {
-    class Spot_Light : public godot::SpotLight3D, public Entity<Spot_Light> {
+    class Spot_Light : public godot::SpotLight3D, public Engine::Entity<Spot_Light> {
         GDCLASS(Spot_Light, godot::SpotLight3D)
         private:
             // Instantiators //

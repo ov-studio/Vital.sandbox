@@ -22,7 +22,7 @@
 /////////////////////////////////
 
 namespace Vital::Engine {
-    class Point_Light : public godot::OmniLight3D, public Entity<Point_Light> {
+    class Point_Light : public godot::OmniLight3D, public Engine::Entity<Point_Light> {
         GDCLASS(Point_Light, godot::OmniLight3D)
         private:
             // Instantiators //

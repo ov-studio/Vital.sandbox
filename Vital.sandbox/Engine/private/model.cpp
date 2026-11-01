@@ -330,7 +330,7 @@ namespace Vital::Engine {
             // _ready() and _notification() touch no Lua state, so there is no
             // re-entrancy risk from entering the tree here.
             object->add_child(instance);
-            Core::get_singleton()->add_child(object);
+            Engine::Core::get_singleton()->add_child(object);
 
             godot::UtilityFunctions::print("Model::create -> net_id=", object->net_id, " name=", Tool::to_godot_string(name));
 
@@ -344,7 +344,7 @@ namespace Vital::Engine {
             // capture would be dangling if Model::destroy() runs first.
             // Capture by ObjectID and re-validate through ObjectDB instead.
             godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
-            Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
+            Engine::Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                 if (!obj) return; // destroyed before this deferred registration ran
                 auto object = godot::Object::cast_to<Model>(obj);

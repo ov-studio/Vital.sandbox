@@ -37,7 +37,7 @@ namespace Vital::Engine {
     };
 
     template<typename Base>
-    class Physics_Body : public Base, public ISyncable {
+    class Physics_Body : public Base, public Engine::ISyncable {
         friend class Manager::Network;
         public:
             Type get_sync_type() const override { 
@@ -91,7 +91,7 @@ namespace Vital::Engine {
             godot::Node3D* get_sync_node() override { return this; }
 
             void reset_sync_state() override {
-                ISyncable::reset_sync_state();
+                Engine::ISyncable::reset_sync_state();
                 if constexpr (std::is_base_of_v<godot::RigidBody3D, Base>) {
                     auto net = Manager::Network::get_singleton();
                     bool is_authority = net && net -> get_peer_id() == sync_authority;
@@ -140,7 +140,7 @@ namespace Vital::Engine {
             }
 
             void _notify_predelete_sync() {
-                Tool::Event::emit("entity:unspawn", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type()}));
+                Tool::Event::emit("entity:unspawn", Tool::Stack({static_cast<Engine::ISyncable*>(this), (int32_t)get_physics_type()}));
                 Manager::Network::get_singleton() -> unregister_syncable(this);
                 sync_registered = false;
             }
@@ -154,22 +154,22 @@ namespace Vital::Engine {
                     uint32_t captured_id = net_id;
                     godot::String captured_name = Tool::to_godot_string(get_sync_name());
                     godot::ObjectID captured_oid = godot::ObjectID(get_instance_id());
-                    Core::get_singleton() -> add_child(this);
-                    Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {
+                    Engine::Core::get_singleton() -> add_child(this);
+                    Engine::Core::get_singleton() -> enqueue([captured_oid, captured_id, captured_name]() {
                         godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
                         if (!obj) return;
                         auto self = dynamic_cast<Physics_Body<Base>*>(obj);
                         if (!self) return;
 
                         Manager::Network::get_singleton() -> enqueue_syncable_registration(self);
-                        Manager::Network::rpc(false, "_spawn_entity", (int)captured_id, (int)ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
+                        Manager::Network::rpc(false, "_spawn_entity", (int)captured_id, (int)Engine::ISyncable::Type::PhysicsBody, captured_name, self -> get_sync_authority(), self -> get_sync_position(), self -> get_sync_rotation());
                         self -> flush_pending_shape_broadcast();
                         self -> flush_pending_force_transform();
-                        Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
+                        Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<Engine::ISyncable*>(self), (int32_t)self -> get_physics_type(), false}));
                     });
                 #else
-                    Core::get_singleton() -> add_child(this);
-                    Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<ISyncable*>(this), (int32_t)get_physics_type(), false}));
+                    Engine::Core::get_singleton() -> add_child(this);
+                    Tool::Event::emit("entity:spawn", Tool::Stack({static_cast<Engine::ISyncable*>(this), (int32_t)get_physics_type(), false}));
                 #endif
             }
 

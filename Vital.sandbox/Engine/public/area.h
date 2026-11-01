@@ -21,7 +21,7 @@
 //////////////////////////
 
 namespace Vital::Engine {
-    class Area : public godot::Area3D, public Entity<Area> {
+    class Area : public godot::Area3D, public Engine::Entity<Area> {
         GDCLASS(Area, godot::Area3D)
         private:
             // Instantiators //

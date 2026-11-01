@@ -96,7 +96,7 @@ namespace Vital::Engine {
         }
 
         godot::Vector2i monitor_size() {
-            auto* ds = Core::get_display_server();
+            auto* ds = Engine::Core::get_display_server();
             if (!ds) return godot::Vector2i(1920, 1080);
             godot::Vector2i best(0, 0);
             const int count = ds -> get_screen_count();
@@ -109,7 +109,7 @@ namespace Vital::Engine {
         }
 
         void apply_settings(const rapidjson::Value& settings) {
-            auto* ds = Core::get_display_server();
+            auto* ds = Engine::Core::get_display_server();
             if (!ds) return;
 
             // Skip re-applying window chrome when only volume/draw-distance change (slider spam).
@@ -181,7 +181,7 @@ namespace Vital::Engine {
                     ds -> window_set_size(size);
                     ds -> window_set_position(pos);
 
-                    auto* core = Core::get_singleton();
+                    auto* core = Engine::Core::get_singleton();
                     if (core && at_native && shrinking) {
                         core -> enqueue([ds, size, pos]() {
                             ds -> window_set_size(size);
@@ -213,7 +213,7 @@ namespace Vital::Engine {
             }
 
             if (settings.HasMember("volume") && settings["volume"].IsNumber()) {
-                if (auto* as = Core::get_audio_server()) {
+                if (auto* as = Engine::Core::get_audio_server()) {
                     double linear = std::clamp(settings["volume"].GetDouble(), 0.0, 1.0);
                     int idx = as -> get_bus_index(godot::StringName("Master"));
                     if (idx < 0) idx = 0;
@@ -1029,7 +1029,7 @@ namespace Vital::Engine {
         if (action == "ready") ready();
         else if (action == "hide") hide();
         else if (action == "drag") {
-            auto* ds = Core::get_display_server();
+            auto* ds = Engine::Core::get_display_server();
             const auto mode = ds -> window_get_mode();
             // No move-drag in exclusive or borderless-native fullscreen.
             if (mode == godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN
@@ -1038,8 +1038,8 @@ namespace Vital::Engine {
             }
             ds -> window_start_drag();
         }
-        else if (action == "minimize") Core::get_display_server() -> window_set_mode(godot::DisplayServer::WINDOW_MODE_MINIMIZED);
-        else if (action == "exit") Core::get_singleton() -> shutdown();
+        else if (action == "minimize") Engine::Core::get_display_server() -> window_set_mode(godot::DisplayServer::WINDOW_MODE_MINIMIZED);
+        else if (action == "exit") Engine::Core::get_singleton() -> shutdown();
         else if (action == "open_url") {
             // Opens in the OS default browser. Web links only: never hand arbitrary schemes/paths to the shell.
             if (!document.HasMember("url") || !document["url"].IsString()) return;

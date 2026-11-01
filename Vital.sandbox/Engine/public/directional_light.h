@@ -22,7 +22,7 @@
 ///////////////////////////////////////
 
 namespace Vital::Engine {
-    class Directional_Light : public godot::DirectionalLight3D, public Entity<Directional_Light> {
+    class Directional_Light : public godot::DirectionalLight3D, public Engine::Entity<Directional_Light> {
         GDCLASS(Directional_Light, godot::DirectionalLight3D)
         private:
             // Instantiators //

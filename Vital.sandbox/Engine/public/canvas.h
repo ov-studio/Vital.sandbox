@@ -121,7 +121,7 @@ namespace Vital::Engine {
             void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
-                Texture* texture,
+                Engine::Texture* texture,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
@@ -130,7 +130,7 @@ namespace Vital::Engine {
             void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
-                Rendertarget* rendertarget,
+                Engine::Rendertarget* rendertarget,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
@@ -148,7 +148,7 @@ namespace Vital::Engine {
             void draw_material(
                 godot::Vector2 position,
                 godot::Vector2 size,
-                Shader* shader,
+                Engine::Shader* shader,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
@@ -185,7 +185,7 @@ namespace Vital::Engine {
                 const std::string& text,
                 godot::Vector2 start_at,
                 godot::Vector2 end_at,
-                Font* font,
+                Engine::Font* font,
                 int font_size,
                 const godot::Color& color = {1, 1, 1, 1},
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER},

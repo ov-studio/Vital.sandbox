@@ -22,7 +22,7 @@
 ///////////////////////////
 
 namespace Vital::Engine {
-    class Image : public Texture {
+    class Image : public Engine::Texture {
         public:
             enum class Format {
                 JPG,

@@ -33,7 +33,7 @@ namespace Vital::Engine {
             const uint64_t current = godot::Engine::get_singleton() -> get_process_frames();
             if (current != frame) {
                 frame = current;
-                auto* camera = Camera::get_active();
+                auto* camera = Engine::Camera::get_active();
                 clip = camera ? camera -> get_far() : 0.0f;
             }
             return clip;
@@ -45,7 +45,7 @@ namespace Vital::Engine {
     // Particle distance setting: past (camera far x multiplier) Godot stops rendering the emitter.
     // At 100% the range is switched off, so the far plane stays the only limit.
     void GPU_Particles::sync_distance() {
-        const float mult = MainMenu::get_particle_distance();
+        const float mult = Engine::MainMenu::get_particle_distance();
         float range = 0.0f;
         if (mult < 1.0f) {
             const float clip = get_reference_clip();
@@ -246,28 +246,28 @@ namespace Vital::Engine {
         apply_material();
     }
 
-    void GPU_Particles::set_material(Texture* texture) {
+    void GPU_Particles::set_material(Engine::Texture* texture) {
         if (!texture) return;
         texture -> heartbeat();
         set_material(godot::Ref<godot::Texture2D>(texture -> get_texture()));
     }
 
-    void GPU_Particles::set_material(Rendertarget* rendertarget) {
+    void GPU_Particles::set_material(Engine::Rendertarget* rendertarget) {
         if (!rendertarget) return;
         set_material(godot::Ref<godot::Texture2D>(rendertarget -> get_texture()));
     }
 
-    void GPU_Particles::set_material(Shader* shader) {
+    void GPU_Particles::set_material(Engine::Shader* shader) {
         if (!shader) return;
-        if (shader -> get_mode() != Shader::Mode::Spatial) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the SPATIAL mode");
+        if (shader -> get_mode() != Engine::Shader::Mode::Spatial) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader must be created with the SPATIAL mode");
         draw_shader = shader -> create_surface_material(godot::Ref<godot::Material>());
         apply_material();
     }
 
     void GPU_Particles::set_material(const std::string& path) {
         try {
-            auto texture = Texture::get_from_reference(path);
-            if (!texture) texture = Image::create(path, path);
+            auto texture = Engine::Texture::get_from_reference(path);
+            if (!texture) texture = Engine::Image::create(path, path);
             set_material(texture);
         }
         catch (...) { std::rethrow_exception(std::current_exception()); }
@@ -280,7 +280,7 @@ namespace Vital::Engine {
         apply_material();
     }
 
-    void GPU_Particles::set_mesh(Model* model, const std::string& component) {
+    void GPU_Particles::set_mesh(Engine::Model* model, const std::string& component) {
         if (!model) return;
         std::vector<godot::Ref<godot::Mesh>> collected;
         if (!component.empty()) {

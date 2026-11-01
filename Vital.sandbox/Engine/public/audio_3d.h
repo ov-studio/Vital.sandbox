@@ -23,7 +23,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    class Audio_3D : public godot::Node3D, public Audio_Bus {
+    class Audio_3D : public godot::Node3D, public Engine::Audio_Bus {
         private:
             godot::Ref<godot::AudioStream> stream;
             godot::AudioStreamPlayer3D* player = nullptr;

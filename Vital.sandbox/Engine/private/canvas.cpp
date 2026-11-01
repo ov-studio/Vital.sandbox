@@ -90,7 +90,7 @@ namespace Vital::Engine {
     void Canvas::_process(double delta) {
         Engine::Texture::flush();
         Manager::Sandbox::get_singleton() -> draw(this);
-        Shader::end_frame_postprocess(); // TODO: Improve
+        Engine::Shader::end_frame_postprocess(); // TODO: Improve
         pool.end_frame(delta);
     }
 
@@ -323,7 +323,7 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
-        Texture* texture,
+        Engine::Texture* texture,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
@@ -335,7 +335,7 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
-        Rendertarget* rendertarget,
+        Engine::Rendertarget* rendertarget,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
@@ -357,13 +357,13 @@ namespace Vital::Engine {
     void Canvas::draw_material(
         godot::Vector2 position,
         godot::Vector2 size,
-        Shader* shader,
+        Engine::Shader* shader,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
         if (!shader) return;
-        if (shader -> get_mode() == Shader::Mode::Postprocess) {
+        if (shader -> get_mode() == Engine::Shader::Mode::Postprocess) {
             // Postprocess shaders render fullscreen on a quad parented to the camera.
             // Position and size are intentionally ignored — the quad always covers
             // the entire screen. Use set_param_rt to write results to a rendertarget
@@ -432,7 +432,7 @@ namespace Vital::Engine {
         const std::string& text,
         godot::Vector2 start_at,
         godot::Vector2 end_at,
-        Font* font,
+        Engine::Font* font,
         int font_size,
         const godot::Color& color,
         std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment,

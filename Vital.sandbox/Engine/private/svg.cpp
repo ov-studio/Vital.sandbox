@@ -23,7 +23,7 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    SVG::SVG(const godot::Ref<godot::ImageTexture>& texture, const std::string& reference) : Texture(reference), texture(texture) {}
+    SVG::SVG(const godot::Ref<godot::ImageTexture>& texture, const std::string& reference) : Engine::Texture(reference), texture(texture) {}
 
 
     // Misc //

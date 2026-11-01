@@ -27,7 +27,7 @@ namespace Vital::Engine {
     class MainMenu : public godot::Control, public Tool::Base<MainMenu> {
         friend class Tool::Base<MainMenu>;
         private:
-            Webview* webview = nullptr;
+            Engine::Webview* webview = nullptr;
             std::atomic<bool> webview_ready { false };
             static std::atomic<float> draw_distance;
             static std::atomic<float> particle_distance;

@@ -23,7 +23,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    class Vehicle_Wheel : public godot::VehicleWheel3D, public ISyncChild {
+    class Vehicle_Wheel : public godot::VehicleWheel3D, public Engine::ISyncChild {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
         friend class Network;
         private:

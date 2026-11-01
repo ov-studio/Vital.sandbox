@@ -27,7 +27,7 @@ namespace Vital::Manager {
 }
 
 namespace Vital::Engine {
-    class Model : public godot::Node3D, public ISyncable {
+    class Model : public godot::Node3D, public Engine::ISyncable {
         GDCLASS(Model, godot::Node3D)
         friend class Network;
         friend class Manager::Network;

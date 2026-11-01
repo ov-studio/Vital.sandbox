@@ -28,7 +28,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    class GPU_Particles : public godot::GPUParticles3D, public Entity<GPU_Particles> {
+    class GPU_Particles : public godot::GPUParticles3D, public Engine::Entity<GPU_Particles> {
         GDCLASS(GPU_Particles, godot::GPUParticles3D)
         private:
             // Built-in resources. Each emitter owns its own copies so
@@ -103,15 +103,15 @@ namespace Vital::Engine {
 
             // Material: a texture (image / svg / path / rendertarget) is shown through the
             // built-in material, a SPATIAL shader replaces the built-in material entirely
-            void set_material(Texture* texture);
-            void set_material(Rendertarget* rendertarget);
-            void set_material(Shader* shader);
+            void set_material(Engine::Texture* texture);
+            void set_material(Engine::Rendertarget* rendertarget);
+            void set_material(Engine::Shader* shader);
             void set_material(const std::string& path);
             void set_material(const godot::Ref<godot::Texture2D>& texture);
             void reset_material();
 
             // Mesh: replaces the quad with the meshes of a model (up to MAX_DRAW_PASSES)
-            void set_mesh(Model* model, const std::string& component = "");
+            void set_mesh(Engine::Model* model, const std::string& component = "");
             void reset_mesh();
 
             void set_color_ramp(const godot::Color& from, const godot::Color& to);

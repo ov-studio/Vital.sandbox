@@ -22,7 +22,7 @@
 /////////////////////////////////////
 
 namespace Vital::Engine {
-    class Collision_Shape : public godot::CollisionShape3D, public ISyncChild {
+    class Collision_Shape : public godot::CollisionShape3D, public Engine::ISyncChild {
         GDCLASS(Collision_Shape, godot::CollisionShape3D)
         friend class Network;
         private:

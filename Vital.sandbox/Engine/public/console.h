@@ -28,7 +28,7 @@ namespace Vital::Engine {
         friend class Tool::Base<Console>;
         private:
             #if defined(VSDK_Client)
-            Webview* webview = nullptr;
+            Engine::Webview* webview = nullptr;
             std::mutex pre_ready_mutex;
             std::atomic<bool> webview_ready { false };
             std::vector<std::pair<std::string, std::string>> pre_ready_queue;

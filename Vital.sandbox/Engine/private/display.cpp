@@ -25,11 +25,11 @@
 namespace Vital::Engine {
     // Getters //
     godot::Vector2 Display::get_resolution() {
-        return Core::get_display_server() -> window_get_size();
+        return Engine::Core::get_display_server() -> window_get_size();
     }
 
     godot::Ref<godot::ViewportTexture> Display::get_texture() {
-        return Core::get_scene_root() -> get_texture();
+        return Engine::Core::get_scene_root() -> get_texture();
     }
     
     godot::Ref<godot::ShaderMaterial> Display::get_screen_material() {
@@ -75,7 +75,7 @@ namespace Vital::Engine {
     void Display::_on_frame_post_draw() {
         if (last_frame_requested.exchange(false) || last_frame_pinned) {
             last_frame_idle = 0;
-            viewport_rid = Core::get_scene_root() -> get_viewport_rid();
+            viewport_rid = Engine::Core::get_scene_root() -> get_viewport_rid();
             copy_target = last_frame_texture;
             godot::RenderingServer::get_singleton() -> call_on_render_thread(godot::Callable(this, "_copy_last_frame"));
             return;

@@ -22,7 +22,7 @@
 /////////////////////////
 
 namespace Vital::Engine {
-    class SVG : public Texture {
+    class SVG : public Engine::Texture {
         protected:
             godot::Ref<godot::ImageTexture> texture;
 

@@ -23,7 +23,7 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Image::Image(const godot::Ref<godot::ImageTexture>& texture, const std::string& reference) : Texture(reference), texture(texture) {}
+    Image::Image(const godot::Ref<godot::ImageTexture>& texture, const std::string& reference) : Engine::Texture(reference), texture(texture) {}
 
 
     // Checkers //
