@@ -104,7 +104,9 @@ namespace Vital::Sandbox::API {
 
         template<typename T>
         static void settle_later(int promise_id, State state, T value, std::function<void()> before = nullptr) {
-            settle_later_with(promise_id, state, [value](Machine* vm) { vm -> push_value(value); }, before);
+            settle_later_with(promise_id, state, [value](Machine* vm) {
+                vm -> push_value(value);
+            }, before);
         }
 
         template<typename Work, typename Push>
@@ -112,7 +114,9 @@ namespace Vital::Sandbox::API {
             Tool::Thread::create([promise_id, work, push, before](Tool::Thread*) {
                 try {
                     auto result = work();
-                    settle_later_with(promise_id, State::Resolved, [result, push](Machine* vm) { push(vm, result); }, before);
+                    settle_later_with(promise_id, State::Resolved, [result, push](Machine* vm) {
+                        push(vm, result);
+                    }, before);
                 }
                 catch (const std::exception& error) {
                     settle_later(promise_id, State::Rejected, std::string(error.what()), before);
@@ -122,9 +126,11 @@ namespace Vital::Sandbox::API {
 
         template<typename Work>
         static void run_async(int promise_id, Work work, std::function<void()> before = nullptr) {
-            run_async_with(promise_id, work, [](Machine* vm, const auto& value) { vm -> push_value(value); }, before);
+            run_async_with(promise_id, work, [](Machine* vm, const auto& value) {
+                vm -> push_value(value);
+            }, before);
         }
-
+    
         static std::shared_ptr<Instance> make(Machine* vm, bool push_to_stack = false) {
             return Instance::make(vm, push_to_stack);
         }
