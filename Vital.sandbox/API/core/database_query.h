@@ -41,6 +41,13 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static std::function<void()> release_hook(int instance_id) {
+            return [instance_id]() {
+                auto instance = Instance::find(instance_id);
+                if (instance) instance -> clean();
+            };
+        }
+
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int idx) {
             std::unordered_map<std::string, std::string> result;
             vm -> push_nil();
@@ -122,51 +129,20 @@ namespace Vital::Sandbox::API {
                 auto instance_id = self -> id;
                 auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
-
-                Tool::Thread::create([instance_id, promise_id, query](Tool::Thread*) {
+                
+                API::Promise::run_async_with(promise_id, [instance_id, query]() {
                     auto instance = Instance::find(instance_id);
-                    if (!instance) {
-                        Machine::enqueue([promise_id]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(std::string("query instance was destroyed"));
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                        return;
+                    if (!instance) throw std::runtime_error("query instance was destroyed");
+                    return query -> db -> fetch(query.get());
+                }, [](Machine* vm, const auto& rows) {
+                    int idx = 1;
+                    vm -> create_table();
+                    for (const auto& row : rows) {
+                        vm -> create_table();
+                        for (const auto& [column, cell] : row) vm -> table_set_value(column, cell);
+                        vm -> set_table_field(idx++, -2);
                     }
-
-                    try {
-                        auto rows = query -> db -> fetch(query.get());
-                        Machine::enqueue([instance_id, promise_id, rows]() {
-                            auto instance = Instance::find(instance_id);
-                            if (instance) instance -> clean();
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            int idx = 1;
-                            vm -> create_table();
-                            for (const auto& row : rows) {
-                                vm -> create_table();
-                                for (const auto& [column, cell] : row) vm -> table_set_value(column, cell);
-                                vm -> set_table_field(idx++, -2);
-                            }
-                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        });
-                    }
-                    catch (const std::runtime_error& error) {
-                        std::string message = error.what();
-                        Machine::enqueue([instance_id, promise_id, message]() {
-                            auto instance = Instance::find(instance_id);
-                            if (instance) instance -> clean();
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(message);
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                    }
-                }) -> detach();
+                }, release_hook(instance_id));
                 return 1;
             });
 
@@ -210,28 +186,7 @@ namespace Vital::Sandbox::API {
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
-                Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
-                    try {
-                        db -> alter(table, actions);
-                        Machine::enqueue([promise_id]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(true);
-                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        });
-                    }
-                    catch (const std::runtime_error& error) {
-                        std::string message = error.what();
-                        Machine::enqueue([promise_id, message]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(message);
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                    }
-                }) -> detach();
+                API::Promise::run_async(promise_id, [db, table, actions]() { db -> alter(table, actions); return true; });
                 return 1;
             });
 
@@ -241,28 +196,7 @@ namespace Vital::Sandbox::API {
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
-                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    try {
-                        db -> drop(table);
-                        Machine::enqueue([promise_id]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(true);
-                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        });
-                    }
-                    catch (const std::runtime_error& error) {
-                        std::string message = error.what();
-                        Machine::enqueue([promise_id, message]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(message);
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                    }
-                }) -> detach();
+                API::Promise::run_async(promise_id, [db, table]() { db -> drop(table); return true; });
                 return 1;
             });
 
@@ -272,28 +206,7 @@ namespace Vital::Sandbox::API {
                 auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
-                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    try {
-                        db -> truncate(table);
-                        Machine::enqueue([promise_id]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(true);
-                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        });
-                    }
-                    catch (const std::runtime_error& error) {
-                        std::string message = error.what();
-                        Machine::enqueue([promise_id, message]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(message);
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                    }
-                }) -> detach();
+                API::Promise::run_async(promise_id, [db, table]() { db -> truncate(table); return true; });
                 return 1;
             });
 
@@ -302,44 +215,11 @@ namespace Vital::Sandbox::API {
                 auto query = std::make_shared<base_class>(*self -> query);
                 auto promise_id = API::Promise::make(vm, true) -> id;
 
-                Tool::Thread::create([instance_id, promise_id, query](Tool::Thread*) {
+                API::Promise::run_async(promise_id, [instance_id, query]() {
                     auto instance = Instance::find(instance_id);
-                    if (!instance) {
-                        Machine::enqueue([promise_id]() {
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(std::string("query instance was destroyed"));
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                        return;
-                    }
-
-                    try {
-                        bool result = query -> db -> execute(query.get());
-                        Machine::enqueue([instance_id, promise_id, result]() {
-                            auto instance = Instance::find(instance_id);
-                            if (instance) instance -> clean();
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(result);
-                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        });
-                    }
-                    catch (const std::runtime_error& error) {
-                        std::string message = error.what();
-                        Machine::enqueue([instance_id, promise_id, message]() {
-                            auto instance = Instance::find(instance_id);
-                            if (instance) instance -> clean();
-                            auto promise = API::Promise::Instance::find(promise_id);
-                            if (!API::Promise::is_pending(promise)) return;
-                            auto vm = promise -> vm;
-                            vm -> push_value(message);
-                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        });
-                    }
-                }) -> detach();
+                    if (!instance) throw std::runtime_error("query instance was destroyed");
+                    return query -> db -> execute(query.get());
+                }, release_hook(instance_id));
                 return 1;
             });
         }
