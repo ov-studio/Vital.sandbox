@@ -90,6 +90,41 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        template<typename Push>
+        static void settle_later_with(int promise_id, State state, Push push, std::function<void()> before = nullptr) {
+            Machine::enqueue([promise_id, state, push, before]() {
+                if (before) before();
+                auto promise = Instance::find(promise_id);
+                if (!is_pending(promise)) return;
+                auto vm = promise -> vm;
+                push(vm);
+                settle(promise, state, vm, vm -> get_count(), 1);
+            });
+        }
+
+        template<typename T>
+        static void settle_later(int promise_id, State state, T value, std::function<void()> before = nullptr) {
+            settle_later_with(promise_id, state, [value](Machine* vm) { vm -> push_value(value); }, before);
+        }
+
+        template<typename Work, typename Push>
+        static void run_async_with(int promise_id, Work work, Push push, std::function<void()> before = nullptr) {
+            Tool::Thread::create([promise_id, work, push, before](Tool::Thread*) {
+                try {
+                    auto result = work();
+                    settle_later_with(promise_id, State::Resolved, [result, push](Machine* vm) { push(vm, result); }, before);
+                }
+                catch (const std::exception& error) {
+                    settle_later(promise_id, State::Rejected, std::string(error.what()), before);
+                }
+            }) -> detach();
+        }
+
+        template<typename Work>
+        static void run_async(int promise_id, Work work, std::function<void()> before = nullptr) {
+            run_async_with(promise_id, work, [](Machine* vm, const auto& value) { vm -> push_value(value); }, before);
+        }
+
         static std::shared_ptr<Instance> make(Machine* vm, bool push_to_stack = false) {
             return Instance::make(vm, push_to_stack);
         }
