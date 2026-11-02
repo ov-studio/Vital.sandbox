@@ -248,13 +248,21 @@ namespace Vital::Engine {
             // Setters //
             void set_model_name(const std::string& name);
 
+            // Keys of replicated state that was changed with sync = false, so other peers don't have it yet.
+            std::unordered_set<std::string> unsynced_keys;
+
+            // Decides whether a setter must broadcast. `changed` is whether the call changed this peer's state.
+            // Unchanged values are not re-sent, except when an earlier sync = false call left the peers behind (see unsynced_keys).
+            // A sync = false call never broadcasts and remembers that the peers are behind.
+            bool needs_broadcast(const std::string& key, bool changed, bool sync);
+
             // Every `sync` argument goes through this: the server is the source of truth, so it always replicates
             // and ignores sync = false. Only a client (owning the entity) can keep a change local.
             static constexpr bool resolve_sync(bool sync) {
                 #if !defined(VSDK_Client)
-                    return true;
+                return true;
                 #else
-                    return sync;
+                return sync;
                 #endif
             }
 
