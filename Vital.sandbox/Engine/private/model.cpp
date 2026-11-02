@@ -699,7 +699,7 @@ namespace Vital::Engine {
             if (!mesh) return false;
             // Hidden is the only recorded state, so the call changes something when it asks for the opposite
             bool changed = (component_hidden.count(name) > 0) == state;
-            if (needs_broadcast("visible|" + name, changed, sync)) broadcast = true;
+            if (needs_broadcast(fmt::format("visible:{}", name), changed, sync)) broadcast = true;
             mesh->set_visible(state);
             // Track non-default (hidden) state for late-join dump.
             // Default is visible, so only record when hidden.
@@ -784,7 +784,7 @@ namespace Vital::Engine {
                 godot::MeshInstance3D* mesh = it->second;
                 detached_components.erase(it);
                 component_detached.erase(name);
-                if (needs_broadcast("rendered|" + name, true, sync)) broadcast = true;
+                if (needs_broadcast(fmt::format("rendered:{}", name), true, sync)) broadcast = true;
                 this->add_child(mesh);
                 mesh->set_physics_process(true);
                 mesh->set_process(true);
@@ -817,7 +817,7 @@ namespace Vital::Engine {
                 parent->remove_child(mesh);
                 detached_components[name] = mesh;
                 component_detached.insert(name);
-                if (needs_broadcast("rendered|" + name, true, sync)) broadcast = true;
+                if (needs_broadcast(fmt::format("rendered:{}", name), true, sync)) broadcast = true;
                 return true;
             };
             if (Tool::contains_wildcard(component)) {
@@ -930,7 +930,7 @@ namespace Vital::Engine {
         auto it = component_transforms.find(component);
         bool changed = it == component_transforms.end() || !it->second.is_equal_approx(transform);
         component_transforms[component] = transform;
-        if (needs_broadcast("transform|" + component, changed, sync)) broadcast_component_transform(component, transform);
+        if (needs_broadcast(fmt::format("transform:{}", component), changed, sync)) broadcast_component_transform(component, transform);
     }
 
     // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
@@ -1023,7 +1023,7 @@ namespace Vital::Engine {
             auto it = recorded.find(name);
             bool changed = it == recorded.end() || !godot::Math::is_equal_approx(it->second, value);
             recorded[name] = value;
-            if (needs_broadcast("blendshape|" + component + "|" + name, changed, sync)) broadcast = true;
+            if (needs_broadcast(fmt::format("blendshape:{}:{}", component, name), changed, sync)) broadcast = true;
             return true;
         };
         if (!apply_wildcard(blend_shape, [&]{ return get_blendshapes(component); }, exec)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("blendshape '{}' not found in component '{}'", blend_shape, component));
@@ -1439,7 +1439,7 @@ namespace Vital::Engine {
         const auto& current = anim_layers[layer];
         bool changed = current.filter_enabled != (enabled && !bone_paths.empty()) || current.filter_bones != (enabled ? bone_paths : std::vector<std::string>{});
         apply_set_animation_layer_filter(layer, enabled, bone_paths);
-        if (needs_broadcast("filter|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
+        if (needs_broadcast(fmt::format("filter:{}", layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
         return true;
     }
 
@@ -1472,7 +1472,7 @@ namespace Vital::Engine {
     bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
         bool changed = layer > 0 && layer < (int)anim_layers.size() && !godot::Math::is_equal_approx(anim_layers[layer].weight_target, std::clamp(weight, 0.0f, 1.0f));
         if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
-        if (needs_broadcast("weight|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
+        if (needs_broadcast(fmt::format("weight:{}", layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
         return true;
     }
 
@@ -1480,7 +1480,7 @@ namespace Vital::Engine {
         bool valid = layer >= 0 && layer < (int)anim_layers.size();
         bool changed = valid && !godot::Math::is_equal_approx(anim_layers[layer].speed, speed);
         apply_set_animation_layer_speed(layer, speed);
-        if (valid && needs_broadcast("speed|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
+        if (valid && needs_broadcast(fmt::format("speed:{}", layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
     }
 
     float Model::get_animation_layer_weight(int layer) const {

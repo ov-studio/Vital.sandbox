@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
                     try {
                         if (winner) model -> apply_material_shader(component, material, winner -> owner -> shader -> get_surface_factory());
                         else model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>());
-                        touched.insert(Tool::to_std_string(model_id) + "|" + component + "|" + material);
+                        touched.insert(fmt::format("{}:{}:{}", model_id, component, material));
                     } catch (...) {}
                 }
             }
