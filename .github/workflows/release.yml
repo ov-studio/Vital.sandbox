@@ -127,13 +127,11 @@ jobs:
 
 
   # ── Build: Linux ────────────────────────────────────────────────────────────
-  # TODO: re-enable once Windows is confirmed working
   # build-linux:
   #   ...
 
 
   # ── Build: macOS ────────────────────────────────────────────────────────────
-  # TODO: re-enable once Windows is confirmed working
   # build-macos:
   #   ...
 
