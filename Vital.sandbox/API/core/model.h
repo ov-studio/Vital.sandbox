@@ -187,11 +187,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_animation_playing", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_animation_playing());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_animation_layer_playing", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer)", true)
                     .require(2, &Machine::is_number);
@@ -353,22 +348,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_current_animation", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_current_animation());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_current_animation_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer)", true)
                     .require(2, &Machine::is_number);
 
                 auto layer = vm -> get_int(2);
                 vm -> push_value(self -> model -> get_current_animation_layer(layer));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_animation_speed", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_animation_speed());
                 return 1;
             });
 
@@ -567,16 +552,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(4);
                 auto sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
                 self -> model -> set_blendshape_value(component, blendshape, value, sync);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::Syncable::bind_method<Instance>(vm, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(speed)", true)
-                    .require(2, &Machine::is_number);
-
-                auto speed = vm -> get_float(2);
-                self -> model -> set_animation_speed(speed);
                 vm -> push_value(true);
                 return 1;
             });

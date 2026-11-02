@@ -105,7 +105,6 @@ namespace Vital::Engine {
             godot::MeshInstance3D* assert_component(const std::string& component);
             std::pair<godot::MeshInstance3D*, int> assert_material(const std::string& component, const std::string& material);
             godot::Skeleton3D* assert_skeleton();
-            godot::AnimationPlayer* assert_animation_player();
             void assert_material_feature(int feature);
             void assert_material_flag(int flag);
 
@@ -207,7 +206,6 @@ namespace Vital::Engine {
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_material_feature(const std::string& component, const std::string& material, int feature);
             bool is_material_flag(const std::string& component, const std::string& material, int flag);
-            bool is_animation_playing();
             bool is_animation_layer_playing(int layer) const;
 
 
@@ -236,8 +234,6 @@ namespace Vital::Engine {
             std::vector<std::string> get_animations();
             float get_blendshape_value(const std::string& component, const std::string& blend_shape);
             godot::Vector3 get_bone_position(const std::string& bone);
-            std::string get_current_animation();
-            float get_animation_speed();
             int get_animation_layer_count() const;
             float get_animation_layer_weight(int layer) const;
             float get_animation_layer_speed(int layer) const;
@@ -315,7 +311,6 @@ namespace Vital::Engine {
             void broadcast_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             // Late-join accessor used by Manager::Network::send_full_state_to_peer.
             const std::unordered_map<std::string, std::unordered_map<std::string, float>>& get_blendshape_values() const { return blendshape_values; }
-            void set_animation_speed(float speed);
             void set_animation_layer_speed(int layer, float speed, bool sync = true);
             bool set_animation_layer_weight(int layer, float weight, float blend_time = 0.0f, bool sync = true);
 

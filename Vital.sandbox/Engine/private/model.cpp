@@ -170,11 +170,6 @@ namespace Vital::Engine {
         return skeleton;
     }
 
-    godot::AnimationPlayer* Model::assert_animation_player() {
-        if (!anim_player) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no animation player found in model '{}'", model_name));
-        return anim_player;
-    }
-
     void Model::assert_material_feature(int feature) {
         if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material feature");
     }
@@ -591,8 +586,6 @@ namespace Vital::Engine {
         return std_mat->get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
     }
 
-    bool Model::is_animation_playing() { return anim_player && anim_player->is_playing(); }
-
 
     //------------//
     //  Getters   //
@@ -664,12 +657,6 @@ namespace Vital::Engine {
         if (idx == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("bone '{}' not found in model '{}'", bone, model_name));
         return skel->get_global_transform().xform(skel->get_bone_global_pose(idx).origin);
     }
-
-    std::string Model::get_current_animation() {
-        return Tool::to_std_string(assert_animation_player()->get_current_animation());
-    }
-
-    float Model::get_animation_speed() { return assert_animation_player()->get_speed_scale(); }
 
 
     //------------//
@@ -1080,8 +1067,6 @@ namespace Vital::Engine {
         Manager::Network::rpc_id(false, 1, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
         #endif
     }
-
-    void Model::set_animation_speed(float speed) { assert_animation_player()->set_speed_scale(speed); }
 
 
     //---------//
