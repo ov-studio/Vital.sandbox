@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: audio_events.h
+     Script: Engine: audio_watcher.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 02/11/2026
-     Desc: Audio Events Utilities
+     Desc: Audio Watcher Utilities
 ----------------------------------------------------------------*/
 
 
@@ -17,14 +17,14 @@
 #include <Vital.sandbox/Engine/public/core.h>
 
 
-////////////////////////////////
-// Vital: Engine: Audio_Events //
-////////////////////////////////
+//////////////////////////////////
+// Vital: Engine: Audio_Watcher //
+//////////////////////////////////
 
 // TODO: Improve
 namespace Vital::Engine {
-    class Audio_Events : public godot::Node {
-        GDCLASS(Audio_Events, godot::Node)
+    class Audio_Watcher : public godot::Node {
+        GDCLASS(Audio_Watcher, godot::Node)
         private:
             std::function<bool()> playing_resolver;
             std::function<void()> start_handler;
@@ -37,10 +37,10 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            Audio_Events() = default;
-            ~Audio_Events() override = default;
+            Audio_Watcher() = default;
+            ~Audio_Watcher() override = default;
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &Audio_Events::on_finished);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &Audio_Watcher::on_finished);
             }
         public:
             // Hooks //
@@ -54,7 +54,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Audio_Events* create(godot::Node* player, std::function<bool()> playing_resolver);
+            static Audio_Watcher* create(godot::Node* player, std::function<bool()> playing_resolver);
             void detach();
     };
 }

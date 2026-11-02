@@ -31,8 +31,8 @@ namespace Vital::Engine {
         return bus_name;
     }
 
-    void Audio_Bus::create_events(godot::Node* player, std::function<bool()> playing_resolver) {
-        events = Audio_Events::create(player, std::move(playing_resolver));
+    void Audio_Bus::create_watcher(godot::Node* player, std::function<bool()> playing_resolver) {
+        watcher = Audio_Watcher::create(player, std::move(playing_resolver));
     }
 
     void Audio_Bus::destroy_bus() {
@@ -43,10 +43,10 @@ namespace Vital::Engine {
         fx_buffer.clear();
     }
 
-    void Audio_Bus::destroy_events() {
-        if (!events) return;
-        events -> detach();
-        events = nullptr;
+    void Audio_Bus::destroy_watcher() {
+        if (!watcher) return;
+        watcher -> detach();
+        watcher = nullptr;
     }
 
     int Audio_Bus::resolve_bus() const {
@@ -133,11 +133,11 @@ namespace Vital::Engine {
     }
 
     void Audio_Bus::set_start_handler(std::function<void()> handler) {
-        if (events) events -> set_start_handler(std::move(handler));
+        if (watcher) watcher -> set_start_handler(std::move(handler));
     }
 
     void Audio_Bus::set_finish_handler(std::function<void()> handler) {
-        if (events) events -> set_finish_handler(std::move(handler));
+        if (watcher) watcher -> set_finish_handler(std::move(handler));
     }
 
 

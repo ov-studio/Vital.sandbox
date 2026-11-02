@@ -31,12 +31,12 @@ namespace Vital::Engine {
         player -> set_bus(godot::StringName(Tool::to_godot_string(create_bus("audio_3d"))));
         Engine::Core::get_singleton() -> add_child(player);
         auto watched = player;
-        create_events(player, [watched]() { return watched -> is_playing(); });
+        create_watcher(player, [watched]() { return watched -> is_playing(); });
     }
 
     Audio_3D::~Audio_3D() {
         Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
-        destroy_events();
+        destroy_watcher();
         destroy_bus();
         if (!player) return;
         player -> queue_free();

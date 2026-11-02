@@ -44,7 +44,7 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Camera>(true);
     godot::ClassDB::register_class<Vital::Engine::Webview>(true);
     godot::ClassDB::register_class<Vital::Engine::Rendertarget>(true);
-    godot::ClassDB::register_class<Vital::Engine::Audio_Events>(true);
+    godot::ClassDB::register_class<Vital::Engine::Audio_Watcher>(true);
     godot::ClassDB::register_class<Vital::Engine::Directional_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Point_Light>(true);
     godot::ClassDB::register_class<Vital::Engine::Spot_Light>(true);
