@@ -395,7 +395,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_visible", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, state, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool)
@@ -409,7 +409,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_rendered", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_rendered", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, state, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool)
@@ -422,7 +422,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_position", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_position", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, position, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3)
@@ -437,7 +437,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_global_position", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_global_position", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, position, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3)
@@ -452,7 +452,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_scale", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_scale", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, scale, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3)
@@ -467,7 +467,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_rotation", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_rotation", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, rotation, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3)
@@ -482,7 +482,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_global_rotation", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_global_rotation", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, rotation, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_vector3)
@@ -497,7 +497,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_component_quaternion", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_component_quaternion", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, quaternion, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_quaternion)
@@ -579,7 +579,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_speed", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_speed", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, speed, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
@@ -593,7 +593,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_weight", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_weight", 5, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, weight, blend_time = 0, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
@@ -608,7 +608,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_filter", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "set_animation_layer_filter", 5, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, enabled, bone_paths?, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_bool)
@@ -632,7 +632,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "play_animation_layer", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "play_animation_layer", 8, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, name, loop = true, speed = 1, weight = 1, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_string)
@@ -653,7 +653,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::Syncable::bind_method<Instance>(vm, "stop_animation_layer", [](auto vm, auto self, auto& id) -> int {
+            API::Syncable::bind_method<Instance>(vm, "stop_animation_layer", 4, [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(layer, blend_time = 0.25, sync = true)", true)
                     .require(2, &Machine::is_number)
                     .optional(3, &Machine::is_number)

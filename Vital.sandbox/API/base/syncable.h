@@ -71,12 +71,22 @@ namespace Vital::Sandbox::API {
         }
 
         // Drop-in replacement for `vm_module::bind_method` for methods that mutate replicated state.
+        // `sync_index` is the stack index of an optional trailing `sync` bool (default true), or -1 for methods without one.
+        // `sync = false` only changes this peer's local view, so it needs no ownership: a client may do it to an entity
+        // owned by someone else. A replicated change (`sync = true`) is checked as usual, so it errors when not owned.
+        // The server is always authorized and always replicates, so it ignores the flag.
         template<typename Instance>
-        static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<Instance>, const std::string&)> exec) {
-            vm_module::bind_method<Instance>(vm, name, [exec = std::move(exec)](Machine* vm, std::shared_ptr<Instance> self, const std::string& id) -> int {
-                require_authority(self -> get_node());
+        static void bind_method(Machine* vm, const std::string& name, int sync_index, std::function<int(Machine*, std::shared_ptr<Instance>, const std::string&)> exec) {
+            vm_module::bind_method<Instance>(vm, name, [sync_index, exec = std::move(exec)](Machine* vm, std::shared_ptr<Instance> self, const std::string& id) -> int {
+                auto sync = sync_index < 0 || !vm -> is_bool(sync_index) || vm -> get_bool(sync_index);
+                if (sync) require_authority(self -> get_node());
                 return exec(vm, self, id);
             });
+        }
+
+        template<typename Instance>
+        static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<Instance>, const std::string&)> exec) {
+            bind_method<Instance>(vm, name, -1, std::move(exec));
         }
 
         // Binds the methods shared by every syncable instance
