@@ -193,9 +193,9 @@ namespace Vital::Engine {
             // and ignores sync = false. Only a client (owning the entity) can keep a change local.
             static constexpr bool resolve_sync(bool sync) {
                 #if !defined(VSDK_Client)
-                return true;
+                    return true;
                 #else
-                return sync;
+                    return sync;
                 #endif
             }
 
