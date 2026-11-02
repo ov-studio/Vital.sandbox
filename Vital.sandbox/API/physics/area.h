@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                 instance -> body = base_class::create();
                 std::weak_ptr<Instance> weak = instance;
 
-                auto key = std::to_string(reinterpret_cast<uint64_t>(instance -> body));
+                auto key = Tool::to_std_string(reinterpret_cast<uint64_t>(instance -> body));
 
                 Tool::Event::bind(fmt::format("area:body_entered:{}", key), [weak](Tool::Stack args) mutable {
                     auto self = weak.lock(); if (!self || !Instance::find_unlocked(self) || args.array.size() < 1) return;

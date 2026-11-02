@@ -94,7 +94,7 @@ namespace Vital::Engine {
         oss << "Connection:\n";
         append_field("Server", nm -> get_server_ip());
         append_field("State",  nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"));
-        append_field("Peer ID", std::to_string(nm -> get_peer_id()));
+        append_field("Peer ID", Tool::to_std_string(nm -> get_peer_id()));
         return oss.str();
     }
     #endif

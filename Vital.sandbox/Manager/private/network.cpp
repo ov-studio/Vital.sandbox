@@ -176,7 +176,7 @@ namespace Vital::Manager {
                         Tool::Stack status;
                         status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
                         status.object["ip"] = Tool::StackValue(ip);
-                        status.object["port"] = Tool::StackValue(std::to_string(port));
+                        status.object["port"] = Tool::StackValue(Tool::to_std_string(port));
                         status.object["server_sdk"] = Tool::StackValue(server_sdk);
                         status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
                         Tool::Event::emit("network:connect:fail", status);
@@ -205,7 +205,7 @@ namespace Vital::Manager {
             Tool::Stack status;
             status.object["reason"] = Tool::StackValue(std::string("connect-error"));
             status.object["ip"] = Tool::StackValue(ip);
-            status.object["port"] = Tool::StackValue(std::to_string(port));
+            status.object["port"] = Tool::StackValue(Tool::to_std_string(port));
             Tool::Event::emit("network:connect:fail", status);
             return false;
         }

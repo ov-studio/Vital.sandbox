@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
                 pending_transform = false;
                 pending_configs.clear();
                 if (spawn) Vital::Manager::Network::rpc(true, "_spawn_wheel", (int)nid, wheel_id, position, rotation);
-                for (auto& [key, value] : configs) Vital::Manager::Network::rpc(true, "_sync_wheel_config", (int)nid, wheel_id, godot::String(key.c_str()), value);
+                for (auto& [key, value] : configs) Vital::Manager::Network::rpc(true, "_sync_wheel_config", (int)nid, wheel_id, Tool::to_godot_string(key), value);
                 if (transform) Vital::Manager::Network::rpc(true, "_sync_wheel_transform", (int)nid, wheel_id, position, rotation);
             }
             #endif

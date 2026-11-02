@@ -95,13 +95,13 @@ namespace Vital::Config {
                 append_field(oss, "Discord", get_discord());
 
                 oss << "• Network:\n";
-                append_field(oss, "Port", std::to_string(get_network_port()));
-                append_field(oss, "Max Peers", std::to_string(get_max_peers()));
+                append_field(oss, "Port", Tool::to_std_string(get_network_port()));
+                append_field(oss, "Max Peers", Tool::to_std_string(get_max_peers()));
                 append_field(oss, "Auth Rate Limit", get_auth_rate_max() > 0 ? fmt::format("{} per {}s per IP", get_auth_rate_max(), get_auth_rate_window()) : std::string("off"));
                 append_field(oss, "Physics Tick Rate", fmt::format("{} Hz", get_physics_tick_rate()));
 
                 oss << "• HTTP:\n";
-                append_field(oss, "Port", std::to_string(get_http_port()));
+                append_field(oss, "Port", Tool::to_std_string(get_http_port()));
 
                 oss << "• Sync:\n";
                 append_field(oss, "Rate", fmt::format("{} Hz", get_sync_rate()));

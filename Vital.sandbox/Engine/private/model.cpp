@@ -1439,7 +1439,7 @@ namespace Vital::Engine {
         const auto& current = anim_layers[layer];
         bool changed = current.filter_enabled != (enabled && !bone_paths.empty()) || current.filter_bones != (enabled ? bone_paths : std::vector<std::string>{});
         apply_set_animation_layer_filter(layer, enabled, bone_paths);
-        if (needs_broadcast("filter|" + std::to_string(layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
+        if (needs_broadcast("filter|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
         return true;
     }
 
@@ -1472,7 +1472,7 @@ namespace Vital::Engine {
     bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
         bool changed = layer > 0 && layer < (int)anim_layers.size() && !godot::Math::is_equal_approx(anim_layers[layer].weight_target, std::clamp(weight, 0.0f, 1.0f));
         if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
-        if (needs_broadcast("weight|" + std::to_string(layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
+        if (needs_broadcast("weight|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
         return true;
     }
 
@@ -1480,7 +1480,7 @@ namespace Vital::Engine {
         bool valid = layer >= 0 && layer < (int)anim_layers.size();
         bool changed = valid && !godot::Math::is_equal_approx(anim_layers[layer].speed, speed);
         apply_set_animation_layer_speed(layer, speed);
-        if (valid && needs_broadcast("speed|" + std::to_string(layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
+        if (valid && needs_broadcast("speed|" + Tool::to_std_string(layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
     }
 
     float Model::get_animation_layer_weight(int layer) const {

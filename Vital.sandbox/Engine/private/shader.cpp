@@ -400,33 +400,33 @@ namespace Vital::Engine {
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
         if (!material.is_valid()) return false;
         if (name == Internal::SENTINEL) return false;
-        material -> set_shader_parameter(godot::StringName(name.c_str()), value);
+        material -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), value);
         prune_surface_materials();
-        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(name.c_str()), value);
+        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), value);
         return true;
     }
 
     bool Shader::set_param_rid(const std::string& name, godot::RID texture) {
         if (!material.is_valid() || name == Internal::SENTINEL || !texture.is_valid()) return false;
-        material -> set_shader_parameter(godot::StringName(name.c_str()), godot::Variant(texture));
+        material -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), godot::Variant(texture));
         prune_surface_materials();
-        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(name.c_str()), godot::Variant(texture));
+        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), godot::Variant(texture));
         return true;
     }
 
     bool Shader::set_param_texture(const std::string& name, godot::Ref<godot::Texture2D> texture) {
         if (!material.is_valid() || name == Internal::SENTINEL) return false;
-        material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        material -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), texture);
         prune_surface_materials();
-        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), texture);
         return true;
     }
 
     bool Shader::set_param_viewport_texture(const std::string& name, godot::Ref<godot::ViewportTexture> texture) {
         if (!material.is_valid() || name == Internal::SENTINEL) return false;
-        material -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        material -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), texture);
         prune_surface_materials();
-        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(name.c_str()), texture);
+        for (auto& m : surface_materials) m -> set_shader_parameter(godot::StringName(Tool::to_godot_string(name)), texture);
         return true;
     }
 }

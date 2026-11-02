@@ -99,7 +99,7 @@ namespace Vital::Sandbox {
                     auto cut = arg.find_first_of(" =");
                     if (cut != std::string::npos) arg = arg.substr(0, cut);
                 }
-                else arg = std::to_string(display_idx);
+                else arg = Tool::to_std_string(display_idx);
                 const std::string partial = fmt::format("bad argument #{} '{}' {}", display_idx, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", format_syntax(syntax), partial);
                 throw vm_error(detail, partial);

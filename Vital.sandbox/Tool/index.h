@@ -51,6 +51,11 @@ namespace Vital::Tool {
         return std::string(input.utf8().get_data());
     }
 
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    inline std::string to_std_string(T value) {
+        return std::to_string(value);
+    }
+
     inline bool is_main_thread() {
         return std::this_thread::get_id() == Tool::main_thread_id;
     }

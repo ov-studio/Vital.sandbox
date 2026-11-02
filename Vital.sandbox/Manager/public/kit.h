@@ -52,7 +52,7 @@ namespace Vital::Manager {
                 static const rapidjson::Value* get_json_detail(const rapidjson::Value* node, Keys&&... keys) {
                     auto to_key = [](auto&& k) -> std::string {
                         using T = std::decay_t<decltype(k)>;
-                        if constexpr (std::is_integral_v<T>) return std::to_string(k);
+                        if constexpr (std::is_integral_v<T>) return Tool::to_std_string(k);
                         else return std::string(k);
                     };
                 

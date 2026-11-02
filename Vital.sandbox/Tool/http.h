@@ -109,7 +109,7 @@ namespace Vital::Tool::HTTP {
             if (res.error() == httplib::Error::Canceled) return false;
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
         }
-        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, std::to_string(res -> status));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, Tool::to_std_string(res -> status));
         return true;
     }
 
@@ -142,7 +142,7 @@ namespace Vital::Tool::HTTP {
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
         if (!res) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
-        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, std::to_string(res -> status));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, Tool::to_std_string(res -> status));
         return res -> body;
     }
 
@@ -153,7 +153,7 @@ namespace Vital::Tool::HTTP {
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Delete(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
         if (!res) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, httplib::to_string(res.error()));
-        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, std::to_string(res -> status));
+        if (res -> status != 200) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, Tool::to_std_string(res -> status));
         return res -> body;
     }
 
