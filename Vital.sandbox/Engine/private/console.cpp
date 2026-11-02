@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/Manager/public/updater.h>
 #include <Vital.sandbox/API/utility/input.h>
 
 
@@ -729,6 +730,7 @@ namespace Vital::Engine {
             if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
+            if (cmd == "update") { Manager::Updater::apply(); return true; }
             #else
             if (cmd == "connect") { Manager::Network::get_singleton() -> connect_to_server(tokens[1], std::atoi(tokens[2].c_str())); return true; }
             if (cmd == "reconnect") { Manager::Network::get_singleton() -> reconnect(); return true; }
