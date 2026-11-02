@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/audio_events.h>
 
 
 ///////////////////////////////
@@ -40,11 +41,14 @@ namespace Vital::Engine {
             std::string bus_name;
             int bus_index = -1;
             std::vector<std::string> fx_buffer;
+            Audio_Events* events = nullptr;
 
 
             // Helpers //
             const std::string& create_bus(const std::string& prefix);
+            void create_events(godot::Node* player, std::function<bool()> playing_resolver);
             void destroy_bus();
+            void destroy_events();
             int resolve_bus() const;
             bool resolve_fx(const std::string& name, int& out_bus_idx, int& out_slot_idx) const;
             static godot::Ref<godot::AudioStream> load_stream_from_buffer(const godot::PackedByteArray& buffer);
@@ -65,6 +69,8 @@ namespace Vital::Engine {
             // Setters //
             bool set_looped(bool loop);
             bool set_fx_enabled(const std::string& name, bool state);
+            void set_start_handler(std::function<void()> handler);
+            void set_finish_handler(std::function<void()> handler);
 
 
             // Misc //

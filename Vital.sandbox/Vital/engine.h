@@ -32,6 +32,7 @@
 #include <Vital.sandbox/Engine/public/svg.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/shader.h>
+#include <Vital.sandbox/Engine/public/audio_events.h>
 #include <Vital.sandbox/Engine/public/audio_bus.h>
 #include <Vital.sandbox/Engine/public/audio_2d.h>
 #include <Vital.sandbox/Engine/public/audio_3d.h>

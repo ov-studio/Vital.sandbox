@@ -30,9 +30,12 @@ namespace Vital::Engine {
         player -> set_autoplay(autoplay);
         player -> set_bus(godot::StringName(Tool::to_godot_string(create_bus("audio_2d"))));
         Engine::Core::get_singleton() -> add_child(player);
+        auto watched = player;
+        create_events(player, [watched]() { return watched -> is_playing(); });
     }
 
     Audio_2D::~Audio_2D() {
+        destroy_events();
         destroy_bus();
         if (!player) return;
         player -> queue_free();
