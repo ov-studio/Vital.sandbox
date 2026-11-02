@@ -448,6 +448,16 @@ namespace Vital::Engine {
             if (mesh) mesh->set_transform(transform);
         }
 
+        // Same for blendshape values received while this model was a placeholder
+        for (const auto& [component, shapes] : blendshape_values) {
+            godot::MeshInstance3D* mesh = find_component(component);
+            if (!mesh) continue;
+            for (const auto& [name, value] : shapes) {
+                int idx = mesh->find_blend_shape_by_name(Tool::to_godot_string(name));
+                if (idx >= 0) mesh->set_blend_shape_value(idx, value);
+            }
+        }
+
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
@@ -984,16 +994,75 @@ namespace Vital::Engine {
         return true;
     }
 
-    bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
+    // Applies the value to every blendshape the pattern matches and records it (late-join / hydrate),
+    // then replicates the pattern, which each peer resolves itself. Skipped when nothing changed, so a script
+    // re-setting the same value every frame costs nothing.
+    bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value, bool sync) {
         auto mesh = assert_component(component);
+        auto& recorded = blendshape_values[component];
+        bool changed = false;
         auto exec = [&](const std::string& name) -> bool {
             int idx = mesh->find_blend_shape_by_name(Tool::to_godot_string(name));
             if (idx < 0) return false;
             mesh->set_blend_shape_value(idx, value);
+            auto it = recorded.find(name);
+            if (it == recorded.end() || !godot::Math::is_equal_approx(it->second, value)) changed = true;
+            recorded[name] = value;
             return true;
         };
         if (!apply_wildcard(blend_shape, [&]{ return get_blendshapes(component); }, exec)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("blendshape '{}' not found in component '{}'", blend_shape, component));
+        if (changed && resolve_sync(sync)) broadcast_blendshape_value(component, blend_shape, value);
         return true;
+    }
+
+    // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
+    // While `placeholder` (mesh tree not instanced yet) it only stores the value, hydrate() applies it.
+    bool Model::apply_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
+        if (!godot::Math::is_finite(value)) return false;
+        if (placeholder) {
+            if (Tool::contains_wildcard(blend_shape)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_blendshape_value — wildcard '", Tool::to_godot_string(blend_shape),
+                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
+                return false;
+            }
+            blendshape_values[component][blend_shape] = value;
+            return true;
+        }
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_blendshape_value — component '", Tool::to_godot_string(component),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        auto& recorded = blendshape_values[component];
+        auto exec = [&](const std::string& name) -> bool {
+            int idx = mesh->find_blend_shape_by_name(Tool::to_godot_string(name));
+            if (idx < 0) return false;
+            mesh->set_blend_shape_value(idx, value);
+            recorded[name] = value;
+            return true;
+        };
+        if (!apply_wildcard(blend_shape, [&]{ return get_blendshapes(component); }, exec)) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_blendshape_value — blendshape '", Tool::to_godot_string(blend_shape),
+                "' not found in component '", Tool::to_godot_string(component), "'");
+            return false;
+        }
+        return true;
+    }
+
+    void Model::broadcast_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
+        if (net_id == 0) return;
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
+        #else
+        // Only the owning client reports its own blendshapes, always to the server (rpc_id(1)), which relays to everyone else.
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
+        #endif
     }
 
     void Model::set_animation_speed(float speed) { assert_animation_player()->set_speed_scale(speed); }

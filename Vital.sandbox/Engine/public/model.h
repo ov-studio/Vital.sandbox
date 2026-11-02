@@ -88,6 +88,10 @@ namespace Vital::Engine {
             // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
             std::unordered_map<std::string, godot::Transform3D> component_transforms;
 
+            // component -> (blendshape -> value) for every blendshape set so far, resolved to exact names.
+            // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
+            std::unordered_map<std::string, std::unordered_map<std::string, float>> blendshape_values;
+
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
@@ -189,17 +193,6 @@ namespace Vital::Engine {
             void hydrate(int authority_peer);
             #endif
 
-            // Every `sync` argument goes through this: the server is the source of truth, so it always replicates
-            // and ignores sync = false. Only a client (owning the entity) can keep a change local.
-            static constexpr bool resolve_sync(bool sync) {
-                #if !defined(VSDK_Client)
-                    return true;
-                #else
-                    return sync;
-                #endif
-            }
-
-
             static std::vector<std::string> filter_resource_models(const std::string& resource, const std::vector<std::string>& files);
             static void load_resource_models(const std::string& resource, const std::vector<std::string>& files);
             // Keep cache warm across restarts, but drop entries no longer listed
@@ -254,6 +247,17 @@ namespace Vital::Engine {
 
             // Setters //
             void set_model_name(const std::string& name);
+
+            // Every `sync` argument goes through this: the server is the source of truth, so it always replicates
+            // and ignores sync = false. Only a client (owning the entity) can keep a change local.
+            static constexpr bool resolve_sync(bool sync) {
+                #if !defined(VSDK_Client)
+                    return true;
+                #else
+                    return sync;
+                #endif
+            }
+
             bool set_component_visible(const std::string& component, bool state, bool sync = true);
             bool set_component_rendered(const std::string& component, bool state, bool sync = true);
             bool is_component_rendered(const std::string& component);
@@ -294,7 +298,15 @@ namespace Vital::Engine {
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
-            bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
+            bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value, bool sync = true);
+
+            // Pure local application of a received blendshape value — never broadcasts, never throws (safe from RPC callbacks).
+            // While `placeholder` it only stores the value, hydrate() applies it. Returns false when nothing was applied.
+            bool apply_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
+            // server -> all clients, owning client -> server (which validates and relays)
+            void broadcast_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
+            // Late-join accessor used by Manager::Network::send_full_state_to_peer.
+            const std::unordered_map<std::string, std::unordered_map<std::string, float>>& get_blendshape_values() const { return blendshape_values; }
             void set_animation_speed(float speed);
             void set_animation_layer_speed(int layer, float speed, bool sync = true);
             bool set_animation_layer_weight(int layer, float weight, float blend_time = 0.0f, bool sync = true);

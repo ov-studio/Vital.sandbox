@@ -555,16 +555,18 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_blendshape_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, blendshape, value)", true)
+            API::Syncable::bind_method<Instance>(vm, "set_blendshape_value", 5, [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, blendshape, value, sync = true)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number);
+                    .require(4, &Machine::is_number)
+                    .optional(5, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
                 auto blendshape = vm -> get_string(3);
                 auto value = vm -> get_float(4);
-                self -> model -> set_blendshape_value(component, blendshape, value);
+                auto sync = vm -> is_bool(5) ? vm -> get_bool(5) : true;
+                self -> model -> set_blendshape_value(component, blendshape, value, sync);
                 vm -> push_value(true);
                 return 1;
             });

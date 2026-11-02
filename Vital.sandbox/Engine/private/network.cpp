@@ -56,6 +56,7 @@ namespace Vital::Engine {
         rpc_config("_sync_anim_layer_filter", reliable);
         rpc_config("_sync_dimension", reliable);
         rpc_config("_sync_component_transform", reliable);
+        rpc_config("_sync_blendshape", reliable);
 
         // Server -> client only: Godot rejects these from any peer except the node's authority (the server),
         // so a client can neither call them on the server nor on other clients.
@@ -581,6 +582,47 @@ namespace Vital::Engine {
         for (int pid : mgr->get_connected_peers()) {
             if (pid == sender) continue;
             Manager::Network::rpc_id(false, pid, "_sync_component_transform", net_id, component, transform);
+        }
+        #endif
+    }
+
+    // _sync_blendshape (reliable, ANY_PEER): a blendshape value, `blend_shape` may be a wildcard pattern.
+    //   server → all clients: the server changed it (or replays it to a late-joiner).
+    //     Clients apply it, or defer until the entity registers.
+    //   owning client → server: only the entity's sync authority is trusted, anyone else is dropped.
+    //     The server applies it (so it stays authoritative + feeds the late-join dump) and relays it
+    //     to every other client, skipping the sender.
+    void Network::_sync_blendshape(int net_id, godot::String component, godot::String blend_shape, float value) {
+        auto mgr = Manager::Network::get_singleton();
+        if (!mgr) return;
+        Engine::ISyncable* entity = mgr->find_syncable((uint32_t)net_id);
+
+        #if defined(VSDK_Client)
+        if (rpc_sender() != 1) return;
+        if (!entity) {
+            // Entity not registered yet — defer so replay_pending_syncs applies it on spawn.
+            mgr->defer_blendshape_sync((uint32_t)net_id, component, blend_shape, value);
+            return;
+        }
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+        model->apply_blendshape_value(Tool::to_std_string(component), Tool::to_std_string(blend_shape), value);
+        #else
+        if (!entity) return;
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
+        int sender = tree ? tree->get_multiplayer()->get_remote_sender_id() : 0;
+        if (sender != 0 && sender != entity->get_sync_authority()) {
+            godot::UtilityFunctions::push_warning("_sync_blendshape: rejected — sender ", sender,
+                " is not the sync authority for net_id=", net_id);
+            mgr->report_violation(sender, "blendshape", "unauthorized", (uint32_t)net_id);
+            return;
+        }
+        auto model = godot::Object::cast_to<Engine::Model>(dynamic_cast<godot::Object*>(entity));
+        if (!model) return;
+        if (!model->apply_blendshape_value(Tool::to_std_string(component), Tool::to_std_string(blend_shape), value)) return;
+        for (int pid : mgr->get_connected_peers()) {
+            if (pid == sender) continue;
+            Manager::Network::rpc_id(false, pid, "_sync_blendshape", net_id, component, blend_shape, value);
         }
         #endif
     }
