@@ -24,6 +24,20 @@
 namespace Vital::Sandbox::API {
     struct Audio_Player {
         template<typename Instance>
+        static void wire(const std::shared_ptr<Instance>& instance) {
+            std::weak_ptr<Instance> weak = instance;
+            auto signal = [weak](const char* name) {
+                return [weak, name]() {
+                    auto self = weak.lock();
+                    if (!self || !Instance::find_unlocked(self) || !self -> is_alive()) return;
+                    Manager::Sandbox::get_singleton() -> signal(name, Tool::StackValue(self));
+                };
+            };
+            instance -> audio -> set_start_handler(signal("audio:start"));
+            instance -> audio -> set_finish_handler(signal("audio:finish"));
+        }
+
+        template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_playing());

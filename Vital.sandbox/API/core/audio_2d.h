@@ -54,6 +54,7 @@ namespace Vital::Sandbox::API {
                 auto autoplay = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
                 instance -> audio = base_class::create(base, path, autoplay);
+                API::Audio_Player::wire(instance);
                 instance -> store(true);
                 return 1;
             });
