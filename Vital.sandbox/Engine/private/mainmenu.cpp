@@ -471,10 +471,7 @@ namespace Vital::Engine {
             out.AddMember("ok", ok, a);
             if (ok) out.AddMember("servers", rapidjson::Value(body, a), a);
             else out.AddMember("servers", rapidjson::Value(rapidjson::kArrayType), a);
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            out.Accept(writer);
-            if (webview) webview -> emit(buffer.GetString());
+            if (webview) webview -> emit(out);
             masterlist_running.store(false);
         });
     }
@@ -503,10 +500,7 @@ namespace Vital::Engine {
                 catch (...) { /* not answering: stale or starting up */ }
             }
             out.AddMember("servers", servers, a);
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            out.Accept(writer);
-            if (webview) webview -> emit(buffer.GetString());
+            if (webview) webview -> emit(out);
             scan_running.store(false);
         });
     }
