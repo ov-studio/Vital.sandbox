@@ -118,6 +118,7 @@ namespace Vital::Engine {
             void zoom(float value);
             void eval(const std::string& input);
             void emit(const std::string& input);
+            void emit(const rapidjson::Document& document);
             void signal(const std::string& type, Payload payload = std::monostate{});
 
 
