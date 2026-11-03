@@ -27,6 +27,7 @@
 // Vital: Engine: Console //
 /////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     // Helpers //
     std::string Console::Internal::fetch_mode_label(const std::string& mode) {
@@ -393,128 +394,26 @@ namespace Vital::Engine {
                         if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) continue;
                         char ch = rec.Event.KeyEvent.uChar.AsciiChar;
                         WORD vk = rec.Event.KeyEvent.wVirtualKeyCode;
-                        if (vk == VK_RETURN) {
-                            std::string line;
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                line = stdin_buffer;
-                                stdin_buffer.clear();
-                                if (!line.empty()) {
-                                    stdin_history.push_back(line);
-                                    stdin_history_idx = -1;
-                                }
-                                std::cout << "\r\033[J" << std::flush;
-                            }
-                            if (!line.empty()) execute(line);
-                            update();
-                        }
-                        else if (vk == VK_UP) {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                if (!stdin_history.empty()) {
-                                    if (stdin_history_idx == -1)
-                                        stdin_history_idx = static_cast<int>(stdin_history.size()) - 1;
-                                    else if (stdin_history_idx > 0)
-                                        stdin_history_idx--;
-                                    stdin_buffer = stdin_history[stdin_history_idx];
-                                }
-                            }
-                            update();
-                        }
-                        else if (vk == VK_DOWN) {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                if (stdin_history_idx != -1) {
-                                    stdin_history_idx++;
-                                    if (stdin_history_idx >= static_cast<int>(stdin_history.size())) {
-                                        stdin_history_idx = -1;
-                                        stdin_buffer.clear();
-                                    }
-                                    else stdin_buffer = stdin_history[stdin_history_idx];
-                                }
-                            }
-                            update();
-                        }
-                        else if (vk == VK_BACK) {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                if (!stdin_buffer.empty()) stdin_buffer.pop_back();
-                            }
-                            update();
-                        }
-                        else if (ch >= 0x20 && ch < 0x7F) {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                stdin_buffer += ch;
-                            }
-                            update();
-                        }
+                        if (vk == VK_RETURN) input_submit();
+                        else if (vk == VK_UP) input_history(true);
+                        else if (vk == VK_DOWN) input_history(false);
+                        else if (vk == VK_BACK) input_erase();
+                        else if (ch >= 0x20 && ch < 0x7F) input_type(ch);
                     #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                         char ch;
                         ssize_t n = ::read(STDIN_FILENO, &ch, 1);
                         if (n <= 0) break;
-                        if (ch == '\n' || ch == '\r') {
-                            std::string line;
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                line = stdin_buffer;
-                                stdin_buffer.clear();
-                                if (!line.empty()) {
-                                    stdin_history.push_back(line);
-                                    stdin_history_idx = -1;
-                                }
-                                std::cout << "\r\033[J" << std::flush;
-                            }
-                            if (!line.empty()) execute(line);
-                            update();
-                        }
+                        if (ch == '\n' || ch == '\r') input_submit();
                         else if (ch == '\033') {
                             char seq[2];
                             if (::read(STDIN_FILENO, &seq[0], 1) == 1 && seq[0] == '[' &&
                                 ::read(STDIN_FILENO, &seq[1], 1) == 1) {
-                                if (seq[1] == 'A') {
-                                    {
-                                        std::lock_guard<std::mutex> lock(stdout_mutex);
-                                        if (!stdin_history.empty()) {
-                                            if (stdin_history_idx == -1)
-                                                stdin_history_idx = static_cast<int>(stdin_history.size()) - 1;
-                                            else if (stdin_history_idx > 0)
-                                                stdin_history_idx--;
-                                            stdin_buffer = stdin_history[stdin_history_idx];
-                                        }
-                                    }
-                                    update();
-                                }
-                                else if (seq[1] == 'B') {
-                                    {
-                                        std::lock_guard<std::mutex> lock(stdout_mutex);
-                                        if (stdin_history_idx != -1) {
-                                            stdin_history_idx++;
-                                            if (stdin_history_idx >= static_cast<int>(stdin_history.size())) {
-                                                stdin_history_idx = -1;
-                                                stdin_buffer.clear();
-                                            }
-                                            else stdin_buffer = stdin_history[stdin_history_idx];
-                                        }
-                                    }
-                                    update();
-                                }
+                                if (seq[1] == 'A') input_history(true);
+                                else if (seq[1] == 'B') input_history(false);
                             }
                         }
-                        else if (ch == 0x7F || ch == '\b') {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                if (!stdin_buffer.empty()) stdin_buffer.pop_back();
-                            }
-                            update();
-                        }
-                        else if (ch >= 0x20 && ch < 0x7F) {
-                            {
-                                std::lock_guard<std::mutex> lock(stdout_mutex);
-                                stdin_buffer += ch;
-                            }
-                            update();
-                        }
+                        else if (ch == 0x7F || ch == '\b') input_erase();
+                        else if (ch >= 0x20 && ch < 0x7F) input_type(ch);
                     #endif
                 }
             });
@@ -651,6 +550,65 @@ namespace Vital::Engine {
         }
         #endif
     }
+
+    #if !defined(VSDK_Client)
+    // Input: what each key does to the prompt, shared by the Windows and the Linux/macOS readers //
+    void Console::input_submit() {
+        std::string line;
+        {
+            std::lock_guard<std::mutex> lock(stdout_mutex);
+            line = stdin_buffer;
+            stdin_buffer.clear();
+            if (!line.empty()) {
+                stdin_history.push_back(line);
+                stdin_history_idx = -1;
+            }
+            std::cout << "\r\033[J" << std::flush;
+        }
+        if (!line.empty()) execute(line);
+        update();
+    }
+
+    void Console::input_history(bool older) {
+        {
+            std::lock_guard<std::mutex> lock(stdout_mutex);
+            if (older) {
+                if (!stdin_history.empty()) {
+                    if (stdin_history_idx == -1)
+                        stdin_history_idx = static_cast<int>(stdin_history.size()) - 1;
+                    else if (stdin_history_idx > 0)
+                        stdin_history_idx--;
+                    stdin_buffer = stdin_history[stdin_history_idx];
+                }
+            }
+            else if (stdin_history_idx != -1) {
+                stdin_history_idx++;
+                if (stdin_history_idx >= static_cast<int>(stdin_history.size())) {
+                    stdin_history_idx = -1;
+                    stdin_buffer.clear();
+                }
+                else stdin_buffer = stdin_history[stdin_history_idx];
+            }
+        }
+        update();
+    }
+
+    void Console::input_erase() {
+        {
+            std::lock_guard<std::mutex> lock(stdout_mutex);
+            if (!stdin_buffer.empty()) stdin_buffer.pop_back();
+        }
+        update();
+    }
+
+    void Console::input_type(char ch) {
+        {
+            std::lock_guard<std::mutex> lock(stdout_mutex);
+            stdin_buffer += ch;
+        }
+        update();
+    }
+    #endif
 
     void Console::update() {
         #if !defined(VSDK_Client)

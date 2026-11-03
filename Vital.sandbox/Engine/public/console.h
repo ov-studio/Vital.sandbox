@@ -23,6 +23,7 @@
 // Vital: Engine: Console //
 /////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     class Console : public godot::Control, public Tool::Base<Console> {
         friend class Tool::Base<Console>;
@@ -47,6 +48,14 @@ namespace Vital::Engine {
             #endif
             std::thread log_thread;
             std::atomic<bool> log_running { false };
+            #if !defined(VSDK_Client)
+
+            // Input //
+            void input_submit();
+            void input_history(bool older);
+            void input_erase();
+            void input_type(char ch);
+            #endif
 
             struct Internal {
                 struct NativeLogEntry {
