@@ -14,8 +14,7 @@
 
 #pragma once
 #if defined(VSDK_Client)
-#include <Vital.sandbox/Engine/public/core.h>
-#include <Vital.sandbox/Engine/public/audio_bus.h>
+#include <Vital.sandbox/Engine/public/audio_node.h>
 
 
 //////////////////////////////
@@ -23,25 +22,13 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    class Audio_3D : public godot::Node3D, public Engine::Audio_Bus {
-        private:
-            godot::Ref<godot::AudioStream> stream;
-            godot::AudioStreamPlayer3D* player = nullptr;
-
-
-            // Instantiators //
-            Audio_3D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
-            ~Audio_3D();
-        public:
-            // Managers //
-            static Audio_3D* create(const std::string& base, const std::string& path, bool autoplay = false);
-            static Audio_3D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
-            void destroy();
-
-
-            // Getters //
-            godot::Ref<godot::AudioStream> get_stream() const;
-            godot::AudioStreamPlayer3D* get_player() const;
+    struct Audio_3D_Traits {
+        using Base = godot::Node3D;
+        using Player = godot::AudioStreamPlayer3D;
+        static constexpr const char* bus = "audio_3d";
+        static constexpr bool unspawn = true;
     };
+    
+    using Audio_3D = Audio_Node<Audio_3D_Traits>;
 }
 #endif
