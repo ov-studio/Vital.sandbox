@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/camera.h>
 #include <Vital.sandbox/Manager/public/kit.h>
+#include <Vital.sandbox/Manager/public/update.h>
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/utility/input.h>
@@ -236,9 +237,6 @@ namespace Vital::Engine {
         }
 
         // Update check: compares the running Vital.sandbox / Vital.kit against their latest GitHub release.
-        constexpr const char* sandbox_src = "https://api.github.com/repos/ov-studio/Vital.sandbox/releases/latest";
-        constexpr const char* sandbox_releases = "https://github.com/ov-studio/Vital.sandbox/releases";
-        constexpr const char* kit_releases = "https://github.com/ov-studio/Vital.kit/releases";
         constexpr int64_t update_cooldown_ms = 10 * 60 * 1000; // min delay between checks (GitHub API is rate limited per IP)
         constexpr int64_t update_retry_ms = 60 * 1000;         // shorter delay after a failed (offline) check
 
