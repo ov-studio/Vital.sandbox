@@ -1,4 +1,4 @@
-g/*----------------------------------------------------------------
+/*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Engine: audio_2d.h
      Author: ov-studio
@@ -28,7 +28,7 @@ namespace Vital::Engine {
         static constexpr const char* bus = "audio_2d";
         static constexpr bool unspawn = false;
     };
-    
+
     using Audio_2D = Audio_Node<Audio_2D_Traits>;
 }
 #endif
