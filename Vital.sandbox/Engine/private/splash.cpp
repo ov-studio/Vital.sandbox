@@ -64,12 +64,9 @@ namespace Vital::Engine {
     void Splash::ready() {
         webview_ready.store(true);
         rapidjson::Document reply;
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         reply.SetObject();
         reply.AddMember("action", "init", reply.GetAllocator());
-        reply.Accept(writer);
-        webview -> emit(buffer.GetString());
+        webview -> emit(reply);
         if (blackcover) {
             blackcover -> queue_free();
             blackcover = nullptr;
