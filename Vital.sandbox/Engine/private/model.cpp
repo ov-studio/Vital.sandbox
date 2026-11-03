@@ -785,12 +785,14 @@ namespace Vital::Engine {
                 for (const auto& [name, _] : detached_components) keys.push_back(name);
                 for (const auto& name : keys)
                     if (Tool::match_wildcard(component, name)) exec(name);
-            } else {
+            } 
+            else {
                 if (!detached_components.count(component) && !find_mesh_node(this, component))
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
                 exec(component);
             }
-        } else {
+        } 
+        else {
             // Detach: remove from scene tree, keep alive in detached_components.
             auto live_names = get_components();
             auto exec = [&](const std::string& name) -> bool {
@@ -810,7 +812,8 @@ namespace Vital::Engine {
             if (Tool::contains_wildcard(component)) {
                 for (const auto& name : live_names)
                     if (Tool::match_wildcard(component, name)) exec(name);
-            } else {
+            } 
+            else {
                 if (!exec(component))
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
             }
@@ -875,7 +878,8 @@ namespace Vital::Engine {
                 return true;
             }
             return exec(component);
-        } else {
+        } 
+        else {
             // Detach: remove from scene tree, keep alive in detached_components.
             auto exec = [&](const std::string& name) -> bool {
                 if (detached_components.count(name)) return true; // already detached, no-op
@@ -1513,7 +1517,8 @@ namespace Vital::Engine {
                 if (!factory) {
                     // Clears the override (restores default).
                     mesh -> set_surface_override_material(idx, godot::Ref<godot::Material>());
-                } else {
+                } 
+                else {
                     godot::Ref<godot::Material> original;
                     if (mesh -> get_mesh().is_valid()) original = mesh -> get_mesh() -> surface_get_material(idx);
                     mesh -> set_surface_override_material(idx, factory(original));

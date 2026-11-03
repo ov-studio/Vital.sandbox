@@ -845,7 +845,8 @@ namespace Vital::Engine {
                     s -> set_faces(verts);
                     s -> set_backface_collision_enabled(true);
                     shape = s;
-                } else {
+                } 
+                else {
                     godot::Ref<godot::ConvexPolygonShape3D> s; s.instantiate();
                     s -> set_points(verts);
                     shape = s;

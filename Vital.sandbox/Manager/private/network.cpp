@@ -695,7 +695,8 @@ namespace Vital::Manager {
                     if (it2->second == nid) {
                         to_apply.emplace_back(it2->first, it2->second);
                         it2 = pending_reparent_syncs.erase(it2);
-                    } else ++it2;
+                    } 
+                    else ++it2;
                 }
             }
             for (size_t i = 0; i < to_apply.size(); ++i)
@@ -1722,7 +1723,8 @@ namespace Vital::Manager {
                         for (int fi = 0; fi < faces.size(); fi++) {
                             mesh_children_params.push_back(faces[fi].x); mesh_children_params.push_back(faces[fi].y); mesh_children_params.push_back(faces[fi].z);
                         }
-                    } else {
+                    } 
+                    else {
                         auto cs = godot::Object::cast_to<godot::ConvexPolygonShape3D>(s2.ptr());
                         auto pts = cs->get_points();
                         mesh_children_params.push_back((int)pts.size());
@@ -1797,7 +1799,8 @@ namespace Vital::Manager {
                                 auto cs = child_col->get_shape();
                                 if (cs.is_valid()) pack_mesh_entry(cs, child_col->get_transform());
                             }
-                        } else {
+                        } 
+                        else {
                             pack_mesh_entry(shape, col->get_transform());
                         }
                         continue; // accumulated, not sent individually
@@ -2180,7 +2183,8 @@ namespace Vital::Manager {
                             if (it2->second == nid) {
                                 reparents_to_apply.emplace_back(it2->first, it2->second);
                                 it2 = pending_reparent_syncs.erase(it2);
-                            } else ++it2;
+                            } 
+                            else ++it2;
                         }
                     }
                 }
