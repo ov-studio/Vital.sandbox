@@ -608,8 +608,6 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
         webview_ready.store(true);
         rapidjson::Document document;
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.SetObject();
         auto& alloc = document.GetAllocator();
         const auto bind = Manager::Kit::get_singleton() -> get_json_value("config/console", "bind");
@@ -641,8 +639,7 @@ namespace Vital::Engine {
                 types.AddMember(key, entry, alloc);
             }
             document.AddMember("types", types, alloc);
-            document.Accept(writer);
-            webview -> emit(buffer.GetString());
+            webview -> emit(document);
             {
                 std::vector<std::pair<std::string, std::string>> queue;
                 {
