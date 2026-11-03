@@ -761,15 +761,12 @@ namespace Vital::Engine {
                 return;
             }
             rapidjson::Document document;
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
             document.AddMember("action", "print", alloc);
             document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
-            document.Accept(writer);
-            webview -> emit(buffer.GetString());
+            webview -> emit(document);
             #if defined(VSDK_Debug)
             const Tool::Stack ts = Tool::get_timestamp();
             godot::UtilityFunctions::print_rich(Tool::to_godot_string(fmt::format(
@@ -803,17 +800,13 @@ namespace Vital::Engine {
         #if defined(VSDK_Client)
             if (!is_ready()) return;
             rapidjson::Document document;
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
             document.AddMember("action", "clear", alloc);
-            document.Accept(writer);
-            webview -> emit(buffer.GetString());
+            webview -> emit(document);
         #else
             {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
-                std::cout << "\033[3J\033[2J\033[H" << std::flush;
                 std::cout << "\033[3J\033[2J\033[H" << std::flush;
             }
             clear(true);
