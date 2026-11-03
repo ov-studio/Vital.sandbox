@@ -34,6 +34,7 @@
 #include <Vital.sandbox/Engine/public/shader.h>
 #include <Vital.sandbox/Engine/public/audio_watcher.h>
 #include <Vital.sandbox/Engine/public/audio_bus.h>
+#include <Vital.sandbox/Engine/public/audio_node.h>
 #include <Vital.sandbox/Engine/public/audio_2d.h>
 #include <Vital.sandbox/Engine/public/audio_3d.h>
 #include <Vital.sandbox/Engine/public/directional_light.h>

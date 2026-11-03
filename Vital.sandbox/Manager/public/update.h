@@ -44,6 +44,14 @@ namespace Vital::Manager {
             struct Pending {
                 std::string tag, file;
             };
+
+            // Running versions against the latest releases of Vital.sandbox and Vital.kit
+            struct Status {
+                Release release;
+                std::string current, kit_tag, kit_local;
+                bool sandbox_old = false;
+                bool kit_old = false;
+            };
         private:
             static constexpr const char* sandbox_src = "https://api.github.com/repos/ov-studio/Vital.sandbox/releases/latest";
             inline static std::atomic<bool> busy { false };         // One download at a time
@@ -74,6 +82,7 @@ namespace Vital::Manager {
 
             // Managers //
             static Release fetch_release();
+            static Status fetch_status();
             static Pending read_pending();
             static uint64_t download(const Release& release, const std::function<void(uint64_t)>& progress = nullptr);
             static bool extract(const std::string& file);

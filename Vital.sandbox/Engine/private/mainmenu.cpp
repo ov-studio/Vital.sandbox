@@ -529,13 +529,14 @@ namespace Vital::Engine {
             bool reached = false;
 
             // Vital.sandbox: running version (to_string, e.g. v1.2.3) vs latest release tag.
-            const auto& sdk = Tool::Version::SDK;
-            const auto release = Manager::Update::fetch_release();
-            if (!release.tag.empty()) reached = true;
-            if (Manager::Update::is_outdated(sdk.to_string(), release.tag)) {
+            // Vital.kit: cached kit version vs latest release tag (same source Kit::ensure uses).
+            const auto status = Manager::Update::fetch_status();
+            const auto& release = status.release;
+            if (!release.tag.empty() || !status.kit_tag.empty()) reached = true;
+            if (status.sandbox_old) {
                 UpdateEntry e;
                 e.name = "Vital.sandbox";
-                e.current = sdk.to_string();
+                e.current = status.current;
                 e.latest = release.tag;
                 e.url = Manager::Update::sandbox_releases;
                 e.asset_name = release.asset_name;
@@ -550,16 +551,12 @@ namespace Vital::Engine {
                 found.push_back(std::move(e));
             }
 
-            // Vital.kit: cached kit version vs latest release tag (same source Kit::ensure uses).
             // Kit::ensure() already re-downloads and verifies it on every launch, so a restart is all it needs.
-            const std::string kit_tag = std::get<0>(Manager::Kit::get_singleton() -> get_release());
-            if (!kit_tag.empty()) reached = true;
-            const std::string kit_local = Manager::Kit::get_singleton() -> get_version();
-            if (Manager::Update::is_outdated(kit_local, kit_tag)) {
+            if (status.kit_old) {
                 UpdateEntry e;
                 e.name = "Vital.kit";
-                e.current = kit_local;
-                e.latest = kit_tag;
+                e.current = status.kit_local;
+                e.latest = status.kit_tag;
                 e.url = Manager::Update::kit_releases;
                 found.push_back(std::move(e));
             }

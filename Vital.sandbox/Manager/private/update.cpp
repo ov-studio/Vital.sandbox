@@ -195,6 +195,18 @@ namespace Vital::Manager {
         return out;
     }
 
+    // Everything a check needs in one go: running versions, latest releases and whether each one is outdated
+    Update::Status Update::fetch_status() {
+        Status out;
+        out.current = Tool::Version::SDK.to_string();
+        out.release = fetch_release();
+        out.kit_tag = std::get<0>(Manager::Kit::get_singleton() -> get_release());
+        out.kit_local = Manager::Kit::get_singleton() -> get_version();
+        out.sandbox_old = is_outdated(out.current, out.release.tag);
+        out.kit_old = is_outdated(out.kit_local, out.kit_tag);
+        return out;
+    }
+
     // Remembers a finished download across restarts, and cleans up once that version is actually running
     Update::Pending Update::read_pending() {
         std::ifstream in(get_directory() / "pending.json", std::ios::binary);
@@ -303,22 +315,17 @@ namespace Vital::Manager {
                 log("error", fmt::format("update failed ~ {}", message));
                 applying.store(false);
             };
-            const std::string current = Tool::Version::SDK.to_string();
-            const Release release = fetch_release();
-            const std::string kit_tag = std::get<0>(Manager::Kit::get_singleton() -> get_release());
-            const std::string kit_local = Manager::Kit::get_singleton() -> get_version();
-            if (release.tag.empty() && kit_tag.empty()) return fail("could not reach GitHub");
-
-            const bool sandbox_old = is_outdated(current, release.tag);
-            const bool kit_old = is_outdated(kit_local, kit_tag);
-            if (!sandbox_old && !kit_old) {
-                log("sbox", fmt::format("already up to date ~ {}", current));
+            const Status status = fetch_status();
+            const Release& release = status.release;
+            if (release.tag.empty() && status.kit_tag.empty()) return fail("could not reach GitHub");
+            if (!status.sandbox_old && !status.kit_old) {
+                log("sbox", fmt::format("already up to date ~ {}", status.current));
                 applying.store(false);
                 return;
             }
 
             std::string file;
-            if (sandbox_old) {
+            if (status.sandbox_old) {
                 if (release.asset_name.empty() || release.asset_url.empty()) return fail(fmt::format("no {} {} download in release {}", get_system(), Tool::get_platform(), release.tag));
                 file = release.asset_name;
 
@@ -340,7 +347,7 @@ namespace Vital::Manager {
                 log("sbox", "extracting update...");
                 if (!extract(file)) return fail("extraction failed, run `update` again");
             }
-            log("sbox", sandbox_old ? fmt::format("restarting into {}...", release.tag) : fmt::format("restarting to apply Vital.kit {}...", kit_tag));
+            log("sbox", status.sandbox_old ? fmt::format("restarting into {}...", release.tag) : fmt::format("restarting to apply Vital.kit {}...", status.kit_tag));
             if (!restart(file)) return fail("could not start the updater");
         });
     }
@@ -363,22 +370,19 @@ namespace Vital::Manager {
     void Update::check() {
         if (is_dev_build() || applying.load() || checking.exchange(true)) return;
         Tool::Thread::create([](Tool::Thread*) {
-            const std::string current = Tool::Version::SDK.to_string();
-            const Release release = fetch_release();
-            const std::string kit_tag = std::get<0>(Manager::Kit::get_singleton() -> get_release());
-            const std::string kit_local = Manager::Kit::get_singleton() -> get_version();
+            const Status status = fetch_status();
             read_pending(); // Drops the leftovers of an update that has just been applied
 
             std::string sandbox_notice, kit_notice;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (is_outdated(current, release.tag) && announced_sandbox != release.tag) {
-                    announced_sandbox = release.tag;
-                    sandbox_notice = fmt::format("new Vital.sandbox version available ~ {} (running {}), type `update` to install it: {}", release.tag, current, sandbox_releases);
+                if (status.sandbox_old && announced_sandbox != status.release.tag) {
+                    announced_sandbox = status.release.tag;
+                    sandbox_notice = fmt::format("new Vital.sandbox version available ~ {} (running {}), type `update` to install it: {}", status.release.tag, status.current, sandbox_releases);
                 }
-                if (is_outdated(kit_local, kit_tag) && announced_kit != kit_tag) {
-                    announced_kit = kit_tag;
-                    kit_notice = fmt::format("new Vital.kit version available ~ {} (running {}), it is applied on the next restart", kit_tag, kit_local);
+                if (status.kit_old && announced_kit != status.kit_tag) {
+                    announced_kit = status.kit_tag;
+                    kit_notice = fmt::format("new Vital.kit version available ~ {} (running {}), it is applied on the next restart", status.kit_tag, status.kit_local);
                 }
             }
             if (!sandbox_notice.empty()) log("warn", sandbox_notice);
