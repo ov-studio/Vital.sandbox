@@ -259,6 +259,13 @@ namespace Vital::Engine {
         webview -> call_deferred("post_message", Tool::to_godot_string(input));
     }
 
+    void Webview::emit(const rapidjson::Document& document) {
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.Accept(writer);
+        emit(std::string(buffer.GetString()));
+    }
+
     void Webview::signal(const std::string& type, Payload payload) {
         auto it = handlers.find(type);
         if (it == handlers.end()) return;
