@@ -369,10 +369,7 @@ namespace Vital::Engine {
             doc.SetObject();
             auto& a = doc.GetAllocator();
             doc.AddMember("action", "fadeout", a);
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            doc.Accept(writer);
-            webview -> emit(buffer.GetString());
+            webview -> emit(doc);
         });
 
         // Leaving a server (console `disconnect`, or the server dropping us) returns to the menu, as there is no game left to show.
@@ -432,10 +429,7 @@ namespace Vital::Engine {
                 versions.PushBack(item, a);
             }
             doc.AddMember("versions", versions, a);
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            doc.Accept(writer);
-            if (webview) webview -> emit(buffer.GetString());
+            if (webview) webview -> emit(doc);
         }
         send_connection();
         check_updates();
@@ -456,10 +450,7 @@ namespace Vital::Engine {
         const std::string event_name = !event.empty() ? event : (failure.empty() ? std::string() : std::string("failed"));
         if (!event_name.empty()) doc.AddMember("event", rapidjson::Value(event_name.c_str(), a), a);
         if (!failure.empty()) doc.AddMember("reason", rapidjson::Value(failure.c_str(), a), a);
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        doc.Accept(writer);
-        webview -> emit(buffer.GetString());
+        webview -> emit(doc);
     }
 
     void MainMenu::fetch_masterlist() {
