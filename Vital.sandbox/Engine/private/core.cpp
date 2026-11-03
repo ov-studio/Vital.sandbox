@@ -25,7 +25,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
-#include <Vital.sandbox/Manager/public/updater.h>
+#include <Vital.sandbox/Manager/public/update.h>
 #include <Vital.sandbox/Manager/public/network.h>
 
 
@@ -66,7 +66,7 @@ namespace Vital::Engine {
                     Tool::Event::emit("kit:ready");
                     Tool::Event::emit("core:ready");
                     #if !defined(VSDK_Client)
-                    Manager::Updater::watch();
+                    Manager::Update::watch();
                     #endif
                     set_process(true);
                     set_physics_process(true);
@@ -240,7 +240,7 @@ namespace Vital::Engine {
         reset();
         #if !defined(VSDK_Client)
         Manager::Masterlist::free_singleton();
-        Manager::Updater::halt();
+        Manager::Update::halt();
         #endif
         Manager::Network::free_singleton();
         Manager::Asset::free_singleton();

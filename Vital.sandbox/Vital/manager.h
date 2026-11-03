@@ -20,4 +20,4 @@
 #include <Vital.sandbox/Manager/public/discord.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Manager/public/masterlist.h>
-#include <Vital.sandbox/Manager/public/updater.h>
+#include <Vital.sandbox/Manager/public/update.h>
