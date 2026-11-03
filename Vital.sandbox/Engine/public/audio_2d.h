@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------
+g/*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Engine: audio_2d.h
      Author: ov-studio
@@ -14,8 +14,7 @@
 
 #pragma once
 #if defined(VSDK_Client)
-#include <Vital.sandbox/Engine/public/core.h>
-#include <Vital.sandbox/Engine/public/audio_bus.h>
+#include <Vital.sandbox/Engine/public/audio_node.h>
 
 
 //////////////////////////////
@@ -23,25 +22,13 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    class Audio_2D : public godot::Node2D, public Engine::Audio_Bus {
-        private:
-            godot::Ref<godot::AudioStream> stream;
-            godot::AudioStreamPlayer2D* player = nullptr;
-
-
-            // Instantiators //
-            Audio_2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
-            ~Audio_2D();
-        public:
-            // Managers //
-            static Audio_2D* create(const std::string& base, const std::string& path, bool autoplay = false);
-            static Audio_2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
-            void destroy();
-
-
-            // Getters //
-            godot::Ref<godot::AudioStream> get_stream() const;
-            godot::AudioStreamPlayer2D* get_player() const;
+    struct Audio_2D_Traits {
+        using Base = godot::Node2D;
+        using Player = godot::AudioStreamPlayer2D;
+        static constexpr const char* bus = "audio_2d";
+        static constexpr bool unspawn = false;
     };
+    
+    using Audio_2D = Audio_Node<Audio_2D_Traits>;
 }
 #endif
