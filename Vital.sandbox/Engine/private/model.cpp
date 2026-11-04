@@ -873,14 +873,7 @@ namespace Vital::Engine {
     }
 
     float Model::get_component_lod_bias(const std::string& component) {
-        std::string target = component;
-        if (Tool::contains_wildcard(component)) {
-            target.clear();
-            for (const auto& name : get_components(true)) {
-                if (Tool::match_wildcard(component, name)) { target = name; break; }
-            }
-        }
-        godot::MeshInstance3D* mesh = target.empty() ? nullptr : find_component(target);
+        godot::MeshInstance3D* mesh = find_component(component);
         if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return mesh->get_lod_bias();
     }
@@ -903,18 +896,9 @@ namespace Vital::Engine {
     }
 
     bool Model::is_component_wireframe(const std::string& component) {
-        const auto material = get_wireframe_material();
-        auto has_overlay = [&](const std::string& name) {
-            godot::MeshInstance3D* mesh = find_component(name);
-            return mesh && mesh -> get_material_overlay().ptr() == material.ptr();
-        };
-        if (Tool::contains_wildcard(component)) {
-            for (const auto& name : get_components(true))
-                if (Tool::match_wildcard(component, name) && has_overlay(name)) return true;
-            return false;
-        }
-        if (!find_component(component)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return has_overlay(component);
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return mesh -> get_material_overlay().ptr() == get_wireframe_material().ptr();
     }
 
     // Local-only: a debug view, so nothing is broadcast or stored for late-join.

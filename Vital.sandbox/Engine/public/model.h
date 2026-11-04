@@ -316,19 +316,20 @@ namespace Vital::Engine {
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value, bool sync = true);
 
-            // Per-component automatic mesh LOD bias (GeometryInstance3D::lod_bias). Wildcards supported ("*", "wheel_*").
+            // Per-component automatic mesh LOD bias (GeometryInstance3D::lod_bias). 
             // 0 forces the lowest LOD, 1 is Godot's default, higher keeps detail at greater distance. Clamped to >= 0.
             // Local render setting - never broadcasts. Multiplies with the global Display LOD threshold (effective detail ~ bias / threshold).
-            // set_component_lod_bias(): throws when an exact (non-wildcard) component doesn't exist.
-            // get_component_lod_bias(): for a wildcard returns the first matching component's bias. Throws when nothing matches.
+            // set_component_lod_bias(): wildcards supported ("*", "wheel_*"), throws when an exact (non-wildcard) component doesn't exist.
+            // get_component_lod_bias(): exact component only, throws when it doesn't exist.
             bool set_component_lod_bias(const std::string& component, float bias);
             float get_component_lod_bias(const std::string& component);
 
             #if defined(VSDK_Client)
             // Debug wireframe overlay, to check LODs and lod bias visually: the lines follow the LOD that is actually drawn.
-            // Local render setting - never broadcasts. Wildcards supported ("*", "wheel_*"), skinned components included.
-            // set_component_wireframe(): throws when an exact (non-wildcard) component doesn't exist. Turning it off leaves any
-            // other overlay material alone. is_component_wireframe(): for a wildcard true if any matching component has it on.
+            // Local render setting - never broadcasts. Skinned components included.
+            // set_component_wireframe(): wildcards supported ("*", "wheel_*"), throws when an exact (non-wildcard) component
+            // doesn't exist. Turning it off leaves any other overlay material alone.
+            // is_component_wireframe(): exact component only, throws when it doesn't exist.
             // set_wireframe_all(): every model, including ones spawned later. Overrides per-component choices, like set_debug_all.
             bool is_component_wireframe(const std::string& component);
             bool set_component_wireframe(const std::string& component, bool state);
