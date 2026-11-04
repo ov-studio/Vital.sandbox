@@ -109,6 +109,9 @@ namespace Vital::Engine {
         sync_sleeping = false;
         sync_accum = 0.0f;
         reset_sync_state();
+        #if defined(VSDK_Client)
+        if (wireframe_all) set_component_wireframe("*", true);
+        #endif
     }
 
     void Model::_notification(int what) {
@@ -560,6 +563,9 @@ namespace Vital::Engine {
             }
         }
 
+        // Models that hydrate while the global wireframe is on (_ready() skipped them as placeholders)
+        if (wireframe_all) set_component_wireframe("*", true);
+
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
         sync_last_rot  = get_rotation_degrees();
@@ -878,6 +884,73 @@ namespace Vital::Engine {
         if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return mesh->get_lod_bias();
     }
+
+    #if defined(VSDK_Client)
+    godot::Ref<godot::ShaderMaterial> Model::get_wireframe_material() {
+        if (!wireframe_material.is_valid()) {
+            godot::Ref<godot::Shader> shader;
+            shader.instantiate();
+            shader -> set_code(
+                "shader_type spatial;\n"
+                "render_mode unshaded, wireframe, cull_disabled;\n"
+                "uniform vec4 color : source_color = vec4(0.0, 1.0, 0.4, 1.0);\n"
+                "void fragment() { ALBEDO = color.rgb; }\n"
+            );
+            wireframe_material.instantiate();
+            wireframe_material -> set_shader(shader);
+        }
+        return wireframe_material;
+    }
+
+    bool Model::is_component_wireframe(const std::string& component) {
+        const auto material = get_wireframe_material();
+        auto has_overlay = [&](const std::string& name) {
+            godot::MeshInstance3D* mesh = find_component(name);
+            return mesh && mesh -> get_material_overlay().ptr() == material.ptr();
+        };
+        if (Tool::contains_wildcard(component)) {
+            for (const auto& name : get_components(true))
+                if (Tool::match_wildcard(component, name) && has_overlay(name)) return true;
+            return false;
+        }
+        if (!find_component(component)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return has_overlay(component);
+    }
+
+    // Local-only: a debug view, so nothing is broadcast or stored for late-join.
+    // Detached components are included (get_components(true) + find_component).
+    bool Model::set_component_wireframe(const std::string& component, bool state) {
+        const auto material = get_wireframe_material();
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_component(name);
+            if (!mesh) return false;
+            if (state) mesh -> set_material_overlay(material);
+            else if (mesh -> get_material_overlay().ptr() == material.ptr()) mesh -> set_material_overlay(godot::Ref<godot::Material>());
+            return true;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return true;
+    }
+
+    bool Model::is_wireframe_all() {
+        return wireframe_all;
+    }
+
+    void Model::set_wireframe_all(bool state) {
+        wireframe_all = state;
+        godot::Window* root = Engine::Core::get_scene_root();
+        if (!root) return;
+        // Models can be parented anywhere (e.g. riding a physics body), so walk the whole tree instead of Core's children
+        std::function<void(godot::Node*)> apply = [&](godot::Node* node) {
+            if (auto model = godot::Object::cast_to<Model>(node)) {
+                if (!model -> placeholder) model -> set_component_wireframe("*", state);
+            }
+            for (int i = 0; i < node -> get_child_count(); i++) apply(node -> get_child(i));
+        };
+        apply(root);
+    }
+    #endif
 
     bool Model::is_component_rendered(const std::string& component) {
         if (Tool::contains_wildcard(component)) {

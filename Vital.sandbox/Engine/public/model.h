@@ -94,6 +94,13 @@ namespace Vital::Engine {
             // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
             std::unordered_map<std::string, std::unordered_map<std::string, float>> blendshape_values;
 
+            #if defined(VSDK_Client)
+            // Debug wireframe overlay (client only), shared by every model that has it on. wireframe_all is applied to
+            // models spawned/hydrated later too, like Collision_Shape::debug_all.
+            inline static bool wireframe_all = false;
+            inline static godot::Ref<godot::ShaderMaterial> wireframe_material;
+            #endif
+
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
@@ -130,6 +137,7 @@ namespace Vital::Engine {
             void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
             #if defined(VSDK_Client)
             static godot::Array build_lod_skin_pose(const godot::Ref<godot::GLTFState>& state, int skin_index);
+            static godot::Ref<godot::ShaderMaterial> get_wireframe_material();
             #endif
 
             template<typename T>
@@ -315,6 +323,18 @@ namespace Vital::Engine {
             // get_component_lod_bias(): for a wildcard returns the first matching component's bias. Throws when nothing matches.
             bool set_component_lod_bias(const std::string& component, float bias);
             float get_component_lod_bias(const std::string& component);
+
+            #if defined(VSDK_Client)
+            // Debug wireframe overlay, to check LODs and lod bias visually: the lines follow the LOD that is actually drawn.
+            // Local render setting - never broadcasts. Wildcards supported ("*", "wheel_*"), skinned components included.
+            // set_component_wireframe(): throws when an exact (non-wildcard) component doesn't exist. Turning it off leaves any
+            // other overlay material alone. is_component_wireframe(): for a wildcard true if any matching component has it on.
+            // set_wireframe_all(): every model, including ones spawned later. Overrides per-component choices, like set_debug_all.
+            bool is_component_wireframe(const std::string& component);
+            bool set_component_wireframe(const std::string& component, bool state);
+            static bool is_wireframe_all();
+            static void set_wireframe_all(bool state);
+            #endif
 
             // Pure local application of a received blendshape value — never broadcasts, never throws (safe from RPC callbacks).
             // While `placeholder` it only stores the value, hydrate() applies it. Returns false when nothing was applied.
