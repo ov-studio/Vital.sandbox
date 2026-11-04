@@ -195,6 +195,8 @@
 #include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/classes/gltf_document.hpp>
 #include <godot_cpp/classes/gltf_mesh.hpp>
+#include <godot_cpp/classes/gltf_node.hpp>
+#include <godot_cpp/classes/gltf_skin.hpp>
 #include <godot_cpp/classes/importer_mesh.hpp>
 
 

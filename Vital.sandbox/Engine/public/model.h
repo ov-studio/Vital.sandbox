@@ -97,11 +97,6 @@ namespace Vital::Engine {
             // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
             std::unordered_map<std::string, std::unordered_map<std::string, float>> blendshape_values;
 
-            // LOD bias requested while this model was a placeholder (no mesh tree yet), as (component pattern, bias) in call order
-            // so a later specific call still overrides an earlier wildcard. Replayed by hydrate(), then dropped.
-            // Local render setting: never replicated, so it is not part of the late-join dump.
-            std::vector<std::pair<std::string, float>> pending_lod_bias;
-
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
             // SHA-256 of source file at load time — used to invalidate
@@ -136,6 +131,9 @@ namespace Vital::Engine {
             void apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
             void broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time);
             void broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths);
+            #if defined(VSDK_Client)
+            static godot::Array build_lod_skin_pose(const godot::Ref<godot::GLTFState>& state, int skin_index);
+            #endif
 
             template<typename T>
             T* find_node(godot::Node* node, T*& cache) {

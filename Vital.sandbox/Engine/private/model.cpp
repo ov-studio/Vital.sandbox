@@ -26,6 +26,75 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    // Helpers //
+    #if defined(VSDK_Client)
+    // Skin pose used to make LOD generation skinning-aware: one Transform3D per skin bind slot (= per bone index found in the
+    // vertex ARRAY_BONES data), equal to `bone global pose (skeleton space) * bind pose`.
+    // This is exactly what the editor scene importer feeds into ImporterMesh::generate_lods()
+    // (ResourceImporterScene::_get_skinned_pose_transforms). The editor reads it from the generated Skeleton3D / Skin, which
+    // don't exist yet at this point (GLTFDocument creates them inside generate_scene(), after the meshes must already carry
+    // their LODs), so the same values are rebuilt here from the parsed glTF data:
+    //   - the bind pose of slot i is gltf_skin.inverse_binds[i] (Godot's Skin copies the glTF inverse binds verbatim),
+    //   - the bone of slot i is the glTF node joints_original[i],
+    //   - the bone's rest/pose is that node's local transform, chained up through parents belonging to the same skeleton
+    //     (the Skeleton3D root bone is where the chain stops, the skeleton node's own transform is not part of it).
+    // Without it the simplifier would see the mesh in its bind pose instead of its rest pose, which is only identical when
+    // both match, and the editor never relies on that.
+    godot::Array Model::build_lod_skin_pose(const godot::Ref<godot::GLTFState>& state, int skin_index) {
+        godot::Array pose;
+        auto skins = state->get_skins();
+        if (skin_index < 0 || skin_index >= skins.size()) return pose;
+        godot::Ref<godot::GLTFSkin> skin = skins[skin_index];
+        if (skin.is_null()) return pose;
+
+        auto nodes = state->get_nodes();
+        const godot::PackedInt32Array joints = skin->get_joints_original();
+        auto inverse_binds = skin->get_inverse_binds();
+        // Some skins have no inverse binds at all, Godot then uses identity binds (same as GLTFDocument::_create_skins)
+        const bool has_binds = inverse_binds.size() >= joints.size();
+
+        // Rest transform of a joint in skeleton space, memoised: neighbouring joints share most of their parent chain
+        std::unordered_map<int, godot::Transform3D> global_rest;
+        auto get_global_rest = [&](int node_index) {
+            std::vector<int> chain;
+            godot::Transform3D base;
+            int current = node_index;
+            // Walk up until the first node that is not part of the same skeleton (or a cached ancestor).
+            // The size check is only a guard against a malformed, cyclic parent chain.
+            while (current >= 0 && current < nodes.size() && (int)chain.size() <= nodes.size()) {
+                auto cached = global_rest.find(current);
+                if (cached != global_rest.end()) { base = cached->second; break; }
+                chain.push_back(current);
+                godot::Ref<godot::GLTFNode> node = nodes[current];
+                if (node.is_null()) break;
+                int parent = node->get_parent();
+                if (parent < 0 || parent >= nodes.size()) break;
+                godot::Ref<godot::GLTFNode> parent_node = nodes[parent];
+                if (parent_node.is_null() || parent_node->get_skeleton() != node->get_skeleton()) break;
+                current = parent;
+            }
+            for (int i = (int)chain.size() - 1; i >= 0; i--) {
+                godot::Ref<godot::GLTFNode> node = nodes[chain[i]];
+                godot::Transform3D local = node.is_valid() ? node->get_xform() : godot::Transform3D();
+                // Skeleton3D stores bone poses as position / rotation / scale, so shear is dropped there: do the same
+                local.basis = godot::Basis(local.basis.get_rotation_quaternion(), local.basis.get_scale());
+                base = base * local;
+                global_rest[chain[i]] = base;
+            }
+            return base;
+        };
+
+        for (int i = 0; i < joints.size(); i++) {
+            godot::Transform3D bind;
+            if (has_binds) bind = inverse_binds[i];
+            const int node_index = joints[i];
+            const bool valid_node = node_index >= 0 && node_index < nodes.size();
+            pose.push_back((valid_node ? get_global_rest(node_index) : godot::Transform3D()) * bind);
+        }
+        return pose;
+    }
+    #endif
+
     //------------------//
     //  Hooks / Notify  //
     //------------------//
@@ -240,16 +309,37 @@ namespace Vital::Engine {
                 // GLTFDocument adds every surface without LODs (only the editor importer generates them), so do it here, before
                 // generate_scene() turns these ImporterMeshes into the final meshes. Client only: the server never renders.
                 // generate_lods() only fills each surface's LOD index lists, the base vertex/index data (LOD 0) is left untouched,
-                // so collision shapes built from the meshes (surface_get_arrays) are identical with or without LODs.
-                // No bone transforms are passed: the editor derives them from the skeleton, which doesn't exist before generate_scene().
-                // Silently does nothing when the engine build has no meshoptimizer.
+                // so collision shapes built from the meshes (surface_get_arrays) are identical with or without LODs. Bone indices,
+                // weights and blend shapes are per-vertex data shared with LOD 0, so rigged meshes keep working at every LOD.
+                // Same as the editor importer, skinned meshes get their skin pose passed in (build_lod_skin_pose), so the simplifier
+                // judges them in their rest pose; static meshes pass an empty array. Silently does nothing when the engine build
+                // has no meshoptimizer.
                 {
+                    // glTF mesh index -> skin index of the first skinned node using it. A mesh is one shared resource, so it can
+                    // only be simplified once; a mesh reused by nodes with different skins is not something exporters produce.
+                    std::unordered_map<int, int> mesh_skin;
+                    auto gltf_nodes = state->get_nodes();
+                    for (int i = 0; i < gltf_nodes.size(); i++) {
+                        godot::Ref<godot::GLTFNode> gltf_node = gltf_nodes[i];
+                        if (gltf_node.is_null()) continue;
+                        const int mesh_index = gltf_node->get_mesh(), skin_index = gltf_node->get_skin();
+                        if (mesh_index >= 0 && skin_index >= 0) mesh_skin.emplace(mesh_index, skin_index);
+                    }
+                    std::unordered_map<int, godot::Array> skin_pose_cache;
                     auto gltf_meshes = state->get_meshes();
                     for (int i = 0; i < gltf_meshes.size(); i++) {
                         godot::Ref<godot::GLTFMesh> gltf_mesh = gltf_meshes[i];
                         if (gltf_mesh.is_null()) continue;
                         godot::Ref<godot::ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
-                        if (importer_mesh.is_valid()) importer_mesh->generate_lods(LOD_NORMAL_MERGE_ANGLE, LOD_NORMAL_SPLIT_ANGLE, godot::Array());
+                        if (importer_mesh.is_null()) continue;
+                        godot::Array skin_pose;
+                        auto skinned = mesh_skin.find(i);
+                        if (skinned != mesh_skin.end()) {
+                            auto cached = skin_pose_cache.find(skinned->second);
+                            if (cached == skin_pose_cache.end()) cached = skin_pose_cache.emplace(skinned->second, build_lod_skin_pose(state, skinned->second)).first;
+                            skin_pose = cached->second;
+                        }
+                        importer_mesh->generate_lods(LOD_NORMAL_MERGE_ANGLE, LOD_NORMAL_SPLIT_ANGLE, skin_pose);
                     }
                 }
                 #endif
@@ -469,16 +559,6 @@ namespace Vital::Engine {
                 if (idx >= 0) mesh->set_blend_shape_value(idx, value);
             }
         }
-
-        // And LOD bias set while this model was a placeholder. Non-throwing: a pattern matching nothing is just skipped.
-        for (const auto& [pattern, bias] : pending_lod_bias) {
-            apply_wildcard(pattern, [&]{ return get_components(true); }, [&, bias = bias](const std::string& name) -> bool {
-                godot::MeshInstance3D* mesh = find_component(name);
-                if (mesh) mesh->set_lod_bias(bias);
-                return true;
-            });
-        }
-        pending_lod_bias.clear();
 
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
@@ -779,16 +859,8 @@ namespace Vital::Engine {
 
     // Local-only: LOD is a render setting, so nothing is broadcast or stored for late-join.
     // Detached components are included (get_components(true) + find_component), their bias survives re-attaching.
-    // While `placeholder` there is no mesh tree to act on, the request is queued and hydrate() applies it.
     bool Model::set_component_lod_bias(const std::string& component, float bias) {
         bias = std::max(0.0f, bias);
-        if (placeholder) {
-            for (auto& [pattern, value] : pending_lod_bias) {
-                if (pattern == component) { value = bias; return true; }
-            }
-            pending_lod_bias.emplace_back(component, bias);
-            return true;
-        }
         auto exec = [&](const std::string& name) -> bool {
             godot::MeshInstance3D* mesh = find_component(name);
             if (!mesh) return false;
@@ -801,12 +873,6 @@ namespace Vital::Engine {
     }
 
     float Model::get_component_lod_bias(const std::string& component) {
-        if (placeholder) {
-            for (const auto& [pattern, value] : pending_lod_bias) {
-                if (pattern == component) return value;
-            }
-            return 1.0f;
-        }
         std::string target = component;
         if (Tool::contains_wildcard(component)) {
             target.clear();
