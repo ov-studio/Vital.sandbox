@@ -141,6 +141,26 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                vm -> push_value(self -> model -> get_component_lod_bias(component));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, bias)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_number);
+
+                auto component = vm -> get_string(2);
+                auto bias = vm -> get_float(3);
+                vm -> push_value(self -> model -> set_component_lod_bias(component, bias));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
