@@ -171,7 +171,7 @@ namespace Vital::Manager {
         Release out;
         try {
             rapidjson::Document doc;
-            doc.Parse(Tool::HTTP::get(sandbox_src).c_str());
+            doc.Parse(Manager::Kit::get_release_json(sandbox_repo, Tool::Version::SDK.is_prerelease()).c_str());
             if (doc.HasParseError() || !doc.IsObject()) return out;
             if (doc.HasMember("tag_name") && doc["tag_name"].IsString()) out.tag = doc["tag_name"].GetString();
             const std::string suffix = fmt::format("-{}-{}.zip", get_system(), Tool::get_platform());
