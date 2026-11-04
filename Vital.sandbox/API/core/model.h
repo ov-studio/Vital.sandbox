@@ -64,6 +64,13 @@ namespace Vital::Sandbox::API {
                     instance.model = entity;
                 });
             });
+
+            #if defined(VSDK_Client)
+            static Tool::Event::Handle reset_binding;
+            reset_binding.bind("environment:free", [](Tool::Stack) {
+                base_class::set_wireframe_all(false);
+            });
+            #endif
         }
 
         static void bind(Machine* vm) {
@@ -118,6 +125,23 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "is_wireframe_all", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::is_wireframe_all());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_wireframe_all", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(1, &Machine::is_bool);
+
+                auto state = vm -> get_bool(1);
+                base_class::set_wireframe_all(state);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
+
             API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
@@ -160,6 +184,28 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> model -> set_component_lod_bias(component, bias));
                 return 1;
             });
+
+            #if defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "is_component_wireframe", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                vm -> push_value(self -> model -> is_component_wireframe(component));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_component_wireframe", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, state)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_bool);
+
+                auto component = vm -> get_string(2);
+                auto state = vm -> get_bool(3);
+                vm -> push_value(self -> model -> set_component_wireframe(component, state));
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)
