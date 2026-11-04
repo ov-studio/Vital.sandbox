@@ -181,6 +181,7 @@ namespace Vital::Engine {
             }
             else webview -> call_deferred("focus_parent");
         }
+        update_key_forwarder();
     }
 
     void Webview::set_focussed(bool state) {
@@ -214,6 +215,7 @@ namespace Vital::Engine {
     void Webview::set_z_index(int value) {
         webview -> set("window_z_index", value);
         set_focussed(true);
+        update_key_forwarder();
     }
 
     void Webview::set_devtools_visible(bool state) {
@@ -282,6 +284,8 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
+        if (key_forwarder == this) eval("window.vsdk_forward_keys = true;");
+        if (binds_forwarded) sync_bind_forwarding();
         signal("preload", Tool::to_std_string(url));
     }
 
