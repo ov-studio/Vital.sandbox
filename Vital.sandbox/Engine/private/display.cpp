@@ -47,6 +47,10 @@ namespace Vital::Engine {
         return screen_material;
     }
 
+    float Display::get_lod_threshold() {
+        return Engine::Core::get_scene_root() -> get_mesh_lod_threshold();
+    }
+
 
     // Last frame //
     void Display::ensure_last_frame_texture() {
@@ -146,6 +150,12 @@ namespace Vital::Engine {
         last_frame_rid = godot::RID();
     }
 
+
+    // Setters //
+    void Display::set_lod_threshold(float threshold) {
+        Engine::Core::get_scene_root() -> set_mesh_lod_threshold(std::max(0.0f, threshold));
+    }
+    
 
     // Misc //
     void Display::screenshot(const std::string& base, const std::string& path) {
