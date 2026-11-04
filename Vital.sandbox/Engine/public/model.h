@@ -33,6 +33,11 @@ namespace Vital::Engine {
         friend class Manager::Network;
         public:
             static constexpr int ANIM_LAYER_SOFT_MAX = 16;
+
+            // Automatic mesh LOD generation for runtime-loaded models (client only). Same defaults as the editor scene importer
+            // ("lods/normal_merge_angle" = 60, "lods/normal_split_angle" = 25, degrees), so LODs look like imported ones.
+            static constexpr float LOD_NORMAL_MERGE_ANGLE = 60.0f;
+            static constexpr float LOD_NORMAL_SPLIT_ANGLE = 25.0f;
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
 
             enum class Format {
@@ -91,6 +96,11 @@ namespace Vital::Engine {
             // component -> (blendshape -> value) for every blendshape set so far, resolved to exact names.
             // Replayed by hydrate() once the mesh tree exists and by the late-join dump.
             std::unordered_map<std::string, std::unordered_map<std::string, float>> blendshape_values;
+
+            // LOD bias requested while this model was a placeholder (no mesh tree yet), as (component pattern, bias) in call order
+            // so a later specific call still overrides an earlier wildcard. Replayed by hydrate(), then dropped.
+            // Local render setting: never replicated, so it is not part of the late-join dump.
+            std::vector<std::pair<std::string, float>> pending_lod_bias;
 
             // Sync state lives in ISyncable base class.
             inline static Models cache_loaded;
@@ -303,6 +313,14 @@ namespace Vital::Engine {
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value, bool sync = true);
+
+            // Per-component automatic mesh LOD bias (GeometryInstance3D::lod_bias). Wildcards supported ("*", "wheel_*").
+            // 0 forces the lowest LOD, 1 is Godot's default, higher keeps detail at greater distance. Clamped to >= 0.
+            // Local render setting - never broadcasts. Multiplies with the global Display LOD threshold (effective detail ~ bias / threshold).
+            // set_component_lod_bias(): throws when an exact (non-wildcard) component doesn't exist.
+            // get_component_lod_bias(): for a wildcard returns the first matching component's bias. Throws when nothing matches.
+            bool set_component_lod_bias(const std::string& component, float bias);
+            float get_component_lod_bias(const std::string& component);
 
             // Pure local application of a received blendshape value — never broadcasts, never throws (safe from RPC callbacks).
             // While `placeholder` it only stores the value, hydrate() applies it. Returns false when nothing was applied.

@@ -236,6 +236,23 @@ namespace Vital::Engine {
                 state->set("handle_binary_image_mode", 0);
                 #endif
                 if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid model buffer");
+                #if defined(VSDK_Client)
+                // GLTFDocument adds every surface without LODs (only the editor importer generates them), so do it here, before
+                // generate_scene() turns these ImporterMeshes into the final meshes. Client only: the server never renders.
+                // generate_lods() only fills each surface's LOD index lists, the base vertex/index data (LOD 0) is left untouched,
+                // so collision shapes built from the meshes (surface_get_arrays) are identical with or without LODs.
+                // No bone transforms are passed: the editor derives them from the skeleton, which doesn't exist before generate_scene().
+                // Silently does nothing when the engine build has no meshoptimizer.
+                {
+                    auto gltf_meshes = state->get_meshes();
+                    for (int i = 0; i < gltf_meshes.size(); i++) {
+                        godot::Ref<godot::GLTFMesh> gltf_mesh = gltf_meshes[i];
+                        if (gltf_mesh.is_null()) continue;
+                        godot::Ref<godot::ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
+                        if (importer_mesh.is_valid()) importer_mesh->generate_lods(LOD_NORMAL_MERGE_ANGLE, LOD_NORMAL_SPLIT_ANGLE, godot::Array());
+                    }
+                }
+                #endif
                 godot::Node* root = document->generate_scene(state);
                 if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "failed to generate scene");
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
@@ -452,6 +469,16 @@ namespace Vital::Engine {
                 if (idx >= 0) mesh->set_blend_shape_value(idx, value);
             }
         }
+
+        // And LOD bias set while this model was a placeholder. Non-throwing: a pattern matching nothing is just skipped.
+        for (const auto& [pattern, bias] : pending_lod_bias) {
+            apply_wildcard(pattern, [&]{ return get_components(true); }, [&, bias = bias](const std::string& name) -> bool {
+                godot::MeshInstance3D* mesh = find_component(name);
+                if (mesh) mesh->set_lod_bias(bias);
+                return true;
+            });
+        }
+        pending_lod_bias.clear();
 
         sync_authority = authority_peer;
         sync_last_pos  = get_global_position();
@@ -748,6 +775,48 @@ namespace Vital::Engine {
     void Model::broadcast_component_visible(const std::string& component, bool state) {
         if (net_id == 0) return;
         Manager::Network::rpc(true, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
+    }
+
+    // Local-only: LOD is a render setting, so nothing is broadcast or stored for late-join.
+    // Detached components are included (get_components(true) + find_component), their bias survives re-attaching.
+    // While `placeholder` there is no mesh tree to act on, the request is queued and hydrate() applies it.
+    bool Model::set_component_lod_bias(const std::string& component, float bias) {
+        bias = std::max(0.0f, bias);
+        if (placeholder) {
+            for (auto& [pattern, value] : pending_lod_bias) {
+                if (pattern == component) { value = bias; return true; }
+            }
+            pending_lod_bias.emplace_back(component, bias);
+            return true;
+        }
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_component(name);
+            if (!mesh) return false;
+            mesh->set_lod_bias(bias);
+            return true;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return true;
+    }
+
+    float Model::get_component_lod_bias(const std::string& component) {
+        if (placeholder) {
+            for (const auto& [pattern, value] : pending_lod_bias) {
+                if (pattern == component) return value;
+            }
+            return 1.0f;
+        }
+        std::string target = component;
+        if (Tool::contains_wildcard(component)) {
+            target.clear();
+            for (const auto& name : get_components(true)) {
+                if (Tool::match_wildcard(component, name)) { target = name; break; }
+            }
+        }
+        godot::MeshInstance3D* mesh = target.empty() ? nullptr : find_component(target);
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return mesh->get_lod_bias();
     }
 
     bool Model::is_component_rendered(const std::string& component) {
