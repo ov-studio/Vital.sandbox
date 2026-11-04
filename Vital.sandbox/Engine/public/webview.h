@@ -74,10 +74,10 @@ namespace Vital::Engine {
 
 
             // Helpers //
+            static std::string fetch_bind_list();
             void pause_input_forwarder();
             static Webview* select_input_forwarder();
             static void update_input_forwarder();
-            static std::string fetch_bind_list();
             void sync_bind_forwarding();
             static void update_bind_forwarding();
             static void update_key_forwarder();
