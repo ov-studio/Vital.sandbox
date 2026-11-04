@@ -65,6 +65,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             
+            API::bind(vm, base_scope, "get_lod_threshold", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_singleton() -> get_lod_threshold());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_lod_threshold", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(threshold)")
+                    .require(1, &Machine::is_number);
+
+                auto threshold = vm -> get_float(1);
+                base_class::get_singleton() -> set_lod_threshold(threshold);
+                vm -> push_value(true);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
