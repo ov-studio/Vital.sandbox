@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/kit.h>
+#include <Vital.sandbox/Tool/version.h>
 
 
 //////////////////////////
