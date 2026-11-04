@@ -75,6 +75,7 @@ namespace Vital::Manager {
     }
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
+        const bool lua_input = !Engine::Webview::get_key_forwarder();
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
             if (event_key -> is_pressed()) {
@@ -89,8 +90,7 @@ namespace Vital::Manager {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();
                 }
-                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::Core::get_singleton() -> is_sandbox_ui_visible()) {
-                    // Menu is hidden (nothing else open): its bind (kit config/mainmenu.json) brings it back
+                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::MainMenu::get_singleton() -> is_visible() && !(Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible())) {
                     handled = true;
                     Engine::MainMenu::get_singleton() -> toggle();
                 }
@@ -105,18 +105,21 @@ namespace Vital::Manager {
                 if (handled) { Engine::Core::get_scene_root() -> set_input_as_handled(); return; }
             }
 
+            if (!lua_input) return;
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_key -> get_keycode())),
                 Tool::StackValue(event_key -> is_pressed())
             );
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
+            if (!lua_input) return;
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_mouse_button -> get_button_index())),
                 Tool::StackValue(event_mouse_button -> is_pressed())
             );
         }
         else if (auto event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
+            if (!lua_input) return;
             auto position = event_mouse_motion -> get_position();
             signal("sandbox:mouse_move",
                 Tool::StackValue(position.x),
