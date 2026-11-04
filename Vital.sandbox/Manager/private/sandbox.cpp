@@ -19,6 +19,8 @@
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Engine/public/display.h>
 #include <Vital.sandbox/Engine/public/mainmenu.h>
+#include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Engine/public/webview.h>
 
 
 //////////////////////////////
