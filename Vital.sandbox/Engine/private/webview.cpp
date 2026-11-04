@@ -50,8 +50,10 @@ namespace Vital::Engine {
     Webview::~Webview() {
         if (!webview) return;
         pause_input_forwarder();
+        if (key_forwarder == this) key_forwarder = nullptr;
         buffer.erase(std::remove(buffer.begin(), buffer.end(), this), buffer.end());
         update_input_forwarder();
+        update_key_forwarder();
         webview -> queue_free();
         webview = nullptr;
     }
@@ -152,6 +154,10 @@ namespace Vital::Engine {
 
     bool Webview::is_devtools_visible() {
         return webview -> call("is_devtools_open");
+    }
+
+    bool Webview::is_system() {
+        return get_z_index() > system_z_floor;
     }
 
 
