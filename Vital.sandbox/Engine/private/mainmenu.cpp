@@ -383,7 +383,6 @@ namespace Vital::Engine {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 apply_settings(load_settings());
                 webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/ui/mainmenu/build/index.html"));
-                //webview -> load_url("http://localhost:5173/"); // TODO: SWAP FOR ABOVE IN PRODUCTION
             });
         });
     }
