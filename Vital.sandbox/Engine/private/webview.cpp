@@ -60,6 +60,22 @@ namespace Vital::Engine {
 
 
     // Helpers //
+    std::string Webview::fetch_bind_list() {
+        rapidjson::Document document;
+        document.SetArray();
+        auto& alloc = document.GetAllocator();
+        if (auto kit = Manager::Kit::get_singleton()) {
+            for (const char* config : { "config/console", "config/mainmenu", "config/screenshot" }) {
+                const auto bind = kit -> get_json_value(config, "bind");
+                if (bind.is<std::string>()) document.PushBack(rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
+            }
+        }
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.Accept(writer);
+        return buffer.GetString();
+    }
+
     void Webview::pause_input_forwarder() {
         if (input_forwarder != this) return;
         eval("window.vsdk_forward_input = false;");
@@ -106,6 +122,35 @@ namespace Vital::Engine {
         if (input_forwarder != nullptr) return;
         auto fallback = select_input_forwarder();
         if (fallback) fallback -> set_focussed(true);
+    }
+
+    void Webview::sync_bind_forwarding() {
+        eval(fmt::format("window.vsdk_forward_binds = {};", binds_forwarded ? fetch_bind_list() : std::string("null")));
+    }
+
+    void Webview::update_bind_forwarding() {
+        for (Webview* instance : buffer) {
+            const bool state = !instance -> is_system() && !instance -> options.overlay && !instance -> options.forward_input && !instance -> is_fullscreen() && instance -> is_visible();
+            if (state == instance -> binds_forwarded) continue;
+            instance -> binds_forwarded = state;
+            instance -> sync_bind_forwarding();
+        }
+    }
+
+    void Webview::update_key_forwarder() {
+        update_bind_forwarding();
+        Webview* best = nullptr;
+        for (Webview* instance : buffer) {
+            if (instance -> options.overlay || !instance -> is_visible()) continue;
+            if (!instance -> is_system() && (instance -> options.forward_input || !instance -> is_fullscreen())) continue;
+            if (!best || instance -> get_z_index() >= best -> get_z_index()) best = instance;
+        }
+        if (best == key_forwarder) return;
+        if (key_forwarder) key_forwarder -> eval("window.vsdk_forward_keys = false;");
+        key_forwarder = best;
+        if (!best) return;
+        best -> eval("window.vsdk_forward_keys = true;");
+        best -> webview -> call_deferred("focus");
     }
 
 
