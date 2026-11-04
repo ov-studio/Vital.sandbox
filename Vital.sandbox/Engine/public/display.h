@@ -68,8 +68,13 @@ namespace Vital::Engine {
             godot::Vector2 get_resolution();
             godot::Ref<godot::ViewportTexture> get_texture();
             godot::Ref<godot::ShaderMaterial> get_screen_material();
+            float get_lod_threshold();
             godot::RID get_last_frame_texture();   // per-frame draw use, empty until a copy exists
             godot::RID pin_last_frame_texture();   // persistent binding (shader param), copied every frame from now on
+
+
+            // Setters //
+            void set_lod_threshold(float threshold);
 
 
             // Misc //
