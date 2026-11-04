@@ -1,6 +1,8 @@
 name: Cache
 
+# Runs on dependency changes, or manually: Actions tab -> "Cache" -> Run workflow
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
