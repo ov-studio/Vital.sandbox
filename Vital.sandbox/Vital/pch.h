@@ -194,6 +194,8 @@
 // Godot: GLTF //
 #include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/classes/gltf_document.hpp>
+#include <godot_cpp/classes/gltf_mesh.hpp>
+#include <godot_cpp/classes/importer_mesh.hpp>
 
 
 // Godot: Meshes & Materials //
