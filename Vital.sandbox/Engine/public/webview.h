@@ -56,6 +56,8 @@ namespace Vital::Engine {
             std::unordered_map<std::string, std::function<void(Payload)>> handlers;
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> buffer;
+            static inline Webview* key_forwarder = nullptr;
+            bool binds_forwarded = false;
 
 
             // Instantiators //
@@ -75,6 +77,9 @@ namespace Vital::Engine {
             void pause_input_forwarder();
             static Webview* select_input_forwarder();
             static void update_input_forwarder();
+            void sync_bind_forwarding();
+            static void update_bind_forwarding();
+            static void update_key_forwarder();
         public:
             // Managers //
             static Webview* create(const Options& options = {});
@@ -91,9 +96,11 @@ namespace Vital::Engine {
             bool is_zoomable();
             bool is_forward_input();
             bool is_devtools_visible();
+            bool is_system();
 
 
             // Getters //
+            static Webview* get_key_forwarder();
             godot::Vector2 get_position();
             godot::Vector2 get_size();
             int get_z_index();
