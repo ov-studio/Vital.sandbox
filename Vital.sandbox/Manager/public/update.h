@@ -53,7 +53,7 @@ namespace Vital::Manager {
                 bool kit_old = false;
             };
         private:
-            static constexpr const char* sandbox_src = "https://api.github.com/repos/ov-studio/Vital.sandbox/releases/latest";
+            static constexpr const char* sandbox_repo = "ov-studio/Vital.sandbox";
             inline static std::atomic<bool> busy { false };         // One download at a time
             inline static std::atomic<bool> applying { false };     // One `update` command at a time
             #if !defined(VSDK_Client)

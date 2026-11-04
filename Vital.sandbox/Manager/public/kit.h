@@ -26,7 +26,7 @@ namespace Vital::Manager {
         public:
             static constexpr const char* Name = "Kit.manager";
         private:
-            static constexpr std::string_view toolkit_src = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
+            static constexpr std::string_view toolkit_repo = "ov-studio/Vital.kit";
             static constexpr std::string_view toolkit_base = "cache";
             static constexpr std::string_view toolkit_name = "Vital.kit";
             static constexpr zip_uint64_t extract_max_ratio = 200;
@@ -81,6 +81,7 @@ namespace Vital::Manager {
             ~Kit() = default;
         public:
             // Getters //
+            static std::string get_release_json(const std::string& repo, bool prerelease);
             const std::string& get_version();
             const std::string& get_content(std::string_view path);
             rapidjson::Document& get_json(const std::string& name);
