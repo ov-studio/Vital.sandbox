@@ -566,11 +566,6 @@ namespace Vital::Engine {
         if (!sync_registered) Manager::Network::get_singleton()->enqueue_syncable_registration(this);
         Engine::Dimension::set_node_visible(this, true);
         Tool::Event::emit("entity:spawn", Tool::Stack({this, true}));
-
-        // The mesh tree exists now: run whatever was waiting on it (see Network::apply_mesh_ref).
-        auto waiting = std::move(hydrate_callbacks);
-        hydrate_callbacks.clear();
-        for (auto& exec : waiting) exec();
     }
     #endif
 
@@ -698,7 +693,6 @@ namespace Vital::Engine {
     //  Getters   //
     //------------//
 
-    Model::Models Model::get_loaded_models() { return cache_loaded; }
     std::string   Model::get_model_name()     { return model_name; }
 
     // ISyncable overrides
