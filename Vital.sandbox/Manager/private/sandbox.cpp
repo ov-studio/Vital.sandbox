@@ -75,7 +75,7 @@ namespace Vital::Manager {
     }
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
-        const bool lua_input = !Engine::Webview::get_key_forwarder();
+        const bool forward_input = !Engine::Webview::get_key_forwarder();
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
             if (event_key -> is_pressed()) {
@@ -105,21 +105,21 @@ namespace Vital::Manager {
                 if (handled) { Engine::Core::get_scene_root() -> set_input_as_handled(); return; }
             }
 
-            if (!lua_input) return;
+            if (!forward_input) return;
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_key -> get_keycode())),
                 Tool::StackValue(event_key -> is_pressed())
             );
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
-            if (!lua_input) return;
+            if (!forward_input) return;
             signal("sandbox:key_input",
                 Tool::StackValue(static_cast<int32_t>(event_mouse_button -> get_button_index())),
                 Tool::StackValue(event_mouse_button -> is_pressed())
             );
         }
         else if (auto event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
-            if (!lua_input) return;
+            if (!forward_input) return;
             auto position = event_mouse_motion -> get_position();
             signal("sandbox:mouse_move",
                 Tool::StackValue(position.x),
