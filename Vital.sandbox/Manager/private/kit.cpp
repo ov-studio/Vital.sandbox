@@ -166,9 +166,9 @@ namespace Vital::Manager {
 
     std::tuple<std::string, std::string, std::string> Kit::get_release() const {
         std::tuple<std::string, std::string, std::string> result;
-        std::string response;
-        try { response = Tool::HTTP::get(std::string(toolkit_src)); }
-        catch (...) {}
+        const bool prerelease = Tool::Version::SDK.is_prerelease();
+        std::string response = get_release_json(std::string(toolkit_repo), prerelease);
+        if (response.empty() && prerelease) response = get_release_json(std::string(toolkit_repo), false);
         if (!response.empty()) {
             rapidjson::Document doc;
             doc.Parse(response.c_str());
