@@ -164,6 +164,26 @@ namespace Vital::Manager {
         return result;
     }
 
+    std::string Kit::get_release_json(const std::string& repo, bool prerelease) {
+        try {
+            if (!prerelease) return Tool::HTTP::get(fmt::format("https://api.github.com/repos/{}/releases/latest", repo));
+            rapidjson::Document list;
+            list.Parse(Tool::HTTP::get(fmt::format("https://api.github.com/repos/{}/releases?per_page=50", repo)).c_str());
+            if (list.HasParseError() || !list.IsArray()) return {};
+            for (const auto& entry : list.GetArray()) {
+                if (!entry.IsObject()) continue;
+                if (entry.HasMember("draft") && entry["draft"].IsBool() && entry["draft"].GetBool()) continue;
+                if (!entry.HasMember("prerelease") || !entry["prerelease"].IsBool() || !entry["prerelease"].GetBool()) continue;
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                entry.Accept(writer);
+                return buffer.GetString();
+            }
+        }
+        catch (...) { }
+        return {};
+    }
+
     std::tuple<std::string, std::string, std::string> Kit::get_release() const {
         std::tuple<std::string, std::string, std::string> result;
         const bool prerelease = Tool::Version::SDK.is_prerelease();
