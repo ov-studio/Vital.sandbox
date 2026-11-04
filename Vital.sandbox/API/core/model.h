@@ -125,12 +125,23 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name)")
+                    .require(1, &Machine::is_string);
+
+                auto name = vm -> get_string(1);
+                vm -> push_value(base_class::is_model_loaded(ref_name(Manager::Resource::get_resource_from_vm(vm), name)));
+                return 1;
+            });
+
             #if defined(VSDK_Client)
             API::bind(vm, base_scope, "is_wireframe_all", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::is_wireframe_all());
                 return 1;
             });
+            #endif
 
+            #if defined(VSDK_Client)
             API::bind(vm, base_scope, "set_wireframe_all", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(1, &Machine::is_bool);
@@ -141,15 +152,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             #endif
-
-            API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name)")
-                    .require(1, &Machine::is_string);
-
-                auto name = vm -> get_string(1);
-                vm -> push_value(base_class::is_model_loaded(ref_name(Manager::Resource::get_resource_from_vm(vm), name)));
-                return 1;
-            });
         }
 
         static void methods(Machine* vm) {
@@ -165,23 +167,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
 
                 auto component = vm -> get_string(2);
-                vm -> push_value(self -> model -> get_component_lod_bias(component));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, bias)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_number);
-
-                auto component = vm -> get_string(2);
-                auto bias = vm -> get_float(3);
-                vm -> push_value(self -> model -> set_component_lod_bias(component, bias));
+                vm -> push_value(self -> model -> is_component_rendered(component));
                 return 1;
             });
 
@@ -194,27 +185,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> model -> is_component_wireframe(component));
                 return 1;
             });
-
-            vm_module::bind_method<Instance>(vm, "set_component_wireframe", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, state)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_bool);
-
-                auto component = vm -> get_string(2);
-                auto state = vm -> get_bool(3);
-                vm -> push_value(self -> model -> set_component_wireframe(component, state));
-                return 1;
-            });
             #endif
-
-            vm_module::bind_method<Instance>(vm, "is_component_rendered", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component)", true)
-                    .require(2, &Machine::is_string);
-
-                auto component = vm -> get_string(2);
-                vm -> push_value(self -> model -> is_component_rendered(component));
-                return 1;
-            });
 
             vm_module::bind_method<Instance>(vm, "is_material_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, material)", true)
@@ -343,6 +314,15 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(2);
                 auto node = self -> model -> get_component_node(component);
                 vm -> push_value(node -> get_quaternion());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component)", true)
+                    .require(2, &Machine::is_string);
+
+                auto component = vm -> get_string(2);
+                vm -> push_value(self -> model -> get_component_lod_bias(component));
                 return 1;
             });
 
@@ -562,6 +542,30 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            vm_module::bind_method<Instance>(vm, "set_component_lod_bias", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, bias)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_number);
+
+                auto component = vm -> get_string(2);
+                auto bias = vm -> get_float(3);
+                vm -> push_value(self -> model -> set_component_lod_bias(component, bias));
+                return 1;
+            });
+
+            #if defined(VSDK_Client)
+            vm_module::bind_method<Instance>(vm, "set_component_wireframe", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, state)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_bool);
+
+                auto component = vm -> get_string(2);
+                auto state = vm -> get_bool(3);
+                vm -> push_value(self -> model -> set_component_wireframe(component, state));
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<Instance>(vm, "set_material_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component, material, state)", true)
