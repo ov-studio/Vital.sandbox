@@ -156,6 +156,10 @@ namespace Vital::Engine {
 
 
     // Getters //
+    Webview* Webview::get_key_forwarder() {
+        return key_forwarder;
+    }
+
     godot::Vector2 Webview::get_position() {
         return webview -> get_global_position();
     }
