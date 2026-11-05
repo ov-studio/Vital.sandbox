@@ -96,6 +96,7 @@ namespace Vital::Engine {
     void Splash::hide() {
         Sandbox::API::Input::pop_sandbox_ui_visible();
         free_singleton();
+        Engine::Core::get_singleton() -> update_window_frame();
     }
 
 

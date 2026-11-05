@@ -35,6 +35,7 @@ namespace Vital::Engine {
             #if defined(VSDK_Client)
             inline static godot::WorldEnvironment* environment = nullptr;
             godot::CanvasLayer* window_frame = nullptr;
+            bool window_frame_enabled = false;
             #endif
             std::mutex mutex;
             std::thread kit_thread;
@@ -82,7 +83,8 @@ namespace Vital::Engine {
             #if defined(VSDK_Client)
             bool is_sandbox_ui_ready();
             bool is_sandbox_ui_visible();
-            void set_window_frame(bool visible);
+            void set_window_frame(bool enabled);
+            void update_window_frame();
             #endif
             void execute(std::function<void()> exec);
             void enqueue(std::function<void()> exec);

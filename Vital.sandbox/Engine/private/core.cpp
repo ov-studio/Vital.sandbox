@@ -156,8 +156,14 @@ namespace Vital::Engine {
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
     
-    void Core::set_window_frame(bool visible) {
-        enqueue([this, visible]() {
+    void Core::set_window_frame(bool enabled) {
+        window_frame_enabled = enabled;
+        update_window_frame();
+    }
+
+    void Core::update_window_frame() {
+        enqueue([this]() {
+            const bool visible = window_frame_enabled && !(Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible());
             if (!window_frame) {
                 if (!visible) return;
                 auto kit = Manager::Kit::get_singleton();
