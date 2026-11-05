@@ -107,11 +107,17 @@ namespace Vital::Manager {
             std::string reconnect_ip;
             int reconnect_port = 0;
             int reconnect_http_port = -1;
+            // Public identity of the server we are joining, filled from its /info pre-check (empty/-1 when unavailable)
+            std::string server_name;
+            std::string server_logo_url;
+            int server_players = -1;
+            int server_max_peers = -1;
             // Set by the server's _kick RPC, consumed on disconnect
             bool kicked = false;
             std::string kick_reason;
             #else
             std::unordered_set<int> connected_peers;
+            std::atomic<int> admitted_count{0}; // mirror of connected_peers.size(), safe to read from the HTTP thread
             std::unordered_map<int, std::string> peer_serials;
 
             struct AuthRate { 
@@ -294,6 +300,11 @@ namespace Vital::Manager {
             void _on_server_disconnected();
             std::string get_server_ip() const;
             int get_server_port() const;
+            int get_server_http_port() const;
+            std::string get_server_name() const;
+            std::string get_server_logo_url() const;
+            int get_server_players() const;
+            int get_server_max_peers() const;
             #else
             void host(Config::Server& config);
             void close();
@@ -301,6 +312,7 @@ namespace Vital::Manager {
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int  get_peer_count() const;
+            int  get_admitted_count() const { return admitted_count.load(); }
             void disconnect_peer(int peer_id, const std::string& reason = "");
             // Tells server scripts that a peer sent something it is not allowed to, as the signal anticheat:<category> (peer, reason, net_id, count).
             // Thread-safe. Never kicks by itself: scripts decide what to do.

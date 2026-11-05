@@ -156,6 +156,10 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Network::Internal::connect_to_server");
         auto nm = Network::get_singleton();
         _pending_logo.clear();
+        nm -> server_name.clear();
+        nm -> server_logo_url.clear();
+        nm -> server_players = -1;
+        nm -> server_max_peers = -1;
         if (http_port > 0) {
             const std::string info_url = fmt::format("http://{}:{}/info", ip, http_port);
             try {
@@ -183,6 +187,10 @@ namespace Vital::Manager {
                         return false;
                     }
                     if (auto* am = Manager::Asset::get_singleton()) am->set_server_http_ip(ip);
+                    if (doc.HasMember("logo") && doc["logo"].IsString()) nm -> server_logo_url = doc["logo"].GetString();
+                    if (doc.HasMember("name") && doc["name"].IsString()) nm -> server_name = doc["name"].GetString();
+                    if (doc.HasMember("players") && doc["players"].IsInt()) nm -> server_players = doc["players"].GetInt();
+                    if (doc.HasMember("max_peers") && doc["max_peers"].IsInt()) nm -> server_max_peers = doc["max_peers"].GetInt();
                     if (doc.HasMember("logo") && doc["logo"].IsString()) _pending_logo = _fetch_logo(doc["logo"].GetString());
                     nm -> log("sbox", fmt::format("version pre-check ok (sdk={})", server_sdk));
                 }
@@ -357,6 +365,7 @@ namespace Vital::Manager {
         if (!nm -> peer.is_valid()) return false;
         nm -> unwire_signals();
         nm -> connected_peers.clear();
+        nm -> admitted_count = 0;
         nm -> peer_serials.clear();
         nm -> peer->close();
         nm -> peer.unref();
@@ -1505,6 +1514,11 @@ namespace Vital::Manager {
 
     std::string Network::get_server_ip() const { return reconnect_ip; }
     int Network::get_server_port() const { return reconnect_port; }
+    int Network::get_server_http_port() const { return reconnect_http_port; }
+    std::string Network::get_server_name() const { return server_name; }
+    std::string Network::get_server_logo_url() const { return server_logo_url; }
+    int Network::get_server_players() const { return server_players; }
+    int Network::get_server_max_peers() const { return server_max_peers; }
 
 
     //------------------//
@@ -1961,12 +1975,14 @@ namespace Vital::Manager {
         // The peer already passed authentication (peer_connected only fires afterwards), so admit it now.
         // Done last so scripts see the peer only after it has been sent the full world state.
         connected_peers.insert(id);
+        admitted_count = static_cast<int>(connected_peers.size());
         log("sbox", fmt::format("peer admitted <- peer {}", id));
         Manager::Sandbox::get_singleton() -> signal("peer:join", Tool::StackValue((int32_t)id));
     }
 
     void Network::_on_peer_disconnected(int id) {
         bool was_admitted = connected_peers.erase(id) > 0;
+        admitted_count = static_cast<int>(connected_peers.size());
         peer_serials.erase(id);
         {
             std::lock_guard<std::mutex> lock(violation_mutex);

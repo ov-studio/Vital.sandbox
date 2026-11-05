@@ -21,6 +21,7 @@
 // Vital: Manager: Discord //
 //////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     class Discord : public godot::Node, public Tool::Base<Discord> {
         friend class Tool::Base<Discord>;
@@ -41,9 +42,34 @@ namespace Vital::Manager {
             uint64_t default_application_id;
             Activity default_activity = {};
         private:
+            static constexpr uint64_t SERVER_REFRESH_MS = 10000;
+
+            // Result of a background /info poll, handed back to the main thread
+            struct InfoPoll {
+                std::atomic<bool> done{false};
+                std::string body;
+            };
+
             uint64_t application_id;
             Activity activity = {};
             std::shared_ptr<discordpp::Client> client;
+
+            // Default presence of the server we are currently in (used when its scripts don't customize presence)
+            bool in_server = false;
+            bool script_controlled = false; // a server script changed application/presence: stop auto-managing it
+            Activity server_activity = {};
+            std::string server_name;
+            std::string server_logo;
+            int server_players = -1;
+            int server_max_peers = -1;
+            std::string server_info_url;
+            int64_t server_activity_start = 0;
+            uint64_t server_next_refresh = 0;
+            std::shared_ptr<InfoPoll> info_poll;
+
+            Activity get_base_activity() const;
+            void build_server_activity();
+            void apply_application(uint64_t id, bool authenticate, bool force_reauth);
 
 
             // Instantiators //
@@ -52,7 +78,9 @@ namespace Vital::Manager {
         public:
             // Managers //
             void init();
-            void process() const;
+            void process();
+            void enter_server();
+            void leave_server();
             void update();
             void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
 

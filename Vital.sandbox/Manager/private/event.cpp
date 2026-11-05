@@ -109,11 +109,13 @@ void vsdk_initialize() {
         #if defined(VSDK_Client)
         Vital::Engine::Core::get_singleton() -> get_environment();
         #endif
+        if (Vital::Manager::Discord::has_singleton()) Vital::Manager::Discord::get_singleton() -> enter_server();
     });
 
     Vital::Tool::Event::bind("network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
         Vital::Engine::Core::get_singleton() -> reset();
+        if (Vital::Manager::Discord::has_singleton()) Vital::Manager::Discord::get_singleton() -> leave_server();
     });
 
     // Same full reset for a *manual* disconnect (leaving to a main menu /
@@ -123,6 +125,7 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("network:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Disconnected from server");
         Vital::Engine::Core::get_singleton() -> reset();
+        if (Vital::Manager::Discord::has_singleton()) Vital::Manager::Discord::get_singleton() -> leave_server();
     });
     #endif
 

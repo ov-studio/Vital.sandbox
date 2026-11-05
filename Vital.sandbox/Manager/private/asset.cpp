@@ -252,6 +252,7 @@ namespace Vital::Manager {
             rapidjson::Document document;
             document.SetObject();
             cfg.write_public_info(document, document.GetAllocator());
+            document.AddMember("players", rapidjson::Value(Manager::Network::get_singleton() -> get_admitted_count()), document.GetAllocator());
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
