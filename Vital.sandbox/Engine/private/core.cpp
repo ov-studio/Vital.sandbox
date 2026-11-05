@@ -155,6 +155,40 @@ namespace Vital::Engine {
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
+
+    void Core::set_window_frame(bool visible) {
+        enqueue([this, visible]() {
+            if (!window_frame) {
+                if (!visible) return;
+                auto kit = Manager::Kit::get_singleton();
+                auto channel = [&](int index, int fallback) -> float {
+                    const auto value = kit ? kit -> get_json_value("config/theme", "accent", index) : Tool::StackValue();
+                    const int raw = value.is<int32_t>() ? value.as<int32_t>() : fallback;
+                    return std::clamp(raw, 0, 255) / 255.0f;
+                };
+                const auto thickness_value = kit ? kit -> get_json_value("config/theme", "frame", "thickness") : Tool::StackValue();
+                const float thickness = static_cast<float>(std::clamp(thickness_value.is<int32_t>() ? thickness_value.as<int32_t>() : 2, 1, 16));
+                const godot::Color color(channel(0, 106), channel(1, 153), channel(2, 230), 1.0f);
+
+                window_frame = memnew(godot::CanvasLayer);
+                window_frame -> set_layer(127);
+                add_child(window_frame);
+                auto add_edge = [&](godot::Control::LayoutPreset preset, godot::Side side, float offset) {
+                    auto* edge = memnew(godot::ColorRect);
+                    edge -> set_color(color);
+                    edge -> set_mouse_filter(godot::Control::MOUSE_FILTER_IGNORE);
+                    window_frame -> add_child(edge);
+                    edge -> set_anchors_and_offsets_preset(preset);
+                    edge -> set_offset(side, offset);
+                };
+                add_edge(godot::Control::PRESET_TOP_WIDE,    godot::SIDE_BOTTOM,  thickness);
+                add_edge(godot::Control::PRESET_BOTTOM_WIDE, godot::SIDE_TOP,    -thickness);
+                add_edge(godot::Control::PRESET_LEFT_WIDE,   godot::SIDE_RIGHT,   thickness);
+                add_edge(godot::Control::PRESET_RIGHT_WIDE,  godot::SIDE_LEFT,   -thickness);
+            }
+            window_frame -> set_visible(visible);
+        });
+    }
     #endif
 
     void Core::execute(std::function<void()> exec) {
