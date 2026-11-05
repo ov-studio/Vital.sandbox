@@ -34,10 +34,10 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **Console**: Runtime console with structured logging and built-in client / server commands
 - **Resources**: Isolated per-resource Lua environments with dependency resolution, start / stop / restart control, and cross-resource exports
 - **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua, with compressed, hash-verified downloads
-- **Display**: Resolution query, live scene texture, and screenshot capture
+- **Display**: Resolution query, live scene texture, mesh LOD threshold, and screenshot capture
 - **Database**: Async database access with query support (server-side)
 - **Discord**: Native Discord integration (client-side)
-- **Models**: Load, instantiate, transform, and animate 3D model assets at runtime
+- **Models**: Load, instantiate, transform, and animate 3D model assets at runtime, with automatic mesh LODs for static and rigged models, per-component LOD bias, and a debug wireframe
 - **Camera**: FOV, clip planes, projection modes, depth of field, auto exposure, and ray projection
 - **Webview**: Embedded webview rendering (client-side)
 - **UI primitives**: Canvas, SVG, image, font, and texture APIs
