@@ -155,20 +155,15 @@ namespace Vital::Engine {
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
-
+    
     void Core::set_window_frame(bool visible) {
         enqueue([this, visible]() {
             if (!window_frame) {
                 if (!visible) return;
                 auto kit = Manager::Kit::get_singleton();
-                auto channel = [&](int index, int fallback) -> float {
-                    const auto value = kit ? kit -> get_json_value("config/theme", "accent", index) : Tool::StackValue();
-                    const int raw = value.is<int32_t>() ? value.as<int32_t>() : fallback;
-                    return std::clamp(raw, 0, 255) / 255.0f;
-                };
-                const auto thickness_value = kit ? kit -> get_json_value("config/theme", "frame", "thickness") : Tool::StackValue();
-                const float thickness = static_cast<float>(std::clamp(thickness_value.is<int32_t>() ? thickness_value.as<int32_t>() : 2, 1, 16));
-                const godot::Color color(channel(0, 106), channel(1, 153), channel(2, 230), 1.0f);
+                auto channel = [&](int index) -> float { return kit -> get_json_value("config/theme", "accent", index).as<int32_t>() / 255.0f; };
+                const godot::Color color(channel(0), channel(1), channel(2), 1.0f);
+                const float thickness = static_cast<float>(kit -> get_json_value("config/theme", "frame", "thickness").as<int32_t>());
 
                 window_frame = memnew(godot::CanvasLayer);
                 window_frame -> set_layer(127);
@@ -254,8 +249,6 @@ namespace Vital::Engine {
     void Core::teardown() {
         log("sbox", "tearing down...");
         #if defined(VSDK_Client)
-        // Webviews (main menu / splash) are native overlays; once destroyed the window would flash
-        // Godot's default grey clear colour. Cover with black and present a frame before teardown.
         static bool covered = false;
         if (!covered) {
             covered = true;
