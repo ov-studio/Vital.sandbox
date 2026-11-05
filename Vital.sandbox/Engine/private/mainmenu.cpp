@@ -154,10 +154,9 @@ namespace Vital::Engine {
                 const godot::Vector2i screen_size = ds -> screen_get_size(screen);
                 const godot::Vector2i screen_pos = ds -> screen_get_position(screen);
                 const bool native = (w >= screen_size.x - 2 && h >= screen_size.y - 2);
-
-                if (mode_str == "fullscreen") {
-                    ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
-                }
+                
+                Engine::Core::get_singleton() -> set_window_frame(mode_str != "fullscreen" && !native);
+                if (mode_str == "fullscreen") ds -> window_set_mode(godot::DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
                 else if (native) {
                     // Borderless at monitor size: use non-exclusive fullscreen so the
                     // client fills the display cleanly (no HUD clip / taskbar fight).
