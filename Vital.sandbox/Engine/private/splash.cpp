@@ -96,7 +96,6 @@ namespace Vital::Engine {
     void Splash::hide() {
         Sandbox::API::Input::pop_sandbox_ui_visible();
         free_singleton();
-        Engine::Core::get_singleton() -> update_window_frame();
     }
 
 
@@ -107,7 +106,10 @@ namespace Vital::Engine {
         if (document.HasParseError() || !document.IsObject() || !document.HasMember("action") || !document["action"].IsString()) return;
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
-        else if (action == "prehide") Engine::MainMenu::get_singleton() -> show();
+        else if (action == "prehide") {
+            Engine::MainMenu::get_singleton() -> show();
+            Engine::Core::get_singleton() -> reveal_window_frame();
+        }
         else if (action == "hide") hide();
     }
 }
