@@ -43,6 +43,8 @@ namespace Vital::Manager {
             Activity default_activity = {};
         private:
             static constexpr uint64_t SERVER_REFRESH_MS = 10000;
+            static constexpr const char* BRAND_LOGO_URL = "https://vital-sandbox.com/logo/neon_background_square_round.png";
+            static constexpr const char* BRAND_NAME = "Vital.sandbox";
 
             // Result of a background /info poll, handed back to the main thread
             struct InfoPoll {

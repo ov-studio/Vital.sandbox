@@ -40,6 +40,9 @@ namespace Vital::Manager {
             Manager::Kit::get_singleton() -> get_json_value("config/discord", "state").as<std::string>(),
             Manager::Kit::get_singleton() -> get_json_value("config/discord", "details").as<std::string>()
         };
+        // Lobby presence shows the Vital logo as the large image
+        default_activity.large_image_key = BRAND_LOGO_URL;
+        default_activity.large_image_text = BRAND_NAME;
         reset_application();
     }
 
@@ -95,6 +98,9 @@ namespace Vital::Manager {
         if (server_logo.rfind("https://", 0) == 0 && server_logo.size() <= 256) {
             server_activity.large_image_key = server_logo;
             server_activity.large_image_text = server_name.empty() ? "N/A" : server_name;
+            // Vital logo moves to the small corner badge
+            server_activity.small_image_key = BRAND_LOGO_URL;
+            server_activity.small_image_text = BRAND_NAME;
         }
     }
 
