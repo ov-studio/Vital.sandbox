@@ -25,7 +25,6 @@
 // Vital: API: Model //
 ////////////////////////
 
-// TODO: Sort API order
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "model"};
