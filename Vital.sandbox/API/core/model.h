@@ -36,8 +36,8 @@ namespace Vital::Sandbox::API {
             using Owner = Model;
             base_class* model = nullptr;
 
-            auto& get_node() { 
-                return model; 
+            auto& get_node() {
+                return model;
             }
         };
         inline static vm_registry<Instance> registry;
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm);
-            
+
             API::Node_3D::bind<Instance, API::Node_3D::Type::Spatial>(vm);
 
             API::bind(vm, base_scope, "load", [](auto vm, auto& id) -> int {
