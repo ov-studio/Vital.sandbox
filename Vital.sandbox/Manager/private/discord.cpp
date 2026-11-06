@@ -35,14 +35,22 @@ namespace Vital::Manager {
 
     // Managers //
     void Discord::init() {
-        default_application_id = static_cast<uint64_t>(std::stoull(Manager::Kit::get_singleton() -> get_json_value("config/discord", "application_id").as<std::string>()));
-        default_activity = {
-            Manager::Kit::get_singleton() -> get_json_value("config/discord", "state").as<std::string>(),
-            Manager::Kit::get_singleton() -> get_json_value("config/discord", "details").as<std::string>()
+        auto kit = Manager::Kit::get_singleton();
+        auto read = [&](const char* key) {
+            try { return kit -> get_json_value("config/discord", key).as<std::string>(); }
+            catch (...) { return std::string(); }
         };
-        // Lobby presence shows the Vital logo as the large image
-        default_activity.large_image_key = BRAND_LOGO_URL;
-        default_activity.large_image_text = BRAND_NAME;
+        default_application_id = static_cast<uint64_t>(std::stoull(read("application_id")));
+        default_activity = { read("state"), read("details") };
+
+        // Branding (config/discord.json): lobby large image + server small badge. Optional.
+        const std::string logo = read("logo");
+        brand_name = read("name");
+        if (!logo.empty()) {
+            brand_logo = kit -> get_url(logo);
+            default_activity.large_image_key = brand_logo;
+            default_activity.large_image_text = brand_name.empty() ? "N/A" : brand_name;
+        }
         reset_application();
     }
 
@@ -98,9 +106,11 @@ namespace Vital::Manager {
         if (server_logo.rfind("https://", 0) == 0 && server_logo.size() <= 256) {
             server_activity.large_image_key = server_logo;
             server_activity.large_image_text = server_name.empty() ? "N/A" : server_name;
-            // Vital logo moves to the small corner badge
-            server_activity.small_image_key = BRAND_LOGO_URL;
-            server_activity.small_image_text = BRAND_NAME;
+            // Brand logo moves to the small corner badge
+            if (!brand_logo.empty()) {
+                server_activity.small_image_key = brand_logo;
+                server_activity.small_image_text = brand_name.empty() ? "N/A" : brand_name;
+            }
         }
     }
 
