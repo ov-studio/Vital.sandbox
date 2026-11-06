@@ -315,7 +315,7 @@ namespace Vital::Manager {
         tree->get_multiplayer()->set_multiplayer_peer(nm -> peer);
         nm -> wire_signals();
         try {
-            const std::string body = Tool::HTTP::get("https://api.vital-sandbox.com/ip", {}, 10);
+            const std::string body = Tool::HTTP::get(Manager::Kit::get_singleton() -> get_url("ip", "api"), {}, 10);
             rapidjson::Document doc;
             if (!doc.Parse(body.c_str()).HasParseError() && doc.IsObject() && doc.HasMember("ip") && doc["ip"].IsString()) nm -> server_ip = doc["ip"].GetString();
         }

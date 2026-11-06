@@ -83,6 +83,7 @@ namespace Vital::Manager {
             // Getters //
             static std::string get_release_json(const std::string& repo, bool prerelease);
             const std::string& get_version();
+            std::string get_url(const std::string& path = "", const std::string& subdomain = "");
             const std::string& get_content(std::string_view path);
             rapidjson::Document& get_json(const std::string& name);
             std::vector<std::pair<std::string, std::string>> get_module(const std::string& name);

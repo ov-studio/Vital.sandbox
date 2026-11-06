@@ -457,7 +457,7 @@ namespace Vital::Engine {
             rapidjson::Document body;
             bool ok = false;
             try {
-                body.Parse(Tool::HTTP::get("https://api.vital-sandbox.com/masterlist", {}, 8).c_str());
+                body.Parse(Tool::HTTP::get(Manager::Kit::get_singleton() -> get_url("masterlist", "api"), {}, 8).c_str());
                 ok = !body.HasParseError() && body.IsArray();
             }
             catch (...) { /* offline / unavailable: the page keeps its last list and shows the error state */ }
