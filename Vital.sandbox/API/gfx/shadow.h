@@ -151,14 +151,18 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            // Directional //
-            API::bind(vm, base_scope, "get_directional_atlas_size", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.directional_size);
+            API::bind(vm, base_scope, "is_directional_atlas_16bits", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.directional_16bits);
                 return 1;
             });
 
-            API::bind(vm, base_scope, "is_directional_atlas_16bits", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.directional_16bits);
+            API::bind(vm, base_scope, "is_positional_atlas_16bits", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.positional_16bits);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_directional_atlas_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.directional_size);
                 return 1;
             });
 
@@ -167,8 +171,35 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_positional_atlas_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.positional_size);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_positional_atlas_quadrant_subdiv", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(quadrant)")
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](Machine* vm, int idx) {
+                        auto quadrant = vm -> get_int(idx);
+                        return quadrant >= 0 && quadrant < QUADRANT_COUNT;
+                    }, fmt::format("out of range [0 - {}]", QUADRANT_COUNT - 1));
+
+                vm -> push_value(current.positional_subdiv[vm -> get_int(1)]);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_positional_filter_quality", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.positional_quality);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_canvas_texture_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(current.canvas_size);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "set_directional_atlas_size", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(size, is_16bits = current)")
+                vm_args(vm, id, "(size, is_16bits = nil)")
                     .require(1, &Machine::is_number)
                     .validate(1, [](Machine* vm, int idx) {
                         auto size = vm -> get_int(idx);
@@ -193,36 +224,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Positional //
-            API::bind(vm, base_scope, "get_positional_atlas_size", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.positional_size);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_positional_atlas_16bits", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.positional_16bits);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_positional_atlas_quadrant_subdiv", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(quadrant)")
-                    .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) {
-                        auto quadrant = vm -> get_int(idx);
-                        return quadrant >= 0 && quadrant < QUADRANT_COUNT;
-                    }, fmt::format("out of range [0 - {}]", QUADRANT_COUNT - 1));
-
-                vm -> push_value(current.positional_subdiv[vm -> get_int(1)]);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_positional_filter_quality", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.positional_quality);
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_positional_atlas_size", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(size, is_16bits = current)")
+                vm_args(vm, id, "(size, is_16bits = nil)")
                     .require(1, &Machine::is_number)
                     .validate(1, [](Machine* vm, int idx) {
                         auto size = vm -> get_int(idx);
@@ -263,12 +266,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Canvas //
-            API::bind(vm, base_scope, "get_canvas_texture_size", [](auto vm, auto& id) -> int {
-                vm -> push_value(current.canvas_size);
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_canvas_texture_size", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size)")
                     .require(1, &Machine::is_number)
@@ -283,12 +280,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Misc //
             API::bind(vm, base_scope, "reset", [](auto vm, auto& id) -> int {
                 reset();
                 vm -> push_value(true);
                 return 1;
             });
+        
         }
 
         static void inject(Machine* vm) {
