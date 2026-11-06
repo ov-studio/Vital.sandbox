@@ -42,13 +42,13 @@ namespace Vital::Sandbox::API {
         };
 
         inline static const std::vector<std::pair<std::string, int>> subdiv_registry = {
-            { "DISABLED", godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED },
-            { "X1",       godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_1        },
-            { "X4",       godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_4        },
-            { "X16",      godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_16       },
-            { "X64",      godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_64       },
-            { "X256",     godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_256      },
-            { "X1024",    godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_1024     }
+            { "DISABLED", godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED },
+            { "X1",       godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_1        },
+            { "X4",       godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_4        },
+            { "X16",      godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_16       },
+            { "X64",      godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_64       },
+            { "X256",     godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_256      },
+            { "X1024",    godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_1024     }
         };
 
         // RenderingServer exposes setters only, so the active values are tracked here //
@@ -60,10 +60,10 @@ namespace Vital::Sandbox::API {
             bool positional_16bits = true;
             int positional_quality = godot::RenderingServer::SHADOW_QUALITY_SOFT_LOW;
             std::array<int, QUADRANT_COUNT> positional_subdiv = {
-                godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_4,
-                godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_4,
-                godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_16,
-                godot::RenderingServer::SHADOW_ATLAS_QUADRANT_SUBDIV_64
+                godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_4,
+                godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_4,
+                godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_16,
+                godot::Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_64
             };
             int canvas_size = 2048;
 
@@ -112,7 +112,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void apply_positional_subdiv(int quadrant) {
-            base_class::get_rendering_server() -> viewport_set_positional_shadow_atlas_quadrant_subdivision(get_viewport_rid(), quadrant, static_cast<godot::RenderingServer::ShadowAtlasQuadrantSubdiv>(current.positional_subdiv[quadrant]));
+            base_class::get_rendering_server() -> viewport_set_positional_shadow_atlas_quadrant_subdivision(get_viewport_rid(), quadrant, current.positional_subdiv[quadrant]);
         }
 
         static void apply_positional_quality() {
