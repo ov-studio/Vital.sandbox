@@ -139,6 +139,11 @@ namespace Vital::Manager {
         return Internal::get_version();
     }
 
+    std::string Kit::get_url(const std::string& path, const std::string& subdomain) {
+        const auto domain = get_json_value("config/site", "domain").as<std::string>();
+        return fmt::format("https://{}{}{}{}{}", subdomain, subdomain.empty() ? "" : ".", domain, path.empty() ? "" : "/", path);
+    }
+
     const std::string& Kit::get_content(std::string_view path) {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::get_content(path);
