@@ -176,19 +176,19 @@ namespace Vital::Manager {
                     catch (...) {}
                     // Dev and stable builds must never talk to each other (a dev build reports v0.0.0-dev, i.e. major 0,
                     // which would otherwise match any stable v0.x build)
-                    const Vital::Tool::Version::Info dev_info = { 0, 0, 0, "dev" };
-                    if (server_sdk == dev_info.to_string()) server_major = Vital::Tool::Version::Info::DEV_NETWORK_MAJOR;
-                    else if (server_major >= Vital::Tool::Version::Info::DEV_NETWORK_MAJOR) server_major = Vital::Tool::Version::Info::DEV_NETWORK_MAJOR - 1;
+                    const Tool::Version::Info dev_info = { 0, 0, 0, "dev" };
+                    if (server_sdk == dev_info.to_string()) server_major = Tool::Version::Info::DEV_NETWORK_MAJOR;
+                    else if (server_major >= Tool::Version::Info::DEV_NETWORK_MAJOR) server_major = Tool::Version::Info::DEV_NETWORK_MAJOR - 1;
 
-                    const int client_major = Vital::Tool::Version::SDK.get_network_major();
+                    const int client_major = Tool::Version::SDK.get_network_major();
                     if (server_major >= 0 && server_major != client_major) {
-                        nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
+                        nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Tool::Version::SDK.to_string()));
                         Tool::Stack status;
                         status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
                         status.object["ip"] = Tool::StackValue(ip);
                         status.object["port"] = Tool::StackValue(Tool::to_std_string(port));
                         status.object["server_sdk"] = Tool::StackValue(server_sdk);
-                        status.object["client_sdk"] = Tool::StackValue(Vital::Tool::Version::SDK.to_string());
+                        status.object["client_sdk"] = Tool::StackValue(Tool::Version::SDK.to_string());
                         Tool::Event::emit("network:connect:fail", status);
                         return false;
                     }
@@ -537,7 +537,7 @@ namespace Vital::Manager {
         const std::string fingerprint = Tool::Inspect::fingerprint();
         godot::PackedByteArray payload;
         payload.push_back(AUTH_VERSION);
-        payload.push_back(static_cast<uint8_t>(Vital::Tool::Version::SDK.get_network_major()));
+        payload.push_back(static_cast<uint8_t>(Tool::Version::SDK.get_network_major()));
         for (const char c : fingerprint) payload.push_back(static_cast<uint8_t>(c));
         if (sm->send_auth(id, payload) != godot::OK) { log("error", "failed to send authentication data"); return; }
         sm->complete_auth(id);
@@ -569,7 +569,7 @@ namespace Vital::Manager {
         int client_major = -1;
         // A client on an older/newer build speaks a different auth packet layout: say so instead of "malformed data"
         if (id > 0 && data.size() > 0 && data[0] != AUTH_VERSION) {
-            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client auth protocol {}, server {} - sdk {})", id, static_cast<int>(data[0]), static_cast<int>(AUTH_VERSION), Vital::Tool::Version::SDK.to_string()));
+            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client auth protocol {}, server {} - sdk {})", id, static_cast<int>(data[0]), static_cast<int>(AUTH_VERSION), Tool::Version::SDK.to_string()));
             sm->disconnect_peer(id);
             return;
         }
@@ -579,9 +579,9 @@ namespace Vital::Manager {
             return;
         }
         // Server-side backstop for the client's HTTP /info pre-check, which fails open when the HTTP port is unreachable
-        const int server_major = Vital::Tool::Version::SDK.get_network_major(); // dev builds use a reserved sentinel: dev <-> stable is always rejected
+        const int server_major = Tool::Version::SDK.get_network_major(); // dev builds use a reserved sentinel: dev <-> stable is always rejected
         if (client_major != server_major) {
-            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client sdk major {}, server sdk {})", id, client_major, Vital::Tool::Version::SDK.to_string()));
+            log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client sdk major {}, server sdk {})", id, client_major, Tool::Version::SDK.to_string()));
             sm->disconnect_peer(id);
             return;
         }
