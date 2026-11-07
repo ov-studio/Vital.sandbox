@@ -174,14 +174,11 @@ namespace Vital::Manager {
                     if (end == std::string::npos) end = server_sdk.size();
                     try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
                     catch (...) {}
-                    // Dev and stable builds must never talk to each other (a dev build reports v0.0.0-dev, i.e. major 0,
-                    // which would otherwise match any stable v0.x build)
-                    const Tool::Version::Info dev_info = { 0, 0, 0, "dev" };
-                    if (server_sdk == dev_info.to_string()) server_major = Tool::Version::Info::DEV_NETWORK_MAJOR;
-                    else if (server_major >= Tool::Version::Info::DEV_NETWORK_MAJOR) server_major = Tool::Version::Info::DEV_NETWORK_MAJOR - 1;
-
+                    // Dev and stable builds must never talk (dev reports v0.0.0-dev, i.e. major 0, which would match any stable v0.x)
+                    const bool server_is_dev = server_sdk == Tool::Version::Info{ 0, 0, 0, "dev" }.to_string();
+                    if (server_is_dev) server_major = -1;
                     const int client_major = Tool::Version::SDK.get_network_major();
-                    if (server_major >= 0 && server_major != client_major) {
+                    if ((server_major >= 0 || server_is_dev) && server_major != client_major) {
                         nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Tool::Version::SDK.to_string()));
                         Tool::Stack status;
                         status.object["reason"] = Tool::StackValue(std::string("version-mismatch"));
@@ -537,7 +534,7 @@ namespace Vital::Manager {
         const std::string fingerprint = Tool::Inspect::fingerprint();
         godot::PackedByteArray payload;
         payload.push_back(AUTH_VERSION);
-        payload.push_back(static_cast<uint8_t>(Tool::Version::SDK.get_network_major()));
+        payload.push_back(static_cast<uint8_t>(Tool::Version::SDK.get_network_major())); // dev (-1) travels as 255
         for (const char c : fingerprint) payload.push_back(static_cast<uint8_t>(c));
         if (sm->send_auth(id, payload) != godot::OK) { log("error", "failed to send authentication data"); return; }
         sm->complete_auth(id);
@@ -579,7 +576,7 @@ namespace Vital::Manager {
             return;
         }
         // Server-side backstop for the client's HTTP /info pre-check, which fails open when the HTTP port is unreachable
-        const int server_major = Tool::Version::SDK.get_network_major(); // dev builds use a reserved sentinel: dev <-> stable is always rejected
+        const int server_major = static_cast<uint8_t>(Tool::Version::SDK.get_network_major()); // same u8 wrap as the client (dev -> 255)
         if (client_major != server_major) {
             log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client sdk major {}, server sdk {})", id, client_major, Tool::Version::SDK.to_string()));
             sm->disconnect_peer(id);
