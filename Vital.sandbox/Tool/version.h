@@ -61,8 +61,7 @@ namespace Vital::Tool {
             std::string get_version() const { return to_string(); }
             bool is_prerelease() const { return !label.empty(); }
             bool is_dev() const { return major == 0 && minor == 0 && patch == 0 && label == "dev"; }
-            static constexpr int DEV_NETWORK_MAJOR = 255;
-            int get_network_major() const { return is_dev() ? DEV_NETWORK_MAJOR : (major < DEV_NETWORK_MAJOR ? major : DEV_NETWORK_MAJOR - 1); }
+            int get_network_major() const { return is_dev() ? -1 : major; }
             bool is_at_least(int maj, int min = 0, int pat = 0) const { return *this >= Info{ maj, min, pat, "" }; }
 
             bool operator==(const Info& o) const { return major == o.major && minor == o.minor && patch == o.patch && label == o.label; }
