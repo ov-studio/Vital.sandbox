@@ -174,8 +174,13 @@ namespace Vital::Manager {
                     if (end == std::string::npos) end = server_sdk.size();
                     try { server_major = std::stoi(server_sdk.substr(start, end - start)); }
                     catch (...) {}
+                    // Dev and stable builds must never talk to each other (a dev build reports v0.0.0-dev, i.e. major 0,
+                    // which would otherwise match any stable v0.x build)
+                    const Vital::Tool::Version::Info dev_info = { 0, 0, 0, "dev" };
+                    if (server_sdk == dev_info.to_string()) server_major = Vital::Tool::Version::Info::DEV_NETWORK_MAJOR;
+                    else if (server_major >= Vital::Tool::Version::Info::DEV_NETWORK_MAJOR) server_major = Vital::Tool::Version::Info::DEV_NETWORK_MAJOR - 1;
 
-                    const int client_major = Vital::Tool::Version::SDK.get_major();
+                    const int client_major = Vital::Tool::Version::SDK.get_network_major();
                     if (server_major >= 0 && server_major != client_major) {
                         nm -> log("sbox", fmt::format("server version mismatch — refused {}:{}  (server sdk={}, client sdk={})", ip, port, server_sdk, Vital::Tool::Version::SDK.to_string()));
                         Tool::Stack status;
@@ -532,7 +537,7 @@ namespace Vital::Manager {
         const std::string fingerprint = Tool::Inspect::fingerprint();
         godot::PackedByteArray payload;
         payload.push_back(AUTH_VERSION);
-        payload.push_back(static_cast<uint8_t>(std::min(Vital::Tool::Version::SDK.get_major(), 255)));
+        payload.push_back(static_cast<uint8_t>(Vital::Tool::Version::SDK.get_network_major()));
         for (const char c : fingerprint) payload.push_back(static_cast<uint8_t>(c));
         if (sm->send_auth(id, payload) != godot::OK) { log("error", "failed to send authentication data"); return; }
         sm->complete_auth(id);
@@ -574,7 +579,7 @@ namespace Vital::Manager {
             return;
         }
         // Server-side backstop for the client's HTTP /info pre-check, which fails open when the HTTP port is unreachable
-        const int server_major = std::min(Vital::Tool::Version::SDK.get_major(), 255);
+        const int server_major = Vital::Tool::Version::SDK.get_network_major(); // dev builds use a reserved sentinel: dev <-> stable is always rejected
         if (client_major != server_major) {
             log("warn", fmt::format("authentication rejected <- peer {} (version mismatch: client sdk major {}, server sdk {})", id, client_major, Vital::Tool::Version::SDK.to_string()));
             sm->disconnect_peer(id);

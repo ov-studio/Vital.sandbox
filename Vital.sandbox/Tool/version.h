@@ -60,6 +60,15 @@ namespace Vital::Tool {
             std::string get_label() const { return label; }
             std::string get_version() const { return to_string(); }
             bool is_prerelease() const { return !label.empty(); }
+
+            // Untagged local build (CI never injected a version): v0.0.0-dev
+            bool is_dev() const { return major == 0 && minor == 0 && patch == 0 && label == "dev"; }
+
+            // Value used for the network compatibility gate (auth packet + /info pre-check).
+            // Dev builds get a reserved sentinel so they can never match a stable build,
+            // even a stable v0.x.y whose real major is also 0.
+            static constexpr int DEV_NETWORK_MAJOR = 255;
+            int get_network_major() const { return is_dev() ? DEV_NETWORK_MAJOR : (major < DEV_NETWORK_MAJOR ? major : DEV_NETWORK_MAJOR - 1); }
             bool is_at_least(int maj, int min = 0, int pat = 0) const { return *this >= Info{ maj, min, pat, "" }; }
 
             bool operator==(const Info& o) const { return major == o.major && minor == o.minor && patch == o.patch && label == o.label; }
