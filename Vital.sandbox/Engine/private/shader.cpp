@@ -391,11 +391,6 @@ namespace Vital::Engine {
         return clone;
     }
 
-    Shader::SurfaceFactory Shader::get_surface_factory() {
-        return [this](godot::Ref<godot::Material> original) { return create_surface_material(original); };
-    }
-
-
     // Setters //
     bool Shader::set_param(const std::string& name, const godot::Variant& value) {
         if (!material.is_valid()) return false;

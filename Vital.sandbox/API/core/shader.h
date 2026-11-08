@@ -71,8 +71,8 @@ namespace Vital::Sandbox::API {
         //   - every matching layered shader is drawn, none overrides another
         //   - priority only decides the stacking order: higher priority = further on top
         //   - on equal priority the most recently applied is further on top
-        //   - the same shader matched by several layered assignments is drawn once
-        //     (with the best of its priorities)
+        //   - a shader is only on a surface once: if several of its assignments match the
+        //     same surface, the most recently applied one decides base / layered / priority
         //
         // Because every assignment stays in the registry, removing or destroying
         // the winner automatically falls back to the next best one, and
@@ -106,32 +106,42 @@ namespace Vital::Sandbox::API {
             return a.priority > b.priority || (a.priority == b.priority && a.seq > b.seq);
         }
 
+        // A shader is only ever on a surface once. When several of its assignments match the same surface
+        // (e.g. base on "*" and layered on "Body"), only the most recently applied one counts for that
+        // surface, so the later call takes over the surfaces it covers (base <-> layered, priority).
+        // Surfaces it does not cover keep the earlier assignment.
+        static std::vector<const Registration*> effective(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
+            std::vector<const Registration*> result;
+            for (const auto& reg : list) {
+                if (!is_candidate(reg, model_id, component, material)) continue;
+                bool merged = false;
+                for (auto& existing : result) {
+                    if (existing -> owner != reg.owner) continue;
+                    if (reg.seq > existing -> seq) existing = &reg;
+                    merged = true;
+                    break;
+                }
+                if (!merged) result.push_back(&reg);
+            }
+            return result;
+        }
+
         // Base winner for one surface (layered assignments never take this slot):
         // highest priority, ties go to the latest applied.
         static const Registration* pick_winner(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
             const Registration* best = nullptr;
-            for (const auto& reg : list) {
-                if (reg.layered || !is_candidate(reg, model_id, component, material)) continue;
-                if (!best || outranks(reg, *best)) best = &reg;
+            for (const auto* reg : effective(list, model_id, component, material)) {
+                if (reg -> layered) continue;
+                if (!best || outranks(*reg, *best)) best = reg;
             }
             return best;
         }
 
         // Layered shaders for one surface, ordered BOTTOM -> TOP (the last entry is the topmost layer).
-        // A shader matched by several layered assignments only appears once, with its best rank.
         static std::vector<const Registration*> pick_layers(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
             std::vector<const Registration*> layers;
-            for (const auto& reg : list) {
-                if (!reg.layered || !is_candidate(reg, model_id, component, material)) continue;
-                bool merged = false;
-                for (auto& existing : layers) {
-                    if (existing -> owner != reg.owner) continue;
-                    if (outranks(reg, *existing)) existing = &reg;
-                    merged = true;
-                    break;
-                }
-                if (!merged) layers.push_back(&reg);
-            }
+            for (const auto* reg : effective(list, model_id, component, material))
+                if (reg -> layered) layers.push_back(reg);
             std::sort(layers.begin(), layers.end(), [](const Registration* a, const Registration* b) { return outranks(*b, *a); });
             return layers;
         }

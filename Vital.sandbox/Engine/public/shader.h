@@ -37,7 +37,6 @@ namespace Vital::Engine {
                 { "POST_PROCESS",  Mode::Postprocess  }
             };
 
-            using SurfaceFactory = std::function<godot::Ref<godot::ShaderMaterial>(godot::Ref<godot::Material>)>;
         private:
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
@@ -96,7 +95,6 @@ namespace Vital::Engine {
             std::string get_code() const;
             godot::Ref<godot::ShaderMaterial> get_material() const;
             godot::Ref<godot::ShaderMaterial> create_surface_material(godot::Ref<godot::Material> original);
-            SurfaceFactory get_surface_factory();
             godot::Ref<godot::ShaderMaterial> snapshot_draw_material();
 
 
