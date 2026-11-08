@@ -64,6 +64,16 @@ namespace Vital::Sandbox::API {
         //   1. highest priority wins
         //   2. on equal priority, the most recently applied wins
         //
+        // Layered assignments (layered = true) never compete for that slot. They are
+        // drawn ON TOP of whatever won it (or on top of the mesh's own material when
+        // nothing did), using Godot's material next_pass chain, MTA style:
+        //
+        //   - every matching layered shader is drawn, none overrides another
+        //   - priority only decides the stacking order: higher priority = further on top
+        //   - on equal priority the most recently applied is further on top
+        //   - the same shader matched by several layered assignments is drawn once
+        //     (with the best of its priorities)
+        //
         // Because every assignment stays in the registry, removing or destroying
         // the winner automatically falls back to the next best one, and
         // re-applying a shader moves it to the top of its priority.
@@ -75,7 +85,8 @@ namespace Vital::Sandbox::API {
         // BEGIN pure
         struct Registration {
             uint64_t    seq = 0;          // apply order, bumped on every (re-)apply
-            int         priority = 0;     // higher wins
+            int         priority = 0;     // base: higher wins | layered: higher is drawn further on top
+            bool        layered = false;  // true = drawn on top of the base shader instead of competing for it
             std::string env;              // Lua resource env that created this
             std::string component_pattern;// e.g. "*", "Body"
             std::string material_pattern; // e.g. "*", "body_paint", "body_*"
@@ -90,29 +101,55 @@ namespace Vital::Sandbox::API {
                 && Tool::match_wildcard(reg.material_pattern, material);
         }
 
-        // Winner for one surface: highest priority, ties go to the latest applied.
+        // True when `a` sits above `b`: higher priority, ties go to the latest applied.
+        static bool outranks(const Registration& a, const Registration& b) {
+            return a.priority > b.priority || (a.priority == b.priority && a.seq > b.seq);
+        }
+
+        // Base winner for one surface (layered assignments never take this slot):
+        // highest priority, ties go to the latest applied.
         static const Registration* pick_winner(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
             const Registration* best = nullptr;
             for (const auto& reg : list) {
-                if (!is_candidate(reg, model_id, component, material)) continue;
-                if (!best || reg.priority > best -> priority || (reg.priority == best -> priority && reg.seq > best -> seq)) best = &reg;
+                if (reg.layered || !is_candidate(reg, model_id, component, material)) continue;
+                if (!best || outranks(reg, *best)) best = &reg;
             }
             return best;
         }
 
-        // Adds an assignment, or re-prioritises the identical one (same shader, target and patterns).
-        // Either way it becomes the latest apply.
+        // Layered shaders for one surface, ordered BOTTOM -> TOP (the last entry is the topmost layer).
+        // A shader matched by several layered assignments only appears once, with its best rank.
+        static std::vector<const Registration*> pick_layers(const std::vector<Registration>& list, uint64_t model_id, const std::string& component, const std::string& material) {
+            std::vector<const Registration*> layers;
+            for (const auto& reg : list) {
+                if (!reg.layered || !is_candidate(reg, model_id, component, material)) continue;
+                bool merged = false;
+                for (auto& existing : layers) {
+                    if (existing -> owner != reg.owner) continue;
+                    if (outranks(reg, *existing)) existing = &reg;
+                    merged = true;
+                    break;
+                }
+                if (!merged) layers.push_back(&reg);
+            }
+            std::sort(layers.begin(), layers.end(), [](const Registration* a, const Registration* b) { return outranks(*b, *a); });
+            return layers;
+        }
+
+        // Adds an assignment, or re-prioritises the identical one (same shader, target and patterns;
+        // it may also switch between base and layered). Either way it becomes the latest apply.
         static void upsert(std::vector<Registration>& list, uint64_t& sequence, Instance* owner, const std::string& env, uint64_t target,
-                           const std::string& component, const std::string& material, int priority) {
+                           const std::string& component, const std::string& material, int priority, bool layered) {
             for (auto& r : list) {
                 if (r.owner == owner && r.target == target && r.component_pattern == component && r.material_pattern == material) {
                     r.priority = priority;
+                    r.layered = layered;
                     r.seq = ++sequence;
                     r.env = env;
                     return;
                 }
             }
-            list.push_back({ ++sequence, priority, env, component, material, target, owner });
+            list.push_back({ ++sequence, priority, layered, env, component, material, target, owner });
         }
 
         // Erases this shader's assignments on `target` whose patterns are covered by the given ones
@@ -137,6 +174,35 @@ namespace Vital::Sandbox::API {
         inline static std::vector<Registration> registrations;
         inline static uint64_t                  registration_sequence = 0;
 
+        // Builds what one surface should render: the base winner (or a private copy of the mesh's own
+        // material when only layered shaders claim it) followed by the layered shaders via next_pass,
+        // bottom to top. Every material in the chain is a fresh per-surface clone, so nothing shared
+        // (the mesh's own material, other surfaces) is ever modified.
+        static godot::Ref<godot::Material> build_surface(const Registration* winner, const std::vector<const Registration*>& layers,
+                                                         godot::Ref<godot::Material> original) {
+            godot::Ref<godot::Material> root;
+            godot::Ref<godot::Material> original_next;
+            if (winner) root = winner -> owner -> shader -> create_surface_material(original);
+            else {
+                if (original.is_valid()) root = original -> duplicate();
+                if (!root.is_valid()) {
+                    godot::Ref<godot::StandardMaterial3D> fallback;
+                    fallback.instantiate();
+                    root = fallback;
+                }
+                original_next = root -> get_next_pass();   // keep the mesh's own extra pass (outlines...) at the end of the chain
+            }
+
+            godot::Ref<godot::Material> cursor = root;
+            for (const auto* layer : layers) {
+                godot::Ref<godot::ShaderMaterial> clone = layer -> owner -> shader -> create_surface_material(original);
+                cursor -> set_next_pass(clone);
+                cursor = clone;
+            }
+            if (original_next.is_valid()) cursor -> set_next_pass(original_next);
+            return root;
+        }
+
         // Re-resolves every surface of one model matching the patterns.
         // clear_unmatched = true restores the mesh's own material on surfaces nobody claims;
         // false leaves those surfaces alone (used for spawns so we never wipe other overrides).
@@ -156,9 +222,13 @@ namespace Vital::Sandbox::API {
                 for (const auto& material : materials) {
                     if (!Tool::match_wildcard(material_pattern, material)) continue;
                     const Registration* winner = pick_winner(registrations, model_id, component, material);
-                    if (!winner && !clear_unmatched) continue;
+                    const auto layers = pick_layers(registrations, model_id, component, material);
+                    if (!winner && layers.empty() && !clear_unmatched) continue;
                     try {
-                        if (winner) model -> apply_material_shader(component, material, winner -> owner -> shader -> get_surface_factory());
+                        if (winner || !layers.empty()) {
+                            model -> apply_material_shader(component, material, Vital::Engine::Model::SurfaceMaterialFactory(
+                                [&](godot::Ref<godot::Material> original) { return build_surface(winner, layers, original); }));
+                        }
                         else model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>());
                         touched.insert(fmt::format("{}:{}:{}", model_id, component, material));
                     } catch (...) {}
@@ -198,11 +268,11 @@ namespace Vital::Sandbox::API {
         // Records (or re-prioritises) an assignment and resolves the surfaces it covers.
         // Returns the number of surfaces on live models that matched.
         static int assign(Instance* owner, const std::string& env, uint64_t target,
-                          const std::string& component, const std::string& material, int priority) {
+                          const std::string& component, const std::string& material, int priority, bool layered) {
             std::lock_guard<std::mutex> lock(registrations_mutex);
             prune_dead_targets();
 
-            upsert(registrations, registration_sequence, owner, env, target, component, material, priority);
+            upsert(registrations, registration_sequence, owner, env, target, component, material, priority, layered);
 
             std::unordered_set<std::string> touched;
             refresh(target, component, material, false, touched);
@@ -352,7 +422,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // apply_to_material(model, component, material, priority = 0)
+            // apply_to_material(model, component, material, priority = 0, layered = false)
             //
             // Records a shader assignment and resolves the matching surfaces.
             //
@@ -361,25 +431,34 @@ namespace Vital::Sandbox::API {
             //             that spawn later). Any other value is an error.
             // component - mesh component name or wildcard
             // material  - surface/material name or wildcard
-            // priority  - higher wins; on equal priority the most recently applied wins.
+            // priority  - not layered: higher wins; on equal priority the most recently applied wins.
+            //             layered:     higher is drawn further on top; on equal priority the most
+            //                          recently applied is further on top.
             //             Applying the same shader to the same target again just updates
-            //             its priority and counts as the latest apply.
+            //             its priority / layered flag and counts as the latest apply.
+            //             Pass nil to keep the default (0) when you only want to set `layered`.
+            // layered   - true: drawn ON TOP of the winning base shader (or of the mesh's own material)
+            //             instead of replacing it. Every matching layered shader is drawn; priority only
+            //             orders them. The shader should be translucent (write ALPHA) to show what is
+            //             beneath it. Spatial shaders only.
             //
             // Returns the number of surfaces on live models that matched.
             vm_module::bind_method<Instance>(vm, "apply_to_material", [](auto vm, auto self, auto& id) -> int {
                 bool is_model_instance = vm_module::is_userdata<API::Model::Instance>(vm, 2);
                 bool is_wildcard       = !is_model_instance && (vm -> is_nil(2) || (vm -> is_string(2) && vm -> get_string(2) == "*"));
 
-                vm_args args_check(vm, id, "(model, component, material, priority = 0)", true);
+                vm_args args_check(vm, id, "(model, component, material, priority = 0, layered = false)", true);
                 if (!is_model_instance && !is_wildcard)
                     args_check.validate(2, [](Machine*, int) { return false; }, "model instance, \"*\", or nil expected");
                 args_check.require(3, &Machine::is_string)
                           .require(4, &Machine::is_string)
-                          .optional(5, &Machine::is_number);
+                          .optional(5, &Machine::is_number)
+                          .optional(6, &Machine::is_bool);
 
                 auto component = vm -> get_string(3);
                 auto material  = vm -> get_string(4);
                 int  priority  = vm -> is_number(5) ? vm -> get_int(5) : 0;
+                bool layered   = vm -> is_bool(6) && vm -> get_bool(6);
                 auto env       = vm -> get_environment_id();
 
                 uint64_t target = 0;
@@ -393,7 +472,7 @@ namespace Vital::Sandbox::API {
                     target = model -> get_instance_id();
                 }
 
-                vm -> push_value(assign(self.get(), env, target, component, material, priority));
+                vm -> push_value(assign(self.get(), env, target, component, material, priority, layered));
                 return 1;
             });
 

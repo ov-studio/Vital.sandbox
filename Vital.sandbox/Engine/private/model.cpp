@@ -26,20 +26,35 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    // Asserts //
+    godot::MeshInstance3D* Model::assert_component(const std::string& component) {
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return mesh;
+    }
+
+    std::pair<godot::MeshInstance3D*, int> Model::assert_material(const std::string& component, const std::string& material) {
+        auto mesh = assert_component(component);
+        int idx = find_material_index(mesh, material);
+        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, component));
+        return { mesh, idx };
+    }
+
+    godot::Skeleton3D* Model::assert_skeleton() {
+        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no skeleton found in model '{}'", model_name));
+        return skeleton;
+    }
+
+    void Model::assert_material_feature(int feature) {
+        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material feature");
+    }
+
+    void Model::assert_material_flag(int flag) {
+        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material flag");
+    }
+
+
     // Helpers //
     #if defined(VSDK_Client)
-    // Skin pose used to make LOD generation skinning-aware: one Transform3D per skin bind slot (= per bone index found in the
-    // vertex ARRAY_BONES data), equal to `bone global pose (skeleton space) * bind pose`.
-    // This is exactly what the editor scene importer feeds into ImporterMesh::generate_lods()
-    // (ResourceImporterScene::_get_skinned_pose_transforms). The editor reads it from the generated Skeleton3D / Skin, which
-    // don't exist yet at this point (GLTFDocument creates them inside generate_scene(), after the meshes must already carry
-    // their LODs), so the same values are rebuilt here from the parsed glTF data:
-    //   - the bind pose of slot i is gltf_skin.inverse_binds[i] (Godot's Skin copies the glTF inverse binds verbatim),
-    //   - the bone of slot i is the glTF node joints_original[i],
-    //   - the bone's rest/pose is that node's local transform, chained up through parents belonging to the same skeleton
-    //     (the Skeleton3D root bone is where the chain stops, the skeleton node's own transform is not part of it).
-    // Without it the simplifier would see the mesh in its bind pose instead of its rest pose, which is only identical when
-    // both match, and the editor never relies on that.
     godot::Array Model::build_lod_skin_pose(const godot::Ref<godot::GLTFState>& state, int skin_index) {
         godot::Array pose;
         auto skins = state->get_skins();
@@ -50,17 +65,13 @@ namespace Vital::Engine {
         auto nodes = state->get_nodes();
         const godot::PackedInt32Array joints = skin->get_joints_original();
         auto inverse_binds = skin->get_inverse_binds();
-        // Some skins have no inverse binds at all, Godot then uses identity binds (same as GLTFDocument::_create_skins)
         const bool has_binds = inverse_binds.size() >= joints.size();
 
-        // Rest transform of a joint in skeleton space, memoised: neighbouring joints share most of their parent chain
         std::unordered_map<int, godot::Transform3D> global_rest;
         auto get_global_rest = [&](int node_index) {
             std::vector<int> chain;
             godot::Transform3D base;
             int current = node_index;
-            // Walk up until the first node that is not part of the same skeleton (or a cached ancestor).
-            // The size check is only a guard against a malformed, cyclic parent chain.
             while (current >= 0 && current < nodes.size() && (int)chain.size() <= nodes.size()) {
                 auto cached = global_rest.find(current);
                 if (cached != global_rest.end()) { base = cached->second; break; }
@@ -76,7 +87,6 @@ namespace Vital::Engine {
             for (int i = (int)chain.size() - 1; i >= 0; i--) {
                 godot::Ref<godot::GLTFNode> node = nodes[chain[i]];
                 godot::Transform3D local = node.is_valid() ? node->get_xform() : godot::Transform3D();
-                // Skeleton3D stores bone poses as position / rotation / scale, so shear is dropped there: do the same
                 local.basis = godot::Basis(local.basis.get_rotation_quaternion(), local.basis.get_scale());
                 base = base * local;
                 global_rest[chain[i]] = base;
@@ -93,12 +103,314 @@ namespace Vital::Engine {
         }
         return pose;
     }
+
+    godot::Ref<godot::ShaderMaterial> Model::get_wireframe_material() {
+        if (!wireframe_material.is_valid()) {
+            godot::Ref<godot::Shader> shader;
+            shader.instantiate();
+            shader -> set_code(
+                "shader_type spatial;\n"
+                "render_mode unshaded, wireframe, cull_disabled;\n"
+                "uniform vec4 color : source_color = vec4(0.0, 1.0, 0.4, 1.0);\n"
+                "void fragment() { ALBEDO = color.rgb; }\n"
+            );
+            wireframe_material.instantiate();
+            wireframe_material -> set_shader(shader);
+        }
+        return wireframe_material;
+    }
     #endif
 
-    //------------------//
-    //  Hooks / Notify  //
-    //------------------//
+    godot::MeshInstance3D* Model::find_component(const std::string& component) {
+        if (auto mesh = find_mesh_node(this, component)) return mesh;
+        auto it = detached_components.find(component);
+        return it != detached_components.end() ? it->second : nullptr;
+    }
 
+    int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        if (!array_mesh) return -1;
+        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+            if (Tool::to_std_string(array_mesh->surface_get_name(i)) == material) return i;
+        }
+        return -1;
+    }
+
+    bool Model::ensure_animation_layer(int layer) {
+        if (layer < 0 || layer >= ANIM_LAYER_SOFT_MAX) {
+            godot::UtilityFunctions::push_warning("Model::ensure_animation_layer — invalid layer index: ", layer, " (soft max ", ANIM_LAYER_SOFT_MAX, ")");
+            return false;
+        }
+        const bool need_grow = (int)anim_layers.size() <= layer;
+        if (need_grow) {
+            const int old_count = (int)anim_layers.size();
+            anim_layers.resize(layer + 1);
+            if (old_count == 0 && !anim_layers.empty()) {
+                anim_layers[0].weight = 1.0f;
+                anim_layers[0].weight_target = 1.0f;
+            }
+        }
+        if (!anim_player) return true;
+
+        if (!need_grow && anim_tree && blend_tree.is_valid()) return true;
+
+        {
+            auto player = anim_player;
+            if (!anim_tree) {
+                anim_tree = memnew(godot::AnimationTree);
+                anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
+                add_child(anim_tree);
+                anim_tree->set_animation_player(anim_tree->get_path_to(player));
+            }
+            blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
+            anim_tree->set_tree_root(blend_tree);
+
+            const int count = (int)anim_layers.size();
+            for (int i = 0; i < count; i++) {
+                godot::Ref<godot::AnimationNodeAnimation> anim_node(memnew(godot::AnimationNodeAnimation));
+                godot::Ref<godot::AnimationNodeTimeScale> scale_node(memnew(godot::AnimationNodeTimeScale));
+                godot::String anim_name  = Tool::to_godot_string(fmt::format("anim_{}", i));
+                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+                blend_tree->add_node(anim_name, anim_node);
+                blend_tree->add_node(scale_name, scale_node);
+                blend_tree->connect_node(scale_name, 0, anim_name);
+                if (!anim_layers[i].current_anim.empty()) anim_node->set_animation(Tool::to_godot_string(anim_layers[i].current_anim));
+
+                float restored_speed = anim_layers[i].speed;
+                float restored_mag = restored_speed < 0.0f ? -restored_speed : restored_speed;
+                if (restored_mag < 0.0001f) restored_mag = 1.0f;
+                anim_node->set_play_mode(restored_speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", i)), restored_mag);
+            }
+
+            godot::String chain = Tool::to_godot_string("scale_0");
+            for (int i = 1; i < count; i++) {
+                godot::Ref<godot::AnimationNodeBlend2> blend_node(memnew(godot::AnimationNodeBlend2));
+                godot::String blend_name = Tool::to_godot_string(fmt::format("blend_{}", i));
+                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
+                blend_tree->add_node(blend_name, blend_node);
+                blend_tree->connect_node(blend_name, 0, chain);
+                blend_tree->connect_node(blend_name, 1, scale_name);
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), anim_layers[i].weight);
+                chain = blend_name;
+            }
+            blend_tree->connect_node(Tool::to_godot_string("output"), 0, chain);
+
+            if (!anim_layers.empty()) {
+                anim_layers[0].weight = 1.0f;
+                anim_layers[0].weight_target = 1.0f;
+            }
+            anim_tree->set_active(true);
+            for (int i = 1; i < count; i++) {
+                if (anim_layers[i].filter_enabled) apply_set_animation_layer_filter(i, true, anim_layers[i].filter_bones);
+            }
+        }
+        return true;
+    }
+
+    void Model::build_animation_tree() {
+        if (anim_layers.empty()) anim_layers.resize(1);
+        ensure_animation_layer(0);
+    }
+
+    void Model::update_animation_layers(float delta) {
+        for (int i = 1; i < (int)anim_layers.size(); i++) {
+            auto& layer = anim_layers[i];
+            if (layer.one_shot && !layer.current_anim.empty() && layer.weight_target > 0.0f) {
+                layer.one_shot_remaining -= delta;
+                if (layer.one_shot_remaining <= 0.0f) {
+                    layer.one_shot = false;
+                    apply_stop_animation_layer(i, 0.25f);
+                    layer.current_anim.clear();
+                }
+            }
+            if (layer.weight == layer.weight_target) continue;
+            float step = layer.weight_rate * delta;
+            if (layer.weight < layer.weight_target) layer.weight = std::min(layer.weight_target, layer.weight + step);
+            else layer.weight = std::max(layer.weight_target, layer.weight - step);
+            if (anim_tree) anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), layer.weight);
+        }
+    }
+
+    bool Model::apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
+        if (!ensure_animation_layer(layer)) {
+            godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
+            return false;
+        }
+        if (!anim_player) {
+            godot::UtilityFunctions::push_warning("Model::apply_play_animation_layer — no AnimationPlayer yet on '", Tool::to_godot_string(model_name), "' (placeholder=", placeholder, ")");
+            return false;
+        }
+        auto player = anim_player;
+        if (!player->has_animation(Tool::to_godot_string(name))) {
+            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name), "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        build_animation_tree();
+        if (!anim_tree || blend_tree.is_null()) {
+            godot::UtilityFunctions::push_warning("Model::apply_play_animation_layer — anim tree not ready on '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+
+        godot::Ref<godot::Animation> animation = player->get_animation(Tool::to_godot_string(name));
+        if (animation.is_valid()) animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
+        bool is_one_shot_retrigger = !loop && layer > 0;
+
+        float speed_mag = speed < 0.0f ? -speed : speed;
+        auto play_mode = speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD;
+        if (is_one_shot_retrigger) {
+            blend_tree->remove_node(anim_key);
+            godot::Ref<godot::AnimationNodeAnimation> fresh_node(memnew(godot::AnimationNodeAnimation));
+            fresh_node->set_animation(Tool::to_godot_string(name));
+            fresh_node->set_play_mode(play_mode);
+            blend_tree->add_node(anim_key, fresh_node);
+            blend_tree->connect_node(Tool::to_godot_string(fmt::format("scale_{}", layer)), 0, anim_key);
+        }
+        else {
+            auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(blend_tree->get_node(anim_key).ptr());
+            if (anim_node) {
+                anim_node->set_animation(Tool::to_godot_string(name));
+                anim_node->set_play_mode(play_mode);
+            }
+        }
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
+
+        auto& state = anim_layers[layer];
+        state.current_anim = name;
+        state.speed = speed;
+        state.loop = loop;
+        if (!loop && layer > 0 && animation.is_valid()) {
+            float len = animation->get_length();
+            float spd = speed_mag > 0.0001f ? speed_mag : 1.0f;
+            state.one_shot = true;
+            state.one_shot_remaining = len / spd;
+        }
+        else {
+            state.one_shot = false;
+            state.one_shot_remaining = 0.0f;
+        }
+
+        if (layer == 0) {
+            state.weight = 1.0f;
+            state.weight_target = 1.0f;
+        }
+        else {
+            weight = std::clamp(weight, 0.0f, 1.0f);
+            state.weight_target = weight;
+            state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+            if (blend_time <= 0.0001f) {
+                state.weight = weight;
+                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
+            }
+        }
+        return true;
+    }
+
+    void Model::apply_stop_animation_layer(int layer, float blend_time) {
+        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return;
+        auto& state = anim_layers[layer];
+        state.one_shot = false;
+        state.one_shot_remaining = 0.0f;
+        state.weight_target = 0.0f;
+        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+        if (blend_time <= 0.0001f) {
+            state.weight = 0.0f;
+            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), 0.0f);
+        }
+    }
+
+    bool Model::apply_set_animation_layer_weight(int layer, float weight, float blend_time) {
+        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return false;
+        weight = std::clamp(weight, 0.0f, 1.0f);
+        auto& state = anim_layers[layer];
+        state.weight_target = weight;
+        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
+        if (blend_time <= 0.0001f) {
+            state.weight = weight;
+            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
+        }
+        return true;
+    }
+
+    void Model::apply_set_animation_layer_speed(int layer, float speed) {
+        if (layer < 0 || layer >= (int)anim_layers.size() || !anim_tree || blend_tree.is_null()) return;
+        anim_layers[layer].speed = speed;
+        float speed_mag = speed < 0.0f ? -speed : speed;
+        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
+        auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(blend_tree->get_node(anim_key).ptr());
+        if (anim_node) anim_node->set_play_mode(speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
+        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
+    }
+
+    void Model::apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        if (layer < 1) return;
+        if (!ensure_animation_layer(layer)) return;
+        anim_layers[layer].filter_enabled = enabled && !bone_paths.empty();
+        anim_layers[layer].filter_bones = enabled ? bone_paths : std::vector<std::string>{};
+
+        if (!anim_player) return;
+        if (!skeleton) find_node(this, skeleton);
+        if (!anim_tree || blend_tree.is_null()) build_animation_tree();
+        if (blend_tree.is_null()) return;
+
+        auto node = blend_tree->get_node(Tool::to_godot_string(fmt::format("blend_{}", layer)));
+        auto blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
+        if (!blend) return;
+
+        blend->set_filter_enabled(false);
+        if (!enabled || bone_paths.empty()) return;
+
+        godot::String skel_rel;
+        if (skeleton && anim_player) {
+            godot::Node* root = anim_player->get_node_or_null(anim_player->get_root_node());
+            if (!root) root = anim_player->get_parent();
+            godot::NodePath p = root->get_path_to(skeleton);
+            skel_rel = godot::String(p);
+            if (skel_rel.begins_with("./")) skel_rel = skel_rel.substr(2);
+        }
+
+        blend->set_filter_enabled(true);
+        for (const auto& raw : bone_paths) {
+            godot::String bone = Tool::to_godot_string(raw);
+            if (bone.contains(":")) {
+                blend->set_filter_path(godot::NodePath(bone), true);
+                continue;
+            }
+            if (!skel_rel.is_empty()) blend->set_filter_path(godot::NodePath(skel_rel + ":" + bone), true);
+            blend->set_filter_path(godot::NodePath(bone), true);
+        }
+    }
+
+    void Model::broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
+        if (net_id == 0) return;
+
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        #else
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
+        #endif
+    }
+
+    void Model::broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
+        if (net_id == 0) return;
+
+        godot::PackedStringArray bones;
+        for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
+
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        #else
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
+        #endif
+    }
+
+
+    // Hooks //
     void Model::_ready() {
         if (placeholder) return;
         find_node(this, skeleton);
@@ -127,20 +439,20 @@ namespace Vital::Engine {
         }
     }
 
+    void Model::_process(double delta) {
+        if (anim_tree) update_animation_layers((float)delta);
+        on_sync_process(delta);
+    }
 
-    //---------------------//
-    //  ISyncable overrides //
-    //---------------------//
-    //
-    // Delta encode/decode, snapshot buffer, jitter adaptation, and
-    // interpolation all live in ISyncable (syncable.cpp). Model only
-    // supplies the entity-specific hooks so PhysicsBody (and any future
-    // syncable) can reuse the same path with zero copy-paste.
+
+    // ISyncable interface //
+    bool Model::is_sync_active() const {
+        return const_cast<Model*>(this)->is_inside_tree() && !placeholder;
+    }
 
     void Model::apply_sync(godot::Vector3 pos, godot::Vector3 rot, godot::Vector3 vel, godot::Vector3 scale) {
         if (!is_inside_tree()) return;
 
-        // Authority peer drives its own transform — never overwrite.
         auto net = Manager::Network::get_singleton();
         if (net && net->get_peer_id() == sync_authority) return;
 
@@ -153,130 +465,8 @@ namespace Vital::Engine {
         sync_sleeping = false;
     }
 
-    void Model::_process(double delta) {
-        // Layer weight tweening runs regardless of sync authority/placeholder
-        // state — it's purely a local visual concern (every peer that has
-        // this model rendered needs its overlay layers to blend smoothly).
-        if (anim_tree) update_animation_layers((float)delta);
-        on_sync_process(delta);
-    }
 
-
-    //---------------------------//
-    //  Mesh / Material Helpers  //
-    //---------------------------//
-
-    godot::MeshInstance3D* Model::find_mesh_node(godot::Node* node, const std::string& path) {
-        if (!node) return nullptr;
-        auto separator = path.find('/');
-        std::string segment   = (separator == std::string::npos) ? path : path.substr(0, separator);
-        std::string remainder = (separator == std::string::npos) ? ""   : path.substr(separator + 1);
-        for (int i = 0; i < node->get_child_count(); i++) {
-            godot::Node* child = node->get_child(i);
-            std::string child_name = Tool::to_std_string(child->get_name());
-            if (!child_name.empty() && child_name[0] == '@') {
-                auto result = find_mesh_node(child, path);
-                if (result) return result;
-                continue;
-            }
-            if (child_name != segment) continue;
-            if (remainder.empty()) {
-                auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
-                if (mesh) return mesh;
-            } 
-            else {
-                auto result = find_mesh_node(child, remainder);
-                if (result) return result;
-            }
-        }
-        return nullptr;
-    }
-
-    godot::MeshInstance3D* Model::find_component(const std::string& component) {
-        if (auto mesh = find_mesh_node(this, component)) return mesh;
-        auto it = detached_components.find(component);
-        return it != detached_components.end() ? it->second : nullptr;
-    }
-
-    int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
-        if (!array_mesh) return -1;
-        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-            if (Tool::to_std_string(array_mesh->surface_get_name(i)) == material) return i;
-        }
-        return -1;
-    }
-
-    void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
-        if (!node) return;
-        for (int i = 0; i < node->get_child_count(); i++) {
-            godot::Node* child = node->get_child(i);
-            std::string child_name = Tool::to_std_string(child->get_name());
-            bool is_generated = !child_name.empty() && child_name[0] == '@';
-            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : fmt::format("{}/{}", current_path, child_name);
-            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
-            collect_mesh_nodes(child, out, child_path);
-        }
-    }
-
-
-    //----------//
-    // Asserts  //
-    //----------//
-
-    godot::MeshInstance3D* Model::assert_component(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return mesh;
-    }
-
-    std::pair<godot::MeshInstance3D*, int> Model::assert_material(const std::string& component, const std::string& material) {
-        auto mesh = assert_component(component);
-        int idx = find_material_index(mesh, material);
-        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, component));
-        return { mesh, idx };
-    }
-
-    godot::Skeleton3D* Model::assert_skeleton() {
-        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no skeleton found in model '{}'", model_name));
-        return skeleton;
-    }
-
-    void Model::assert_material_feature(int feature) {
-        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material feature");
-    }
-
-    void Model::assert_material_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid material flag");
-    }
-
-
-    void Model::cleanup_spawned() {
-        auto core = Engine::Core::get_singleton();
-        if (!core) return;
-        for (int i = core->get_child_count() - 1; i >= 0; i--) {
-            godot::Node* child = core->get_child(i);
-            if (godot::Object::cast_to<Model>(child)) child->queue_free();
-        }
-    }
-
-    void Model::on_connected() {
-        Manager::Asset::get_singleton()->clear();
-        cleanup_spawned();
-        // Nothing cached by a previous session may be served to this one, a same-named model on the new
-        // server can be a different file. Runs before the handshake, so nothing of this session is loaded yet.
-        cache_loaded.clear();
-        cache_hashes.clear();
-        shape_cache.clear();
-        load_waiters.clear();
-        next_net_id = 1;
-    }
-
-
-    //------------------//
-    //    Managers      //
-    //------------------//
-
+    // Managers //
     bool Model::load(const std::string& name, const std::string& base, const std::string& path) {
         const std::string file_hash = Tool::File::hash(base, path);
         if (is_model_loaded(name)) {
@@ -300,26 +490,11 @@ namespace Vital::Engine {
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState>    state    = memnew(godot::GLTFState);
                 #if !defined(VSDK_Client)
-                // The server never renders: skip decoding the embedded textures, the bulk of a model's RAM.
-                // Meshes, skeleton, animations and material names/flags are all kept, so server-side checks
-                // (components, bones, animations, collision shapes) behave exactly as before.
-                // Set through the property (handle_binary_image_mode) rather than the deprecated
-                // set_handle_binary_image() alias, so it keeps working when the alias is removed.
                 state->set("handle_binary_image_mode", 0);
                 #endif
                 if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "invalid model buffer");
                 #if defined(VSDK_Client)
-                // GLTFDocument adds every surface without LODs (only the editor importer generates them), so do it here, before
-                // generate_scene() turns these ImporterMeshes into the final meshes. Client only: the server never renders.
-                // generate_lods() only fills each surface's LOD index lists, the base vertex/index data (LOD 0) is left untouched,
-                // so collision shapes built from the meshes (surface_get_arrays) are identical with or without LODs. Bone indices,
-                // weights and blend shapes are per-vertex data shared with LOD 0, so rigged meshes keep working at every LOD.
-                // Same as the editor importer, skinned meshes get their skin pose passed in (build_lod_skin_pose), so the simplifier
-                // judges them in their rest pose; static meshes pass an empty array. Silently does nothing when the engine build
-                // has no meshoptimizer.
                 {
-                    // glTF mesh index -> skin index of the first skinned node using it. A mesh is one shared resource, so it can
-                    // only be simplified once; a mesh reused by nodes with different skins is not something exporters produce.
                     std::unordered_map<int, int> mesh_skin;
                     auto gltf_nodes = state->get_nodes();
                     for (int i = 0; i < gltf_nodes.size(); i++) {
@@ -365,7 +540,6 @@ namespace Vital::Engine {
         cache_loaded[name] = scene;
         #if defined(VSDK_Client)
         Manager::Asset::get_singleton()->flush_spawn_queue(name);
-        // Wake whatever waited for this asset (e.g. collision shapes referencing it) on the main thread
         Engine::Core::get_singleton()->enqueue([name]() {
             auto it = load_waiters.find(name);
             if (it == load_waiters.end()) return;
@@ -390,11 +564,6 @@ namespace Vital::Engine {
         return true;
     }
 
-    godot::Ref<godot::PackedScene> Model::get_scene(const std::string& name) {
-        auto it = cache_loaded.find(name);
-        return it == cache_loaded.end() ? godot::Ref<godot::PackedScene>() : it -> second;
-    }
-
     void Model::when_loaded(const std::string& name, std::function<void()> exec) {
         if (is_model_loaded(name)) { exec(); return; }
         load_waiters[name].push_back(std::move(exec));
@@ -417,8 +586,6 @@ namespace Vital::Engine {
             Tool::Event::emit("entity:spawn", Tool::Stack({object, false}));
             return object;
         #else
-            // Server-side: create the model locally, assign net_id before
-            // add_child so _ready() sees it, then RPC clients to mirror it.
             Model* object = memnew(Model);
             object->net_id = next_net_id++;
 
@@ -429,57 +596,20 @@ namespace Vital::Engine {
             }
             object->set_model_name(name);
 
-            // Synchronous add_child — matches physics body behaviour so that
-            // set_parent / set_global_position called in the same Lua tick see
-            // the node already inside the scene tree.
-            // _ready() and _notification() touch no Lua state, so there is no
-            // re-entrancy risk from entering the tree here.
             object->add_child(instance);
             Engine::Core::get_singleton()->add_child(object);
 
-            // Defer only the network side-effects (RPC + sync registration)
-            // to the next frame so the _spawn_entity RPC goes out after _ready()
-            // has run and the node is fully initialised on the server.
             uint32_t captured_net_id = object->net_id;
             godot::String captured_name = Tool::to_godot_string(name);
-            // Same UAF risk as Physics_Body::setup_create() had: this lambda
-            // runs on a later drain() of Core's work queue, so a raw `object`
-            // capture would be dangling if Model::destroy() runs first.
-            // Capture by ObjectID and re-validate through ObjectDB instead.
             godot::ObjectID captured_oid = godot::ObjectID(object->get_instance_id());
             Engine::Core::get_singleton()->enqueue([captured_oid, captured_net_id, captured_name]() {
                 godot::Object* obj = godot::ObjectDB::get_instance(captured_oid);
-                if (!obj) return; // destroyed before this deferred registration ran
+                if (!obj) return;
                 auto object = godot::Object::cast_to<Model>(obj);
                 if (!object) return;
 
                 Manager::Network::get_singleton()->enqueue_syncable_registration(object);
                 {
-                    // FIXED: was object->get_global_position()/get_global_rotation_degrees()
-                    // — this reads the model's raw global transform, completely
-                    // ignoring whether it's parented. This RPC is deferred one
-                    // frame (see comment above), and Lua's set_parent() call for
-                    // a body-riding model (e.g. the basketball model parented to
-                    // its rigid body) runs synchronously in the SAME tick that
-                    // created it — so by the time this deferred broadcast fires,
-                    // the model is already parented, and for anything already
-                    // moving (many balls spawned in a loop, already falling and
-                    // colliding with each other by the time each one's deferred
-                    // broadcast goes out) its raw global position no longer
-                    // agrees with where its body actually is. Exactly the same
-                    // bug already found and fixed for the late-join handshake
-                    // path in Manager/private/network.cpp's spawn loop — this is
-                    // the equivalent live-broadcast path (fires when a NEW
-                    // entity is created while peers are already connected, e.g.
-                    // a resource restart), which uses different code and was
-                    // missed the first time.
-                    // get_sync_position()/get_sync_rotation() (ISyncable's
-                    // shared defaults, see syncable.cpp) already return LOCAL
-                    // when parented and GLOBAL otherwise — no need to branch on
-                    // get_parent_net_id() here at all, that dispatch already
-                    // happens inside them. apply_reparent_entity already uses
-                    // keep_global_transform=false, so a parented model's local
-                    // value survives the reparent untouched once it lands.
                     godot::Vector3 spawn_pos = object->get_sync_position();
                     godot::Vector3 spawn_rot = object->get_sync_rotation();
                     Manager::Network::rpc(false, "_spawn_entity", (int)captured_net_id, (int)Engine::ISyncable::Type::Model, captured_name, object->get_sync_authority(), spawn_pos, spawn_rot);
@@ -493,9 +623,7 @@ namespace Vital::Engine {
 
     void Model::destroy() {
         #if !defined(VSDK_Client)
-        // Notify all clients to remove their copy before we free server-side.
         if (net_id != 0) {
-            // Queued so it can never overtake this entity's own spawn RPC (also sent via Core::enqueue)
             Manager::Network::rpc(true, "_destroy_entity", (int)net_id);
         }
         #endif
@@ -523,19 +651,12 @@ namespace Vital::Engine {
         find_node(this, anim_player);
         if (anim_player && (!anim_tree || blend_tree.is_null()) && !anim_layers.empty()) ensure_animation_layer(std::max(0, (int)anim_layers.size() - 1));
 
-        // Re-apply component visibility/render state that arrived via
-        // Network::_sync_component_visible / _sync_component_render while
-        // this model was still a placeholder — those calls could only
-        // persist into component_hidden/component_detached (see
-        // apply_component_visible/apply_component_rendered), since there was
-        // no mesh tree yet to act on. Same late-join race as the anim-layer
-        // rebuild just above; walk both sets now that the real tree exists.
         for (const auto& name : component_hidden) {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (mesh) mesh->set_visible(false);
         }
         for (const auto& name : component_detached) {
-            if (detached_components.count(name)) continue; // already applied
+            if (detached_components.count(name)) continue;
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (!mesh) continue;
             godot::Node* parent = mesh->get_parent();
@@ -546,14 +667,11 @@ namespace Vital::Engine {
             detached_components[name] = mesh;
         }
 
-        // Re-apply component transforms that arrived while this model was a placeholder
-        // (after the detach pass so detached components keep theirs too).
         for (const auto& [name, transform] : component_transforms) {
             godot::MeshInstance3D* mesh = find_component(name);
             if (mesh) mesh->set_transform(transform);
         }
 
-        // Same for blendshape values received while this model was a placeholder
         for (const auto& [component, shapes] : blendshape_values) {
             godot::MeshInstance3D* mesh = find_component(component);
             if (!mesh) continue;
@@ -563,7 +681,6 @@ namespace Vital::Engine {
             }
         }
 
-        // Models that hydrate while the global wireframe is on (_ready() skipped them as placeholders)
         if (wireframe_all) set_component_wireframe("*", true);
 
         sync_authority = authority_peer;
@@ -574,6 +691,25 @@ namespace Vital::Engine {
         Tool::Event::emit("entity:spawn", Tool::Stack({this, true}));
     }
     #endif
+
+    void Model::cleanup_spawned() {
+        auto core = Engine::Core::get_singleton();
+        if (!core) return;
+        for (int i = core->get_child_count() - 1; i >= 0; i--) {
+            godot::Node* child = core->get_child(i);
+            if (godot::Object::cast_to<Model>(child)) child->queue_free();
+        }
+    }
+
+    void Model::on_connected() {
+        Manager::Asset::get_singleton()->clear();
+        cleanup_spawned();
+        cache_loaded.clear();
+        cache_hashes.clear();
+        shape_cache.clear();
+        load_waiters.clear();
+        next_net_id = 1;
+    }
 
     std::vector<std::string> Model::filter_resource_models(const std::string& resource, const std::vector<std::string>& files) {
         std::vector<std::string> validated;
@@ -665,13 +801,35 @@ namespace Vital::Engine {
     }
 
 
-    //-------------//
-    //  Checkers   //
-    //-------------//
+    // Checkers //
+    bool Model::is_model_loaded(const std::string& name) {
+        return cache_loaded.find(name) != cache_loaded.end();
+    }
 
-    bool Model::is_model_loaded(const std::string& name) { return cache_loaded.find(name) != cache_loaded.end(); }
+    bool Model::is_component_visible(const std::string& component) {
+        return assert_component(component)->is_visible();
+    }
 
-    bool Model::is_component_visible(const std::string& component) { return assert_component(component)->is_visible(); }
+    bool Model::is_component_rendered(const std::string& component) {
+        if (Tool::contains_wildcard(component)) {
+            for (const auto& name : get_components())
+                if (Tool::match_wildcard(component, name) && !detached_components.count(name)) return true;
+            return false;
+        }
+        return detached_components.count(component) == 0;
+    }
+
+    #if defined(VSDK_Client)
+    bool Model::is_component_wireframe(const std::string& component) {
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return mesh -> get_material_overlay().ptr() == get_wireframe_material().ptr();
+    }
+
+    bool Model::is_wireframe_all() {
+        return wireframe_all;
+    }
+    #endif
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
         auto [mesh, idx] = assert_material(component, material);
@@ -694,20 +852,26 @@ namespace Vital::Engine {
         return std_mat->get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
     }
 
+    bool Model::is_animation_layer_playing(int layer) const {
+        if (layer < 0 || layer >= (int)anim_layers.size()) return false;
+        if (anim_layers[layer].current_anim.empty()) return false;
+        return layer == 0 || anim_layers[layer].weight_target > 0.0f;
+    }
 
-    //------------//
-    //  Getters   //
-    //------------//
 
-    std::string   Model::get_model_name()     { return model_name; }
+    // Getters //
+    godot::Ref<godot::PackedScene> Model::get_scene(const std::string& name) {
+        auto it = cache_loaded.find(name);
+        return it == cache_loaded.end() ? godot::Ref<godot::PackedScene>() : it -> second;
+    }
 
-    // ISyncable overrides
-    bool Model::is_sync_active() const { return const_cast<Model*>(this)->is_inside_tree() && !placeholder; }
+    std::string Model::get_model_name() {
+        return model_name;
+    }
 
-    // get_sync_position()/get_sync_rotation()/get_sync_scale(): use
-    // ISyncable's shared defaults (syncable.cpp) via get_sync_node() — no
-    // longer duplicated here.
-    uint32_t Model::get_net_id() const        { return net_id; }
+    uint32_t Model::get_net_id() const {
+        return net_id;
+    }
 
     std::vector<std::string> Model::get_components(bool include_all) {
         std::vector<std::string> components;
@@ -716,6 +880,12 @@ namespace Vital::Engine {
             for (const auto& [name, _] : detached_components) components.push_back(name);
         }
         return components;
+    }
+
+    float Model::get_component_lod_bias(const std::string& component) {
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return mesh->get_lod_bias();
     }
 
     std::vector<std::string> Model::get_materials(const std::string& component) {
@@ -765,25 +935,29 @@ namespace Vital::Engine {
         return skel->get_global_transform().xform(skel->get_bone_global_pose(idx).origin);
     }
 
+    std::string Model::get_current_animation_layer(int layer) const {
+        if (layer < 0 || layer >= (int)anim_layers.size()) return "";
+        return anim_layers[layer].current_anim;
+    }
 
-    //------------//
-    //  Setters   //
-    //------------//
+    float Model::get_animation_layer_speed(int layer) const {
+        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
+        return anim_layers[layer].speed;
+    }
 
-    void Model::set_model_name(const std::string& name) { model_name = name; }
+    float Model::get_animation_layer_weight(int layer) const {
+        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
+        return anim_layers[layer].weight_target;
+    }
+
+    int Model::get_animation_layer_count() const {
+        return (int)anim_layers.size();
+    }
 
 
-
-    // set_parent() / apply_parent() / get_parent_net_id() now live on
-    // ISyncable (see syncable.cpp) — Model has no override here, it just
-    // inherits the shared implementation.
-
-    bool Model::needs_broadcast(const std::string& key, bool changed, bool sync) {
-        if (!resolve_sync(sync)) {
-            if (changed) unsynced_keys.insert(key);
-            return false;
-        }
-        return unsynced_keys.erase(key) > 0 || changed;
+    // Setters //
+    void Model::set_model_name(const std::string& name) {
+        model_name = name;
     }
 
     bool Model::set_component_visible(const std::string& component, bool state, bool sync) {
@@ -791,12 +965,9 @@ namespace Vital::Engine {
         auto exec = [&](const std::string& name) -> bool {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (!mesh) return false;
-            // Hidden is the only recorded state, so the call changes something when it asks for the opposite
             bool changed = (component_hidden.count(name) > 0) == state;
             if (needs_broadcast(fmt::format("visible:{}", name), changed, sync)) broadcast = true;
             mesh->set_visible(state);
-            // Track non-default (hidden) state for late-join dump.
-            // Default is visible, so only record when hidden.
             if (!state) component_hidden.insert(name);
             else        component_hidden.erase(name);
             return true;
@@ -809,151 +980,12 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Pure local application — never broadcasts, never throws. Same
-    // relationship to set_component_visible() that apply_play_animation_layer()
-    // etc. have to their public API counterparts. Called by
-    // Network::_sync_component_visible when mirroring a remote peer's state;
-    // an unhandled exception there would unwind back through Godot's
-    // GDExtensionCallError/MethodBind RPC dispatch and crash the client
-    // instead of just failing the call.
-    //
-    // While `placeholder` is true (mesh subtree not instanced yet — see
-    // hydrate()) there's no mesh tree to search, so the requested state is
-    // only persisted into component_hidden; hydrate() re-applies it to the
-    // real mesh tree once it exists, mirroring how ensure_animation_layer()
-    // replays anim_layers after hydrate.
-    bool Model::apply_component_visible(const std::string& component, bool state) {
-        if (placeholder) {
-            if (Tool::contains_wildcard(component)) {
-                godot::UtilityFunctions::push_warning(
-                    "Model::apply_component_visible — wildcard '", Tool::to_godot_string(component),
-                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
-                return false;
-            }
-            if (!state) component_hidden.insert(component);
-            else        component_hidden.erase(component);
-            return true;
-        }
-
-        auto exec = [&](const std::string& name) -> bool {
-            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-            if (!mesh) return false;
-            mesh->set_visible(state);
-            if (!state) component_hidden.insert(name);
-            else        component_hidden.erase(name);
-            return true;
-        };
-        if (!apply_wildcard(component, [&]{ return get_components(); }, exec)) {
-            godot::UtilityFunctions::push_warning(
-                "Model::apply_component_visible — component '", Tool::to_godot_string(component),
-                "' not found in model '", Tool::to_godot_string(model_name), "'");
-            return false;
-        }
-        return true;
-    }
-
-    void Model::broadcast_component_visible(const std::string& component, bool state) {
-        if (net_id == 0) return;
-        Manager::Network::rpc(true, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
-    }
-
-    // Local-only: LOD is a render setting, so nothing is broadcast or stored for late-join.
-    // Detached components are included (get_components(true) + find_component), their bias survives re-attaching.
-    bool Model::set_component_lod_bias(const std::string& component, float bias) {
-        bias = std::max(0.0f, bias);
-        auto exec = [&](const std::string& name) -> bool {
-            godot::MeshInstance3D* mesh = find_component(name);
-            if (!mesh) return false;
-            mesh->set_lod_bias(bias);
-            return true;
-        };
-        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return true;
-    }
-
-    float Model::get_component_lod_bias(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_component(component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return mesh->get_lod_bias();
-    }
-
-    #if defined(VSDK_Client)
-    godot::Ref<godot::ShaderMaterial> Model::get_wireframe_material() {
-        if (!wireframe_material.is_valid()) {
-            godot::Ref<godot::Shader> shader;
-            shader.instantiate();
-            shader -> set_code(
-                "shader_type spatial;\n"
-                "render_mode unshaded, wireframe, cull_disabled;\n"
-                "uniform vec4 color : source_color = vec4(0.0, 1.0, 0.4, 1.0);\n"
-                "void fragment() { ALBEDO = color.rgb; }\n"
-            );
-            wireframe_material.instantiate();
-            wireframe_material -> set_shader(shader);
-        }
-        return wireframe_material;
-    }
-
-    bool Model::is_component_wireframe(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_component(component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return mesh -> get_material_overlay().ptr() == get_wireframe_material().ptr();
-    }
-
-    // Local-only: a debug view, so nothing is broadcast or stored for late-join.
-    // Detached components are included (get_components(true) + find_component).
-    bool Model::set_component_wireframe(const std::string& component, bool state) {
-        const auto material = get_wireframe_material();
-        auto exec = [&](const std::string& name) -> bool {
-            godot::MeshInstance3D* mesh = find_component(name);
-            if (!mesh) return false;
-            if (state) mesh -> set_material_overlay(material);
-            else if (mesh -> get_material_overlay().ptr() == material.ptr()) mesh -> set_material_overlay(godot::Ref<godot::Material>());
-            return true;
-        };
-        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
-        return true;
-    }
-
-    bool Model::is_wireframe_all() {
-        return wireframe_all;
-    }
-
-    void Model::set_wireframe_all(bool state) {
-        wireframe_all = state;
-        godot::Window* root = Engine::Core::get_scene_root();
-        if (!root) return;
-        // Models can be parented anywhere (e.g. riding a physics body), so walk the whole tree instead of Core's children
-        std::function<void(godot::Node*)> apply = [&](godot::Node* node) {
-            if (auto model = godot::Object::cast_to<Model>(node)) {
-                if (!model -> placeholder) model -> set_component_wireframe("*", state);
-            }
-            for (int i = 0; i < node -> get_child_count(); i++) apply(node -> get_child(i));
-        };
-        apply(root);
-    }
-    #endif
-
-    bool Model::is_component_rendered(const std::string& component) {
-        if (Tool::contains_wildcard(component)) {
-            for (const auto& name : get_components())
-                if (Tool::match_wildcard(component, name) && !detached_components.count(name)) return true;
-            return false;
-        }
-        return detached_components.count(component) == 0;
-    }
-
-    // set_component_rendered(component, true)  → reattach (make rendered)
-    // set_component_rendered(component, false) → detach   (stop rendering)
     bool Model::set_component_rendered(const std::string& component, bool state, bool sync) {
         bool broadcast = false;
         if (state) {
-            // Reattach: move from detached map back into the scene tree.
             auto exec = [&](const std::string& name) -> bool {
                 auto it = detached_components.find(name);
-                if (it == detached_components.end()) return true; // already live, no-op
+                if (it == detached_components.end()) return true;
                 godot::MeshInstance3D* mesh = it->second;
                 detached_components.erase(it);
                 component_detached.erase(name);
@@ -963,26 +995,23 @@ namespace Vital::Engine {
                 mesh->set_process(true);
                 return true;
             };
-            // A wildcard that matches nothing is a valid no-op, only an exact name that
-            // matches nothing is an error
             if (Tool::contains_wildcard(component)) {
                 std::vector<std::string> keys;
                 keys.reserve(detached_components.size());
                 for (const auto& [name, _] : detached_components) keys.push_back(name);
                 for (const auto& name : keys)
                     if (Tool::match_wildcard(component, name)) exec(name);
-            } 
+            }
             else {
                 if (!detached_components.count(component) && !find_mesh_node(this, component))
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
                 exec(component);
             }
-        } 
+        }
         else {
-            // Detach: remove from scene tree, keep alive in detached_components.
             auto live_names = get_components();
             auto exec = [&](const std::string& name) -> bool {
-                if (detached_components.count(name)) return true; // already detached, no-op
+                if (detached_components.count(name)) return true;
                 godot::MeshInstance3D* mesh = find_mesh_node(this, name);
                 if (!mesh) return false;
                 godot::Node* parent = mesh->get_parent();
@@ -998,7 +1027,7 @@ namespace Vital::Engine {
             if (Tool::contains_wildcard(component)) {
                 for (const auto& name : live_names)
                     if (Tool::match_wildcard(component, name)) exec(name);
-            } 
+            }
             else {
                 if (!exec(component))
                     throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
@@ -1011,136 +1040,47 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Pure local application — never broadcasts, never throws. Same
-    // relationship to set_component_rendered() that apply_play_animation_layer()
-    // etc. have to their public API counterparts. Called by
-    // Network::_sync_component_render when mirroring a remote peer's state.
-    //
-    // This is the fix for the second-client crash: set_component_rendered()
-    // throws Tool::Log::error when the component can't be found — correct
-    // for direct API/Lua callers who want immediate feedback, but fatal from
-    // an RPC callback, where an uncaught exception unwinds back through
-    // Godot's GDExtensionCallError/MethodBind dispatch (not exception-safe)
-    // instead of just failing the call. A late-joining peer's state dump
-    // replays every existing model's component-render state as soon as each
-    // net_id registers — but the model can still be a `placeholder` at that
-    // point (mesh subtree not instanced yet, see hydrate()) if this peer
-    // hadn't already cached that model's asset. So while placeholder, this
-    // only persists the requested state into component_detached; hydrate()
-    // re-applies it to the real mesh tree once it exists, mirroring how
-    // ensure_animation_layer() replays anim_layers after hydrate.
-    bool Model::apply_component_rendered(const std::string& component, bool state) {
-        if (placeholder) {
-            if (Tool::contains_wildcard(component)) {
-                godot::UtilityFunctions::push_warning(
-                    "Model::apply_component_rendered — wildcard '", Tool::to_godot_string(component),
-                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
-                return false;
-            }
-            if (!state) component_detached.insert(component);
-            else        component_detached.erase(component);
+    bool Model::set_component_lod_bias(const std::string& component, float bias) {
+        bias = std::max(0.0f, bias);
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_component(name);
+            if (!mesh) return false;
+            mesh->set_lod_bias(bias);
             return true;
-        }
-
-        if (state) {
-            // Reattach: move from detached map back into the scene tree.
-            auto exec = [&](const std::string& name) -> bool {
-                auto it = detached_components.find(name);
-                if (it == detached_components.end()) return true; // already live, no-op
-                godot::MeshInstance3D* mesh = it->second;
-                detached_components.erase(it);
-                component_detached.erase(name);
-                this->add_child(mesh);
-                mesh->set_physics_process(true);
-                mesh->set_process(true);
-                return true;
-            };
-            if (Tool::contains_wildcard(component)) {
-                std::vector<std::string> keys;
-                keys.reserve(detached_components.size());
-                for (const auto& [name, _] : detached_components) keys.push_back(name);
-                for (const auto& name : keys)
-                    if (Tool::match_wildcard(component, name)) exec(name);
-                return true;
-            }
-            return exec(component);
-        } 
-        else {
-            // Detach: remove from scene tree, keep alive in detached_components.
-            auto exec = [&](const std::string& name) -> bool {
-                if (detached_components.count(name)) return true; // already detached, no-op
-                godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-                if (!mesh) return false;
-                godot::Node* parent = mesh->get_parent();
-                if (!parent) return false;
-                mesh->set_physics_process(false);
-                mesh->set_process(false);
-                parent->remove_child(mesh);
-                detached_components[name] = mesh;
-                component_detached.insert(name);
-                return true;
-            };
-            if (Tool::contains_wildcard(component)) {
-                for (const auto& name : get_components())
-                    if (Tool::match_wildcard(component, name)) exec(name);
-                return true;
-            }
-            if (!exec(component)) {
-                godot::UtilityFunctions::push_warning(
-                    "Model::apply_component_rendered — component '", Tool::to_godot_string(component),
-                    "' not found in model '", Tool::to_godot_string(model_name), "'");
-                return false;
-            }
-            return true;
-        }
-    }
-
-    void Model::broadcast_component_rendered(const std::string& component, bool state) {
-        if (net_id == 0) return;
-        Manager::Network::rpc(true, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
-    }
-
-    // Records the component's current local transform (late-join / hydrate) and replicates it.
-    // Skipped when it matches what peers already have (see needs_broadcast), so a script re-setting the same value every frame costs nothing.
-    void Model::sync_component_transform(const std::string& component, bool sync) {
-        auto transform = assert_component(component)->get_transform();
-        auto it = component_transforms.find(component);
-        bool changed = it == component_transforms.end() || !it->second.is_equal_approx(transform);
-        component_transforms[component] = transform;
-        if (needs_broadcast(fmt::format("transform:{}", component), changed, sync)) broadcast_component_transform(component, transform);
-    }
-
-    // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
-    // While `placeholder` (mesh tree not instanced yet) it only stores the transform, hydrate() applies it.
-    bool Model::apply_component_transform(const std::string& component, const godot::Transform3D& transform) {
-        if (!transform.origin.is_finite() || !transform.basis.get_column(0).is_finite() || !transform.basis.get_column(1).is_finite() || !transform.basis.get_column(2).is_finite()) return false;
-        if (placeholder) {
-            component_transforms[component] = transform;
-            return true;
-        }
-        godot::MeshInstance3D* mesh = find_component(component);
-        if (!mesh) {
-            godot::UtilityFunctions::push_warning(
-                "Model::apply_component_transform — component '", Tool::to_godot_string(component),
-                "' not found in model '", Tool::to_godot_string(model_name), "'");
-            return false;
-        }
-        mesh->set_transform(transform);
-        component_transforms[component] = transform;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return true;
     }
 
-    void Model::broadcast_component_transform(const std::string& component, const godot::Transform3D& transform) {
-        if (net_id == 0) return;
-        #if !defined(VSDK_Client)
-        Manager::Network::rpc(true, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
-        #else
-        // Only the owning client reports its own components, always to the server (rpc_id(1)), which relays to everyone else.
-        auto net_mgr = Manager::Network::get_singleton();
-        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        Manager::Network::rpc_id(false, 1, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
-        #endif
+    #if defined(VSDK_Client)
+    bool Model::set_component_wireframe(const std::string& component, bool state) {
+        const auto material = get_wireframe_material();
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_component(name);
+            if (!mesh) return false;
+            if (state) mesh -> set_material_overlay(material);
+            else if (mesh -> get_material_overlay().ptr() == material.ptr()) mesh -> set_material_overlay(godot::Ref<godot::Material>());
+            return true;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(true); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
+        return true;
     }
+
+    void Model::set_wireframe_all(bool state) {
+        wireframe_all = state;
+        godot::Window* root = Engine::Core::get_scene_root();
+        if (!root) return;
+        std::function<void(godot::Node*)> apply = [&](godot::Node* node) {
+            if (auto model = godot::Object::cast_to<Model>(node)) {
+                if (!model -> placeholder) model -> set_component_wireframe("*", state);
+            }
+            for (int i = 0; i < node -> get_child_count(); i++) apply(node -> get_child(i));
+        };
+        apply(root);
+    }
+    #endif
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         auto mesh = assert_component(component);
@@ -1153,7 +1093,7 @@ namespace Vital::Engine {
                 invisible->set_depth_draw_mode(godot::BaseMaterial3D::DEPTH_DRAW_DISABLED);
                 invisible->set_albedo(godot::Color(0, 0, 0, 0));
                 mesh->set_surface_override_material(idx, invisible);
-            } 
+            }
             else mesh->set_surface_override_material(idx, godot::Ref<godot::Material>());
             return true;
         };
@@ -1186,9 +1126,6 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Applies the value to every blendshape the pattern matches and records it (late-join / hydrate),
-    // then replicates the pattern, which each peer resolves itself. Skipped when nothing changed (see needs_broadcast),
-    // so a script re-setting the same value every frame costs nothing.
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value, bool sync) {
         auto mesh = assert_component(component);
         auto& recorded = blendshape_values[component];
@@ -1208,8 +1145,195 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Pure local application — never broadcasts, never throws (safe from RPC callbacks).
-    // While `placeholder` (mesh tree not instanced yet) it only stores the value, hydrate() applies it.
+    void Model::set_animation_layer_speed(int layer, float speed, bool sync) {
+        bool valid = layer >= 0 && layer < (int)anim_layers.size();
+        bool changed = valid && !godot::Math::is_equal_approx(anim_layers[layer].speed, speed);
+        apply_set_animation_layer_speed(layer, speed);
+        if (valid && needs_broadcast(fmt::format("speed:{}", layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
+    }
+
+    bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
+        bool changed = layer > 0 && layer < (int)anim_layers.size() && !godot::Math::is_equal_approx(anim_layers[layer].weight_target, std::clamp(weight, 0.0f, 1.0f));
+        if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
+        if (needs_broadcast(fmt::format("weight:{}", layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
+        return true;
+    }
+
+    bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths, bool sync) {
+        if (layer < 1) return false;
+        if (!ensure_animation_layer(layer)) return false;
+        const auto& current = anim_layers[layer];
+        bool changed = current.filter_enabled != (enabled && !bone_paths.empty()) || current.filter_bones != (enabled ? bone_paths : std::vector<std::string>{});
+        apply_set_animation_layer_filter(layer, enabled, bone_paths);
+        if (needs_broadcast(fmt::format("filter:{}", layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
+        return true;
+    }
+
+
+    // Misc //
+    godot::MeshInstance3D* Model::find_mesh_node(godot::Node* node, const std::string& path) {
+        if (!node) return nullptr;
+        auto separator = path.find('/');
+        std::string segment   = (separator == std::string::npos) ? path : path.substr(0, separator);
+        std::string remainder = (separator == std::string::npos) ? ""   : path.substr(separator + 1);
+        for (int i = 0; i < node->get_child_count(); i++) {
+            godot::Node* child = node->get_child(i);
+            std::string child_name = Tool::to_std_string(child->get_name());
+            if (!child_name.empty() && child_name[0] == '@') {
+                auto result = find_mesh_node(child, path);
+                if (result) return result;
+                continue;
+            }
+            if (child_name != segment) continue;
+            if (remainder.empty()) {
+                auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
+                if (mesh) return mesh;
+            }
+            else {
+                auto result = find_mesh_node(child, remainder);
+                if (result) return result;
+            }
+        }
+        return nullptr;
+    }
+
+    void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
+        if (!node) return;
+        for (int i = 0; i < node->get_child_count(); i++) {
+            godot::Node* child = node->get_child(i);
+            std::string child_name = Tool::to_std_string(child->get_name());
+            bool is_generated = !child_name.empty() && child_name[0] == '@';
+            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : fmt::format("{}/{}", current_path, child_name);
+            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
+            collect_mesh_nodes(child, out, child_path);
+        }
+    }
+
+    bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
+        if (!apply_play_animation_layer(layer, name, loop, speed, weight, blend_time)) return false;
+        if (resolve_sync(sync)) broadcast_animation_layer(0, layer, name, loop, speed, weight, blend_time);
+        return true;
+    }
+
+    void Model::stop_animation_layer(int layer, float blend_time, bool sync) {
+        apply_stop_animation_layer(layer, blend_time);
+        if (resolve_sync(sync)) broadcast_animation_layer(1, layer, "", true, 1.0f, 0.0f, blend_time);
+    }
+
+
+    // Apply //
+    bool Model::apply_component_visible(const std::string& component, bool state) {
+        if (placeholder) {
+            if (Tool::contains_wildcard(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_visible — wildcard '", Tool::to_godot_string(component),
+                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
+                return false;
+            }
+            if (!state) component_hidden.insert(component);
+            else        component_hidden.erase(component);
+            return true;
+        }
+
+        auto exec = [&](const std::string& name) -> bool {
+            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+            if (!mesh) return false;
+            mesh->set_visible(state);
+            if (!state) component_hidden.insert(name);
+            else        component_hidden.erase(name);
+            return true;
+        };
+        if (!apply_wildcard(component, [&]{ return get_components(); }, exec)) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_component_visible — component '", Tool::to_godot_string(component),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        return true;
+    }
+
+    bool Model::apply_component_rendered(const std::string& component, bool state) {
+        if (placeholder) {
+            if (Tool::contains_wildcard(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_rendered — wildcard '", Tool::to_godot_string(component),
+                    "' sync dropped: model '", Tool::to_godot_string(model_name), "' still loading");
+                return false;
+            }
+            if (!state) component_detached.insert(component);
+            else        component_detached.erase(component);
+            return true;
+        }
+
+        if (state) {
+            auto exec = [&](const std::string& name) -> bool {
+                auto it = detached_components.find(name);
+                if (it == detached_components.end()) return true;
+                godot::MeshInstance3D* mesh = it->second;
+                detached_components.erase(it);
+                component_detached.erase(name);
+                this->add_child(mesh);
+                mesh->set_physics_process(true);
+                mesh->set_process(true);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                std::vector<std::string> keys;
+                keys.reserve(detached_components.size());
+                for (const auto& [name, _] : detached_components) keys.push_back(name);
+                for (const auto& name : keys)
+                    if (Tool::match_wildcard(component, name)) exec(name);
+                return true;
+            }
+            return exec(component);
+        }
+        else {
+            auto exec = [&](const std::string& name) -> bool {
+                if (detached_components.count(name)) return true;
+                godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+                if (!mesh) return false;
+                godot::Node* parent = mesh->get_parent();
+                if (!parent) return false;
+                mesh->set_physics_process(false);
+                mesh->set_process(false);
+                parent->remove_child(mesh);
+                detached_components[name] = mesh;
+                component_detached.insert(name);
+                return true;
+            };
+            if (Tool::contains_wildcard(component)) {
+                for (const auto& name : get_components())
+                    if (Tool::match_wildcard(component, name)) exec(name);
+                return true;
+            }
+            if (!exec(component)) {
+                godot::UtilityFunctions::push_warning(
+                    "Model::apply_component_rendered — component '", Tool::to_godot_string(component),
+                    "' not found in model '", Tool::to_godot_string(model_name), "'");
+                return false;
+            }
+            return true;
+        }
+    }
+
+    bool Model::apply_component_transform(const std::string& component, const godot::Transform3D& transform) {
+        if (!transform.origin.is_finite() || !transform.basis.get_column(0).is_finite() || !transform.basis.get_column(1).is_finite() || !transform.basis.get_column(2).is_finite()) return false;
+        if (placeholder) {
+            component_transforms[component] = transform;
+            return true;
+        }
+        godot::MeshInstance3D* mesh = find_component(component);
+        if (!mesh) {
+            godot::UtilityFunctions::push_warning(
+                "Model::apply_component_transform — component '", Tool::to_godot_string(component),
+                "' not found in model '", Tool::to_godot_string(model_name), "'");
+            return false;
+        }
+        mesh->set_transform(transform);
+        component_transforms[component] = transform;
+        return true;
+    }
+
     bool Model::apply_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         if (!godot::Math::is_finite(value)) return false;
         if (placeholder) {
@@ -1246,449 +1370,11 @@ namespace Vital::Engine {
         return true;
     }
 
-    void Model::broadcast_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
-        if (net_id == 0) return;
-        #if !defined(VSDK_Client)
-        Manager::Network::rpc(true, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
-        #else
-        // Only the owning client reports its own blendshapes, always to the server (rpc_id(1)), which relays to everyone else.
-        auto net_mgr = Manager::Network::get_singleton();
-        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        Manager::Network::rpc_id(false, 1, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
-        #endif
-    }
-
-
-    //---------//
-    //  Misc   //
-    //---------//
-
-    //--------------------------//
-    //  Layered Anim Blending   //
-    //--------------------------//
-    //
-    // Builds a small AnimationTree graph once per model:
-    //
-    //   anim_0 -> scale_0 ------------------------------\
-    //   anim_1 -> scale_1 -> [blend_1] ------------------+-> output
-    //   anim_2 -> scale_2 -> [blend_2] --/
-    //   anim_3 -> scale_3 -> [blend_3] --/
-    //
-    // scale_N (AnimationNodeTimeScale) drives that layer's playback speed.
-    // blend_N (AnimationNodeBlend2) fades that layer's contribution in/out
-    // over layer weight, tweened smoothly in update_animation_layers().
-    // Layer 0 is the base and always contributes at full weight.
-    bool Model::ensure_animation_layer(int layer) {
-        if (layer < 0 || layer >= ANIM_LAYER_SOFT_MAX) {
-            godot::UtilityFunctions::push_warning("Model::ensure_animation_layer — invalid layer index: ", layer, " (soft max ", ANIM_LAYER_SOFT_MAX, ")");
-            return false;
-        }
-        const bool need_grow = (int)anim_layers.size() <= layer;
-        if (need_grow) {
-            const int old_count = (int)anim_layers.size();
-            anim_layers.resize(layer + 1);
-            // Layer 0 defaults to full weight once it exists.
-            if (old_count == 0 && !anim_layers.empty()) {
-                anim_layers[0].weight = 1.0f;
-                anim_layers[0].weight_target = 1.0f;
-            }
-        }
-        // Placeholder / pre-hydrate: layer slots may grow, tree builds later.
-        if (!anim_player) return true;
-
-        // Late-join path: layer state was sized while placeholder (anim_player
-        // null), then hydrate set anim_player. Previous code returned early
-        // because size > layer and never built anim_tree/blend_tree → null
-        // deref in apply_play_animation_layer (second client crash).
-        if (!need_grow && anim_tree && blend_tree.is_valid()) return true;
-
-        // (Re)build graph when grown or tree missing after hydrate.
-        {
-            auto player = anim_player;
-            if (!anim_tree) {
-                anim_tree = memnew(godot::AnimationTree);
-                anim_tree->set_name(Tool::to_godot_string("@anim_blend_tree"));
-                add_child(anim_tree);
-                anim_tree->set_animation_player(anim_tree->get_path_to(player));
-            }
-            blend_tree = godot::Ref<godot::AnimationNodeBlendTree>(memnew(godot::AnimationNodeBlendTree));
-            anim_tree->set_tree_root(blend_tree);
-
-            const int count = (int)anim_layers.size();
-            for (int i = 0; i < count; i++) {
-                godot::Ref<godot::AnimationNodeAnimation> anim_node(memnew(godot::AnimationNodeAnimation));
-                godot::Ref<godot::AnimationNodeTimeScale> scale_node(memnew(godot::AnimationNodeTimeScale));
-                godot::String anim_name  = Tool::to_godot_string(fmt::format("anim_{}", i));
-                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
-                blend_tree->add_node(anim_name, anim_node);
-                blend_tree->add_node(scale_name, scale_node);
-                blend_tree->connect_node(scale_name, 0, anim_name);
-                // Restore assigned clip if any.
-                if (!anim_layers[i].current_anim.empty()) anim_node->set_animation(Tool::to_godot_string(anim_layers[i].current_anim));
-
-                // Restore direction + magnitude. A negative stored speed used
-                // to get silently reset to 1.0 (forward) here whenever the
-                // tree was rebuilt (e.g. the first time a higher layer index
-                // came into use) — a layer that was mid-reverse would snap
-                // back to forward with no warning. Direction now lives on
-                // play_mode; TimeScale only ever gets a non-negative
-                // magnitude, defaulting a truly-unset (zero) speed to 1.0.
-                float restored_speed = anim_layers[i].speed;
-                float restored_mag = restored_speed < 0.0f ? -restored_speed : restored_speed;
-                if (restored_mag < 0.0001f) restored_mag = 1.0f;
-                anim_node->set_play_mode(restored_speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
-                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", i)), restored_mag);
-            }
-
-            godot::String chain = Tool::to_godot_string("scale_0");
-            for (int i = 1; i < count; i++) {
-                godot::Ref<godot::AnimationNodeBlend2> blend_node(memnew(godot::AnimationNodeBlend2));
-                godot::String blend_name = Tool::to_godot_string(fmt::format("blend_{}", i));
-                godot::String scale_name = Tool::to_godot_string(fmt::format("scale_{}", i));
-                blend_tree->add_node(blend_name, blend_node);
-                blend_tree->connect_node(blend_name, 0, chain);
-                blend_tree->connect_node(blend_name, 1, scale_name);
-                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), anim_layers[i].weight);
-                chain = blend_name;
-            }
-            blend_tree->connect_node(Tool::to_godot_string("output"), 0, chain);
-
-            if (!anim_layers.empty()) {
-                anim_layers[0].weight = 1.0f;
-                anim_layers[0].weight_target = 1.0f;
-            }
-            anim_tree->set_active(true);
-            // Re-apply stored bone filters (tree nodes were recreated).
-            for (int i = 1; i < count; i++) {
-                if (anim_layers[i].filter_enabled) apply_set_animation_layer_filter(i, true, anim_layers[i].filter_bones);
-            }
-        }
-        return true;
-    }
-
-    void Model::build_animation_tree() {
-        if (anim_layers.empty()) anim_layers.resize(1);
-        ensure_animation_layer(0);
-    }
-
-    void Model::update_animation_layers(float delta) {
-        for (int i = 1; i < (int)anim_layers.size(); i++) {
-            auto& layer = anim_layers[i];
-            if (layer.one_shot && !layer.current_anim.empty() && layer.weight_target > 0.0f) {
-                layer.one_shot_remaining -= delta;
-                if (layer.one_shot_remaining <= 0.0f) {
-                    layer.one_shot = false;
-                    apply_stop_animation_layer(i, 0.25f);
-                    layer.current_anim.clear();
-                }
-            }
-            if (layer.weight == layer.weight_target) continue;
-            float step = layer.weight_rate * delta;
-            if (layer.weight < layer.weight_target) layer.weight = std::min(layer.weight_target, layer.weight + step);
-            else layer.weight = std::max(layer.weight_target, layer.weight - step);
-            if (anim_tree) anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", i)), layer.weight);
-        }
-    }
-
-    int Model::get_animation_layer_count() const { return (int)anim_layers.size(); }
-
-    // --- Pure local application — never broadcasts. Called both by the
-    // public API (which broadcasts on top) and by Network::_sync_anim_layer
-    // when mirroring a remote peer's animation state. ---
-
-    bool Model::apply_play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
-        if (!ensure_animation_layer(layer)) {
-            godot::UtilityFunctions::push_warning("Model::play_animation_layer — invalid layer index: ", layer);
-            return false;
-        }
-        if (!anim_player) {
-            godot::UtilityFunctions::push_warning("Model::apply_play_animation_layer — no AnimationPlayer yet on '", Tool::to_godot_string(model_name), "' (placeholder=", placeholder, ")");
-            return false;
-        }
-        auto player = anim_player;
-        if (!player->has_animation(Tool::to_godot_string(name))) {
-            godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name), "' not found in model '", Tool::to_godot_string(model_name), "'");
-            return false;
-        }
-        build_animation_tree();
-        if (!anim_tree || blend_tree.is_null()) {
-            godot::UtilityFunctions::push_warning("Model::apply_play_animation_layer — anim tree not ready on '", Tool::to_godot_string(model_name), "'");
-            return false;
-        }
-
-        godot::Ref<godot::Animation> animation = player->get_animation(Tool::to_godot_string(name));
-        if (animation.is_valid()) animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
-        bool is_one_shot_retrigger = !loop && layer > 0;
-
-        // Direction now lives on AnimationNodeAnimation::play_mode rather
-        // than on the sign of the TimeScale scale. PLAY_MODE_BACKWARD walks
-        // the clip from its *end* toward frame 0 as the node's internal
-        // clock advances from 0 — so a reversed one-shot (e.g. "wave" played
-        // back-to-front) starts at the clip's last frame immediately, no
-        // manual seek-to-end required. A negative TimeScale alone can't do
-        // this: a one-shot node's internal position starts at 0, and a
-        // negative delta from there just clamps at 0 and freezes. (Looping
-        // clips don't have this problem since they wrap, but play_mode
-        // handles both cases uniformly.) TimeScale itself always gets a
-        // non-negative magnitude now; play_mode carries the sign.
-        float speed_mag = speed < 0.0f ? -speed : speed;
-        auto play_mode = speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD;
-        if (is_one_shot_retrigger) {
-            blend_tree->remove_node(anim_key);
-            godot::Ref<godot::AnimationNodeAnimation> fresh_node(memnew(godot::AnimationNodeAnimation));
-            fresh_node->set_animation(Tool::to_godot_string(name));
-            fresh_node->set_play_mode(play_mode);
-            blend_tree->add_node(anim_key, fresh_node);
-            blend_tree->connect_node(Tool::to_godot_string(fmt::format("scale_{}", layer)), 0, anim_key);
-        }
-        else {
-            auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(blend_tree->get_node(anim_key).ptr());
-            if (anim_node) {
-                anim_node->set_animation(Tool::to_godot_string(name));
-                anim_node->set_play_mode(play_mode);
-            }
-        }
-        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
-
-        auto& state = anim_layers[layer];
-        state.current_anim = name;
-        state.speed = speed;
-        state.loop = loop;
-        if (!loop && layer > 0 && animation.is_valid()) {
-            float len = animation->get_length();
-            float spd = speed_mag > 0.0001f ? speed_mag : 1.0f;
-            state.one_shot = true;
-            state.one_shot_remaining = len / spd;
-        }
-        else {
-            state.one_shot = false;
-            state.one_shot_remaining = 0.0f;
-        }
-
-        if (layer == 0) {
-            state.weight = 1.0f;
-            state.weight_target = 1.0f;
-        } 
-        else {
-            weight = std::clamp(weight, 0.0f, 1.0f);
-            state.weight_target = weight;
-            state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
-            if (blend_time <= 0.0001f) {
-                state.weight = weight;
-                anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
-            }
-        }
-        return true;
-    }
-
-    void Model::apply_stop_animation_layer(int layer, float blend_time) {
-        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return;
-        auto& state = anim_layers[layer];
-        state.one_shot = false;
-        state.one_shot_remaining = 0.0f;
-        state.weight_target = 0.0f;
-        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
-        if (blend_time <= 0.0001f) {
-            state.weight = 0.0f;
-            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), 0.0f);
-        }
-    }
-
-    bool Model::apply_set_animation_layer_weight(int layer, float weight, float blend_time) {
-        if (layer <= 0 || layer >= (int)anim_layers.size() || !anim_tree) return false;
-        weight = std::clamp(weight, 0.0f, 1.0f);
-        auto& state = anim_layers[layer];
-        state.weight_target = weight;
-        state.weight_rate = blend_time > 0.0001f ? (1.0f / blend_time) : 1000.0f;
-        if (blend_time <= 0.0001f) {
-            state.weight = weight;
-            anim_tree->set(Tool::to_godot_string(fmt::format("parameters/blend_{}/blend_amount", layer)), weight);
-        }
-        return true;
-    }
-
-    void Model::apply_set_animation_layer_speed(int layer, float speed) {
-        if (layer < 0 || layer >= (int)anim_layers.size() || !anim_tree || blend_tree.is_null()) return;
-        anim_layers[layer].speed = speed;
-        float speed_mag = speed < 0.0f ? -speed : speed;
-        godot::String anim_key = Tool::to_godot_string(fmt::format("anim_{}", layer));
-        auto anim_node = godot::Object::cast_to<godot::AnimationNodeAnimation>(blend_tree->get_node(anim_key).ptr());
-        if (anim_node) anim_node->set_play_mode(speed < 0.0f ? godot::AnimationNodeAnimation::PLAY_MODE_BACKWARD : godot::AnimationNodeAnimation::PLAY_MODE_FORWARD);
-        anim_tree->set(Tool::to_godot_string(fmt::format("parameters/scale_{}/scale", layer)), speed_mag);
-    }
-
-    // --- Network broadcast ---
-    //
-    // Server: always allowed to broadcast — it's authoritative by default.
-    // Client: only the peer currently holding sync authority over this model
-    // (see set_syncer()/sync_authority) may broadcast its own animation
-    // state. Everyone else — including other clients rendering this model
-    // in third person — receives and mirrors it via Network::_sync_anim_layer,
-    // never drives it locally. Unreplicated models (net_id == 0, e.g. purely
-    // decorative client-only props) never hit the network at all.
-    //
-    // mode: 0 = play, 1 = stop, 2 = set weight, 3 = set speed.
-    void Model::broadcast_animation_layer(int mode, int layer, const std::string& name, bool loop, float speed, float weight, float blend_time) {
-        if (net_id == 0) return;
-
-        #if !defined(VSDK_Client)
-        // Server: genuine broadcast to every connected client — same
-        // pattern as broadcast_sync()/_wake_sync.
-        Manager::Network::rpc(true, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
-        #else
-        // Client: only the peer holding sync authority over this model may
-        // send its own animation state — and it must go to the server via
-        // rpc_id(1, ...), never a bare rpc() broadcast. A client's only
-        // transport connection is to the server; Godot's high-level
-        // MultiplayerAPI does not implicitly resolve a client's broadcast
-        // rpc() the way send_sync_to_server()/_sync_client rely on an
-        // explicit rpc_id(1, ...) target — see that pair for the proven
-        // pattern this mirrors. The server then relays it on to every
-        // other client (see Network::_sync_anim_layer's server branch).
-        auto net_mgr = Manager::Network::get_singleton();
-        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        Manager::Network::rpc_id(false, 1, "_sync_anim_layer", (int)net_id, layer, mode, Tool::to_godot_string(name), loop, speed, weight, blend_time);
-        #endif
-    }
-
-    void Model::apply_set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
-        // Layer 0 is the base chain — no Blend2 node (no filter target).
-        if (layer < 1) return;
-        if (!ensure_animation_layer(layer)) return;
-        // Persist for rebuild + late-join dump (even if tree not ready yet).
-        anim_layers[layer].filter_enabled = enabled && !bone_paths.empty();
-        anim_layers[layer].filter_bones = enabled ? bone_paths : std::vector<std::string>{};
-
-        // Ensure tree + skeleton discovery exist before resolving filter paths.
-        if (!anim_player) return;
-        if (!skeleton) find_node(this, skeleton);
-        if (!anim_tree || blend_tree.is_null()) build_animation_tree();
-        if (blend_tree.is_null()) return;
-
-        auto node = blend_tree->get_node(Tool::to_godot_string(fmt::format("blend_{}", layer)));
-        auto blend = godot::Object::cast_to<godot::AnimationNodeBlend2>(node.ptr());
-        if (!blend) return;
-
-        // Reset so previous filter paths do not stick around.
-        blend->set_filter_enabled(false);
-        if (!enabled || bone_paths.empty()) return;
-
-        // Godot AnimationMixer filter paths are relative to the player root and
-        // for bones are almost always "NodePathToSkeleton:BoneName". Passing only
-        // "DEF-hand.L" matches nothing → overlay contributes zero (invisible wave).
-        godot::String skel_rel;
-        if (skeleton && anim_player) {
-            // Track/filter paths are resolved relative to the AnimationPlayer's
-            // root_node (defaults to "..", i.e. its parent) — NOT relative to
-            // the AnimationPlayer node itself. Using get_path_to() from the
-            // player directly produces a path one level off (e.g. "../Rig/..."
-            // instead of "Rig/..."), which never matches any real track path,
-            // so the filter silently matches nothing and the whole overlay
-            // layer contributes zero (no wave at all).
-            godot::Node* root = anim_player->get_node_or_null(anim_player->get_root_node());
-            if (!root) root = anim_player->get_parent();
-            godot::NodePath p = root->get_path_to(skeleton);
-            skel_rel = godot::String(p);
-            if (skel_rel.begins_with("./")) skel_rel = skel_rel.substr(2);
-        }
-
-        blend->set_filter_enabled(true);
-        for (const auto& raw : bone_paths) {
-            godot::String bone = Tool::to_godot_string(raw);
-            // Already a full filter path (contains ':') — use as-is.
-            if (bone.contains(":")) {
-                blend->set_filter_path(godot::NodePath(bone), true);
-                continue;
-            }
-            // Bone name only — prefix with skeleton path from the AnimationPlayer.
-            if (!skel_rel.is_empty()) blend->set_filter_path(godot::NodePath(skel_rel + ":" + bone), true);
-            // Also register bare name as fallback (some GLBs author tracks that way).
-            blend->set_filter_path(godot::NodePath(bone), true);
-        }
-    }
-
-    bool Model::set_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths, bool sync) {
-        if (layer < 1) return false;
-        if (!ensure_animation_layer(layer)) return false;
-        const auto& current = anim_layers[layer];
-        bool changed = current.filter_enabled != (enabled && !bone_paths.empty()) || current.filter_bones != (enabled ? bone_paths : std::vector<std::string>{});
-        apply_set_animation_layer_filter(layer, enabled, bone_paths);
-        if (needs_broadcast(fmt::format("filter:{}", layer), changed, sync)) broadcast_animation_layer_filter(layer, enabled, bone_paths);
-        return true;
-    }
-
-    void Model::broadcast_animation_layer_filter(int layer, bool enabled, const std::vector<std::string>& bone_paths) {
-        if (net_id == 0) return;
-
-        godot::PackedStringArray bones;
-        for (const auto& b : bone_paths) bones.push_back(Tool::to_godot_string(b));
-
-        #if !defined(VSDK_Client)
-        Manager::Network::rpc(true, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
-        #else
-        auto net_mgr = Manager::Network::get_singleton();
-        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
-        Manager::Network::rpc_id(false, 1, "_sync_anim_layer_filter", (int)net_id, layer, enabled, bones);
-        #endif
-    }
-
-    bool Model::play_animation_layer(int layer, const std::string& name, bool loop, float speed, float weight, float blend_time, bool sync) {
-        if (!apply_play_animation_layer(layer, name, loop, speed, weight, blend_time)) return false;
-        if (resolve_sync(sync)) broadcast_animation_layer(0, layer, name, loop, speed, weight, blend_time);
-        return true;
-    }
-
-    void Model::stop_animation_layer(int layer, float blend_time, bool sync) {
-        apply_stop_animation_layer(layer, blend_time);
-        if (resolve_sync(sync)) broadcast_animation_layer(1, layer, "", true, 1.0f, 0.0f, blend_time);
-    }
-
-    bool Model::set_animation_layer_weight(int layer, float weight, float blend_time, bool sync) {
-        bool changed = layer > 0 && layer < (int)anim_layers.size() && !godot::Math::is_equal_approx(anim_layers[layer].weight_target, std::clamp(weight, 0.0f, 1.0f));
-        if (!apply_set_animation_layer_weight(layer, weight, blend_time)) return false;
-        if (needs_broadcast(fmt::format("weight:{}", layer), changed, sync)) broadcast_animation_layer(2, layer, "", true, 1.0f, weight, blend_time);
-        return true;
-    }
-
-    void Model::set_animation_layer_speed(int layer, float speed, bool sync) {
-        bool valid = layer >= 0 && layer < (int)anim_layers.size();
-        bool changed = valid && !godot::Math::is_equal_approx(anim_layers[layer].speed, speed);
-        apply_set_animation_layer_speed(layer, speed);
-        if (valid && needs_broadcast(fmt::format("speed:{}", layer), changed, sync)) broadcast_animation_layer(3, layer, "", true, speed, 0.0f, 0.0f);
-    }
-
-    float Model::get_animation_layer_weight(int layer) const {
-        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
-        return anim_layers[layer].weight_target;
-    }
-
-    float Model::get_animation_layer_speed(int layer) const {
-        if (layer < 0 || layer >= (int)anim_layers.size()) return 0.0f;
-        return anim_layers[layer].speed;
-    }
-
-    std::string Model::get_current_animation_layer(int layer) const {
-        if (layer < 0 || layer >= (int)anim_layers.size()) return "";
-        return anim_layers[layer].current_anim;
-    }
-
-    bool Model::is_animation_layer_playing(int layer) const {
-        if (layer < 0 || layer >= (int)anim_layers.size()) return false;
-        if (anim_layers[layer].current_anim.empty()) return false;
-        return layer == 0 || anim_layers[layer].weight_target > 0.0f;
-    }
-
-    // Applies shader_material to all surfaces matching component + material
-    // wildcards.  Pass an invalid (null) Ref to clear the override and restore
-    // the mesh's own material — used by remove_from_material.
     int Model::apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material) {
         if (!shader_material.is_valid()) return apply_material_shader(component, material, SurfaceMaterialFactory{});
         return apply_material_shader(component, material, SurfaceMaterialFactory([shader_material](godot::Ref<godot::Material>) { return shader_material; }));
     }
 
-    // Empty factory clears the override. Otherwise the factory receives the surface's
-    // ORIGINAL mesh material (not the current override) so its textures can be reused.
     int Model::apply_material_shader(const std::string& component, const std::string& material, const SurfaceMaterialFactory& factory) {
         int count = 0;
         const bool wildcard_component = Tool::contains_wildcard(component);
@@ -1701,9 +1387,8 @@ namespace Vital::Engine {
                 int idx = find_material_index(mesh, mat_name);
                 if (idx < 0) return false;
                 if (!factory) {
-                    // Clears the override (restores default).
                     mesh -> set_surface_override_material(idx, godot::Ref<godot::Material>());
-                } 
+                }
                 else {
                     godot::Ref<godot::Material> original;
                     if (mesh -> get_mesh().is_valid()) original = mesh -> get_mesh() -> surface_get_material(idx);
@@ -1713,8 +1398,6 @@ namespace Vital::Engine {
                 return true;
             };
 
-            // A wildcard component only has to match the material in some of its components,
-            // an exact component must contain the exact material
             if (!apply_wildcard(material, [&]{ return get_materials(comp_name); }, apply_to_surface) && !wildcard_component)
                 throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in component '{}'", material, comp_name));
             return true;
@@ -1725,5 +1408,57 @@ namespace Vital::Engine {
         if (wildcard_component && !Tool::contains_wildcard(material) && count == 0)
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in any component matching '{}' of model '{}'", material, component, model_name));
         return count;
+    }
+
+
+    // Broadcast //
+    void Model::broadcast_component_visible(const std::string& component, bool state) {
+        if (net_id == 0) return;
+        Manager::Network::rpc(true, "_sync_component_visible", (int)net_id, Tool::to_godot_string(component), state);
+    }
+
+    void Model::broadcast_component_rendered(const std::string& component, bool state) {
+        if (net_id == 0) return;
+        Manager::Network::rpc(true, "_sync_component_render", (int)net_id, Tool::to_godot_string(component), state);
+    }
+
+    void Model::broadcast_component_transform(const std::string& component, const godot::Transform3D& transform) {
+        if (net_id == 0) return;
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
+        #else
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_component_transform", (int)net_id, Tool::to_godot_string(component), transform);
+        #endif
+    }
+
+    void Model::broadcast_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
+        if (net_id == 0) return;
+        #if !defined(VSDK_Client)
+        Manager::Network::rpc(true, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
+        #else
+        auto net_mgr = Manager::Network::get_singleton();
+        if (!net_mgr || net_mgr->get_peer_id() != sync_authority) return;
+        Manager::Network::rpc_id(false, 1, "_sync_blendshape", (int)net_id, Tool::to_godot_string(component), Tool::to_godot_string(blend_shape), value);
+        #endif
+    }
+
+
+    // Sync //
+    void Model::sync_component_transform(const std::string& component, bool sync) {
+        auto transform = assert_component(component)->get_transform();
+        auto it = component_transforms.find(component);
+        bool changed = it == component_transforms.end() || !it->second.is_equal_approx(transform);
+        component_transforms[component] = transform;
+        if (needs_broadcast(fmt::format("transform:{}", component), changed, sync)) broadcast_component_transform(component, transform);
+    }
+
+    bool Model::needs_broadcast(const std::string& key, bool changed, bool sync) {
+        if (!resolve_sync(sync)) {
+            if (changed) unsynced_keys.insert(key);
+            return false;
+        }
+        return unsynced_keys.erase(key) > 0 || changed;
     }
 }
