@@ -28,6 +28,7 @@
 namespace Vital::Engine {
     // Asserts //
     godot::MeshInstance3D* Model::assert_component(const std::string& component) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("component '{}' not found in model '{}'", component, model_name));
         return mesh;
     }
