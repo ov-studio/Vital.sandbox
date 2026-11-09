@@ -45,9 +45,9 @@ namespace Vital::Engine {
 
             // Helpers //
             #if defined(VSDK_Client)
-            // Rebuilds the debug wireframe of current_shape (shown on the "debug_mesh" child)
-            //   green  = local shape (parent entity has no net id)
-            //   orange = replicated shape (parent entity has a net id, i.e. synced over the network)
+            //   Debug wireframe (outlines current_shape, shown on the "debug_mesh" child)
+            //     green  = local shape (parent entity has no net id)
+            //     orange = replicated shape (parent entity has a net id, i.e. synced over the network)
             void refresh_debug_mesh();
             #endif
         public:
