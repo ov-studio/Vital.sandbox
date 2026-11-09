@@ -27,9 +27,31 @@
 
 // TODO: Improve
 namespace Vital::Manager {
+    namespace {
+        std::string or_placeholder(const std::string& text) {
+            return text.empty() ? std::string(Discord::NO_TEXT) : text;
+        }
+    }
+
+
     // Instantiators //
     Discord::~Discord() {
         client.reset();
+    }
+
+
+    // Internal helpers //
+    void Discord::show(const Activity& target) {
+        activity = target;
+        update();
+    }
+
+    template <typename F>
+    bool Discord::customize(F&& fn) {
+        script_controlled = true;
+        fn(activity);
+        update();
+        return true;
     }
 
 
@@ -43,13 +65,12 @@ namespace Vital::Manager {
         default_application_id = static_cast<uint64_t>(std::stoull(read("application_id")));
         default_activity = { read("state"), read("details") };
 
-        // Branding (config/discord.json): lobby large image + server small badge. Optional.
         const std::string logo = read("logo");
         brand_name = read("name");
         if (!logo.empty()) {
             brand_logo = kit -> get_url(logo);
             default_activity.large_image_key = brand_logo;
-            default_activity.large_image_text = brand_name.empty() ? "N/A" : brand_name;
+            default_activity.large_image_text = or_placeholder(brand_name);
         }
         reset_application();
     }
@@ -58,33 +79,43 @@ namespace Vital::Manager {
         discordpp::RunCallbacks();
         if (!in_server) return;
 
-        // Collect a finished background poll
         if (info_poll && info_poll -> done.load()) {
             auto poll = std::move(info_poll);
             info_poll.reset();
             rapidjson::Document doc;
             if (!script_controlled && !doc.Parse(poll -> body.c_str()).HasParseError() && doc.IsObject()) {
                 bool changed = false;
-                if (doc.HasMember("name") && doc["name"].IsString() && server_name != doc["name"].GetString()) { server_name = doc["name"].GetString(); changed = true; }
-                if (doc.HasMember("logo") && doc["logo"].IsString() && server_logo != doc["logo"].GetString()) { server_logo = doc["logo"].GetString(); changed = true; }
-                if (doc.HasMember("players") && doc["players"].IsInt() && server_players != doc["players"].GetInt()) { server_players = doc["players"].GetInt(); changed = true; }
-                if (doc.HasMember("max_peers") && doc["max_peers"].IsInt() && server_max_peers != doc["max_peers"].GetInt()) { server_max_peers = doc["max_peers"].GetInt(); changed = true; }
+                auto sync = [&](const char* key, auto& field) {
+                    if (!doc.HasMember(key)) return;
+                    const auto& value = doc[key];
+                    if constexpr (std::is_same_v<std::decay_t<decltype(field)>, std::string>) {
+                        if (!value.IsString() || field == value.GetString()) return;
+                        field = value.GetString();
+                    }
+                    else {
+                        if (!value.IsInt() || field == value.GetInt()) return;
+                        field = value.GetInt();
+                    }
+                    changed = true;
+                };
+                sync("name", server.name);
+                sync("logo", server.logo);
+                sync("players", server.players);
+                sync("max_peers", server.max_peers);
                 if (changed) {
                     build_server_activity();
-                    activity = server_activity;
-                    update();
+                    show(server_activity);
                 }
             }
         }
 
-        // Start a new poll every few seconds (never blocks the main thread)
-        if (script_controlled || info_poll || server_info_url.empty()) return;
+        if (script_controlled || info_poll || server.info_url.empty()) return;
         auto now = static_cast<uint64_t>(godot::Time::get_singleton() -> get_ticks_msec());
         if (now < server_next_refresh) return;
         server_next_refresh = now + SERVER_REFRESH_MS;
         auto poll = std::make_shared<InfoPoll>();
         info_poll = poll;
-        std::thread([poll, url = server_info_url]() {
+        std::thread([poll, url = server.info_url]() {
             try { poll -> body = Tool::HTTP::get(url, {}, 3); }
             catch (...) { poll -> body.clear(); }
             poll -> done = true;
@@ -97,59 +128,47 @@ namespace Vital::Manager {
 
     void Discord::build_server_activity() {
         server_activity = default_activity;
-        server_activity.details = server_name.empty() ? "Playing on a server" : server_name;
-        if (server_players >= 0 && server_max_peers > 0) server_activity.state = fmt::format("Players: {}/{}", server_players, server_max_peers);
-        else if (server_players >= 0) server_activity.state = fmt::format("Players: {}", server_players);
+        server_activity.details = server.name.empty() ? "Playing on a server" : server.name;
+        if (server.players >= 0 && server.max_peers > 0) server_activity.state = fmt::format("Players: {}/{}", server.players, server.max_peers);
+        else if (server.players >= 0) server_activity.state = fmt::format("Players: {}", server.players);
         else server_activity.state = "In Game";
-        server_activity.timestamp_start = server_activity_start;
-        // Server logo as the large image (Discord needs a public https URL, otherwise keep the default icon)
-        if (server_logo.rfind("https://", 0) == 0 && server_logo.size() <= 256) {
-            server_activity.large_image_key = server_logo;
-            server_activity.large_image_text = server_name.empty() ? "N/A" : server_name;
-            // Brand logo moves to the small corner badge
+        server_activity.timestamp_start = server.started_at;
+        if (server.logo.rfind("https://", 0) == 0 && server.logo.size() <= 256) {
+            server_activity.large_image_key = server.logo;
+            server_activity.large_image_text = or_placeholder(server.name);
             if (!brand_logo.empty()) {
                 server_activity.small_image_key = brand_logo;
-                server_activity.small_image_text = brand_name.empty() ? "N/A" : brand_name;
+                server_activity.small_image_text = or_placeholder(brand_name);
             }
         }
     }
 
-    // Called once connected & authenticated: show the server (name, players/max) unless its scripts already took over
     void Discord::enter_server() {
         auto nm = Manager::Network::get_singleton();
         in_server = true;
         script_controlled = false;
         info_poll.reset();
-        server_name = nm -> get_server_name();
-        server_logo = nm -> get_server_logo_url();
-        server_players = nm -> get_server_players();
-        server_max_peers = nm -> get_server_max_peers();
-        server_activity_start = static_cast<int64_t>(godot::Time::get_singleton() -> get_unix_time_from_system());
-        server_info_url = nm -> get_server_http_port() > 0 ? fmt::format("http://{}:{}/info", nm -> get_server_ip(), nm -> get_server_http_port()) : "";
+        server.name = nm -> get_server_name();
+        server.logo = nm -> get_server_logo_url();
+        server.players = nm -> get_server_players();
+        server.max_peers = nm -> get_server_max_peers();
+        server.started_at = static_cast<int64_t>(godot::Time::get_singleton() -> get_unix_time_from_system());
+        server.info_url = nm -> get_server_http_port() > 0 ? fmt::format("http://{}:{}/info", nm -> get_server_ip(), nm -> get_server_http_port()) : "";
         server_next_refresh = static_cast<uint64_t>(godot::Time::get_singleton() -> get_ticks_msec()) + SERVER_REFRESH_MS;
         build_server_activity();
-        if (!client) return;
-        activity = server_activity;
-        update();
+        show(server_activity);
     }
 
-    // Left (or lost) the server: drop whatever its scripts set and go back to the lobby presence
     void Discord::leave_server() {
-        const bool was_customized = application_id != default_application_id;
         in_server = false;
-        script_controlled = false;
         info_poll.reset();
-        server_info_url.clear();
-        server_name.clear();
-        server_logo.clear();
-        server_players = server_max_peers = -1;
-        if (was_customized) { reset_application(); return; }
-        if (!client) return;
-        activity = default_activity;
-        update();
+        server = {};
+        if (reset_if_customized()) return;
+        show(default_activity);
     }
 
     void Discord::update() {
+        if (!client) return;
         discordpp::Activity client_activity;
         discordpp::ActivityAssets client_assets;
         discordpp::ActivityTimestamps client_timestamps;
@@ -206,6 +225,7 @@ namespace Vital::Manager {
 
     // Checkers //
     bool Discord::is_connected() const {
+        if (!client) return false;
         auto status = client -> GetStatus();
         return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
     }
@@ -246,6 +266,7 @@ namespace Vital::Manager {
             client -> Connect();
             return;
         }
+
         auto token_directory = Tool::get_directory("data", "discord");
         auto token_file = fmt::format("{}.token", application_id);
         std::string token_value = Tool::File::exists(token_directory, token_file) ? Tool::File::read_text(token_directory, token_file) : "";
@@ -266,42 +287,37 @@ namespace Vital::Manager {
     }
 
     bool Discord::set_state(const std::string& state) {
-        script_controlled = true;
-    activity.state = state;
-        update();
-        return true;
+        return customize([&](Activity& a) { 
+            a.state = state; 
+        });
     }
 
     bool Discord::set_details(const std::string& details) {
-        script_controlled = true;
-    activity.details = details;
-        update();
-        return true;
+        return customize([&](Activity& a) { 
+            a.details = details; 
+        });
     }
 
     bool Discord::set_small_image(const std::string& key, const std::string& text) {
-        script_controlled = true;
-    activity.small_image_key = key;
-        activity.small_image_text = text;
-        update();
-        return true;
+        return customize([&](Activity& a) { 
+            a.small_image_key = key; 
+            a.small_image_text = text; 
+        });
     }
 
     bool Discord::set_large_image(const std::string& key, const std::string& text) {
-        script_controlled = true;
-    activity.large_image_key = key;
-        activity.large_image_text = text;
-        update();
-        return true;
+        return customize([&](Activity& a) { 
+            a.large_image_key = key; 
+            a.large_image_text = text; 
+        });
     }
 
     bool Discord::set_timestamps(int64_t start_at, int64_t end_at) {
         auto now = static_cast<int64_t>(godot::Time::get_singleton() -> get_unix_time_from_system());
-        script_controlled = true;
-        activity.timestamp_start = now + start_at;
-        activity.timestamp_end = end_at > 0 ? now + end_at : 0;
-        update();
-        return true;
+        return customize([&](Activity& a) {
+            a.timestamp_start = now + start_at;
+            a.timestamp_end = end_at > 0 ? now + end_at : 0;
+        });
     }
 
     bool Discord::reset_application() {
@@ -310,11 +326,12 @@ namespace Vital::Manager {
         return true;
     }
 
-    // Session end: presence/application set by a server's scripts must not outlive it. Only resets when
-    // scripts actually changed something, since reset_application() rebuilds the whole client.
     bool Discord::reset_if_customized() {
-        if (!script_controlled && application_id == default_application_id) return false;
-        return reset_application();
+        if (!script_controlled) return false;
+        if (application_id != default_application_id) return reset_application();
+        script_controlled = false;
+        show(get_base_activity());
+        return true;
     }
 }
 #endif
