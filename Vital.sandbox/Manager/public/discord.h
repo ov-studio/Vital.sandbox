@@ -68,22 +68,24 @@ namespace Vital::Manager {
             };
 
             uint64_t application_id = 0;
-            Activity activity = {};|
+            Activity activity = {};
             Defaults defaults = {};
             Server server = {};
             std::shared_ptr<discordpp::Client> client;
             bool script_controlled = false;
 
+
+            // Instantiators //
+            Discord() = default;
+            ~Discord();
+
+
+            // Helpers //
             Activity get_base_activity() const;
             void build_server_activity();
             void apply_application(uint64_t id, bool authenticate, bool force_reauth);
             void show(const Activity& target);
             template <typename F> bool customize(F&& fn);
-
-
-            // Instantiators //
-            Discord() = default;
-            ~Discord();
         public:
             // Managers //
             void init();
