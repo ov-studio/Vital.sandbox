@@ -83,12 +83,7 @@ namespace Vital::Engine {
             mesh -> surface_end();
         }
 
-        // Suspension: drawn in body space, anchored at the wheel's connection point
-        //   white cross   = connection point (suspension hard point)
-        //   orange line   = raycast (rest length + radius, i.e. down to the wheel's bottom at rest)
-        //   blue bar      = suspension travel range for the wheel centre (rest - travel .. rest)
-        //   green -> red  = hard point to current wheel centre, red as the spring compresses to its travel limit
-        //   red cross     = contact point (+ surface normal), grey line = wheel centre to contact point
+        // Suspension: drawn in body space (colour legend: see update_debug() in vehicle_wheel.h)
         auto parent = godot::Object::cast_to<godot::Node3D>(get_parent());
         if (!parent || !rest_transform) {
             debug_suspension.node -> set_visible(false);
