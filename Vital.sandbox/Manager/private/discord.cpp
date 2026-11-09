@@ -27,13 +27,6 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    namespace {
-        std::string or_placeholder(const std::string& text) {
-            return text.empty() ? std::string(Discord::NO_TEXT) : text;
-        }
-    }
-
-
     // Instantiators //
     Discord::~Discord() {
         client.reset();
@@ -41,6 +34,10 @@ namespace Vital::Manager {
 
 
     // Helpers //
+    std::string Discord::or_placeholder(const std::string& text) {
+        return text.empty() ? std::string(NO_TEXT) : text;
+    }
+
     Discord::Activity Discord::get_base_activity() const {
         return server.joined ? server.activity : defaults.activity;
     }
