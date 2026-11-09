@@ -90,7 +90,7 @@ namespace Vital::Engine {
         if (body) body -> add_child(wheel);
         else Engine::Core::get_singleton() -> add_child(wheel);
         if (auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(body)) wheel -> set_brake(vehicle -> get_brake());
-        wheel -> sync_inputs();
+        wheel -> sync();
         Tool::Event::emit("entity:spawn", Tool::Stack({wheel, false}));
         return wheel;
     }
@@ -113,7 +113,7 @@ namespace Vital::Engine {
         });
     }
 
-    void Vehicle_Wheel::sync_inputs() {
+    void Vehicle_Wheel::sync() {
         auto vehicle = godot::Object::cast_to<godot::VehicleBody3D>(get_parent());
         if (!vehicle) return;
         if (is_used_as_traction()) set_engine_force(vehicle -> get_engine_force());

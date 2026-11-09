@@ -62,7 +62,7 @@ namespace Vital::Engine {
             static Vehicle_Wheel* create(godot::Node3D* body);
             void destroy();
             void refresh();
-            void sync_inputs();
+            void sync();
 
 
             // Checkers //
