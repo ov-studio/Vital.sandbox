@@ -34,7 +34,7 @@ namespace Vital::Manager {
 
 
     // Helpers //
-    std::string Discord::or_placeholder(const std::string& text) {
+    std::string Discord::get_image_text(const std::string& text) {
         return text.empty() ? std::string(NO_TEXT) : text;
     }
 
@@ -51,10 +51,10 @@ namespace Vital::Manager {
         server.activity.timestamp_start = server.started_at;
         if (server.logo.rfind("https://", 0) == 0 && server.logo.size() <= 256) {
             server.activity.large_image_key = server.logo;
-            server.activity.large_image_text = or_placeholder(server.name);
+            server.activity.large_image_text = get_image_text(server.name);
             if (!defaults.brand_logo.empty()) {
                 server.activity.small_image_key = defaults.brand_logo;
-                server.activity.small_image_text = or_placeholder(defaults.brand_name);
+                server.activity.small_image_text = get_image_text(defaults.brand_name);
             }
         }
     }
@@ -122,7 +122,7 @@ namespace Vital::Manager {
         if (!logo.empty()) {
             defaults.brand_logo = kit -> get_url(logo);
             defaults.activity.large_image_key = defaults.brand_logo;
-            defaults.activity.large_image_text = or_placeholder(defaults.brand_name);
+            defaults.activity.large_image_text = get_image_text(defaults.brand_name);
         }
         reset_application();
     }
