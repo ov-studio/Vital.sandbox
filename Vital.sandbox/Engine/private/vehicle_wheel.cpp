@@ -40,30 +40,25 @@ namespace Vital::Engine {
 
     // Helpers //
     #if defined(VSDK_Client)
-    namespace {
-        const godot::Color debug_yellow(1.0f, 1.0f, 0.0f);
-        const godot::Color debug_grey(0.5f, 0.5f, 0.5f);
+    void Vehicle_Wheel::debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color_a, const godot::Color& color_b) {
+        mesh -> surface_set_color(color_a);
+        mesh -> surface_add_vertex(a);
+        mesh -> surface_set_color(color_b);
+        mesh -> surface_add_vertex(b);
+    }
 
-        inline void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color_a, const godot::Color& color_b) {
-            mesh -> surface_set_color(color_a);
-            mesh -> surface_add_vertex(a);
-            mesh -> surface_set_color(color_b);
-            mesh -> surface_add_vertex(b);
-        }
+    void Vehicle_Wheel::debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color) {
+        debug_line(mesh, a, b, color, color);
+    }
 
-        inline void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color) {
-            debug_line(mesh, a, b, color, color);
-        }
+    void Vehicle_Wheel::debug_tick(godot::ImmediateMesh* mesh, const godot::Vector3& point, const godot::Vector3& axis, float half_size, const godot::Color& color) {
+        debug_line(mesh, point - axis * half_size, point + axis * half_size, color);
+    }
 
-        inline void debug_tick(godot::ImmediateMesh* mesh, const godot::Vector3& point, const godot::Vector3& axis, float half_size, const godot::Color& color) {
-            debug_line(mesh, point - axis * half_size, point + axis * half_size, color);
-        }
-
-        inline void debug_cross(godot::ImmediateMesh* mesh, const godot::Vector3& center, float size, const godot::Color& color) {
-            debug_line(mesh, center - godot::Vector3(size, 0, 0), center + godot::Vector3(size, 0, 0), color);
-            debug_line(mesh, center - godot::Vector3(0, size, 0), center + godot::Vector3(0, size, 0), color);
-            debug_line(mesh, center - godot::Vector3(0, 0, size), center + godot::Vector3(0, 0, size), color);
-        }
+    void Vehicle_Wheel::debug_cross(godot::ImmediateMesh* mesh, const godot::Vector3& center, float size, const godot::Color& color) {
+        debug_line(mesh, center - godot::Vector3(size, 0, 0), center + godot::Vector3(size, 0, 0), color);
+        debug_line(mesh, center - godot::Vector3(0, size, 0), center + godot::Vector3(0, size, 0), color);
+        debug_line(mesh, center - godot::Vector3(0, 0, size), center + godot::Vector3(0, 0, size), color);
     }
 
     void Vehicle_Wheel::update_debug() {
