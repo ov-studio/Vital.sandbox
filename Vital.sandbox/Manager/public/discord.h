@@ -27,14 +27,15 @@ namespace Vital::Manager {
         friend class Tool::Base<Discord>;
         public:
             static constexpr const char* Name = "Discord.manager";
+            static constexpr const char* NO_TEXT = "N/A";
 
             struct Activity {
                 std::string state;
                 std::string details;
                 std::string small_image_key = "";
-                std::string small_image_text = "N/A";
+                std::string small_image_text = NO_TEXT;
                 std::string large_image_key = "";
-                std::string large_image_text = "N/A";
+                std::string large_image_text = NO_TEXT;
                 int64_t timestamp_start = 0;
                 int64_t timestamp_end = 0;
             };
@@ -99,11 +100,11 @@ namespace Vital::Manager {
             // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
             bool reset_application();
-            bool reset_if_customized(); // TOOD: Improve
+            bool reset_if_customized();
             bool set_state(const std::string& state);
             bool set_details(const std::string& details);
-            bool set_small_image(const std::string& key, const std::string& text = "N/A");
-            bool set_large_image(const std::string& key, const std::string& text = "N/A");
+            bool set_small_image(const std::string& key, const std::string& text = NO_TEXT);
+            bool set_large_image(const std::string& key, const std::string& text = NO_TEXT);
             bool set_timestamps(int64_t start_at, int64_t end_at = 0);
     };
 }
