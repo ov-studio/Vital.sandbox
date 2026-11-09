@@ -21,7 +21,6 @@
 // Vital: Manager: Discord //
 //////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     class Discord : public godot::Node, public Tool::Base<Discord> {
         friend class Tool::Base<Discord>;
