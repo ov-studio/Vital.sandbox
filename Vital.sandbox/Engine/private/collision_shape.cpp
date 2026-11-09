@@ -212,7 +212,7 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     void Collision_Shape::refresh_debug_mesh() {
         if (!debug_mesh || !current_shape.is_valid()) return;
-        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
+        auto color = is_replicated() ? debug_replicated_color : debug_local_color;
         debug_mesh -> set_mesh(Internal::build_wireframe_mesh(current_shape, color));
     }
     #endif

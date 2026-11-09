@@ -59,15 +59,6 @@ namespace Vital::Engine {
 
             // Helpers //
             #if defined(VSDK_Client)
-            //   Wheel (wheel space, rolls and steers with the wheel): ring + spokes + axle (axle = local X)
-            //     ring colour  = cyan: full grip, towards red: skidding, magenta: airborne
-            //     yellow spoke = makes wheel spin visible
-            //   Suspension (body space, anchored at the wheel's connection point)
-            //     white cross  = connection point (suspension hard point)
-            //     orange line  = raycast (rest length + radius, i.e. down to the wheel's bottom at rest)
-            //     blue bar     = suspension travel range for the wheel centre (rest - travel .. rest)
-            //     green -> red = hard point to current wheel centre, red as the spring compresses to its travel limit
-            //     red cross    = contact point (+ surface normal), grey line = wheel centre to contact point
             static void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color_a, const godot::Color& color_b);
             static void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color);
             static void debug_tick(godot::ImmediateMesh* mesh, const godot::Vector3& point, const godot::Vector3& axis, float half_size, const godot::Color& color);
