@@ -37,6 +37,8 @@ namespace Vital::Engine {
             inline static bool debug_all = false;
             inline static std::mutex mutex;
             inline static std::unordered_set<Vehicle_Wheel*> buffer;
+            inline static const godot::Color debug_yellow = godot::Color(1.0f, 1.0f, 0.0f);
+            inline static const godot::Color debug_grey = godot::Color(0.5f, 0.5f, 0.5f);
             #endif
 
             int wheel_id = -1;
@@ -57,6 +59,10 @@ namespace Vital::Engine {
 
             // Helpers //
             #if defined(VSDK_Client)
+            static void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color_a, const godot::Color& color_b);
+            static void debug_line(godot::ImmediateMesh* mesh, const godot::Vector3& a, const godot::Vector3& b, const godot::Color& color);
+            static void debug_tick(godot::ImmediateMesh* mesh, const godot::Vector3& point, const godot::Vector3& axis, float half_size, const godot::Color& color);
+            static void debug_cross(godot::ImmediateMesh* mesh, const godot::Vector3& center, float size, const godot::Color& color);
             void update_debug();
             #endif
         public:
