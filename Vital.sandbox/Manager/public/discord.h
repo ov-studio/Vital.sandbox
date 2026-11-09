@@ -103,13 +103,13 @@ namespace Vital::Manager {
 
             // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
-            bool reset_application();
-            bool reset_if_customized();
             bool set_state(const std::string& state);
             bool set_details(const std::string& details);
             bool set_small_image(const std::string& key, const std::string& text = NO_TEXT);
             bool set_large_image(const std::string& key, const std::string& text = NO_TEXT);
             bool set_timestamps(int64_t start_at, int64_t end_at = 0);
+            bool reset_application();
+            bool reset_if_customized();
     };
 }
 #endif

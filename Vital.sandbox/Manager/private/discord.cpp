@@ -40,7 +40,62 @@ namespace Vital::Manager {
     }
 
 
-    // Internal helpers //
+    // Helpers //
+    Discord::Activity Discord::get_base_activity() const {
+        return in_server ? server_activity : default_activity;
+    }
+
+    void Discord::build_server_activity() {
+        server_activity = default_activity;
+        server_activity.details = server.name.empty() ? "Playing on a server" : server.name;
+        if (server.players >= 0 && server.max_peers > 0) server_activity.state = fmt::format("Players: {}/{}", server.players, server.max_peers);
+        else if (server.players >= 0) server_activity.state = fmt::format("Players: {}", server.players);
+        else server_activity.state = "In Game";
+        server_activity.timestamp_start = server.started_at;
+        if (server.logo.rfind("https://", 0) == 0 && server.logo.size() <= 256) {
+            server_activity.large_image_key = server.logo;
+            server_activity.large_image_text = or_placeholder(server.name);
+            if (!brand_logo.empty()) {
+                server_activity.small_image_key = brand_logo;
+                server_activity.small_image_text = or_placeholder(brand_name);
+            }
+        }
+    }
+
+    void Discord::apply_application(uint64_t id, bool authenticate, bool force_reauth) {
+        application_id = id;
+        client.reset();
+        client = std::make_shared<discordpp::Client>();
+        activity = get_base_activity();
+        client -> SetApplicationId(application_id);
+        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
+            log("info", fmt::format("status ~ {} | code ~ {}", std::string(discordpp::EnumToString(status)), errorCode));
+            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected) update();
+        });
+        if (!authenticate) {
+            client -> Connect();
+            return;
+        }
+
+        auto token_directory = Tool::get_directory("data", "discord");
+        auto token_file = fmt::format("{}.token", application_id);
+        std::string token_value = Tool::File::exists(token_directory, token_file) ? Tool::File::read_text(token_directory, token_file) : "";
+        if (!token_value.empty()) {
+            client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
+                if (!result.Successful()) {
+                    log("warn", "token ~ cached expired | action ~ re-authenticating");
+                    Tool::File::remove(token_directory, token_file);
+                    authorize(token_directory, token_file, force_reauth);
+                    return;
+                }
+                client -> Connect();
+            });
+            return;
+        }
+        log("info", "authorization ~ awaiting");
+        authorize(token_directory, token_file, force_reauth);
+    }
+
     void Discord::show(const Activity& target) {
         activity = target;
         update();
@@ -120,27 +175,6 @@ namespace Vital::Manager {
             catch (...) { poll -> body.clear(); }
             poll -> done = true;
         }).detach();
-    }
-
-    Discord::Activity Discord::get_base_activity() const {
-        return in_server ? server_activity : default_activity;
-    }
-
-    void Discord::build_server_activity() {
-        server_activity = default_activity;
-        server_activity.details = server.name.empty() ? "Playing on a server" : server.name;
-        if (server.players >= 0 && server.max_peers > 0) server_activity.state = fmt::format("Players: {}/{}", server.players, server.max_peers);
-        else if (server.players >= 0) server_activity.state = fmt::format("Players: {}", server.players);
-        else server_activity.state = "In Game";
-        server_activity.timestamp_start = server.started_at;
-        if (server.logo.rfind("https://", 0) == 0 && server.logo.size() <= 256) {
-            server_activity.large_image_key = server.logo;
-            server_activity.large_image_text = or_placeholder(server.name);
-            if (!brand_logo.empty()) {
-                server_activity.small_image_key = brand_logo;
-                server_activity.small_image_text = or_placeholder(brand_name);
-            }
-        }
     }
 
     void Discord::enter_server() {
@@ -250,40 +284,6 @@ namespace Vital::Manager {
         script_controlled = true;
         apply_application(id, authenticate, force_reauth);
         return true;
-    }
-
-    void Discord::apply_application(uint64_t id, bool authenticate, bool force_reauth) {
-        application_id = id;
-        client.reset();
-        client = std::make_shared<discordpp::Client>();
-        activity = get_base_activity();
-        client -> SetApplicationId(application_id);
-        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
-            log("info", fmt::format("status ~ {} | code ~ {}", std::string(discordpp::EnumToString(status)), errorCode));
-            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected) update();
-        });
-        if (!authenticate) {
-            client -> Connect();
-            return;
-        }
-
-        auto token_directory = Tool::get_directory("data", "discord");
-        auto token_file = fmt::format("{}.token", application_id);
-        std::string token_value = Tool::File::exists(token_directory, token_file) ? Tool::File::read_text(token_directory, token_file) : "";
-        if (!token_value.empty()) {
-            client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
-                if (!result.Successful()) {
-                    log("warn", "token ~ cached expired | action ~ re-authenticating");
-                    Tool::File::remove(token_directory, token_file);
-                    authorize(token_directory, token_file, force_reauth);
-                    return;
-                }
-                client -> Connect();
-            });
-            return;
-        }
-        log("info", "authorization ~ awaiting");
-        authorize(token_directory, token_file, force_reauth);
     }
 
     bool Discord::set_state(const std::string& state) {
