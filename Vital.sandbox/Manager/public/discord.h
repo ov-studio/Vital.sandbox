@@ -80,6 +80,7 @@ namespace Vital::Manager {
 
 
             // Helpers //
+            static std::string or_placeholder(const std::string& text);
             Activity get_base_activity() const;
             void build_server_activity();
             void apply_application(uint64_t id, bool authenticate, bool force_reauth);
