@@ -25,7 +25,6 @@
 // Vital: Manager: Discord //
 //////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     // Instantiators //
     Discord::~Discord() {
