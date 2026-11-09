@@ -21,28 +21,31 @@
 // Vital: Engine: Vehicle_Wheel //
 ///////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     class Vehicle_Wheel : public godot::VehicleWheel3D, public Engine::ISyncChild {
         GDCLASS(Vehicle_Wheel, godot::VehicleWheel3D)
         friend class Network;
         private:
-            int wheel_id = -1;
+            #if defined(VSDK_Client)
+            struct DebugLayer {
+                godot::MeshInstance3D* node = nullptr;
+                godot::Ref<godot::ImmediateMesh> mesh;
+            };
+            #endif
 
             #if defined(VSDK_Client)
-            // Debug visuals: per-wheel ring/spokes (wheel space) + suspension/ray/contact (body space)
             inline static bool debug_all = false;
             inline static std::mutex mutex;
             inline static std::unordered_set<Vehicle_Wheel*> buffer;
+            #endif
+
+            int wheel_id = -1;
+            #if defined(VSDK_Client)
             bool debug_visible = false;
-            bool has_rest_transform = false;
-            godot::Transform3D rest_transform;
-            godot::MeshInstance3D* debug_wheel_node = nullptr;
-            godot::MeshInstance3D* debug_suspension_node = nullptr;
-            godot::Ref<godot::ImmediateMesh> debug_wheel_mesh;
-            godot::Ref<godot::ImmediateMesh> debug_suspension_mesh;
+            std::optional<godot::Transform3D> rest_transform;
+            DebugLayer debug_wheel;
+            DebugLayer debug_suspension;
             godot::Ref<godot::StandardMaterial3D> debug_material;
-            void update_debug();
             #endif
 
 
@@ -50,6 +53,12 @@ namespace Vital::Engine {
             Vehicle_Wheel();
             ~Vehicle_Wheel() override;
             static void _bind_methods() {}
+
+
+            // Helpers //
+            #if defined(VSDK_Client)
+            void update_debug();
+            #endif
         public:
             // Hooks //
             void _notification(int what);
