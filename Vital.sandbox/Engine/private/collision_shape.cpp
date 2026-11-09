@@ -208,6 +208,16 @@ namespace Vital::Engine {
     }
 
 
+    // Helpers //
+    #if defined(VSDK_Client)
+    void Collision_Shape::refresh_debug_mesh() {
+        if (!debug_mesh || !current_shape.is_valid()) return;
+        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
+        debug_mesh -> set_mesh(Internal::build_wireframe_mesh(current_shape, color));
+    }
+    #endif
+
+
     // Hooks //
     void Collision_Shape::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) Tool::Event::emit("entity:unspawn", Tool::Stack({this}));
@@ -277,16 +287,6 @@ namespace Vital::Engine {
         debug_all = state;
         std::lock_guard<std::mutex> lock(mutex);
         for (auto shape : buffer) shape -> set_debug_visible(state);
-    }
-    #endif
-
-
-    // Misc //
-    #if defined(VSDK_Client)
-    void Collision_Shape::refresh_debug_mesh() {
-        if (!debug_mesh || !current_shape.is_valid()) return;
-        auto color = is_replicated() ? replicated_debug_color : local_debug_color;
-        debug_mesh -> set_mesh(Internal::build_wireframe_mesh(current_shape, color));
     }
     #endif
 }
