@@ -30,8 +30,8 @@ namespace Vital::Engine {
             inline static bool debug_all  = false;
             inline static std::mutex mutex;
             inline static std::unordered_set<Collision_Shape*> buffer;
-            inline static godot::Color local_debug_color = godot::Color(0, 1, 0);
-            inline static godot::Color replicated_debug_color = godot::Color(1, 0.55f, 0);
+            inline static godot::Color local_debug_color = godot::Color(0.0f, 1.0f, 0.0f);
+            inline static godot::Color replicated_debug_color = godot::Color(1.0f, 0.55f, 0.0f);
             godot::Ref<godot::Shape3D> current_shape;
             godot::MeshInstance3D* debug_mesh = nullptr;
             #endif
