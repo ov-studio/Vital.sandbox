@@ -42,22 +42,22 @@ namespace Vital::Manager {
 
     // Helpers //
     Discord::Activity Discord::get_base_activity() const {
-        return in_server ? server_activity : default_activity;
+        return server.joined ? server.activity : defaults.activity;
     }
 
     void Discord::build_server_activity() {
-        server_activity = default_activity;
-        server_activity.details = server.name.empty() ? "Playing on a server" : server.name;
-        if (server.players >= 0 && server.max_peers > 0) server_activity.state = fmt::format("Players: {}/{}", server.players, server.max_peers);
-        else if (server.players >= 0) server_activity.state = fmt::format("Players: {}", server.players);
-        else server_activity.state = "In Game";
-        server_activity.timestamp_start = server.started_at;
+        server.activity = defaults.activity;
+        server.activity.details = server.name.empty() ? "Playing on a server" : server.name;
+        if (server.players >= 0 && server.max_peers > 0) server.activity.state = fmt::format("Players: {}/{}", server.players, server.max_peers);
+        else if (server.players >= 0) server.activity.state = fmt::format("Players: {}", server.players);
+        else server.activity.state = "In Game";
+        server.activity.timestamp_start = server.started_at;
         if (server.logo.rfind("https://", 0) == 0 && server.logo.size() <= 256) {
-            server_activity.large_image_key = server.logo;
-            server_activity.large_image_text = or_placeholder(server.name);
-            if (!brand_logo.empty()) {
-                server_activity.small_image_key = brand_logo;
-                server_activity.small_image_text = or_placeholder(brand_name);
+            server.activity.large_image_key = server.logo;
+            server.activity.large_image_text = or_placeholder(server.name);
+            if (!defaults.brand_logo.empty()) {
+                server.activity.small_image_key = defaults.brand_logo;
+                server.activity.small_image_text = or_placeholder(defaults.brand_name);
             }
         }
     }
@@ -117,28 +117,28 @@ namespace Vital::Manager {
             try { return kit -> get_json_value("config/discord", key).as<std::string>(); }
             catch (...) { return std::string(); }
         };
-        default_application_id = static_cast<uint64_t>(std::stoull(read("application_id")));
-        default_activity = { read("state"), read("details") };
+        defaults.application_id = static_cast<uint64_t>(std::stoull(read("application_id")));
+        defaults.activity = { read("state"), read("details") };
 
         const std::string logo = read("logo");
-        brand_name = read("name");
+        defaults.brand_name = read("name");
         if (!logo.empty()) {
-            brand_logo = kit -> get_url(logo);
-            default_activity.large_image_key = brand_logo;
-            default_activity.large_image_text = or_placeholder(brand_name);
+            defaults.brand_logo = kit -> get_url(logo);
+            defaults.activity.large_image_key = defaults.brand_logo;
+            defaults.activity.large_image_text = or_placeholder(defaults.brand_name);
         }
         reset_application();
     }
 
     void Discord::process() {
         discordpp::RunCallbacks();
-        if (!in_server) return;
+        if (!server.joined) return;
 
-        if (info_poll && info_poll -> done.load()) {
-            auto poll = std::move(info_poll);
-            info_poll.reset();
+        if (server.info_request && server.info_request -> done.load()) {
+            auto request = std::move(server.info_request);
+            server.info_request.reset();
             rapidjson::Document doc;
-            if (!script_controlled && !doc.Parse(poll -> body.c_str()).HasParseError() && doc.IsObject()) {
+            if (!script_controlled && !doc.Parse(request -> body.c_str()).HasParseError() && doc.IsObject()) {
                 bool changed = false;
                 auto sync = [&](const char* key, auto& field) {
                     if (!doc.HasMember(key)) return;
@@ -159,46 +159,44 @@ namespace Vital::Manager {
                 sync("max_peers", server.max_peers);
                 if (changed) {
                     build_server_activity();
-                    show(server_activity);
+                    show(server.activity);
                 }
             }
         }
 
-        if (script_controlled || info_poll || server.info_url.empty()) return;
+        if (script_controlled || server.info_request || server.info_url.empty()) return;
         auto now = static_cast<uint64_t>(godot::Time::get_singleton() -> get_ticks_msec());
-        if (now < server_next_refresh) return;
-        server_next_refresh = now + SERVER_REFRESH_MS;
-        auto poll = std::make_shared<InfoPoll>();
-        info_poll = poll;
-        std::thread([poll, url = server.info_url]() {
-            try { poll -> body = Tool::HTTP::get(url, {}, 3); }
-            catch (...) { poll -> body.clear(); }
-            poll -> done = true;
+        if (now < server.next_refresh) return;
+        server.next_refresh = now + SERVER_REFRESH_MS;
+        auto request = std::make_shared<InfoRequest>();
+        server.info_request = request;
+        std::thread([request, url = server.info_url]() {
+            try { request -> body = Tool::HTTP::get(url, {}, 3); }
+            catch (...) { request -> body.clear(); }
+            request -> done = true;
         }).detach();
     }
 
     void Discord::enter_server() {
         auto nm = Manager::Network::get_singleton();
-        in_server = true;
+        server = {};
+        server.joined = true;
         script_controlled = false;
-        info_poll.reset();
         server.name = nm -> get_server_name();
         server.logo = nm -> get_server_logo_url();
         server.players = nm -> get_server_players();
         server.max_peers = nm -> get_server_max_peers();
         server.started_at = static_cast<int64_t>(godot::Time::get_singleton() -> get_unix_time_from_system());
         server.info_url = nm -> get_server_http_port() > 0 ? fmt::format("http://{}:{}/info", nm -> get_server_ip(), nm -> get_server_http_port()) : "";
-        server_next_refresh = static_cast<uint64_t>(godot::Time::get_singleton() -> get_ticks_msec()) + SERVER_REFRESH_MS;
+        server.next_refresh = static_cast<uint64_t>(godot::Time::get_singleton() -> get_ticks_msec()) + SERVER_REFRESH_MS;
         build_server_activity();
-        show(server_activity);
+        show(server.activity);
     }
 
     void Discord::leave_server() {
-        in_server = false;
-        info_poll.reset();
         server = {};
         if (reset_if_customized()) return;
-        show(default_activity);
+        show(defaults.activity);
     }
 
     void Discord::update() {
@@ -322,13 +320,13 @@ namespace Vital::Manager {
 
     bool Discord::reset_application() {
         script_controlled = false;
-        apply_application(default_application_id, false, false);
+        apply_application(defaults.application_id, false, false);
         return true;
     }
 
     bool Discord::reset_if_customized() {
         if (!script_controlled) return false;
-        if (application_id != default_application_id) return reset_application();
+        if (application_id != defaults.application_id) return reset_application();
         script_controlled = false;
         show(get_base_activity());
         return true;

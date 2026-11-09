@@ -42,35 +42,37 @@ namespace Vital::Manager {
         private:
             static constexpr uint64_t SERVER_REFRESH_MS = 10000;
 
-            struct InfoPoll {
+            struct InfoRequest {
                 std::atomic<bool> done{false};
                 std::string body;
             };
 
-            struct ServerInfo {
+            struct Defaults {
+                uint64_t application_id = 0;
+                Activity activity = {};
+                std::string brand_logo;
+                std::string brand_name;
+            };
+
+            struct Server {
+                bool joined = false;
                 std::string name;
                 std::string logo;
                 std::string info_url;
                 int players = -1;
                 int max_peers = -1;
                 int64_t started_at = 0;
+                Activity activity = {};
+                uint64_t next_refresh = 0;
+                std::shared_ptr<InfoRequest> info_request;
             };
 
-            uint64_t default_application_id = 0;
-            Activity default_activity = {};
-            std::string brand_logo;
-            std::string brand_name;
-
             uint64_t application_id = 0;
-            Activity activity = {};
+            Activity activity = {};|
+            Defaults defaults = {};
+            Server server = {};
             std::shared_ptr<discordpp::Client> client;
-
-            bool in_server = false;
             bool script_controlled = false;
-            Activity server_activity = {};
-            ServerInfo server = {};
-            uint64_t server_next_refresh = 0;
-            std::shared_ptr<InfoPoll> info_poll;
 
             Activity get_base_activity() const;
             void build_server_activity();
