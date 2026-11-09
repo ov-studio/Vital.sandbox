@@ -78,7 +78,6 @@ namespace Vital::Engine {
             const int segments = 32;
             const int spokes = 6;
             const float axle_half = std::max(0.1f, radius * 0.35f);
-
             auto rim = [&](float angle) { return godot::Vector3(0, std::cos(angle) * radius, std::sin(angle) * radius); };
             auto mesh = debug_wheel.mesh.ptr();
             mesh -> clear_surfaces();
