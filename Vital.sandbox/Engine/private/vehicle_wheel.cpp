@@ -72,9 +72,6 @@ namespace Vital::Engine {
         const float radius = static_cast<float>(get_radius());
         const bool contact = is_in_contact();
         const float skid = std::clamp(static_cast<float>(get_skidinfo()), 0.0f, 1.0f);
-
-        // Wheel: ring + spokes + axle in wheel space (axle = local X). Rolls and steers with the wheel.
-        // Ring colour: cyan = full grip, towards red = skidding, magenta = airborne. The yellow spoke makes spin visible.
         {
             const godot::Color ring_color = contact ? godot::Color(1.0f, 0.15f, 0.15f).lerp(godot::Color(0.0f, 1.0f, 1.0f), skid) : godot::Color(1.0f, 0.0f, 1.0f);
             const godot::Color axle_color(0.85f, 0.85f, 0.85f);
@@ -138,7 +135,6 @@ namespace Vital::Engine {
         debug_line(mesh, travel_min, travel_max, blue);
         debug_tick(mesh, travel_min, axle, 0.04f, blue);
         debug_tick(mesh, travel_max, axle, 0.04f, blue);
-
         debug_line(mesh, godot::Vector3(), center, spring_color);
         debug_cross(mesh, center, 0.06f, spring_color);
 
