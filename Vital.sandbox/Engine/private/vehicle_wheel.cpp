@@ -83,7 +83,6 @@ namespace Vital::Engine {
             mesh -> surface_end();
         }
 
-        // Suspension: drawn in body space (colour legend: see update_debug() in vehicle_wheel.h)
         auto parent = godot::Object::cast_to<godot::Node3D>(get_parent());
         if (!parent || !rest_transform) {
             debug_suspension.node -> set_visible(false);
