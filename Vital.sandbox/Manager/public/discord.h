@@ -39,40 +39,44 @@ namespace Vital::Manager {
                 int64_t timestamp_start = 0;
                 int64_t timestamp_end = 0;
             };
-        protected:
-            uint64_t default_application_id;
-            Activity default_activity = {};
-            std::string brand_logo;
-            std::string brand_name;
         private:
             static constexpr uint64_t SERVER_REFRESH_MS = 10000;
 
-            // Result of a background /info poll, handed back to the main thread
             struct InfoPoll {
                 std::atomic<bool> done{false};
                 std::string body;
             };
 
-            uint64_t application_id;
+            struct ServerInfo {
+                std::string name;
+                std::string logo;
+                std::string info_url;
+                int players = -1;
+                int max_peers = -1;
+                int64_t started_at = 0;
+            };
+
+            uint64_t default_application_id = 0;
+            Activity default_activity = {};
+            std::string brand_logo;
+            std::string brand_name;
+
+            uint64_t application_id = 0;
             Activity activity = {};
             std::shared_ptr<discordpp::Client> client;
 
-            // Default presence of the server we are currently in (used when its scripts don't customize presence)
             bool in_server = false;
-            bool script_controlled = false; // a server script changed application/presence: stop auto-managing it
+            bool script_controlled = false;
             Activity server_activity = {};
-            std::string server_name;
-            std::string server_logo;
-            int server_players = -1;
-            int server_max_peers = -1;
-            std::string server_info_url;
-            int64_t server_activity_start = 0;
+            ServerInfo server = {};
             uint64_t server_next_refresh = 0;
             std::shared_ptr<InfoPoll> info_poll;
 
             Activity get_base_activity() const;
             void build_server_activity();
             void apply_application(uint64_t id, bool authenticate, bool force_reauth);
+            void show(const Activity& target);
+            template <typename F> bool customize(F&& fn);
 
 
             // Instantiators //
