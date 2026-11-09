@@ -64,6 +64,7 @@ namespace Vital::Engine {
                     static godot::Ref<godot::ConcavePolygonShape3D> build_concave_shape(godot::MeshInstance3D* mesh);
             };
 
+            
             // Hooks //
             void _notification(int what);
 
