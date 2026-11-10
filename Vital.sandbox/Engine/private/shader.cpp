@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/shader.h>
+#include <Vital.sandbox/Engine/public/rendertarget.h>
 
 
 ////////////////////////////
