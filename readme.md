@@ -52,7 +52,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **Performance monitors**: Native and custom monitor registration, querying, and listing
 - **Lighting**: Directional, point, spot, and area lights with full scripting control
 - **GFX pipeline**: Full environment control — fog, volumetric fog, glow, sky (panoramic, physical, procedural), SSAO, SSIL, SSR, SDFGI, antialiasing, shadow quality, color grading, and more
-- **Particles**: GPU particle emitters with emission shapes, trails, custom materials, mesh particles, and emit / finished signals
+- **Particles**: GPU particle emitters with emission shapes, trails, custom materials, mesh particles, world collision with sub-emitters and related signals
 - **Physics**: Complete physics support — rigid, static, animatable, character, and vehicle bodies, collision shapes, areas, spaces, and space queries (raycast, point / shape intersection, cast motion)
 - **Physics debugger**: Per-shape and global debug visualizers — collision wireframes with color-coded local vs. replicated shapes, and a vehicle wheel overlay showing grip, suspension and contact
 - **Virtual dimensions**: Up to 65,535 fully isolated dimensions — entities only render for cameras in the same dimension, with separate physics, collisions, triggers, and dimension-aware space queries, plus server-side replication
