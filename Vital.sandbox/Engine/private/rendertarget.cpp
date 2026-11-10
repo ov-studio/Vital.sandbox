@@ -90,6 +90,10 @@ namespace Vital::Engine {
         return active && (active == this);
     }
 
+    bool Rendertarget::is_3d() const {
+        return camera != nullptr;
+    }
+
 
     // Getters //
     Rendertarget* Rendertarget::get_active() {
