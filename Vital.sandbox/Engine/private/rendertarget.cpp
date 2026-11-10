@@ -25,6 +25,15 @@ namespace Vital::Engine {
     // Instantiators //
     Rendertarget::~Rendertarget() {
         pool.free_all();
+        if (camera) {
+            auto rs = godot::RenderingServer::get_singleton();
+            auto callable = godot::Callable(this, "_on_frame_pre_draw");
+            if (rs && rs -> is_connected("frame_pre_draw", callable)) rs -> disconnect("frame_pre_draw", callable);
+        }
+        if (layer_bit >= 0) {
+            layers_used &= ~(1u << layer_bit);
+            layer_bit = -1;
+        }
         if (!viewport) return;
         if (active == this) active = nullptr;
         viewport -> queue_free();
