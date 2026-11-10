@@ -471,7 +471,7 @@ namespace Vital::Sandbox::API {
             // Binds a VSDK_OUT(name, value) output of the shader (used inside fragment()) to a rendertarget, nil unbinds.
             // Each bound output costs one extra draw. Binding a spatial output turns the rendertarget's 3D rendering on.
             vm_module::bind_method<Instance>(vm, "set_output", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, rendertarget)", true)
+                vm_args(vm, id, "(name, rendertarget = nil)", true)
                     .require(2, &Machine::is_string)
                     .optional(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
 
