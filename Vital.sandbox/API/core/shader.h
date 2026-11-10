@@ -496,16 +496,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_outputs", [](auto vm, auto self, auto& id) -> int {
-                auto list = self -> shader -> get_output_names();
-                vm -> create_table();
-                for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_value(list[i]);
-                    vm -> set_table_field(i + 1, -2);
-                }
-                return 1;
-            });
-
             // apply_to_material(model, component, material, priority = 0, layered = false)
             //
             // Records a shader assignment and resolves the matching surfaces.
