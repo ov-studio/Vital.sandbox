@@ -15,6 +15,9 @@
 #pragma once
 #include <Vital.sandbox/Vital/sandbox.h>
 #include <Vital.sandbox/Engine/public/entity.h>
+#if defined(VSDK_Client)
+#include <godot_cpp/classes/compositor.hpp>
+#endif
 
 
 //////////////////////////
@@ -109,6 +112,7 @@ namespace Vital::Engine {
             static godot::AudioServer* get_audio_server();
             static godot::Ref<godot::Environment> get_environment();
             static godot::Ref<godot::Sky> get_sky();
+            static godot::Ref<godot::Compositor> get_compositor();
             static void free_environment();
             static void reset_environment();
             std::string get_http_url(const std::string& path = "") const;
