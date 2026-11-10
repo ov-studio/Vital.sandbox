@@ -213,6 +213,25 @@ namespace Vital::Sandbox::API {
             return root;
         }
 
+        // Rebuilds the output proxies of a surface for every shader (winner + layered) with outputs bound to a 3D rendertarget
+        static void build_proxies(Vital::Engine::Model* model, const std::string& component, const std::string& material,
+                                  const Registration* winner, const std::vector<const Registration*>& layers,
+                                  godot::Ref<godot::Material> original) {
+            model -> clear_material_proxies(component, material);
+            auto add = [&](const Registration* reg) {
+                if (!reg || !reg -> owner || !reg -> owner -> shader) return;
+                auto* shader = reg -> owner -> shader;
+                for (size_t i = 0; i < shader -> get_output_count(); i++) {
+                    auto* target = shader -> get_output_target(i);
+                    if (!target || !target -> is_3d()) continue;
+                    auto proxy_material = shader -> create_output_surface_material(i, original);
+                    if (proxy_material.is_valid()) model -> apply_material_proxy(component, material, target -> get_layer_bit(), proxy_material);
+                }
+            };
+            add(winner);
+            for (const auto* layer : layers) add(layer);
+        }
+
         // Re-resolves every surface of one model matching the patterns.
         // clear_unmatched = true restores the mesh's own material on surfaces nobody claims;
         // false leaves those surfaces alone (used for spawns so we never wipe other overrides).
@@ -237,9 +256,15 @@ namespace Vital::Sandbox::API {
                     try {
                         if (winner || !layers.empty()) {
                             model -> apply_material_shader(component, material, Vital::Engine::Model::SurfaceMaterialFactory(
-                                [&](godot::Ref<godot::Material> original) { return build_surface(winner, layers, original); }));
+                                [&](godot::Ref<godot::Material> original) {
+                                    build_proxies(model, component, material, winner, layers, original);
+                                    return build_surface(winner, layers, original);
+                                }));
                         }
-                        else model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>());
+                        else {
+                            model -> clear_material_proxies(component, material);
+                            model -> apply_material_shader(component, material, godot::Ref<godot::ShaderMaterial>());
+                        }
                         touched.insert(fmt::format("{}:{}:{}", model_id, component, material));
                     } catch (...) {}
                 }
@@ -301,6 +326,16 @@ namespace Vital::Sandbox::API {
             std::unordered_set<std::string> touched;
             for (const auto& r : removed) refresh(r.target, r.component_pattern, r.material_pattern, true, touched);
             return static_cast<int>(touched.size());
+        }
+
+        static void refresh_owner(Instance* owner) {
+            std::lock_guard<std::mutex> lock(registrations_mutex);
+            prune_dead_targets();
+            std::unordered_set<std::string> touched;
+            for (const auto& r : registrations) {
+                if (r.owner != owner) continue;
+                refresh(r.target, r.component_pattern, r.material_pattern, false, touched);
+            }
         }
 
         // Drops every assignment matching the predicate and resolves the surfaces they covered,
@@ -428,6 +463,45 @@ namespace Vital::Sandbox::API {
                     else if (vm -> is_vector3(3))  value = vm -> get_vector3(3);
                     else if (vm -> is_vector2(3))  value = vm -> get_vector2(3);
                     vm -> push_value(self -> shader -> set_param(name, value));
+                }
+                return 1;
+            });
+
+            // set_output(name, rendertarget)
+            // Binds a VSDK_OUT(name, value) output of the shader (used inside fragment()) to a rendertarget, nil unbinds.
+            // Each bound output costs one extra draw. Binding a spatial output turns the rendertarget's 3D rendering on.
+            vm_module::bind_method<Instance>(vm, "set_output", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(name, rendertarget)", true)
+                    .require(2, &Machine::is_string)
+                    .optional(3, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
+
+                auto name = vm -> get_string(2);
+                if (!self -> shader -> has_output(name)) {
+                    std::string known;
+                    for (const auto& output : self -> shader -> get_output_names()) known += (known.empty() ? "" : ", ") + output;
+                    throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("shader has no output '{}' (declared: {})", name, known.empty() ? "none" : known));
+                }
+
+                Vital::Engine::Rendertarget* target = nullptr;
+                if (!vm -> is_nil(3)) {
+                    auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
+                    target = rendertarget ? rendertarget -> get_node() : nullptr;
+                    if (!target) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "rendertarget is no longer valid");
+                    if (self -> shader -> get_mode() == base_class::Mode::Spatial) target -> enable_3d();
+                }
+
+                self -> shader -> set_output(name, target);
+                refresh_owner(self.get());
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_outputs", [](auto vm, auto self, auto& id) -> int {
+                auto list = self -> shader -> get_output_names();
+                vm -> create_table();
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_value(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
