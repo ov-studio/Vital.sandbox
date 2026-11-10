@@ -30,19 +30,28 @@ namespace Vital::Engine {
         private:
             Engine::Canvas::Draw_Pool pool;
             bool instant = false;
+            godot::Camera3D* camera = nullptr;
+            int layer_bit = -1;
+            inline static uint32_t layers_used = 0;
+            static constexpr int LAYER_FIRST = 20;
+            static constexpr int LAYER_LAST = 31;
 
 
             // Instantiators //
             Rendertarget() = default;
             ~Rendertarget() override;
-            static void _bind_methods() {}
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("_sync_camera"), &Rendertarget::_sync_camera);
+            }
         public:
             // Hooks //
             void _process(double delta) override;
+            void _sync_camera();
 
 
             // Managers //
             static Rendertarget* create(godot::Vector2 size, bool transparent = false);
+            void enable_3d();
             void destroy();
             void clear(bool clear, bool instant);
             void update();
@@ -51,10 +60,12 @@ namespace Vital::Engine {
 
             // Checkers //
             bool is_active();
+            bool is_3d() const;
 
 
             // Getters //
             static Rendertarget* get_active();
+            int get_layer_bit() const;
             godot::Vector2 get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
