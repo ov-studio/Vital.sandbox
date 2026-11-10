@@ -47,6 +47,31 @@ namespace Vital::Engine {
         instant = false; 
     }
 
+    void Rendertarget::_on_frame_pre_draw() {
+        if (!camera || !camera -> is_inside_tree()) return;
+        auto* source = Engine::Core::get_scene_root() -> get_camera_3d();
+        if (!source) return;
+
+        camera -> set_global_transform(source -> get_global_transform());
+        switch (source -> get_projection()) {
+            case godot::Camera3D::PROJECTION_ORTHOGONAL: {
+                camera -> set_orthogonal(source -> get_size(), source -> get_near(), source -> get_far());
+                break;
+            }
+            case godot::Camera3D::PROJECTION_FRUSTUM: {
+                camera -> set_frustum(source -> get_size(), source -> get_frustum_offset(), source -> get_near(), source -> get_far());
+                break;
+            }
+            default: {
+                camera -> set_perspective(source -> get_fov(), source -> get_near(), source -> get_far());
+                break;
+            }
+        }
+        camera -> set_keep_aspect_mode(source -> get_keep_aspect_mode());
+        camera -> set_h_offset(source -> get_h_offset());
+        camera -> set_v_offset(source -> get_v_offset());
+    }
+
     
     // Managers //
     Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
@@ -82,6 +107,31 @@ namespace Vital::Engine {
 
     void Rendertarget::notify_drawn() {
         if (instant) update();
+    }
+
+    void Rendertarget::enable_3d() {
+        if (camera) return;
+        int layer = LAYER_FIRST;
+        while (layer <= LAYER_LAST && (layers_used & (1u << layer))) layer++;
+        if (layer > LAYER_LAST) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "no free 3D rendertarget layer left (max 12)");
+
+        layer_bit = layer;
+        layers_used |= (1u << layer);
+        viewport -> set_disable_3d(false);
+        viewport -> set_world_3d(Engine::Core::get_scene_root() -> get_world_3d());
+        godot::Ref<godot::Environment> environment;
+        environment.instantiate();
+        environment -> set_background(godot::Environment::BG_CLEAR_COLOR);
+        godot::Ref<godot::CameraAttributesPractical> attributes;
+        attributes.instantiate();
+
+        camera = memnew(godot::Camera3D);
+        camera -> set_cull_mask(1u << layer);
+        camera -> set_environment(environment);
+        camera -> set_attributes(attributes);
+        viewport -> add_child(camera);
+        camera -> make_current();
+        godot::RenderingServer::get_singleton() -> connect("frame_pre_draw", godot::Callable(this, "_on_frame_pre_draw"));
     }
 
 
