@@ -355,5 +355,14 @@ namespace Vital::Engine {
             using SurfaceMaterialFactory = std::function<godot::Ref<godot::Material>(godot::Ref<godot::Material>)>;
             int apply_material_shader(const std::string& component, const std::string& material, godot::Ref<godot::ShaderMaterial> shader_material);
             int apply_material_shader(const std::string& component, const std::string& material, const SurfaceMaterialFactory& factory);
+
+            // Shader output proxies: hidden copies of a component seen only by one 3D rendertarget's layer.
+            // Surfaces not using an output draw opaque black so they still occlude.
+            void clear_material_proxies(const std::string& component, const std::string& material);
+            bool apply_material_proxy(const std::string& component, const std::string& material, int layer_bit, godot::Ref<godot::Material> proxy_material);
+            void sync_material_proxies();
+        private:
+            std::vector<std::pair<godot::ObjectID, godot::ObjectID>> proxy_pairs;
+            static godot::Ref<godot::Material> get_occluder_material();
     };
 }

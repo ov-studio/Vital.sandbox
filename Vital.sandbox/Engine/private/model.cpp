@@ -442,6 +442,7 @@ namespace Vital::Engine {
 
     void Model::_process(double delta) {
         if (anim_tree) update_animation_layers((float)delta);
+        if (!proxy_pairs.empty()) sync_material_proxies();
         on_sync_process(delta);
     }
 
@@ -1409,6 +1410,99 @@ namespace Vital::Engine {
         if (wildcard_component && !Tool::contains_wildcard(material) && count == 0)
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("material '{}' not found in any component matching '{}' of model '{}'", material, component, model_name));
         return count;
+    }
+
+
+    // Shader outputs (emulated MRT) //
+    godot::Ref<godot::Material> Model::get_occluder_material() {
+        static godot::Ref<godot::ShaderMaterial> occluder;
+        if (!occluder.is_valid()) {
+            godot::Ref<godot::Shader> shader;
+            shader.instantiate();
+            shader -> set_code(
+                "shader_type spatial;\n"
+                "render_mode unshaded, shadows_disabled, fog_disabled;\n"
+                "void fragment() { ALBEDO = vec3(0.0); }\n"
+            );
+            occluder.instantiate();
+            occluder -> set_shader(shader);
+        }
+        return occluder;
+    }
+
+    void Model::clear_material_proxies(const std::string& component, const std::string& material) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) return;
+        const int idx = find_material_index(mesh, material);
+        if (idx < 0) return;
+        auto occluder = get_occluder_material();
+
+        for (int i = mesh -> get_child_count() - 1; i >= 0; i--) {
+            auto* proxy = godot::Object::cast_to<godot::MeshInstance3D>(mesh -> get_child(i));
+            if (!proxy || !proxy -> has_meta("vsdk_proxy")) continue;
+            proxy -> set_surface_override_material(idx, occluder);
+
+            bool used = false;
+            const int surfaces = proxy -> get_mesh().is_valid() ? proxy -> get_mesh() -> get_surface_count() : 0;
+            for (int surface = 0; surface < surfaces && !used; surface++) used = proxy -> get_surface_override_material(surface) != occluder;
+            if (used) continue;
+
+            const godot::ObjectID proxy_id(proxy -> get_instance_id());
+            proxy_pairs.erase(std::remove_if(proxy_pairs.begin(), proxy_pairs.end(),
+                [&](const std::pair<godot::ObjectID, godot::ObjectID>& pair) { return static_cast<uint64_t>(pair.second) == static_cast<uint64_t>(proxy_id); }), proxy_pairs.end());
+            mesh -> remove_child(proxy);
+            proxy -> queue_free();
+        }
+    }
+
+    bool Model::apply_material_proxy(const std::string& component, const std::string& material, int layer_bit, godot::Ref<godot::Material> proxy_material) {
+        if (!proxy_material.is_valid() || layer_bit < 0 || layer_bit > 31) return false;
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh || !mesh -> get_mesh().is_valid()) return false;
+        const int idx = find_material_index(mesh, material);
+        if (idx < 0) return false;
+        auto occluder = get_occluder_material();
+
+        godot::MeshInstance3D* proxy = nullptr;
+        for (int i = 0; i < mesh -> get_child_count(); i++) {
+            auto* child = godot::Object::cast_to<godot::MeshInstance3D>(mesh -> get_child(i));
+            if (child && child -> has_meta("vsdk_proxy") && static_cast<int>(child -> get_meta("vsdk_proxy")) == layer_bit) { proxy = child; break; }
+        }
+
+        if (!proxy) {
+            proxy = memnew(godot::MeshInstance3D);
+            proxy -> set_meta("vsdk_proxy", layer_bit);
+            proxy -> set_mesh(mesh -> get_mesh());
+            proxy -> set_layer_mask(1u << layer_bit);
+            proxy -> set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+            proxy -> set_gi_mode(godot::GeometryInstance3D::GI_MODE_DISABLED);
+            proxy -> set_extra_cull_margin(mesh -> get_extra_cull_margin());
+            proxy -> set_lod_bias(mesh -> get_lod_bias());
+            mesh -> add_child(proxy); // generated '@' name, so component lookups ignore it
+            // skeleton path is relative, and the proxy sits one level deeper than the mesh
+            if (mesh -> get_skin().is_valid()) proxy -> set_skin(mesh -> get_skin());
+            if (!mesh -> get_skeleton_path().is_empty()) proxy -> set_skeleton_path(godot::NodePath(godot::String("../") + godot::String(mesh -> get_skeleton_path())));
+            for (int surface = 0; surface < proxy -> get_mesh() -> get_surface_count(); surface++) proxy -> set_surface_override_material(surface, occluder);
+            proxy_pairs.push_back({ godot::ObjectID(mesh -> get_instance_id()), godot::ObjectID(proxy -> get_instance_id()) });
+            sync_material_proxies();
+        }
+        proxy -> set_surface_override_material(idx, proxy_material);
+        return true;
+    }
+
+    // Blendshape values are per MeshInstance3D, so mirror them onto the proxies
+    void Model::sync_material_proxies() {
+        for (auto it = proxy_pairs.begin(); it != proxy_pairs.end();) {
+            auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(godot::ObjectDB::get_instance(it -> first));
+            auto* proxy = godot::Object::cast_to<godot::MeshInstance3D>(godot::ObjectDB::get_instance(it -> second));
+            if (!mesh || !proxy) { it = proxy_pairs.erase(it); continue; }
+            const int count = mesh -> get_blend_shape_count();
+            for (int i = 0; i < count && i < proxy -> get_blend_shape_count(); i++) {
+                const float value = mesh -> get_blend_shape_value(i);
+                if (proxy -> get_blend_shape_value(i) != value) proxy -> set_blend_shape_value(i, value);
+            }
+            ++it;
+        }
     }
 
 
