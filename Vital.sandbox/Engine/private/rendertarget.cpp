@@ -96,6 +96,10 @@ namespace Vital::Engine {
         return active;
     }
 
+    int Rendertarget::get_layer_bit() const {
+        return layer_bit;
+    }
+
     godot::Vector2 Rendertarget::get_size() {
         return viewport -> get_size();
     }
