@@ -49,6 +49,7 @@
 #include <string>
 #include <string_view>
 #include <sstream>
+#include <regex>
 #include <memory>
 #include <cstdint>
 #include <stdexcept>
@@ -197,6 +198,7 @@
 #include <godot_cpp/classes/gltf_mesh.hpp>
 #include <godot_cpp/classes/gltf_node.hpp>
 #include <godot_cpp/classes/gltf_skin.hpp>
+#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/classes/importer_mesh.hpp>
 
 
