@@ -28,6 +28,7 @@
 // Vital: API: GPU_Particles //
 ////////////////////////////////
 
+// TODO: Improve
 namespace Vital::Sandbox::API {
     struct GPU_Particles : vm_module {
         inline static const std::vector<std::string> base_scope = {"particle", "gpu"};
@@ -61,6 +62,19 @@ namespace Vital::Sandbox::API {
             { "ANGLE",            process_material::PARAM_ANGLE                   },
             { "SCALE",            process_material::PARAM_SCALE                   },
             { "HUE_VARIATION",    process_material::PARAM_HUE_VARIATION           }
+        };
+
+        inline static const std::vector<std::pair<std::string, process_material::CollisionMode>> collision_mode_registry = {
+            { "DISABLED", process_material::COLLISION_DISABLED        },
+            { "RIGID",    process_material::COLLISION_RIGID           },
+            { "HIDE",     process_material::COLLISION_HIDE_ON_CONTACT }
+        };
+
+        inline static const std::vector<std::pair<std::string, process_material::SubEmitterMode>> sub_emitter_mode_registry = {
+            { "CONSTANT",     process_material::SUB_EMITTER_CONSTANT     },
+            { "AT_END",       process_material::SUB_EMITTER_AT_END       },
+            { "AT_COLLISION", process_material::SUB_EMITTER_AT_COLLISION },
+            { "AT_START",     process_material::SUB_EMITTER_AT_START     }
         };
 
         inline static const std::vector<std::pair<std::string, godot::BaseMaterial3D::BlendMode>> blend_mode_registry = {
@@ -103,6 +117,28 @@ namespace Vital::Sandbox::API {
                 instance -> particles -> set_emit_handler(wire("particle:emit"));
                 instance -> particles -> set_finished_handler(wire("particle:finish"));
                 instance -> store(true);
+                return 1;
+            });
+
+            // particle.gpu.set_world_collision(state, size = {48, 60, 48}, resolution = 1024)
+            // One height field collider that follows the camera and rasterizes the visible level from above (no baking,
+            // no map setup). Emitters opt in with set_collision. size: x/z metres around the camera, y = volume height
+            API::bind(vm, base_scope, "set_world_collision", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state, size = {48, 60, 48}, resolution = 1024)")
+                    .require(1, &Machine::is_bool)
+                    .optional(2, &Machine::is_vector3)
+                    .optional(3, &Machine::is_number);
+
+                auto state = vm -> get_bool(1);
+                auto size = vm -> is_vector3(2) ? vm -> get_vector3(2) : godot::Vector3(48, 60, 48);
+                auto resolution = vm -> is_number(3) ? vm -> get_int(3) : 1024;
+                base_class::set_world_collision(state, size, resolution);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "has_world_collision", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::has_world_collision());
                 return 1;
             });
         }
@@ -643,6 +679,46 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // set_collision(mode, bounce = 0, friction = 0): collide with the world collider (particle.gpu.set_world_collision)
+            // mode: particle.gpu.collision_mode.DISABLED | RIGID (bounce / slide) | HIDE (particle disappears on contact)
+            vm_module::bind_method<Instance>(vm, "set_collision", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode, bounce = 0, friction = 0)", true)
+                    .require_enum(2, collision_mode_registry)
+                    .optional(3, &Machine::is_number)
+                    .optional(4, &Machine::is_number);
+
+                auto mode = static_cast<process_material::CollisionMode>(vm -> get_int(2));
+                auto bounce = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
+                auto friction = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                self -> particles -> set_collision(mode, bounce, friction);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // set_sub_emitter(emitter, mode = AT_COLLISION, amount = 1, frequency = 10): particles of `emitter` are spawned
+            // at this emitter's particles (on contact, at start, at end, or constantly at `frequency` per second)
+            vm_module::bind_method<Instance>(vm, "set_sub_emitter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(emitter, mode = AT_COLLISION, amount = 1, frequency = 10)", true)
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Instance>(vm, idx); })
+                    .optional(3, &Machine::is_number)
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_number);
+
+                auto target = vm_module::get_userdata_object<Instance>(vm, 2);
+                auto mode = vm -> is_number(3) ? static_cast<process_material::SubEmitterMode>(vm -> get_int(3)) : process_material::SUB_EMITTER_AT_COLLISION;
+                auto amount = vm -> is_number(4) ? vm -> get_int(4) : 1;
+                auto frequency = vm -> is_number(5) ? vm -> get_float(5) : 10.0f;
+                self -> particles -> attach_sub_emitter(target -> get_node(), mode, amount, frequency);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "clear_sub_emitter", [](auto vm, auto self, auto& id) -> int {
+                self -> particles -> detach_sub_emitter();
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
                 self -> particles -> emit();
                 vm -> push_value(true);
@@ -675,6 +751,8 @@ namespace Vital::Sandbox::API {
             vm -> scope_set_enum(base_scope, "emission_shape", emission_shape_registry);
             vm -> scope_set_enum(base_scope, "param", param_registry);
             vm -> scope_set_enum(base_scope, "blend_mode", blend_mode_registry);
+            vm -> scope_set_enum(base_scope, "collision_mode", collision_mode_registry);
+            vm -> scope_set_enum(base_scope, "sub_emitter_mode", sub_emitter_mode_registry);
         }
 
         static void clean(const std::string& env) {

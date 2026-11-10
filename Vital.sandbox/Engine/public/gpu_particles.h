@@ -57,6 +57,13 @@ namespace Vital::Engine {
             void apply_material();
             void sync_distance();
 
+            // World collision: one height field collider shared by every emitter. It follows the camera and
+            // rasterizes the visible level from above, so no baking and no map setup is needed
+            inline static godot::GPUParticlesCollisionHeightField3D* world_collider = nullptr;
+            inline static godot::Vector3 world_collider_size = godot::Vector3(48, 60, 48);
+            inline static int world_collider_resolution = 1024;
+            static void update_world_collider();
+
 
             // Instantiators //
             GPU_Particles() = default;
@@ -82,6 +89,18 @@ namespace Vital::Engine {
             void emit();
             void restart_emission();
             void burst();
+
+
+            // World collision (shared collider, see update_world_collider) //
+            // size: x/z = metres covered around the camera, y = height of the volume centred on the camera
+            // resolution: height map size in pixels (256, 512, 1024, 2048, 4096 or 8192)
+            static void set_world_collision(bool state, const godot::Vector3& size, int resolution);
+            static bool has_world_collision();
+
+            // Per emitter: collide with the world collider, spawn another emitter's particles on contact
+            void set_collision(godot::ParticleProcessMaterial::CollisionMode mode, float bounce, float friction);
+            void attach_sub_emitter(GPU_Particles* target, godot::ParticleProcessMaterial::SubEmitterMode mode, int amount, float frequency);
+            void detach_sub_emitter();
 
 
             // Checkers //

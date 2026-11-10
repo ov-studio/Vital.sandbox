@@ -42,6 +42,26 @@ namespace Vital::Engine {
 
 
     // Helpers //
+    // Keeps the shared height field collider centred on the camera, once per frame. The position is snapped to whole
+    // height map texels so the collision surface does not shimmer while the camera moves
+    void GPU_Particles::update_world_collider() {
+        if (!world_collider) return;
+        static uint64_t frame = UINT64_MAX;
+        const uint64_t current = godot::Engine::get_singleton() -> get_process_frames();
+        if (current == frame) return;
+        frame = current;
+        auto* camera = Engine::Camera::get_active();
+        if (!camera) return;
+        const godot::Vector3 position = camera -> get_global_position();
+        const float texel_x = world_collider_size.x/(float)world_collider_resolution;
+        const float texel_z = world_collider_size.z/(float)world_collider_resolution;
+        world_collider -> set_global_position(godot::Vector3(
+            std::floor(position.x/texel_x + 0.5f)*texel_x,
+            position.y,
+            std::floor(position.z/texel_z + 0.5f)*texel_z
+        ));
+    }
+
     // Particle distance setting: past (camera far x multiplier) Godot stops rendering the emitter.
     // At 100% the range is switched off, so the far plane stays the only limit.
     void GPU_Particles::sync_distance() {
@@ -104,6 +124,7 @@ namespace Vital::Engine {
     // Hooks //
     void GPU_Particles::_process(double) {
         sync_distance();
+        update_world_collider();
 
         // Emission started by anything that bypasses emit/burst/restart_emission (set_emitting from the
         // engine, preprocess, a one-shot restarting itself): picked up on the rising edge
@@ -158,6 +179,9 @@ namespace Vital::Engine {
         particles -> set_visibility_aabb(godot::AABB(godot::Vector3(-10, -10, -10), godot::Vector3(20, 20, 20)));
         particles -> set_cast_shadows_setting(godot::GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 
+        // Visual layer 20: still seen by the main camera, but outside of the height field collider's mask (see set_world_collision)
+        particles -> set_layer_mask(1u << 19);
+
         // Keeps the particle distance setting applied (see sync_distance) and watches for emission starts
         particles -> set_process(true);
 
@@ -192,6 +216,62 @@ namespace Vital::Engine {
         restart();
         set_emitting(true);
         notify_emit();
+    }
+
+
+    // World collision //
+    void GPU_Particles::set_world_collision(bool state, const godot::Vector3& size, int resolution) {
+        if (!state) {
+            if (world_collider) {
+                world_collider -> queue_free();
+                world_collider = nullptr;
+            }
+            return;
+        }
+        // Height map sizes Godot offers: 256 << 0 ... 256 << 5
+        int step = 0;
+        while (step < 5 && (256 << step) < resolution) step++;
+        world_collider_resolution = 256 << step;
+        world_collider_size = godot::Vector3(std::max(size.x, 1.0f), std::max(size.y, 1.0f), std::max(size.z, 1.0f));
+        if (!world_collider) {
+            world_collider = memnew(godot::GPUParticlesCollisionHeightField3D);
+            // Layers 1-19: the level and its models. Layer 20 is where the emitters live, layers 21-31 the output proxies
+            world_collider -> set_heightfield_mask((1u << 19) - 1u);
+            world_collider -> set_follow_camera_enabled(false);
+            world_collider -> set_update_mode(godot::GPUParticlesCollisionHeightField3D::UPDATE_MODE_WHEN_MOVED);
+            Engine::Core::get_singleton() -> add_child(world_collider);
+        }
+        world_collider -> set_size(world_collider_size);
+        world_collider -> set_resolution(static_cast<godot::GPUParticlesCollisionHeightField3D::Resolution>(step));
+    }
+
+    bool GPU_Particles::has_world_collision() {
+        return world_collider != nullptr;
+    }
+
+    void GPU_Particles::set_collision(godot::ParticleProcessMaterial::CollisionMode mode, float bounce, float friction) {
+        process -> set_collision_mode(mode);
+        process -> set_collision_bounce(godot::Math::clamp(bounce, 0.0f, 1.0f));
+        process -> set_collision_friction(godot::Math::clamp(friction, 0.0f, 1.0f));
+    }
+
+    void GPU_Particles::attach_sub_emitter(GPU_Particles* target, godot::ParticleProcessMaterial::SubEmitterMode mode, int amount, float frequency) {
+        if (!target || target == this) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "sub-emitter must be another emitter");
+        amount = std::max(amount, 1);
+        process -> set_sub_emitter_mode(mode);
+        process -> set_sub_emitter_frequency(std::max(frequency, 0.01f));
+        process -> set_sub_emitter_amount_at_start(amount);
+        process -> set_sub_emitter_amount_at_end(amount);
+        process -> set_sub_emitter_amount_at_collision(amount);
+        process -> set_sub_emitter_keep_velocity(false);
+        // The sub-emitter only ever emits what its parent spawns for it, never on its own
+        target -> set_emitting(false);
+        godot::GPUParticles3D::set_sub_emitter(get_path_to(target));
+    }
+
+    void GPU_Particles::detach_sub_emitter() {
+        process -> set_sub_emitter_mode(godot::ParticleProcessMaterial::SUB_EMITTER_DISABLED);
+        godot::GPUParticles3D::set_sub_emitter(godot::NodePath());
     }
 
 
