@@ -23,6 +23,7 @@
 
 // TODO: Improve
 namespace Vital::Engine {
+    class Rendertarget;
     class Shader {
         public:
             enum class Mode {
@@ -62,6 +63,15 @@ namespace Vital::Engine {
             };
             Draw_Clone_Pool draw_pool;
 
+            struct Output {
+                std::string name;
+                godot::Ref<godot::Shader> shader;
+                godot::ObjectID rendertarget_id;
+                Draw_Clone_Pool pool;
+            };
+            std::vector<Output> outputs;
+            godot::Ref<godot::ShaderMaterial> build_surface_clone(godot::Ref<godot::Shader> source, godot::Ref<godot::Material> original);
+
             struct Internal {
                 struct EntryPoint {
                     std::string signature;
@@ -74,7 +84,10 @@ namespace Vital::Engine {
                 // Helpers //
                 static std::string inject_sentinel(const std::string& src, Mode mode);
                 static bool validate_compiled(godot::Ref<godot::Shader>& shader);
-                static std::string build_source(const std::string& raw, Mode mode);
+                static std::string build_source(const std::string& raw, Mode mode, const std::string& active_output = "");
+                static std::vector<std::string> scan_outputs(const std::string& raw);
+                static std::string rewrite_outputs(const std::string& src, Mode mode, const std::string& active_output);
+                static std::string apply_output_render_modes(const std::string& src);
             };
 
 
@@ -96,6 +109,16 @@ namespace Vital::Engine {
             godot::Ref<godot::ShaderMaterial> get_material() const;
             godot::Ref<godot::ShaderMaterial> create_surface_material(godot::Ref<godot::Material> original);
             godot::Ref<godot::ShaderMaterial> snapshot_draw_material();
+
+
+            // Outputs (emulated MRT) //
+            size_t get_output_count() const;
+            std::vector<std::string> get_output_names() const;
+            bool has_output(const std::string& name) const;
+            Rendertarget* get_output_target(size_t index) const;
+            godot::Ref<godot::ShaderMaterial> snapshot_output_material(size_t index);
+            godot::Ref<godot::ShaderMaterial> create_output_surface_material(size_t index, godot::Ref<godot::Material> original);
+            bool set_output(const std::string& name, Rendertarget* rendertarget);
 
 
             // Setters //
