@@ -330,6 +330,8 @@
 
 // Godot: GPU Particles //
 #include <godot_cpp/classes/gpu_particles3d.hpp>
+#include <godot_cpp/classes/gpu_particles_collision3d.hpp>
+#include <godot_cpp/classes/gpu_particles_collision_height_field3d.hpp>
 #include <godot_cpp/classes/particle_process_material.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/ribbon_trail_mesh.hpp>
