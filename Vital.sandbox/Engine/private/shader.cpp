@@ -71,7 +71,7 @@ namespace Vital::Engine {
         return true;
     }
 
-    std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode) {
+    std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode, const std::string& active_output) {
         std::string src = raw;
         if (mode == Shader::Mode::Postprocess) {
             if (src.find("shader_type") == std::string::npos) src = fmt::format("shader_type spatial;\n{}", src);
@@ -84,7 +84,190 @@ namespace Vital::Engine {
             std::string type_name = (mode == Shader::Mode::Spatial) ? "spatial" : "canvas_item";
             src = fmt::format("shader_type {};\n{}", type_name, src);
         }
+        if (!active_output.empty() && mode == Shader::Mode::Spatial) src = apply_output_render_modes(src);
+        src = rewrite_outputs(src, mode, active_output);
         return inject_sentinel(src, mode);
+    }
+}
+
+
+namespace Vital::Engine {
+    // Emulated MRT source helpers //
+    namespace {
+        struct Output_Call {
+            size_t begin = 0;
+            size_t end = 0;
+            std::string name;
+            std::string expr;
+        };
+
+        bool is_ident_char(char c) {
+            return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+        }
+
+        std::string trim_copy(const std::string& value) {
+            size_t first = 0, last = value.size();
+            while (first < last && std::isspace(static_cast<unsigned char>(value[first]))) first++;
+            while (last > first && std::isspace(static_cast<unsigned char>(value[last - 1]))) last--;
+            return value.substr(first, last - first);
+        }
+
+        // The call's trailing `;` is included so the whole statement can be replaced
+        std::vector<Output_Call> find_output_calls(const std::string& src) {
+            static const std::string token = "VSDK_OUT";
+            std::vector<Output_Call> calls;
+            size_t i = 0;
+            while (i < src.size()) {
+                if (src.compare(i, 2, "//") == 0) {
+                    auto stop = src.find('\n', i);
+                    if (stop == std::string::npos) break;
+                    i = stop + 1;
+                    continue;
+                }
+                if (src.compare(i, 2, "/*") == 0) {
+                    auto stop = src.find("*/", i + 2);
+                    if (stop == std::string::npos) break;
+                    i = stop + 2;
+                    continue;
+                }
+                if (src.compare(i, token.size(), token) != 0 || (i > 0 && is_ident_char(src[i - 1]))) {
+                    i++;
+                    continue;
+                }
+                size_t j = i + token.size();
+                if (j < src.size() && is_ident_char(src[j])) { i = j; continue; }
+                while (j < src.size() && std::isspace(static_cast<unsigned char>(src[j]))) j++;
+                if (j >= src.size() || src[j] != '(') { i = j; continue; }
+
+                const size_t open = j;
+                size_t comma = std::string::npos;
+                size_t close = std::string::npos;
+                int depth = 1;
+                for (size_t k = open + 1; k < src.size(); k++) {
+                    const char c = src[k];
+                    if (c == '(') depth++;
+                    else if (c == ')') {
+                        if (--depth == 0) { close = k; break; }
+                    }
+                    else if (c == ',' && depth == 1 && comma == std::string::npos) comma = k;
+                }
+                if (close == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "VSDK_OUT: missing closing ')'");
+                if (comma == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "VSDK_OUT expects (name, value)");
+
+                Output_Call call;
+                call.begin = i;
+                call.name = trim_copy(src.substr(open + 1, comma - open - 1));
+                call.expr = trim_copy(src.substr(comma + 1, close - comma - 1));
+                bool valid_name = !call.name.empty() && !std::isdigit(static_cast<unsigned char>(call.name[0]));
+                for (char c : call.name) if (!is_ident_char(c)) valid_name = false;
+                if (!valid_name) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("VSDK_OUT: invalid output name '{}'", call.name));
+                if (call.expr.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("VSDK_OUT: output '{}' has no value", call.name));
+
+                call.end = close + 1;
+                size_t t = call.end;
+                while (t < src.size() && std::isspace(static_cast<unsigned char>(src[t]))) t++;
+                if (t < src.size() && src[t] == ';') call.end = t + 1;
+                calls.push_back(call);
+                i = call.end;
+            }
+            return calls;
+        }
+    }
+
+    std::vector<std::string> Shader::Internal::scan_outputs(const std::string& raw) {
+        std::vector<std::string> names;
+        for (const auto& call : find_output_calls(raw)) {
+            if (std::find(names.begin(), names.end(), call.name) == names.end()) names.push_back(call.name);
+        }
+        return names;
+    }
+
+    // Output variant: the matching VSDK_OUT stores into a local that fragment() writes last (shaders cannot `return`
+    // from fragment()); every other VSDK_OUT, and all of them in the world variant, become empty blocks.
+    std::string Shader::Internal::rewrite_outputs(const std::string& src, Mode mode, const std::string& active_output) {
+        auto calls = find_output_calls(src);
+        if (calls.empty()) return src;
+
+        // Output stays opaque (alpha = coverage) unless the shader writes ALPHA itself
+        static const std::regex alpha_pattern(R"(\bALPHA\b)");
+        const bool uses_alpha = mode == Mode::Spatial && std::regex_search(src, alpha_pattern);
+
+        std::string result;
+        size_t cursor = 0;
+        for (const auto& call : calls) {
+            result.append(src, cursor, call.begin - cursor);
+            if (!active_output.empty() && call.name == active_output) result += fmt::format("{{ vsdk_result = ({}); }}", call.expr);
+            else result += "{}";
+            cursor = call.end;
+        }
+        result.append(src, cursor, std::string::npos);
+        if (active_output.empty()) return result;
+
+        static const std::regex fragment_pattern(R"(\bvoid\s+fragment\s*\(\s*\)\s*\{)");
+        std::smatch match;
+        if (!std::regex_search(result, match, fragment_pattern))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "VSDK_OUT requires a fragment() function");
+        const size_t open = static_cast<size_t>(match.position(0) + match.length(0)) - 1;
+        size_t close = std::string::npos;
+        int depth = 1;
+        for (size_t i = open + 1; i < result.size(); i++) {
+            if (result.compare(i, 2, "//") == 0) {
+                auto stop = result.find('\n', i);
+                if (stop == std::string::npos) break;
+                i = stop;
+                continue;
+            }
+            if (result.compare(i, 2, "/*") == 0) {
+                auto stop = result.find("*/", i + 2);
+                if (stop == std::string::npos) break;
+                i = stop + 1;
+                continue;
+            }
+            if (result[i] == '{') depth++;
+            else if (result[i] == '}' && --depth == 0) { close = i; break; }
+        }
+        if (close == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "fragment() is missing its closing '}'");
+
+        const std::string tail = (mode == Mode::Spatial)
+            ? fmt::format("\nALBEDO = vsdk_result.rgb;{}\n", uses_alpha ? " ALPHA = vsdk_result.a;" : "")
+            : std::string("\nCOLOR = vsdk_result;\n");
+        result.insert(close, tail);
+        result.insert(open + 1, "\nvec4 vsdk_result = vec4(0.0);\n");
+        return result;
+    }
+
+    // Spatial output variants are data passes: unlit, no shadows or fog
+    std::string Shader::Internal::apply_output_render_modes(const std::string& src) {
+        static const std::regex pattern(R"(\brender_mode\b([^;]*);)");
+        const std::vector<std::string> required = { "unshaded", "shadows_disabled", "fog_disabled", "depth_draw_always" };
+
+        std::vector<std::string> modes;
+        std::smatch match;
+        const bool found = std::regex_search(src, match, pattern);
+        if (found) {
+            std::stringstream stream(match[1].str());
+            std::string item;
+            while (std::getline(stream, item, ',')) {
+                item = trim_copy(item);
+                if (item.empty()) continue;
+                if (item.rfind("blend_", 0) == 0 || item.rfind("depth_draw_", 0) == 0 || item.rfind("depth_prepass", 0) == 0) continue;
+                if (std::find(required.begin(), required.end(), item) != required.end()) continue;
+                modes.push_back(item);
+            }
+        }
+        for (const auto& mode : required) modes.push_back(mode);
+
+        std::string statement = "render_mode ";
+        for (size_t i = 0; i < modes.size(); i++) statement += (i ? ", " : "") + modes[i];
+        statement += ";";
+
+        std::string result = src;
+        if (found) result.replace(static_cast<size_t>(match.position(0)), static_cast<size_t>(match.length(0)), statement);
+        else {
+            auto st_end = result.find(';');
+            if (st_end != std::string::npos) result.insert(st_end + 1, fmt::format("\n{}\n", statement));
+        }
+        return result;
     }
 }
 
@@ -127,6 +310,10 @@ namespace Vital::Engine {
     }
 
     Shader* Shader::create_from_raw(const std::string& raw, Mode mode) {
+        const auto output_names = Internal::scan_outputs(raw);
+        if (!output_names.empty() && mode == Mode::Postprocess)
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "VSDK_OUT outputs are not supported by post_process shaders");
+
         auto instance = new Shader();
         instance -> mode = mode;
         instance -> shader.instantiate();
@@ -137,6 +324,18 @@ namespace Vital::Engine {
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader failed to compile");
         }
         instance -> material -> set_shader(instance -> shader);
+
+        for (const auto& name : output_names) {
+            Output output;
+            output.name = name;
+            output.shader.instantiate();
+            output.shader -> set_code(Tool::to_godot_string(Internal::build_source(raw, instance -> mode, name)));
+            if (!Internal::validate_compiled(output.shader)) {
+                delete instance;
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("shader output '{}' failed to compile", name));
+            }
+            instance -> outputs.push_back(output);
+        }
         instance -> postprocess_init();
         return instance;
     }
@@ -144,6 +343,8 @@ namespace Vital::Engine {
     void Shader::destroy() {
         postprocess_free();
         draw_pool.clear();
+        for (auto& output : outputs) output.pool.clear();
+        outputs.clear();
         surface_materials.clear();
         material.unref();
         shader.unref();
@@ -314,13 +515,58 @@ namespace Vital::Engine {
     // `texture(albedo_texture, UV)` return the model's real texture instead of
     // the 1x1 white fallback of `hint_default_white`.
     godot::Ref<godot::ShaderMaterial> Shader::create_surface_material(godot::Ref<godot::Material> original) {
+        return build_surface_clone(shader, original);
+    }
+
+    // Outputs (emulated MRT) //
+    size_t Shader::get_output_count() const {
+        return outputs.size();
+    }
+
+    std::vector<std::string> Shader::get_output_names() const {
+        std::vector<std::string> names;
+        for (const auto& output : outputs) names.push_back(output.name);
+        return names;
+    }
+
+    bool Shader::has_output(const std::string& name) const {
+        for (const auto& output : outputs) if (output.name == name) return true;
+        return false;
+    }
+
+    Rendertarget* Shader::get_output_target(size_t index) const {
+        if (index >= outputs.size() || !outputs[index].rendertarget_id.is_valid()) return nullptr;
+        auto* object = godot::ObjectDB::get_instance(outputs[index].rendertarget_id);
+        return object ? godot::Object::cast_to<Rendertarget>(object) : nullptr;
+    }
+
+    godot::Ref<godot::ShaderMaterial> Shader::snapshot_output_material(size_t index) {
+        if (index >= outputs.size() || mode != Mode::CanvasItem) return godot::Ref<godot::ShaderMaterial>();
+        return outputs[index].pool.next(outputs[index].shader, material);
+    }
+
+    godot::Ref<godot::ShaderMaterial> Shader::create_output_surface_material(size_t index, godot::Ref<godot::Material> original) {
+        if (index >= outputs.size()) return godot::Ref<godot::ShaderMaterial>();
+        return build_surface_clone(outputs[index].shader, original);
+    }
+
+    bool Shader::set_output(const std::string& name, Rendertarget* rendertarget) {
+        for (auto& output : outputs) {
+            if (output.name != name) continue;
+            output.rendertarget_id = rendertarget ? godot::ObjectID(rendertarget -> get_instance_id()) : godot::ObjectID();
+            return true;
+        }
+        return false;
+    }
+
+    godot::Ref<godot::ShaderMaterial> Shader::build_surface_clone(godot::Ref<godot::Shader> source, godot::Ref<godot::Material> original) {
         godot::Ref<godot::ShaderMaterial> clone;
         clone.instantiate();
-        clone -> set_shader(shader);
+        clone -> set_shader(source);
         prune_surface_materials();
 
         godot::Ref<godot::BaseMaterial3D> base = original;
-        auto list = shader -> get_shader_uniform_list();
+        auto list = source -> get_shader_uniform_list();
         for (int i = 0; i < list.size(); i++) {
             auto dict = static_cast<godot::Dictionary>(list[i]);
             godot::StringName name = static_cast<godot::String>(dict.get("name", godot::String()));
