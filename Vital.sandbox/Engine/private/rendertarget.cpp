@@ -113,7 +113,7 @@ namespace Vital::Engine {
         if (camera) return;
         int layer = LAYER_FIRST;
         while (layer <= LAYER_LAST && (layers_used & (1u << layer))) layer++;
-        if (layer > LAYER_LAST) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "no free 3D rendertarget layer left (max 12)");
+        if (layer > LAYER_LAST) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("no free 3D rendertarget layer left (max {})", LAYER_LAST - LAYER_FIRST + 1));
 
         layer_bit = layer;
         layers_used |= (1u << layer);
