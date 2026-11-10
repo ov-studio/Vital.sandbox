@@ -371,7 +371,14 @@ namespace Vital::Engine {
             shader -> draw_postprocess();
             return;
         }
+        
         draw_material(position, size, shader -> snapshot_draw_material(), rotation, pivot, color);
+        for (size_t i = 0; i < shader -> get_output_count(); i++) {
+            auto* target = shader -> get_output_target(i);
+            if (!target || target == Engine::Rendertarget::get_active()) continue;
+            draw_material(&target -> get_pool(), target -> get_canvas_item(), position, size, shader -> snapshot_output_material(i), rotation, pivot, color);
+            target -> notify_drawn();
+        }
     }
 
     void Canvas::draw_material(
@@ -416,16 +423,29 @@ namespace Vital::Engine {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
+        auto [pool, parent] = get_target();
+        draw_material(pool, parent, position, size, material, rotation, pivot, color);
+        Canvas::notify_drawn();
+    }
+
+    void Canvas::draw_material(
+        Draw_Pool* pool,
+        godot::RID parent,
+        godot::Vector2 position,
+        godot::Vector2 size,
+        const godot::Ref<godot::ShaderMaterial>& material,
+        float rotation,
+        godot::Vector2 pivot,
+        const godot::Color& color
+    ) {
         if (!material.is_valid()) return;
         material -> set_shader_parameter("modulate", godot::Variant(color));
         auto piv = size*0.5f + pivot;
-        auto [pool, parent] = get_target();
         auto rs = godot::RenderingServer::get_singleton();
         godot::RID item = pool -> next(parent);
         rs -> canvas_item_set_material(item, material -> get_rid());
         rs -> canvas_item_set_transform(item, godot::Transform2D(godot::Math::deg_to_rad(rotation), position + piv));
         rs -> canvas_item_add_rect(item, godot::Rect2(-piv, size), color, true);
-        Canvas::notify_drawn();
     }
 
     void Canvas::draw_text(
