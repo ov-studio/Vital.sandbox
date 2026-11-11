@@ -42,8 +42,10 @@ namespace Vital::Engine {
 
 
     // Helpers //
-    // Keeps the shared height field collider centred on the camera, once per frame. The position is snapped to whole
-    // height map texels so the collision surface does not shimmer while the camera moves
+    // Keeps the shared height field collider around the camera, once per frame. The collider re-renders the level from
+    // above every time it moves, so it moves in coarse steps (2 m sideways, 4 m up and down, a small part of its size)
+    // instead of following the camera texel by texel: that would redraw the whole level almost every frame while walking.
+    // It also keeps the collision surface from shimmering
     void GPU_Particles::update_world_collider() {
         if (!world_collider) return;
         static uint64_t frame = UINT64_MAX;
@@ -53,12 +55,13 @@ namespace Vital::Engine {
         auto* camera = Engine::Camera::get_active();
         if (!camera) return;
         const godot::Vector3 position = camera -> get_global_position();
-        const float texel_x = world_collider_size.x/(float)world_collider_resolution;
-        const float texel_z = world_collider_size.z/(float)world_collider_resolution;
+        const float step_x = std::max(2.0f, world_collider_size.x/(float)world_collider_resolution);
+        const float step_z = std::max(2.0f, world_collider_size.z/(float)world_collider_resolution);
+        const float step_y = 4.0f;
         world_collider -> set_global_position(godot::Vector3(
-            std::floor(position.x/texel_x + 0.5f)*texel_x,
-            position.y,
-            std::floor(position.z/texel_z + 0.5f)*texel_z
+            std::floor(position.x/step_x + 0.5f)*step_x,
+            std::floor(position.y/step_y + 0.5f)*step_y,
+            std::floor(position.z/step_z + 0.5f)*step_z
         ));
     }
 
