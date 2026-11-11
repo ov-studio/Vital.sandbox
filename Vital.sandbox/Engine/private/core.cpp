@@ -343,6 +343,16 @@ namespace Vital::Engine {
         return sky;
     }
 
+    godot::Ref<godot::Compositor> Core::get_compositor() {
+        get_environment();
+        godot::Ref<godot::Compositor> compositor = environment -> get_compositor();
+        if (!compositor.is_valid()) {
+            compositor.instantiate();
+            environment -> set_compositor(compositor);
+        }
+        return compositor;
+    }
+
     void Core::free_environment() {
         if (!environment) return;
         environment -> queue_free();
