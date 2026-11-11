@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Vital/sandbox.h>
 #include <Vital.sandbox/Engine/public/entity.h>
 #if defined(VSDK_Client)
+// TODO: Move to pch.h
 #include <godot_cpp/classes/compositor.hpp>
 #endif
 
