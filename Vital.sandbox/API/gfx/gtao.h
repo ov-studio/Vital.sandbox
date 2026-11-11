@@ -22,6 +22,8 @@
 // Vital: API: GTAO //
 ///////////////////////
 
+// TODO: Improve
+
 namespace Vital::Sandbox::API {
     struct GTAO : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "gtao"};
@@ -95,13 +97,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_half_res", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_settings().half_res != 0);
+            API::bind(vm, base_scope, "get_smooth", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_settings().smooth_radius);
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_debug", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_settings().debug);
+            API::bind(vm, base_scope, "get_half_res", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_settings().half_res != 0);
                 return 1;
             });
 
@@ -111,6 +113,16 @@ namespace Vital::Sandbox::API {
 
                 auto state = vm -> get_bool(1);
                 base_class::set_enabled(state);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_half_res", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state)")
+                    .require(1, &Machine::is_bool);
+
+                auto state = vm -> get_bool(1);
+                base_class::update_settings([&](auto& settings) { settings.half_res = state ? 1 : 0; });
                 vm -> push_value(true);
                 return 1;
             });
@@ -225,22 +237,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_half_res", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(state)")
-                    .require(1, &Machine::is_bool);
-
-                auto state = vm -> get_bool(1);
-                base_class::update_settings([&](auto& settings) { settings.half_res = state ? 1 : 0; });
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_debug", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(mode)")
+            API::bind(vm, base_scope, "set_smooth", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_int(1);
-                base_class::update_settings([&](auto& settings) { settings.debug = value; });
+                base_class::update_settings([&](auto& settings) { settings.smooth_radius = value; });
                 vm -> push_value(true);
                 return 1;
             });

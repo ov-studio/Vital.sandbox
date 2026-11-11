@@ -13,7 +13,6 @@
 //////////////
 
 #include <Vital.sandbox/Engine/public/gtao.h>
-#include <godot_cpp/classes/rd_texture_format.hpp>
 #if defined(VSDK_Client)
 
 
@@ -21,8 +20,10 @@
 // Vital: Engine: GTAO //
 /////////////////////////
 
+// TODO: Improve
 // Shaders: Intel XeGTAO (MIT) ported to GLSL compute. Passes:
-//   prefilter -> viewspace depth MIP chain | main -> AO term + edges | denoise -> edge-aware blur (last pass applies AO onto the scene color)
+//   prefilter -> viewspace depth MIP chain | main -> AO term + edges (Godot normals)
+//   denoise -> edge-aware blur | blur_h/blur_v -> separable depth-aware blur | upsample/final -> applies AO onto the scene color
 namespace {
     constexpr const char* shader_common = R"GLSL(#version 450
 
@@ -46,7 +47,7 @@ layout(push_constant, std430) uniform Params {
     float depth_mip_sampling_offset;
     int noise_index;
     float intensity;
-    int debug_mode;
+    int blur_radius;
     ivec2 full_size;
 } p;
 
@@ -165,6 +166,7 @@ void main() {
     constexpr const char* shader_main = R"GLSL(layout(set = 0, binding = 0) uniform sampler2D depth_mips;
 layout(r8, set = 0, binding = 1) uniform restrict writeonly image2D out_ao;
 layout(r8, set = 0, binding = 2) uniform restrict writeonly image2D out_edges;
+layout(set = 0, binding = 3) uniform sampler2D src_normals;   // Godot normal_roughness (view space)
 
 vec3 view_position(vec2 screen_pos, float view_z) {
     return vec3((p.ndc_to_view_mul * screen_pos + p.ndc_to_view_add) * view_z, view_z);
@@ -182,16 +184,6 @@ vec4 calc_edges(float c, float l, float r, float t, float b) {
 float pack_edges(vec4 e) {
     e = roundEven(clamp(e, 0.0, 1.0) * 2.9);
     return dot(e, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
-}
-
-vec3 calc_normal(vec4 edges, vec3 c, vec3 l, vec3 r, vec3 t, vec3 b) {
-    vec4 accepted = clamp(vec4(edges.x * edges.z, edges.z * edges.y, edges.y * edges.w, edges.w * edges.x) + 0.01, 0.0, 1.0);
-    l = normalize(l - c);
-    r = normalize(r - c);
-    t = normalize(t - c);
-    b = normalize(b - c);
-    vec3 n = accepted.x * cross(l, t) + accepted.y * cross(t, r) + accepted.z * cross(r, b) + accepted.w * cross(b, l);
-    return normalize(n);
 }
 
 float fast_sqrt(float x) {
@@ -249,25 +241,16 @@ void main() {
     vec4 edges = calc_edges(view_z, pix_lz, pix_rz, pix_tz, pix_bz);
     imageStore(out_edges, pix, vec4(pack_edges(edges)));
 
-    // Debug 2: viewspace depth (0..75m) instead of AO; sky stays white
-    if (p.debug_mode == 2) {
-        imageStore(out_ao, pix, vec4(clamp(view_z / 75.0, 0.0, 1.0) / OCCLUSION_TERM_SCALE));
-        return;
-    }
-
     // Sky / far plane: nothing to occlude, store full visibility
     if (view_z >= p.far_cut) {
         imageStore(out_ao, pix, vec4(1.0 / OCCLUSION_TERM_SCALE));
         return;
     }
 
-    // Viewspace normal generated in place from depth
-    vec3 center = view_position(uv, view_z);
-    vec3 left = view_position(uv + vec2(-1.0, 0.0) * ps, pix_lz);
-    vec3 right = view_position(uv + vec2(1.0, 0.0) * ps, pix_rz);
-    vec3 top = view_position(uv + vec2(0.0, -1.0) * ps, pix_tz);
-    vec3 bottom = view_position(uv + vec2(0.0, 1.0) * ps, pix_bz);
-    vec3 view_normal = calc_normal(edges, center, left, right, top, bottom);
+    // Smooth shading normal from Godot (view space, camera looks down -Z) -> XeGTAO convention (+Z forward)
+    ivec2 normal_pix = clamp(ivec2((vec2(pix) + 0.5) * vec2(p.full_size) / vec2(p.viewport_size)), ivec2(0), p.full_size - 1);
+    vec3 n = normalize(texelFetch(src_normals, normal_pix, 0).xyz * 2.0 - 1.0);
+    vec3 view_normal = vec3(n.x, n.y, -n.z);
 
     // Move center pixel slightly towards camera to avoid imprecision artifacts (FP32 depth)
     view_z *= 0.99999;
@@ -473,13 +456,7 @@ void main() {
         #ifdef FINAL_PASS
         float visibility = clamp(value * OCCLUSION_TERM_SCALE, 0.0, 1.0);
         float factor = mix(1.0, visibility, p.intensity);
-        if (p.debug_mode == 3) {
-            imageStore(color_image, pix, vec4(1.0, 0.0, 1.0, 1.0));
-        }
-        else if (p.debug_mode != 0) {
-            imageStore(color_image, pix, vec4(vec3(visibility), 1.0));
-        }
-        else if (factor < 0.999) {
+        if (factor < 0.999) {
             vec4 color = imageLoad(color_image, pix);
             color.rgb *= factor;
             imageStore(color_image, pix, color);
@@ -500,7 +477,7 @@ void main() {
     if (any(greaterThanEqual(f, p.full_size))) return;
 
     float depth_full = texelFetch(depth_mips, f, 0).r;
-    if (p.debug_mode == 0 && depth_full >= p.far_cut) return;
+    if (depth_full >= p.far_cut) return;
 
     // Depth tolerance follows the local depth slope, otherwise grazing surfaces (floors) reject nearly every neighbour
     ivec2 fm = p.full_size - 1;
@@ -511,6 +488,7 @@ void main() {
     float tolerance = 0.01 * depth_full + 1.5 * max(abs(dr - dl), abs(db - dt)) + 1e-4;
 
     ivec2 ao_size = p.viewport_size;
+    int ao_mip = (ao_size.x != p.full_size.x || ao_size.y != p.full_size.y) ? 1 : 0;
     vec2 pos = (vec2(f) + 0.5) * vec2(ao_size) / vec2(p.full_size) - 0.5;
     ivec2 i0 = ivec2(floor(pos));
     vec2 fr = pos - vec2(i0);
@@ -521,7 +499,7 @@ void main() {
         for (int i = 0; i < 2; i++) {
             ivec2 t = clamp(i0 + ivec2(i, j), ivec2(0), ao_size - 1);
             float bilinear = ((i == 0) ? 1.0 - fr.x : fr.x) * ((j == 0) ? 1.0 - fr.y : fr.y);
-            float depth_half = texelFetch(depth_mips, t, 1).r;
+            float depth_half = texelFetch(depth_mips, t, ao_mip).r;
             float depth_weight = clamp(1.0 - abs(depth_half - depth_full) / tolerance, 0.0, 1.0);
             float w = bilinear * (depth_weight + 1e-3);
             sum += w * texelFetch(src_ao, t, 0).r;
@@ -531,21 +509,66 @@ void main() {
 
     float visibility = clamp((sum / sum_weight) * OCCLUSION_TERM_SCALE, 0.0, 1.0);
     float factor = mix(1.0, visibility, p.intensity);
-    if (p.debug_mode == 3) {
-        imageStore(color_image, f, vec4(1.0, 0.0, 1.0, 1.0));
-    }
-    else if (p.debug_mode != 0) {
-        imageStore(color_image, f, vec4(vec3(visibility), 1.0));
-    }
-    else if (factor < 0.999) {
+    if (factor < 0.999) {
         vec4 color = imageLoad(color_image, f);
         color.rgb *= factor;
         imageStore(color_image, f, color);
     }
 }
 )GLSL";
+    constexpr const char* shader_blur = R"GLSL(layout(set = 0, binding = 0) uniform sampler2D src_ao;
+layout(set = 0, binding = 1) uniform sampler2D depth_mips;
+layout(r8, set = 0, binding = 2) uniform restrict writeonly image2D out_ao;
 
-    // Godot's own console is not visible in the sandbox, so mirror messages there (marshalled to the main thread)
+// Separable, depth-aware (bilateral) blur. Depth is compared against the plane predicted from the local slope,
+// so sloped surfaces blur fully while depth discontinuities stay sharp.
+void main() {
+    ivec2 pix = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = p.viewport_size;
+    if (any(greaterThanEqual(pix, size))) return;
+
+    #ifdef BLUR_VERTICAL
+    const ivec2 dir = ivec2(0, 1);
+    #else
+    const ivec2 dir = ivec2(1, 0);
+    #endif
+
+    int base_mip = (size.x != p.full_size.x || size.y != p.full_size.y) ? 1 : 0;
+    float ao_center = texelFetch(src_ao, pix, 0).r;
+    float depth_center = texelFetch(depth_mips, pix, base_mip).r;
+    if (depth_center >= p.far_cut) {
+        imageStore(out_ao, pix, vec4(ao_center));
+        return;
+    }
+
+    ivec2 mx = size - 1;
+    float depth_pos = texelFetch(depth_mips, clamp(pix + dir, ivec2(0), mx), base_mip).r;
+    float depth_neg = texelFetch(depth_mips, clamp(pix - dir, ivec2(0), mx), base_mip).r;
+    // one-sided slope towards the closer neighbour (robust at depth edges)
+    float slope = (abs(depth_pos - depth_center) < abs(depth_neg - depth_center)) ? (depth_pos - depth_center) : (depth_center - depth_neg);
+    float tolerance = 0.01 * depth_center + 0.75 * abs(slope) + 1e-4;
+
+    float sigma = max(float(p.blur_radius) * 0.5, 0.5);
+    float inv_two_sigma_sq = 1.0 / (2.0 * sigma * sigma);
+    float sum = ao_center;
+    float sum_weight = 1.0;
+    for (int k = 1; k <= p.blur_radius; k++) {
+        float spatial = exp(-float(k * k) * inv_two_sigma_sq);
+        for (int s = -1; s <= 1; s += 2) {
+            ivec2 t = pix + dir * (k * s);
+            if (any(lessThan(t, ivec2(0))) || any(greaterThan(t, mx))) continue;
+            float depth_sample = texelFetch(depth_mips, t, base_mip).r;
+            float predicted = depth_center + slope * float(k * s);
+            float w = spatial * clamp(1.0 - abs(depth_sample - predicted) / tolerance, 0.0, 1.0);
+            sum += w * texelFetch(src_ao, t, 0).r;
+            sum_weight += w;
+        }
+    }
+    imageStore(out_ao, pix, vec4(sum / sum_weight));
+}
+)GLSL";
+
+    // Godot's own console is not visible in the sandbox, so mirror errors there (marshalled to the main thread)
     void report(const std::string& message, bool error = false) {
         if (error) godot::UtilityFunctions::push_error(godot::String::utf8(message.c_str()));
         auto core = Vital::Engine::Core::get_singleton();
@@ -592,7 +615,9 @@ namespace Vital::Engine {
             && compile(rd, common + shader_prefilter, "gtao_prefilter", prefilter_shader, prefilter_pipeline)
             && compile(rd, common + shader_denoise, "gtao_denoise", denoise_shader, denoise_pipeline)
             && compile(rd, common + "#define FINAL_PASS\n" + shader_denoise, "gtao_final", final_shader, final_pipeline)
-            && compile(rd, common + shader_upsample, "gtao_upsample", upsample_shader, upsample_pipeline);
+            && compile(rd, common + shader_upsample, "gtao_upsample", upsample_shader, upsample_pipeline)
+            && compile(rd, common + shader_blur, "gtao_blur_h", blur_h_shader, blur_h_pipeline)
+            && compile(rd, common + "#define BLUR_VERTICAL\n" + shader_blur, "gtao_blur_v", blur_v_shader, blur_v_pipeline);
     }
 
     bool GTAO::init_main(godot::RenderingDevice* rd, int quality) {
@@ -619,9 +644,11 @@ namespace Vital::Engine {
         release(denoise_shader);
         release(final_shader);
         release(upsample_shader);
+        release(blur_h_shader);
+        release(blur_v_shader);
         for (auto& shader : main_shader) release(shader);
         release(sampler);
-        prefilter_pipeline = denoise_pipeline = final_pipeline = upsample_pipeline = godot::RID();
+        prefilter_pipeline = denoise_pipeline = final_pipeline = upsample_pipeline = blur_h_pipeline = blur_v_pipeline = godot::RID();
         for (auto& pipeline : main_pipeline) pipeline = godot::RID();
         ready = false;
     }
@@ -639,9 +666,19 @@ namespace Vital::Engine {
         auto scene = data -> get_render_scene_data();
         auto buffers = godot::Object::cast_to<godot::RenderSceneBuffersRD>(base_buffers.ptr());
         if (!rd || !buffers || !scene) return;
+        if (buffers -> get_view_count() != 1) return;   // stereo rendering is not supported
+        godot::Projection proj = scene -> get_view_projection(0);
+        if (proj.is_orthogonal()) return;
         if (!ready) {
             ready = init_resources(rd);
             if (!ready) { failed = true; return; }
+        }
+
+        // Godot's smooth normals are required (forward_clustered / mobile renderers)
+        godot::StringName normals_context = "forward_clustered", normals_name = "normal_roughness";
+        if (!buffers -> has_texture(normals_context, normals_name)) {
+            if (!warned_normals) { warned_normals = true; report("[GTAO] normal buffer unavailable, effect skipped", true); }
+            return;
         }
 
         godot::StringName context = "vital_gtao";   // never a global: StringName must not be constructed before the extension initializes
@@ -653,6 +690,8 @@ namespace Vital::Engine {
         bool use_noise = config.denoise > 0 && buffers -> get_use_taa();   // temporal noise only resolves with TAA
         int passes = std::max(config.denoise, 1);
         bool half = config.half_res != 0;
+        bool smooth = config.smooth_radius > 0;
+        bool need_b = half || smooth || passes > 1;
         godot::Vector2i ao_size = half ? godot::Vector2i(std::max(1, size.x >> 1), std::max(1, size.y >> 1)) : size;
 
         auto uniform = [](godot::RenderingDevice::UniformType type, int binding, godot::RID a, godot::RID b = godot::RID()) {
@@ -672,153 +711,145 @@ namespace Vital::Engine {
             buffers -> create_texture(context, name, format, usage, godot::RenderingDevice::TEXTURE_SAMPLES_1, dim, 1, mips, true, false);
         };
 
-        int views = buffers -> get_view_count();
-        for (int view = 0; view < views; view++) {
-            godot::Projection proj = scene -> get_view_projection(view);
-            if (proj.is_orthogonal()) continue;
+        godot::String res_tag = half ? "_h" : "_f";   // AO textures are sized per mode
+        godot::StringName name_depth = "depth_mips";
+        godot::StringName name_ao_a = godot::String("ao_a") + res_tag;
+        godot::StringName name_ao_b = godot::String("ao_b") + res_tag;
+        godot::StringName name_edges = godot::String("edges") + res_tag;
+        ensure(name_depth, godot::RenderingDevice::DATA_FORMAT_R32_SFLOAT, 5, size);
+        ensure(name_ao_a, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
+        ensure(name_edges, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
+        if (need_b) ensure(name_ao_b, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
 
-            godot::String suffix = "_" + godot::String::num_int64(view);
-            godot::StringName name_depth = godot::String("depth_mips") + suffix;
-            godot::String res_tag = half ? "_h" : "_f";   // AO textures are sized per mode
-            godot::StringName name_ao_a = godot::String("ao_a") + suffix + res_tag;
-            godot::StringName name_ao_b = godot::String("ao_b") + suffix + res_tag;
-            godot::StringName name_edges = godot::String("edges") + suffix + res_tag;
-            bool need_b = half || passes > 1;
-            ensure(name_depth, godot::RenderingDevice::DATA_FORMAT_R32_SFLOAT, 5, size);
-            ensure(name_ao_a, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
-            ensure(name_edges, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
-            if (need_b) ensure(name_ao_b, godot::RenderingDevice::DATA_FORMAT_R8_UNORM, 1, ao_size);
+        // The view projection already carries Godot's Vulkan depth correction (reverse-Z, y-flip):
+        // depth = Q32 / z - Q22  =>  z = mul / (add - depth) with mul = -Q32, add = -Q22
+        float mul = -(float)proj.columns[3][2];
+        float add = -(float)proj.columns[2][2];
+        float tan_x = std::abs(1.0f / (float)proj.columns[0][0]);
+        float tan_y = std::abs(1.0f / (float)proj.columns[1][1]);
+        Constants c {};
+        c.viewport_size[0] = ao_size.x;
+        c.viewport_size[1] = ao_size.y;
+        c.full_size[0] = size.x;
+        c.full_size[1] = size.y;
+        c.pixel_size[0] = 1.0f / ao_size.x;
+        c.pixel_size[1] = 1.0f / ao_size.y;
+        c.depth_unpack[0] = mul;
+        c.depth_unpack[1] = add;
+        c.tan_half_fov[0] = tan_x;
+        c.tan_half_fov[1] = tan_y;
+        c.ndc_to_view_mul[0] = tan_x * 2.0f;
+        c.ndc_to_view_mul[1] = tan_y * -2.0f;
+        c.ndc_to_view_add[0] = -tan_x;
+        c.ndc_to_view_add[1] = tan_y;
+        c.ndc_to_view_mul_x_pixel_size[0] = c.ndc_to_view_mul[0] * c.pixel_size[0];
+        c.ndc_to_view_mul_x_pixel_size[1] = c.ndc_to_view_mul[1] * c.pixel_size[1];
+        c.effect_radius = config.radius;
+        c.effect_falloff_range = config.falloff_range;
+        c.radius_multiplier = config.radius_multiplier;
+        c.far_cut = (add < -1e-12f) ? 0.999f * (mul / add) : 1.0e18f;   // sky / far plane is skipped
+        c.final_value_power = config.final_value_power;
+        c.denoise_blur_beta = config.denoise == 0 ? 1e4f : config.blur;
+        c.sample_distribution_power = config.sample_distribution_power;
+        c.thin_occluder_compensation = config.thin_occluder_compensation;
+        c.depth_mip_sampling_offset = config.depth_mip_sampling_offset;
+        c.noise_index = use_noise ? (int32_t)(frame % 64) : 0;
+        c.intensity = config.intensity;
+        c.blur_radius = config.smooth_radius;
+        godot::PackedByteArray push;
+        push.resize(sizeof(Constants));
+        memcpy(push.ptrw(), &c, sizeof(Constants));
 
-            // The view projection already carries Godot's Vulkan depth correction (reverse-Z, y-flip):
-            // depth = Q32 / z - Q22  =>  z = mul / (add - depth) with mul = -Q32, add = -Q22
-            float mul = -(float)proj.columns[3][2];
-            float add = -(float)proj.columns[2][2];
-            float tan_x = std::abs(1.0f / (float)proj.columns[0][0]);
-            float tan_y = std::abs(1.0f / (float)proj.columns[1][1]);
-            Constants c {};
-            c.viewport_size[0] = ao_size.x;
-            c.viewport_size[1] = ao_size.y;
-            c.full_size[0] = size.x;
-            c.full_size[1] = size.y;
-            c.pixel_size[0] = 1.0f / ao_size.x;
-            c.pixel_size[1] = 1.0f / ao_size.y;
-            c.depth_unpack[0] = mul;
-            c.depth_unpack[1] = add;
-            c.tan_half_fov[0] = tan_x;
-            c.tan_half_fov[1] = tan_y;
-            c.ndc_to_view_mul[0] = tan_x * 2.0f;
-            c.ndc_to_view_mul[1] = tan_y * -2.0f;
-            c.ndc_to_view_add[0] = -tan_x;
-            c.ndc_to_view_add[1] = tan_y;
-            c.ndc_to_view_mul_x_pixel_size[0] = c.ndc_to_view_mul[0] * c.pixel_size[0];
-            c.ndc_to_view_mul_x_pixel_size[1] = c.ndc_to_view_mul[1] * c.pixel_size[1];
-            c.effect_radius = config.radius;
-            c.effect_falloff_range = config.falloff_range;
-            c.radius_multiplier = config.radius_multiplier;
-            c.far_cut = (add < -1e-12f) ? 0.999f * (mul / add) : 1.0e18f;
-            c.final_value_power = config.final_value_power;
-            c.denoise_blur_beta = config.denoise == 0 ? 1e4f : config.blur;
-            c.sample_distribution_power = config.sample_distribution_power;
-            c.thin_occluder_compensation = config.thin_occluder_compensation;
-            c.depth_mip_sampling_offset = config.depth_mip_sampling_offset;
-            c.noise_index = use_noise ? (int32_t)(frame % 64) : 0;
-            c.intensity = config.intensity;
-            c.debug_mode = config.debug;
-            if (!logged) {
-                logged = true;
-                report(fmt::format("[GTAO] running {}x{} quality={} denoise={} mul={:.6g} add={:.6g} far_cut={:.6g} tan=({:.3f},{:.3f}) taa={} half={}", size.x, size.y, config.quality, config.denoise, mul, add, c.far_cut, tan_x, tan_y, use_noise, half));
+        godot::RID depth_in = buffers -> get_depth_layer(0, false);
+        godot::RID color = buffers -> get_color_layer(0, false);
+        godot::RID normals = buffers -> get_texture(normals_context, normals_name);
+        godot::RID depth_tex = buffers -> get_texture(context, name_depth);
+        godot::RID ao_a = buffers -> get_texture(context, name_ao_a);
+        godot::RID ao_b = need_b ? buffers -> get_texture(context, name_ao_b) : godot::RID();
+        godot::RID edges = buffers -> get_texture(context, name_edges);
+
+        int w16 = (size.x + 15) / 16, w8 = (size.x + 7) / 8;
+        int h16 = (size.y + 15) / 16, h8 = (size.y + 7) / 8;
+        int aw8 = (ao_size.x + 7) / 8, ah8 = (ao_size.y + 7) / 8, aw16 = (ao_size.x + 15) / 16;
+        auto list = rd -> compute_list_begin();
+        auto dispatch = [&](const char* label, godot::RID pipeline, godot::RID shader, std::initializer_list<godot::Ref<godot::RDUniform>> uniforms, int x, int y) {
+            godot::TypedArray<godot::RDUniform> typed;
+            for (auto& u : uniforms) typed.push_back(u);
+            godot::RID set = godot::UniformSetCacheRD::get_cache(shader, 0, typed);
+            if (!rd -> uniform_set_is_valid(set)) {
+                if (!warned_set) { warned_set = true; report(std::string("[GTAO] uniform set invalid for pass '") + label + "'", true); }
+                return;
             }
-            godot::PackedByteArray push;
-            push.resize(sizeof(Constants));
-            memcpy(push.ptrw(), &c, sizeof(Constants));
+            rd -> compute_list_bind_compute_pipeline(list, pipeline);
+            rd -> compute_list_bind_uniform_set(list, set, 0);
+            rd -> compute_list_set_push_constant(list, push, push.size());
+            rd -> compute_list_dispatch(list, x, y, 1);
+            rd -> compute_list_add_barrier(list);
+        };
 
-            godot::RID depth_in = buffers -> get_depth_layer(view, false);
-            godot::RID color = buffers -> get_color_layer(view, false);
-            godot::RID depth_tex = buffers -> get_texture(context, name_depth);
-            godot::RID ao_a = buffers -> get_texture(context, name_ao_a);
-            godot::RID ao_b = need_b ? buffers -> get_texture(context, name_ao_b) : godot::RID();
-            godot::RID edges = buffers -> get_texture(context, name_edges);
+        // 1. Viewspace depth MIP chain
+        dispatch("prefilter", prefilter_pipeline, prefilter_shader, {
+            sampled(0, depth_in),
+            image(1, buffers -> get_texture_slice(context, name_depth, 0, 0, 1, 1)),
+            image(2, buffers -> get_texture_slice(context, name_depth, 0, 1, 1, 1)),
+            image(3, buffers -> get_texture_slice(context, name_depth, 0, 2, 1, 1)),
+            image(4, buffers -> get_texture_slice(context, name_depth, 0, 3, 1, 1)),
+            image(5, buffers -> get_texture_slice(context, name_depth, 0, 4, 1, 1))
+        }, w16, h16);
 
-            if (!info_logged) {
-                info_logged = true;
-                auto info = [&](godot::RID rid) {
-                    if (!rd -> texture_is_valid(rid)) return std::string("INVALID");
-                    auto f = rd -> texture_get_format(rid);
-                    return fmt::format("fmt={} usage={} samples={} {}x{}", (int)f -> get_format(), (int64_t)f -> get_usage_bits(), (int)f -> get_samples(), (int)f -> get_width(), (int)f -> get_height());
-                };
-                report("[GTAO] color: " + info(color) + " | depth: " + info(depth_in) + " | views=" + std::to_string(views) + " msaa=" + std::to_string((int)buffers -> get_msaa_3d()));
-            }
-            int w16 = (size.x + 15) / 16, w8 = (size.x + 7) / 8;
-            int h16 = (size.y + 15) / 16, h8 = (size.y + 7) / 8;
-            int aw8 = (ao_size.x + 7) / 8, ah8 = (ao_size.y + 7) / 8, aw16 = (ao_size.x + 15) / 16;
-            auto list = rd -> compute_list_begin();
-            auto dispatch = [&](const char* label, godot::RID pipeline, godot::RID shader, std::initializer_list<godot::Ref<godot::RDUniform>> uniforms, int x, int y) {
-                if (config.debug == 3 && std::string(label) != "final" && std::string(label) != "upsample") return;   // debug 3: only test the color write
-                godot::TypedArray<godot::RDUniform> typed;
-                for (auto& u : uniforms) typed.push_back(u);
-                godot::RID set = godot::UniformSetCacheRD::get_cache(shader, 0, typed);
-                if (!rd -> uniform_set_is_valid(set)) {
-                    if (!warned) { warned = true; report(std::string("[GTAO] uniform set invalid for pass '") + label + "' (see Godot console for the RD error)", true); }
-                    return;
-                }
-                rd -> compute_list_bind_compute_pipeline(list, pipeline);
-                rd -> compute_list_bind_uniform_set(list, set, 0);
-                rd -> compute_list_set_push_constant(list, push, push.size());
-                rd -> compute_list_dispatch(list, x, y, 1);
-                rd -> compute_list_add_barrier(list);
-            };
+        // 2. Main GTAO pass (AO term + edges)
+        dispatch("main", main_pipeline[config.quality], main_shader[config.quality], {
+            sampled(0, depth_tex),
+            image(1, ao_a),
+            image(2, edges),
+            sampled(3, normals)
+        }, aw8, ah8);
 
-            dispatch("prefilter", prefilter_pipeline, prefilter_shader, {
-                sampled(0, depth_in),
-                image(1, buffers -> get_texture_slice(context, name_depth, 0, 0, 1, 1)),
-                image(2, buffers -> get_texture_slice(context, name_depth, 0, 1, 1, 1)),
-                image(3, buffers -> get_texture_slice(context, name_depth, 0, 2, 1, 1)),
-                image(4, buffers -> get_texture_slice(context, name_depth, 0, 3, 1, 1)),
-                image(5, buffers -> get_texture_slice(context, name_depth, 0, 4, 1, 1))
-            }, w16, h16);
-
-            dispatch("main", main_pipeline[config.quality], main_shader[config.quality], {
-                sampled(0, depth_tex),
-                image(1, ao_a),
-                image(2, edges)
-            }, aw8, ah8);
-
-            godot::RID current = ao_a, other = ao_b;
-            if (half) {
-                // Denoise at AO resolution, then upsample (depth-aware) while applying onto the scene color
-                for (int i = 0; i < passes; i++) {
-                    dispatch("denoise", denoise_pipeline, denoise_shader, {
-                        sampled(0, current),
-                        sampled(1, edges),
-                        image(2, other)
-                    }, aw16, ah8);
-                    std::swap(current, other);
-                }
-                dispatch("upsample", upsample_pipeline, upsample_shader, {
-                    sampled(0, current),
-                    sampled(1, depth_tex),
-                    image(2, color)
-                }, w8, h8);
-            }
-            else {
-                for (int i = 0; i < passes - 1; i++) {
-                    dispatch("denoise", denoise_pipeline, denoise_shader, {
-                        sampled(0, current),
-                        sampled(1, edges),
-                        image(2, other)
-                    }, aw16, ah8);
-                    std::swap(current, other);
-                }
-
-                // Last pass applies the AO onto the scene color
-                dispatch("final", final_pipeline, final_shader, {
+        godot::RID current = ao_a, other = ao_b;
+        if (half || smooth) {
+            // 3. Denoise at AO resolution
+            for (int i = 0; i < passes; i++) {
+                dispatch("denoise", denoise_pipeline, denoise_shader, {
                     sampled(0, current),
                     sampled(1, edges),
-                    image(2, color)
-                }, w16, h8);
+                    image(2, other)
+                }, aw16, ah8);
+                std::swap(current, other);
             }
-            rd -> compute_list_end();
+
+            // 4. Separable depth-aware blur: horizontal then vertical
+            if (smooth) {
+                dispatch("blur_h", blur_h_pipeline, blur_h_shader, { sampled(0, current), sampled(1, depth_tex), image(2, other) }, aw8, ah8);
+                std::swap(current, other);
+                dispatch("blur_v", blur_v_pipeline, blur_v_shader, { sampled(0, current), sampled(1, depth_tex), image(2, other) }, aw8, ah8);
+                std::swap(current, other);
+            }
+
+            // 5. Upsample (half) / apply (full) onto the scene color
+            dispatch("upsample", upsample_pipeline, upsample_shader, {
+                sampled(0, current),
+                sampled(1, depth_tex),
+                image(2, color)
+            }, w8, h8);
         }
+        else {
+            for (int i = 0; i < passes - 1; i++) {
+                dispatch("denoise", denoise_pipeline, denoise_shader, {
+                    sampled(0, current),
+                    sampled(1, edges),
+                    image(2, other)
+                }, aw16, ah8);
+                std::swap(current, other);
+            }
+
+            // Last denoise pass applies the AO onto the scene color
+            dispatch("final", final_pipeline, final_shader, {
+                sampled(0, current),
+                sampled(1, edges),
+                image(2, color)
+            }, w16, h8);
+        }
+        rd -> compute_list_end();
     }
 
     // Managers //
@@ -840,9 +871,9 @@ namespace Vital::Engine {
         settings.thin_occluder_compensation = std::clamp(settings.thin_occluder_compensation, 0.0f, 0.7f);
         settings.final_value_power = std::clamp(settings.final_value_power, 0.5f, 5.0f);
         settings.depth_mip_sampling_offset = std::clamp(settings.depth_mip_sampling_offset, 0.0f, 30.0f);
-        settings.debug = std::clamp(settings.debug, 0, 3);
-        settings.half_res = std::clamp(settings.half_res, 0, 1);
         settings.blur = std::clamp(settings.blur, 0.05f, 5.0f);
+        settings.smooth_radius = std::clamp(settings.smooth_radius, 0, 8);
+        settings.half_res = std::clamp(settings.half_res, 0, 1);
     }
 
     bool GTAO::is_enabled() {
@@ -871,6 +902,7 @@ namespace Vital::Engine {
             effect -> set_effect_callback_type(godot::CompositorEffect::EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
             effect -> set_access_resolved_color(true);
             effect -> set_access_resolved_depth(true);
+            effect -> set_needs_normal_roughness(true);
             effects.push_back(effect);
             compositor -> set_compositor_effects(effects);
         }
