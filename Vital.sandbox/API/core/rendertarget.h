@@ -41,14 +41,16 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Rendertarget>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(size, transparent = false)")
+                vm_args(vm, id, "(size, transparent = false, hdr = false)")
                     .require(1, &Machine::is_vector2)
-                    .optional(2, &Machine::is_bool);
+                    .optional(2, &Machine::is_bool)
+                    .optional(3, &Machine::is_bool);
 
                 auto size = vm -> get_vector2(1);
                 auto transparent = vm -> is_bool(2) ? vm -> get_bool(2) : false;
+                auto hdr = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 auto instance = Instance::init(vm);
-                instance -> rendertarget = base_class::create(size, transparent);
+                instance -> rendertarget = base_class::create(size, transparent, hdr);
                 instance -> store(true);
                 return 1;
             });
@@ -79,6 +81,11 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> rendertarget -> is_active());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_hdr", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> rendertarget -> get_viewport() -> is_using_hdr_2d());
                 return 1;
             });
 
