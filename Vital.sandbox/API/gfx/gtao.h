@@ -29,6 +29,20 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "gtao"};
         using base_class = Vital::Engine::GTAO;
 
+        inline static const std::vector<std::pair<std::string, int>> quality_registry = {
+            { "LOW",    0 },
+            { "MEDIUM", 1 },
+            { "HIGH",   2 },
+            { "ULTRA",  3 }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> denoise_mode_registry = {
+            { "OFF",    0 },
+            { "SHARP",  1 },
+            { "MEDIUM", 2 },
+            { "SOFT",   3 }
+        };
+
         static void init(Machine* vm) {
             static Tool::Event::Handle reset_binding;
             reset_binding.bind("environment:free", [](Tool::Stack) {
@@ -128,8 +142,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_quality", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
+                vm_args(vm, id, "(quality)")
+                    .require_enum(1, quality_registry);
 
                 auto value = vm -> get_int(1);
                 base_class::update_settings([&](auto& settings) { settings.quality = value; });
@@ -138,8 +152,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_denoise", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
+                vm_args(vm, id, "(mode)")
+                    .require_enum(1, denoise_mode_registry);
 
                 auto value = vm -> get_int(1);
                 base_class::update_settings([&](auto& settings) { settings.denoise = value; });
@@ -246,6 +260,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "quality", quality_registry);
+            vm -> scope_set_enum(base_scope, "denoise_mode", denoise_mode_registry);
         }
     };
 }
