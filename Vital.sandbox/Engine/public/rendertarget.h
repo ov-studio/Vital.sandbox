@@ -25,8 +25,9 @@ namespace Vital::Engine {
     class Rendertarget : public godot::Node2D {
         GDCLASS(Rendertarget, godot::Node2D)
         protected:
-            godot::SubViewport* viewport = nullptr;
             inline static Rendertarget* active = nullptr;
+            
+            godot::SubViewport* viewport = nullptr;
         private:
             inline static uint32_t layers_used = 0;
             static constexpr int LAYER_FIRST = 20;
