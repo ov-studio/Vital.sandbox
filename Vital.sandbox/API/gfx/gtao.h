@@ -56,6 +56,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "is_half_res", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_settings().half_res != 0);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_quality", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_settings().quality);
                 return 1;
@@ -113,11 +118,6 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_smooth", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_settings().smooth_radius);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_half_res", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_settings().half_res != 0);
                 return 1;
             });
 
