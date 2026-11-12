@@ -37,17 +37,17 @@ namespace Vital::Engine {
                 { "SPATIAL",       Mode::Spatial      },
                 { "POST_PROCESS",  Mode::Postprocess  }
             };
-
         private:
+            inline static std::vector<Shader*> postprocess_registry;
+
             godot::Ref<godot::Shader> shader;
             godot::Ref<godot::ShaderMaterial> material;
             Mode mode = Mode::CanvasItem;
             godot::ObjectID pp_quad_id;
             godot::Ref<godot::ShaderMaterial> pp_material;
             std::vector<godot::Ref<godot::ShaderMaterial>> surface_materials;
-
             uint64_t pp_last_frame = UINT64_MAX;
-            inline static std::vector<Shader*> postprocess_registry;
+            
             godot::MeshInstance3D* pp_get_quad() const;
 
             void postprocess_init();

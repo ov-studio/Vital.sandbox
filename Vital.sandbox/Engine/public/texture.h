@@ -26,10 +26,11 @@ namespace Vital::Engine {
         public:
             inline static const unsigned int flush_interval = 10000;
         protected:
+            inline static std::unordered_map<std::string, Texture*> reference_cache = {};
+
             uint64_t reference_tick = 0;
             std::string reference_key = "";
             godot::Ref<godot::CanvasTexture> canvas_texture;
-            inline static std::unordered_map<std::string, Texture*> reference_cache = {};
 
 
             // Instantiators //

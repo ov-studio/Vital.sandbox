@@ -38,16 +38,17 @@ namespace Vital::Engine {
         protected:
             #if defined(VSDK_Client)
             inline static godot::WorldEnvironment* environment = nullptr;
-            godot::CanvasLayer* window_frame = nullptr;
-            bool window_frame_enabled = false;
-            bool window_frame_revealed = false;
             #endif
+
             std::mutex mutex;
             std::thread kit_thread;
             std::atomic<bool> kit_ready { false };
             std::atomic<bool> kit_abort { false };
             std::vector<std::function<void()>> work_queue;
             #if defined(VSDK_Client)
+            godot::CanvasLayer* window_frame = nullptr;
+            bool window_frame_enabled = false;
+            bool window_frame_revealed = false;
             Tool::HTTP::Server http_server;
             #else
             std::unique_ptr<Config::Server> server_config;

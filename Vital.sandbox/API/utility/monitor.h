@@ -163,7 +163,7 @@ namespace Vital::Sandbox::API {
             std::string name;
             int format = godot::Performance::MONITOR_TYPE_QUANTITY;
         };
-
+        
         inline static std::unordered_map<std::string, Stat> buffer;
 
         static void remove_stat(Machine* vm, std::unordered_map<std::string, Stat>::iterator it) {
