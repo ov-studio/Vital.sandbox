@@ -68,8 +68,7 @@ namespace Vital::Engine {
         const bool contact = is_in_contact();
         const float skid = std::clamp(static_cast<float>(get_skidinfo()), 0.0f, 1.0f);
         {
-            const godot::Color ring_color = contact ? godot::Color(1.0f, 0.15f, 0.15f).lerp(godot::Color(0.0f, 1.0f, 1.0f), skid) : godot::Color(1.0f, 0.0f, 1.0f);
-            const godot::Color axle_color(0.85f, 0.85f, 0.85f);
+            const godot::Color ring_color = contact ? debug_skid_color.lerp(debug_grip_color, skid) : debug_airborne_color;
             const int segments = 32;
             const int spokes = 6;
             const float axle_half = std::max(0.1f, radius * 0.35f);
@@ -78,8 +77,8 @@ namespace Vital::Engine {
             mesh -> clear_surfaces();
             mesh -> surface_begin(godot::Mesh::PRIMITIVE_LINES, debug_material);
             for (int i = 0; i < segments; i++) debug_line(mesh, rim((float)i / segments * Math_TAU), rim((float)(i + 1) / segments * Math_TAU), ring_color);
-            for (int i = 0; i < spokes; i++) debug_line(mesh, godot::Vector3(), rim((float)i / spokes * Math_TAU), i == 0 ? debug_yellow : ring_color);
-            debug_line(mesh, godot::Vector3(-axle_half, 0, 0), godot::Vector3(axle_half, 0, 0), axle_color);
+            for (int i = 0; i < spokes; i++) debug_line(mesh, godot::Vector3(), rim((float)i / spokes * Math_TAU), i == 0 ? debug_spoke_color : ring_color);
+            debug_line(mesh, godot::Vector3(-axle_half, 0, 0), godot::Vector3(axle_half, 0, 0), debug_axle_color);
             mesh -> surface_end();
         }
 
@@ -102,27 +101,23 @@ namespace Vital::Engine {
         const godot::Vector3 center = get_position() - hard_point;
         const float length = center.dot(dir);
         const float compression = travel > 0.0001f ? std::clamp((rest - length) / travel, 0.0f, 1.0f) : 0.0f;
-        const godot::Color spring_color = godot::Color(0.2f, 1.0f, 0.2f).lerp(godot::Color(1.0f, 0.2f, 0.2f), compression);
-        const godot::Color white(1.0f, 1.0f, 1.0f);
-        const godot::Color orange(1.0f, 0.6f, 0.0f);
-        const godot::Color blue(0.3f, 0.5f, 1.0f);
-        const godot::Color red(1.0f, 0.1f, 0.1f);
+        const godot::Color spring_color = debug_spring_rest_color.lerp(debug_spring_compressed_color, compression);
 
         auto mesh = debug_suspension.mesh.ptr();
         mesh -> clear_surfaces();
         mesh -> surface_begin(godot::Mesh::PRIMITIVE_LINES, debug_material);
-        debug_cross(mesh, godot::Vector3(), 0.08f, white);
+        debug_cross(mesh, godot::Vector3(), 0.08f, debug_anchor_color);
 
         const godot::Vector3 ray_end = dir * (rest + radius);
-        debug_line(mesh, godot::Vector3(), ray_end, orange);
-        debug_tick(mesh, ray_end, axle, 0.06f, orange);
+        debug_line(mesh, godot::Vector3(), ray_end, debug_ray_color);
+        debug_tick(mesh, ray_end, axle, 0.06f, debug_ray_color);
 
         const godot::Vector3 travel_offset = axle * 0.08f;
         const godot::Vector3 travel_min = dir * (rest - travel) + travel_offset;
         const godot::Vector3 travel_max = dir * rest + travel_offset;
-        debug_line(mesh, travel_min, travel_max, blue);
-        debug_tick(mesh, travel_min, axle, 0.04f, blue);
-        debug_tick(mesh, travel_max, axle, 0.04f, blue);
+        debug_line(mesh, travel_min, travel_max, debug_travel_color);
+        debug_tick(mesh, travel_min, axle, 0.04f, debug_travel_color);
+        debug_tick(mesh, travel_max, axle, 0.04f, debug_travel_color);
         debug_line(mesh, godot::Vector3(), center, spring_color);
         debug_cross(mesh, center, 0.06f, spring_color);
 
@@ -130,9 +125,9 @@ namespace Vital::Engine {
             const godot::Transform3D inverse = node_xform.affine_inverse();
             const godot::Vector3 point = inverse.xform(get_contact_point());
             const godot::Vector3 normal = inverse.basis.xform(get_contact_normal()).normalized();
-            debug_line(mesh, center, point, debug_grey);
-            debug_cross(mesh, point, 0.08f, red);
-            debug_line(mesh, point, point + normal * 0.5f, red, debug_yellow);
+            debug_line(mesh, center, point, debug_radius_color);
+            debug_cross(mesh, point, 0.08f, debug_contact_color);
+            debug_line(mesh, point, point + normal * 0.5f, debug_contact_color, debug_normal_color);
         }
         mesh -> surface_end();
     }

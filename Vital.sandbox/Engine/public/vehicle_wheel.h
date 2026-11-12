@@ -37,8 +37,19 @@ namespace Vital::Engine {
             inline static bool debug_all = false;
             inline static std::mutex mutex;
             inline static std::unordered_set<Vehicle_Wheel*> buffer;
-            inline static const godot::Color debug_yellow = godot::Color(1.0f, 1.0f, 0.0f);
-            inline static const godot::Color debug_grey = godot::Color(0.5f, 0.5f, 0.5f);
+            inline static const godot::Color debug_grip_color = godot::Color(0.0f, 1.0f, 1.0f);
+            inline static const godot::Color debug_skid_color = godot::Color(1.0f, 0.15f, 0.15f);
+            inline static const godot::Color debug_airborne_color = godot::Color(1.0f, 0.0f, 1.0f);
+            inline static const godot::Color debug_spoke_color = godot::Color(1.0f, 1.0f, 0.0f);
+            inline static const godot::Color debug_axle_color = godot::Color(0.85f, 0.85f, 0.85f);
+            inline static const godot::Color debug_anchor_color = godot::Color(1.0f, 1.0f, 1.0f);
+            inline static const godot::Color debug_ray_color = godot::Color(1.0f, 0.6f, 0.0f);
+            inline static const godot::Color debug_travel_color = godot::Color(0.3f, 0.5f, 1.0f);
+            inline static const godot::Color debug_spring_rest_color = godot::Color(0.2f, 1.0f, 0.2f);
+            inline static const godot::Color debug_spring_compressed_color = godot::Color(1.0f, 0.2f, 0.2f);
+            inline static const godot::Color debug_contact_color = godot::Color(1.0f, 0.1f, 0.1f);
+            inline static const godot::Color debug_normal_color = godot::Color(1.0f, 1.0f, 0.0f);
+            inline static const godot::Color debug_radius_color = godot::Color(0.5f, 0.5f, 0.5f);
             #endif
 
             int wheel_id = -1;
