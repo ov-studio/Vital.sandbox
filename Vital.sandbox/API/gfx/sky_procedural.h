@@ -162,13 +162,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "reset_sky_cover", [](auto vm, auto& id) -> int {
-                Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(godot::Ref<godot::Texture>());
-                vm -> del_reference("sandbox", sky_cover_reference);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_sky_cover_modulate", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
@@ -255,6 +248,13 @@ namespace Vital::Sandbox::API {
 
                 auto value = vm -> get_float(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_energy_multiplier(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "reset_sky_cover", [](auto vm, auto& id) -> int {
+                Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(godot::Ref<godot::Texture>());
+                vm -> del_reference("sandbox", sky_cover_reference);
                 vm -> push_value(true);
                 return 1;
             });
