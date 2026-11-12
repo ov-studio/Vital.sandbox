@@ -74,12 +74,13 @@ namespace Vital::Engine {
 
     
     // Managers //
-    Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
+    Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent, bool hdr) {
         auto rendertarget = memnew(Rendertarget);
         rendertarget -> viewport = memnew(godot::SubViewport);
         rendertarget -> viewport -> set_size(size);
         rendertarget -> viewport -> set_disable_3d(true);
         rendertarget -> viewport -> set_transparent_background(transparent);
+        rendertarget -> viewport -> set_use_hdr_2d(hdr);
         rendertarget -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
         rendertarget -> viewport -> add_child(rendertarget);
         Engine::Canvas::get_singleton() -> add_child(rendertarget -> viewport);

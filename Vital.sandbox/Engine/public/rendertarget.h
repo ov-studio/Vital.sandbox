@@ -51,7 +51,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Rendertarget* create(godot::Vector2 size, bool transparent = false);
+            static Rendertarget* create(godot::Vector2 size, bool transparent = false, bool hdr = false);
             void enable_3d();
             void destroy();
             void clear(bool clear, bool instant);
