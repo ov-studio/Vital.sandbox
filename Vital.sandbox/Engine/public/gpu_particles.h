@@ -120,6 +120,9 @@ namespace Vital::Engine {
             void set_draw_size(const godot::Vector2& size);
             void set_billboard(bool state);
 
+            // Layer: nil = drawn by the main camera, a rendertarget (3D enabled) = drawn only into that rendertarget
+            void set_layer(Engine::Rendertarget* rendertarget = nullptr);
+
             // Material: a texture (image / svg / path / rendertarget) is shown through the
             // built-in material, a SPATIAL shader replaces the built-in material entirely
             void set_material(Engine::Texture* texture);

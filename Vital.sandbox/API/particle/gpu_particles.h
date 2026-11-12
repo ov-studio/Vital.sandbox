@@ -643,6 +643,24 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // set_layer(rendertarget = nil): nil draws the emitter into the main view (default), a rendertarget
+            // draws it only into that rendertarget's 3D view (turns the rendertarget's 3D rendering on).
+            // Pair it with a spatial shader that writes the data you want to read back from the rendertarget.
+            vm_module::bind_method<Instance>(vm, "set_layer", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(rendertarget = nil)", true)
+                    .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
+
+                Vital::Engine::Rendertarget* target = nullptr;
+                if (!vm -> is_nil(2)) {
+                    auto rendertarget = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 2);
+                    target = rendertarget ? rendertarget -> get_node() : nullptr;
+                    if (!target) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "rendertarget is no longer valid");
+                }
+                self -> particles -> set_layer(target);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model, component = all)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })

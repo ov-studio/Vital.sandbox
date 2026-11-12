@@ -316,6 +316,15 @@ namespace Vital::Engine {
         if (ribbon.is_valid()) ribbon -> set_size(size.x);
     }
 
+    void GPU_Particles::set_layer(Engine::Rendertarget* rendertarget) {
+        if (!rendertarget) {
+            set_layer_mask(1u << 19);
+            return;
+        }
+        rendertarget -> enable_3d();
+        set_layer_mask(1u << rendertarget -> get_layer_bit());
+    }
+
     void GPU_Particles::set_billboard(bool state) {
         billboard = state;
         apply_billboard();
