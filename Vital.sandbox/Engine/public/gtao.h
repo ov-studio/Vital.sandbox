@@ -27,9 +27,9 @@
 #include <godot_cpp/classes/uniform_set_cache_rd.hpp>
 
 
-/////////////////////////
+//////////////////////////
 // Vital: Engine: GTAO //
-/////////////////////////
+//////////////////////////
 
 // TODO: Improve
 namespace Vital::Engine {
@@ -51,7 +51,6 @@ namespace Vital::Engine {
                 int smooth_radius = 6;                      // separable depth-aware blur radius at AO resolution (0 = off)
                 int half_res = 1;                           // AO computed at half resolution + depth-aware upsample
             };
-
         private:
             // Mirrors the push constant block of the shaders (112 bytes)
             struct Constants {
