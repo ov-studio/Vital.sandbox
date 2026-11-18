@@ -83,8 +83,9 @@ namespace Vital::Engine {
                 
                 // Helpers //
                 static std::string inject_sentinel(const std::string& src, Mode mode);
-                static bool validate_compiled(godot::Ref<godot::Shader>& shader);
+                static std::string resolve_includes(const std::string& base, const std::string& path, const std::string& raw);
                 static std::string build_source(const std::string& raw, Mode mode, const std::string& active_output = "");
+                static bool validate_compiled(godot::Ref<godot::Shader>& shader);
                 static std::vector<std::string> scan_outputs(const std::string& raw);
                 static std::string rewrite_outputs(const std::string& src, Mode mode, const std::string& active_output);
                 static std::string apply_output_render_modes(const std::string& src);

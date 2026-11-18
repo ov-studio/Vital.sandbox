@@ -56,19 +56,38 @@ namespace Vital::Engine {
         return result;
     }
 
-    bool Shader::Internal::validate_compiled(godot::Ref<godot::Shader>& shader) {
-        auto list = shader -> get_shader_uniform_list();
-        bool sentinel_found = false;
-        for (int i = 0; i < list.size(); i++) {
-            auto dict = static_cast<godot::Dictionary>(list[i]);
-            auto name = static_cast<godot::String>(dict.get("name", godot::String()));
-            if (Tool::to_std_string(name) == SENTINEL) {
-                sentinel_found = true;
-                break;
+    std::string Shader::Internal::resolve_includes(const std::string& base, const std::string& path, const std::string& raw) {
+        static constexpr int MAX_DEPTH = 8;
+        static const std::string directive = "#include";
+        std::set<std::string> included;
+        included.insert(Tool::to_std_string(Tool::to_godot_string(path).simplify_path()));
+
+        std::function<void(const std::string&, std::string&, int)> expand = [&](const std::string& src, std::string& out, int depth) {
+            if (depth > MAX_DEPTH) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader #include nested too deep");
+            std::size_t pos = 0;
+            while (pos < src.size()) {
+                auto eol = src.find('\n', pos);
+                const auto line = src.substr(pos, eol == std::string::npos ? std::string::npos : eol - pos);
+                pos = eol == std::string::npos ? src.size() : eol + 1;
+
+                const auto first = line.find_first_not_of(" \t");
+                if (first != std::string::npos && line.compare(first, directive.size(), directive) == 0) {
+                    const auto open = line.find('"', first + directive.size());
+                    const auto close = open == std::string::npos ? std::string::npos : line.find('"', open + 1);
+                    if (close == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "shader #include expects a quoted path");
+                    const auto target = Tool::to_std_string(Tool::to_godot_string(line.substr(open + 1, close - open - 1)).simplify_path());
+                    if (included.insert(target).second) expand(Tool::File::read_text(base, target), out, depth + 1);
+                    continue;
+                }
+                out += line;
+                out += '\n';
             }
-        }
-        if (!sentinel_found) return false;
-        return true;
+        };
+
+        if (raw.find(directive) == std::string::npos) return raw;
+        std::string result;
+        expand(raw, result, 0);
+        return result;
     }
 
     std::string Shader::Internal::build_source(const std::string& raw, Shader::Mode mode, const std::string& active_output) {
@@ -87,6 +106,21 @@ namespace Vital::Engine {
         if (!active_output.empty() && mode == Shader::Mode::Spatial) src = apply_output_render_modes(src);
         src = rewrite_outputs(src, mode, active_output);
         return inject_sentinel(src, mode);
+    }
+
+    bool Shader::Internal::validate_compiled(godot::Ref<godot::Shader>& shader) {
+        auto list = shader -> get_shader_uniform_list();
+        bool sentinel_found = false;
+        for (int i = 0; i < list.size(); i++) {
+            auto dict = static_cast<godot::Dictionary>(list[i]);
+            auto name = static_cast<godot::String>(dict.get("name", godot::String()));
+            if (Tool::to_std_string(name) == SENTINEL) {
+                sentinel_found = true;
+                break;
+            }
+        }
+        if (!sentinel_found) return false;
+        return true;
     }
 }
 
@@ -306,7 +340,7 @@ namespace Vital::Engine {
 
     // Managers //
     Shader* Shader::create(const std::string& base, const std::string& path, Mode mode) {
-        return create_from_raw(Tool::File::read_text(base, path), mode);
+        return create_from_raw(Internal::resolve_includes(base, path, Tool::File::read_text(base, path)), mode);
     }
 
     Shader* Shader::create_from_raw(const std::string& raw, Mode mode) {
