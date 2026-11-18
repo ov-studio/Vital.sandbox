@@ -887,7 +887,7 @@ namespace Vital::Engine {
             if (!state && !enabled) return;   // nothing attached, leave the environment untouched
             enabled = state;
         }
-        auto compositor = Core::get_compositor();
+        auto compositor = Engine::Core::get_compositor();
         if (!compositor.is_valid()) return;
         auto effects = compositor -> get_compositor_effects();
         int found = -1;
