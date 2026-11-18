@@ -28,7 +28,6 @@
 // Vital: API: GPU_Particles //
 ////////////////////////////////
 
-// TODO: Improve
 namespace Vital::Sandbox::API {
     struct GPU_Particles : vm_module {
         inline static const std::vector<std::string> base_scope = {"particle", "gpu"};
@@ -125,9 +124,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // particle.gpu.set_world_collision(state, size = {48, 60, 48}, resolution = 1024)
-            // One height field collider that follows the camera and rasterizes the visible level from above (no baking,
-            // no map setup). Emitters opt in with set_collision. size: x/z metres around the camera, y = volume height
             API::bind(vm, base_scope, "set_world_collision", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state, size = {48, 60, 48}, resolution = 1024)")
                     .require(1, &Machine::is_bool)
@@ -643,9 +639,18 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // set_layer(rendertarget = nil): nil draws the emitter into the main view (default), a rendertarget
-            // draws it only into that rendertarget's 3D view (turns the rendertarget's 3D rendering on).
-            // Pair it with a spatial shader that writes the data you want to read back from the rendertarget.
+            vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(model, component = all)", true)
+                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })
+                    .optional(3, &Machine::is_string);
+
+                auto model = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
+                auto component = vm -> is_string(3) ? vm -> get_string(3) : "";
+                self -> particles -> set_mesh(model -> get_node(), component);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_layer", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(rendertarget = nil)", true)
                     .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx); });
@@ -661,20 +666,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_mesh", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(model, component = all)", true)
-                    .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Model::Instance>(vm, idx); })
-                    .optional(3, &Machine::is_string);
-
-                auto model = vm_module::get_userdata_object<API::Model::Instance>(vm, 2);
-                auto component = vm -> is_string(3) ? vm -> get_string(3) : "";
-                self -> particles -> set_mesh(model -> get_node(), component);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            // set_collision(mode, bounce = 0, friction = 0): collide with the world collider (particle.gpu.set_world_collision)
-            // mode: particle.gpu.collision_mode.DISABLED | RIGID (bounce / slide) | HIDE (particle disappears on contact)
             vm_module::bind_method<Instance>(vm, "set_collision", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode, bounce = 0, friction = 0)", true)
                     .require_enum(2, collision_mode_registry)
@@ -689,8 +680,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // set_sub_emitter(emitter, mode = AT_COLLISION, amount = 1, frequency = 10): particles of `emitter` are spawned
-            // at this emitter's particles (on contact, at start, at end, or constantly at `frequency` per second)
             vm_module::bind_method<Instance>(vm, "set_sub_emitter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(emitter, mode = AT_COLLISION, amount = 1, frequency = 10)", true)
                     .require(2, [](Machine* vm, int idx) { return vm_module::is_userdata<Instance>(vm, idx); })
