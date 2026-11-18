@@ -22,8 +22,6 @@
 // Vital: API: GTAO //
 ///////////////////////
 
-// TODO: Improve
-
 namespace Vital::Sandbox::API {
     struct GTAO : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "gtao"};
