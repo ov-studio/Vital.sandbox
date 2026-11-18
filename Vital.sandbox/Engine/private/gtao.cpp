@@ -898,7 +898,6 @@ namespace Vital::Engine {
         if (state && found < 0) {
             godot::Ref<GTAO> effect;
             effect.instantiate();
-            // Post-transparent: with MSAA enabled, anything written earlier to the resolved color is overwritten by the final resolve
             effect -> set_effect_callback_type(godot::CompositorEffect::EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
             effect -> set_access_resolved_color(true);
             effect -> set_access_resolved_depth(true);
