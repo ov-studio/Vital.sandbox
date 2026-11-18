@@ -31,6 +31,7 @@ namespace Vital::Engine {
             std::function<void()> finish_handler;
             bool was_playing = false;
 
+            
             // Helpers //
             void notify_start();
             void notify_finish();
