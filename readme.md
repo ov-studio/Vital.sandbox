@@ -42,7 +42,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper, it's a full-featured runtime tha
 - **Webview**: Embedded webview rendering (client-side)
 - **UI primitives**: Canvas, SVG, image, font, and texture APIs
 - **Rendering**: Control scenes, shaders, rendertargets, and draw calls directly from script
-- **Shaders**: GLSL compilation from file or raw source, with full uniform control and model / rendertarget binding
+- **Shaders**: GLSL compilation from file or raw source, with shared `#include` files, full uniform control and model / rendertarget binding
 - **Audio**: 2D and 3D audio sources with effect bus support
 - **Utilities**: Lua math, string, and table libraries enriched with sandbox-native helpers, plus timers, promises, easing curves, file access, HTTP, and compression
 - **Threading**: True multi-threading support with promise-based coordination
