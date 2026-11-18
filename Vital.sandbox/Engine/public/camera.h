@@ -32,6 +32,7 @@ namespace Vital::Engine {
             // Instantiators //
             Camera() = default;
             ~Camera() override;
+            
             static void _bind_methods() {}
         public:
             // Managers //

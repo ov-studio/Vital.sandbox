@@ -39,6 +39,7 @@ namespace Vital::Engine {
             // Instantiators //
             Audio_Watcher() = default;
             ~Audio_Watcher() override = default;
+            
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &Audio_Watcher::on_finished);
             }

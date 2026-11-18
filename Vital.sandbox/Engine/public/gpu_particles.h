@@ -68,6 +68,7 @@ namespace Vital::Engine {
             // Instantiators //
             GPU_Particles() = default;
             ~GPU_Particles() override = default;
+            
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_finished"), &GPU_Particles::on_finished);
             }

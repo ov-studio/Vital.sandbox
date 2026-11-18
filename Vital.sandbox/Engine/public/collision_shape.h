@@ -41,6 +41,7 @@ namespace Vital::Engine {
             // Instantiators //
             Collision_Shape();
             ~Collision_Shape() override;
+            
             static void _bind_methods() {}
 
 

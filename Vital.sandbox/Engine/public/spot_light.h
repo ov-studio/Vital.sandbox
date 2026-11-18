@@ -28,6 +28,7 @@ namespace Vital::Engine {
             // Instantiators //
             Spot_Light() = default;
             ~Spot_Light() override = default;
+            
             static void _bind_methods() {}
         public:
             // Managers //

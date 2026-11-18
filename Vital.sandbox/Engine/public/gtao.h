@@ -101,10 +101,8 @@ namespace Vital::Engine {
             bool init_resources(godot::RenderingDevice* rd);
             bool init_main(godot::RenderingDevice* rd, int quality);
             void free_resources();
-
         protected:
             static void _bind_methods() {}
-
         public:
             // Hooks //
             void _notification(int what);

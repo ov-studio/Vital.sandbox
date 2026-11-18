@@ -33,6 +33,7 @@ namespace Vital::Engine {
             // Instantiators //
             Animatable_Body() = default;
             ~Animatable_Body() override = default;
+            
             static void _bind_methods() {}
         public:
             // Hooks //

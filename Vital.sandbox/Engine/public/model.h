@@ -121,6 +121,7 @@ namespace Vital::Engine {
             // Instantiators //
             Model() = default;
             ~Model() override = default;
+            
             static void _bind_methods() {}
 
 

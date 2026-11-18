@@ -65,6 +65,7 @@ namespace Vital::Engine {
             // Instantiators //
             Vehicle_Wheel();
             ~Vehicle_Wheel() override;
+            
             static void _bind_methods() {}
 
 

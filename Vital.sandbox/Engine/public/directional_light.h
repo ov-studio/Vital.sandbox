@@ -28,6 +28,7 @@ namespace Vital::Engine {
             // Instantiators //
             Directional_Light() = default;
             ~Directional_Light() override = default;
+            
             static void _bind_methods() {}
         public:
             // Managers //

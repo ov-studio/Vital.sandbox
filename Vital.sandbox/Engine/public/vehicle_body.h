@@ -33,6 +33,7 @@ namespace Vital::Engine {
             // Instantiators //
             Vehicle_Body() = default;
             ~Vehicle_Body() override = default;
+            
             static void _bind_methods() {}
         public:
             // Hooks //

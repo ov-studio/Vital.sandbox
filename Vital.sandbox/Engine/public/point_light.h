@@ -28,6 +28,7 @@ namespace Vital::Engine {
             // Instantiators //
             Point_Light() = default;
             ~Point_Light() override = default;
+            
             static void _bind_methods() {}
         public:
             // Managers //

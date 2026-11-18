@@ -49,6 +49,7 @@ namespace Vital::Engine {
             // Instantiators //
             Canvas() = default;
             ~Canvas() override = default;
+            
             static void _bind_methods() {}
 
 

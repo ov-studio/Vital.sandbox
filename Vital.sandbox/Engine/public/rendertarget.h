@@ -42,6 +42,7 @@ namespace Vital::Engine {
             // Instantiators //
             Rendertarget() = default;
             ~Rendertarget() override;
+            
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_on_frame_pre_draw"), &Rendertarget::_on_frame_pre_draw);
             }
