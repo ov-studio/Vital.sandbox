@@ -90,7 +90,7 @@ namespace Vital::Manager {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();
                 }
-                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !Engine::MainMenu::get_singleton() -> is_visible() && !(Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible())) {
+                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected() && !(Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible())) {
                     handled = true;
                     Engine::MainMenu::get_singleton() -> toggle();
                 }
