@@ -80,7 +80,15 @@ namespace Vital::Engine {
         if (input_forwarder != this) return;
         eval("window.vsdk_forward_input = false;");
         input_forwarder = nullptr;
-        webview -> call_deferred("focus_parent");
+        if (!has_visible_system()) webview -> call_deferred("focus_parent");
+    }
+
+    void Webview::sync_bind_forwarding() {
+        eval(fmt::format("window.vsdk_forward_binds = {};", binds_forwarded ? fetch_bind_list() : std::string("null")));
+    }
+
+    bool Webview::has_visible_system() {
+        return key_forwarder && key_forwarder -> is_system() && key_forwarder -> is_visible();
     }
 
     Webview* Webview::select_input_forwarder() {
@@ -234,7 +242,7 @@ namespace Vital::Engine {
                 pause_input_forwarder();
                 update_input_forwarder();
             }
-            else webview -> call_deferred("focus_parent");
+            else if (!has_visible_system()) webview -> call_deferred("focus_parent");
         }
         update_key_forwarder();
     }
@@ -255,7 +263,7 @@ namespace Vital::Engine {
                 pause_input_forwarder();
                 update_input_forwarder();
             }
-            else webview -> call_deferred("focus_parent");
+            else if (!has_visible_system()) webview -> call_deferred("focus_parent");
         }
     }
 
