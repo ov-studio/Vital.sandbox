@@ -132,10 +132,6 @@ namespace Vital::Engine {
         if (fallback) fallback -> set_focussed(true);
     }
 
-    void Webview::sync_bind_forwarding() {
-        eval(fmt::format("window.vsdk_forward_binds = {};", binds_forwarded ? fetch_bind_list() : std::string("null")));
-    }
-
     void Webview::update_bind_forwarding() {
         for (Webview* instance : buffer) {
             const bool state = !instance -> is_system() && !instance -> options.overlay && !instance -> options.forward_input && !instance -> is_fullscreen() && instance -> is_visible();
