@@ -105,11 +105,10 @@ namespace Vital::Engine {
 
 
             // Checkers //
-            bool has_draw_shader() const;
-            bool has_mesh() const;
             bool is_trail_mode() const;
             bool is_billboard() const;
-
+            bool has_draw_shader() const;
+            bool has_mesh() const;
 
             // Getters //
             godot::Ref<godot::ParticleProcessMaterial> get_process_params() const;
