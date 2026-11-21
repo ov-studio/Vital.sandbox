@@ -148,7 +148,7 @@ namespace Vital::Engine {
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
 
-    bool Core::is_sandbox_ui_visible() {
+    bool Core::is_input_blocked() {
         static const std::vector<std::function<bool()>> checks = {
             [] { return Engine::Console::has_singleton()     && Engine::Console::get_singleton()  -> is_visible(); },
             [] { return Engine::Splash::has_singleton()      && Engine::Splash::get_singleton()   -> is_visible(); },

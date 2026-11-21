@@ -88,7 +88,7 @@ namespace Vital::Engine {
             bool is_ready();
             #if defined(VSDK_Client)
             bool is_sandbox_ui_ready();
-            bool is_sandbox_ui_visible();
+            bool is_input_blocked();
             void set_window_frame(bool enabled);
             void reveal_window_frame();
             void update_window_frame();
