@@ -150,10 +150,10 @@ namespace Vital::Engine {
 
     bool Core::is_sandbox_ui_visible() {
         static const std::vector<std::function<bool()>> checks = {
-            [] { return Engine::Console::has_singleton()  && Engine::Console::get_singleton()  -> is_visible(); },
-            [] { return Engine::Splash::has_singleton()   && Engine::Splash::get_singleton()   -> is_visible(); },
-            [] { return Engine::MainMenu::has_singleton() && Engine::MainMenu::get_singleton() -> is_visible(); },
-            [] { return Engine::Webview::has_modal(); }
+            [] { return Engine::Console::has_singleton()     && Engine::Console::get_singleton()  -> is_visible(); },
+            [] { return Engine::Splash::has_singleton()      && Engine::Splash::get_singleton()   -> is_visible(); },
+            [] { return Engine::MainMenu::has_singleton()    && Engine::MainMenu::get_singleton() -> is_visible(); },
+            [] { return Engine::Webview::has_input_blocked();                                                      }
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
