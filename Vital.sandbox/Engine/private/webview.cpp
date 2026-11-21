@@ -214,6 +214,13 @@ namespace Vital::Engine {
         return get_z_index() > system_z_floor;
     }
 
+    bool Webview::has_modal() {
+        for (Webview* instance : buffer) {
+            if (!instance -> options.overlay && instance -> modal && instance -> is_visible()) return true;
+        }
+        return false;
+    }
+
 
     // Getters //
     Webview* Webview::get_key_forwarder() {
@@ -235,6 +242,7 @@ namespace Vital::Engine {
 
     // Setters //
     void Webview::set_visible(bool state) {
+        if (!state) modal = false;
         webview -> set_visible(state);
         eval(fmt::format("window.dispatchEvent(new CustomEvent('webview:visible', {{ detail: {{ visible: {} }} }}));", state ? "true" : "false"));
         if (state) update_input_forwarder();
@@ -251,10 +259,12 @@ namespace Vital::Engine {
 
     void Webview::set_focussed(bool state) {
         if (options.overlay) return;
+        if (!state) modal = false;
         if (state) {
             if (!is_visible()) return;
             if (!is_system() && has_visible_system() && key_forwarder != this) key_forwarder -> webview -> call_deferred("focus");
             else {
+                modal = !options.forward_input;
                 webview -> call_deferred("focus");
                 if (!options.forward_input) return;
                 if (input_forwarder == this) return;
@@ -282,7 +292,9 @@ namespace Vital::Engine {
 
     void Webview::set_z_index(int value) {
         webview -> set("window_z_index", value);
+        const bool was_modal = modal;
         set_focussed(true);
+        modal = was_modal;
         update_key_forwarder();
     }
 

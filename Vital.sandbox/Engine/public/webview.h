@@ -58,6 +58,7 @@ namespace Vital::Engine {
             static inline std::vector<Webview*> buffer;
             static inline Webview* key_forwarder = nullptr;
             bool keys_forwarded = false;
+            bool modal = false;
             bool binds_forwarded = false;
 
 
@@ -100,6 +101,7 @@ namespace Vital::Engine {
             bool is_forward_input();
             bool is_devtools_visible();
             bool is_system();
+            static bool has_modal();
 
 
             // Getters //
