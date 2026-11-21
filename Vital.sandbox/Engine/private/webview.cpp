@@ -150,11 +150,15 @@ namespace Vital::Engine {
             const bool beats = !best || (instance -> is_system() && !best -> is_system()) || (instance -> is_system() == best -> is_system() && instance -> get_z_index() >= best -> get_z_index());
             if (beats) best = instance;
         }
+        for (Webview* instance : buffer) {
+            const bool state = !instance -> options.overlay && instance -> is_visible() && (instance == best || instance -> is_system());
+            if (state == instance -> keys_forwarded) continue;
+            instance -> keys_forwarded = state;
+            instance -> eval(fmt::format("window.vsdk_forward_keys = {};", state ? "true" : "false"));
+        }
         if (best == key_forwarder) return;
-        if (key_forwarder) key_forwarder -> eval("window.vsdk_forward_keys = false;");
         key_forwarder = best;
         if (!best) return;
-        best -> eval("window.vsdk_forward_keys = true;");
         best -> webview -> call_deferred("focus");
     }
 
@@ -348,7 +352,7 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
-        if (key_forwarder == this) eval("window.vsdk_forward_keys = true;");
+        if (keys_forwarded) eval("window.vsdk_forward_keys = true;");
         if (binds_forwarded) sync_bind_forwarding();
         signal("preload", Tool::to_std_string(url));
     }
