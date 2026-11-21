@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/mainmenu.h>
 #include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/update.h>
 #include <Vital.sandbox/Manager/public/network.h>
@@ -704,11 +705,10 @@ namespace Vital::Engine {
     // Only meaningful while connected: otherwise there is no game behind the menu to reveal.
     void MainMenu::toggle() {
         if (!is_ready() || !Manager::Network::get_singleton() -> is_connected()) return;
-        if (!is_visible()) {
-            show();
-            return;
-        }
-        if (webview) webview -> emit("{\"action\":\"fadeout\"}");
+        const bool state = !is_visible();
+        if (Engine::Splash::has_singleton() && Engine::Splash::get_singleton() -> is_visible() && state) return;
+        if (state) show();
+        else if (webview) webview -> emit("{\"action\":\"fadeout\"}");
     }
 
     void MainMenu::hide() {
