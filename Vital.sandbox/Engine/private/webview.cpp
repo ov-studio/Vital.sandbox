@@ -147,7 +147,8 @@ namespace Vital::Engine {
         for (Webview* instance : buffer) {
             if (instance -> options.overlay || !instance -> is_visible()) continue;
             if (!instance -> is_system() && (instance -> options.forward_input || !instance -> is_fullscreen())) continue;
-            if (!best || instance -> get_z_index() >= best -> get_z_index()) best = instance;
+            const bool beats = !best || (instance -> is_system() && !best -> is_system()) || (instance -> is_system() == best -> is_system() && instance -> get_z_index() >= best -> get_z_index());
+            if (beats) best = instance;
         }
         if (best == key_forwarder) return;
         if (key_forwarder) key_forwarder -> eval("window.vsdk_forward_keys = false;");
