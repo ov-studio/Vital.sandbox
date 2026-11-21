@@ -44,8 +44,8 @@ namespace Vital::Engine {
 
 
             // Checkers //
-            bool has_mipmaps() const;
             virtual bool is_compressed() const { return false; }
+            bool has_mipmaps() const;
 
 
             // Getters //
