@@ -249,17 +249,15 @@ namespace Vital::Engine {
         if (options.overlay) return;
         if (state) {
             if (!is_visible()) return;
-            // Game webviews can't take the keyboard from an open system UI, the request hands it back to that UI instead
-            if (!is_system() && has_visible_system() && key_forwarder != this) {
-                key_forwarder -> webview -> call_deferred("focus");
-                return;
+            if (!is_system() && has_visible_system() && key_forwarder != this) key_forwarder -> webview -> call_deferred("focus");
+            else {
+                webview -> call_deferred("focus");
+                if (!options.forward_input) return;
+                if (input_forwarder == this) return;
+                if (input_forwarder) input_forwarder -> pause_input_forwarder();
+                input_forwarder = this;
+                eval("window.vsdk_forward_input = true;");
             }
-            webview -> call_deferred("focus");
-            if (!options.forward_input) return;
-            if (input_forwarder == this) return;
-            if (input_forwarder) input_forwarder -> pause_input_forwarder();
-            input_forwarder = this;
-            eval("window.vsdk_forward_input = true;");
         }
         else {
             if (input_forwarder == this) {
