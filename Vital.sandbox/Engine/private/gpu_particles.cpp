@@ -279,20 +279,20 @@ namespace Vital::Engine {
 
 
     // Checkers //
-    bool GPU_Particles::has_draw_shader() const {
-        return draw_shader.is_valid();
-    }
-
-    bool GPU_Particles::has_mesh() const {
-        return !meshes.empty();
-    }
-
     bool GPU_Particles::is_trail_mode() const {
         return trail_mode;
     }
 
     bool GPU_Particles::is_billboard() const {
         return billboard;
+    }
+
+    bool GPU_Particles::has_draw_shader() const {
+        return draw_shader.is_valid();
+    }
+
+    bool GPU_Particles::has_mesh() const {
+        return !meshes.empty();
     }
 
 
