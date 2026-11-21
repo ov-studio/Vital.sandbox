@@ -18,6 +18,7 @@
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Engine/public/splash.h>
 #include <Vital.sandbox/Engine/public/mainmenu.h>
+#include <Vital.sandbox/Engine/public/webview.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/dimension.h>
 #include <Vital.sandbox/Manager/public/kit.h>
@@ -151,7 +152,8 @@ namespace Vital::Engine {
         static const std::vector<std::function<bool()>> checks = {
             [] { return Engine::Console::has_singleton()  && Engine::Console::get_singleton()  -> is_visible(); },
             [] { return Engine::Splash::has_singleton()   && Engine::Splash::get_singleton()   -> is_visible(); },
-            [] { return Engine::MainMenu::has_singleton() && Engine::MainMenu::get_singleton() -> is_visible(); }
+            [] { return Engine::MainMenu::has_singleton() && Engine::MainMenu::get_singleton() -> is_visible(); },
+            [] { return Engine::Webview::has_modal(); }
         };
         return std::any_of(checks.begin(), checks.end(), [](auto& check) { return check(); });
     }
