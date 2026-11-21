@@ -58,6 +58,7 @@ namespace Vital::Engine {
             static inline std::vector<Webview*> buffer;
             static inline Webview* key_forwarder = nullptr;
             bool binds_forwarded = false;
+            bool keys_forwarded = false;
 
 
             // Instantiators //
