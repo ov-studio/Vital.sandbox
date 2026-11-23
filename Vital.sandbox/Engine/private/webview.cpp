@@ -266,12 +266,12 @@ namespace Vital::Engine {
             else {
                 input_blocked = !options.forward_input;
                 webview -> call_deferred("focus");
-                if (!options.forward_input) return;
-                if (input_forwarder == this) return;
-                if (input_forwarder) input_forwarder -> pause_input_forwarder();
-                input_forwarder = this;
-                eval("window.vsdk_forward_input = true;");
             }
+            if (!options.forward_input) return;
+            if (input_forwarder == this) return;
+            if (input_forwarder) input_forwarder -> pause_input_forwarder();
+            input_forwarder = this;
+            eval("window.vsdk_forward_input = true;");
         }
         else {
             if (input_forwarder == this) {
