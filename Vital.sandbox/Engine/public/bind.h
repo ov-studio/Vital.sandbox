@@ -42,17 +42,14 @@ namespace Vital::Engine {
 
 
             // Helpers //
+            static int to_virtual_key(godot::Key key);   // Godot keycode -> Windows virtual key (0 when unknown or not on Windows)
+            static int get_key_state(godot::Key key);    // 1 = down, 0 = up, -1 = the key can't be read from the keyboard (unknown key or not on Windows)
+            static bool is_game_foreground();            // the game window (or one of its webviews) has the keyboard, not another application
             void refresh();
             bool is_available(int type);
             int find(godot::Key keycode);
             void run(int type);
         public:
-            // Keyboard //
-            static int to_virtual_key(godot::Key key);   // Godot keycode -> Windows virtual key (0 when unknown or not on Windows)
-            static int get_key_state(godot::Key key);    // 1 = down, 0 = up, -1 = the key can't be read from the keyboard (unknown key or not on Windows)
-            static bool is_game_foreground();            // the game window (or one of its webviews) has the keyboard, not another application
-
-
             // Managers //
             bool handle_key(godot::InputEventKey* event);   // true when the key was consumed by a bind
             void poll(double delta);                        // reads the binds straight from the keyboard (Windows)
