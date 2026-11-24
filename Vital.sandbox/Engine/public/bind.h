@@ -43,9 +43,9 @@ namespace Vital::Engine {
             static int to_virtual_key(godot::Key key);
             static int get_key_state(godot::Key key);
             static bool is_game_foreground();
-            void refresh();
             bool is_available(int type);
             int find(godot::Key keycode);
+            void refresh();
             void run(int type);
         public:
             // Managers //
