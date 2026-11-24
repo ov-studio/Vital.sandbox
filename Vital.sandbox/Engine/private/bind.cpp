@@ -247,51 +247,60 @@ namespace Vital::Engine {
         #endif
     }
 
-    bool Bind::is_available(int type) {
-        if (keys[type] == godot::Key::KEY_NONE) return false;
-        if (type == mainmenu) return Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected();
-        if (type == screenshot) return Manager::Network::get_singleton() -> is_connected();
-        return true;
+    bool Bind::is_available(const Slot& slot) {
+        if (slot.key == godot::Key::KEY_NONE) return false;
+        switch (slot.type) {
+            case Type::MainMenu: return Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected();
+            case Type::Screenshot: return Manager::Network::get_singleton() -> is_connected();
+            default: return true;
+        }
     }
 
-    int Bind::find(godot::Key keycode) {
-        for (int i = 0; i < count; ++i) {
-            if (keycode == keys[i] && is_available(i)) return i;
+    Bind::Slot* Bind::find(godot::Key keycode) {
+        for (auto& slot : slots) {
+            if (slot.key == keycode && is_available(slot)) return &slot;
         }
-        return -1;
+        return nullptr;
     }
 
     void Bind::refresh() {
-        static constexpr const char* configs[count] = { "config/console", "config/mainmenu", "config/screenshot" };
-        for (int i = 0; i < count; ++i) {
-            const auto bind = Manager::Kit::get_singleton() -> get_json_value(configs[i], "bind");
-            keys[i] = bind.is<std::string>() ? godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>())) : godot::Key::KEY_NONE;
+        for (auto& slot : slots) {
+            const auto bind = Manager::Kit::get_singleton() -> get_json_value(slot.config, "bind");
+            slot.key = bind.is<std::string>() ? godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>())) : godot::Key::KEY_NONE;
         }
     }
 
-    void Bind::run(int type) {
-        if (type == console) Engine::Console::get_singleton() -> toggle();
-        else if (type == mainmenu) Engine::MainMenu::get_singleton() -> toggle();
-        else if (type == screenshot) {
-            auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
-            Engine::Display::get_singleton() -> screenshot(Tool::get_directory("screenshots"), path);
-            log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
+    void Bind::run(const Slot& slot) {
+        switch (slot.type) {
+            case Type::Console: {
+                Engine::Console::get_singleton() -> toggle();
+                break;
+            }
+            case Type::MainMenu: {
+                Engine::MainMenu::get_singleton() -> toggle();
+                break;
+            }
+            case Type::Screenshot: {
+                auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
+                Engine::Display::get_singleton() -> screenshot(Tool::get_directory("screenshots"), path);
+                log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
+                break;
+            }
         }
     }
 
 
     // Managers //
     bool Bind::handle_key(godot::InputEventKey* event) {
-        refresh();
         if (!event -> is_pressed()) return false;
         const auto keycode = event -> get_keycode();
-        const int type = find(keycode);
-        if (type < 0) return false;
+        auto slot = find(keycode);
+        if (!slot) return false;
         const int state = get_key_state(keycode);
-        if (state < 0) run(type);
-        else if (state == 1 && !latched[type]) {
-            latched[type] = true;
-            run(type);
+        if (state < 0) run(*slot);
+        else if (state == 1 && !slot -> latched) {
+            slot -> latched = true;
+            run(*slot);
         }
         return true;
     }
@@ -304,15 +313,14 @@ namespace Vital::Engine {
             refresh();
         }
         const bool foreground = is_game_foreground();
-        for (int i = 0; i < count; ++i) {
-            const int state = get_key_state(keys[i]);
+        for (auto& slot : slots) {
+            const int state = get_key_state(slot.key);
             if (state < 0) continue;
-            const bool down = state == 1;
-            if (!down) latched[i] = false;
-            else if (!foreground) latched[i] = true;
-            else if (!latched[i]) {
-                latched[i] = true;
-                if (is_available(i)) run(i);
+            if (state == 0) slot.latched = false;
+            else if (!foreground) slot.latched = true;
+            else if (!slot.latched) {
+                slot.latched = true;
+                if (is_available(slot)) run(slot);
             }
         }
     }
