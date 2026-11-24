@@ -48,7 +48,7 @@ namespace Vital::Tool {
             static void free_singleton() {
                 if (!singleton) return;
                 singleton -> teardown();
-                memdelete(singleton);
+                godot::memdelete(singleton);
                 singleton = nullptr;
             }
 
