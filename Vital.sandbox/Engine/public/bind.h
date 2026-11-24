@@ -28,16 +28,24 @@ namespace Vital::Engine {
         public:
             static constexpr const char* Name = "Bind.engine";
         private:
-            enum Type { 
-                console, 
-                mainmenu, 
-                screenshot,
-                count 
+            enum class Type {
+                Console,
+                MainMenu,
+                Screenshot
             };
 
-            
-            godot::Key keys[count] = {};
-            bool latched[count] = {};
+            struct Slot {
+                Type type;
+                const char* config;
+                godot::Key key = godot::Key::KEY_NONE;
+                bool latched = false;
+            };
+
+            std::array<Slot, 3> slots = {{
+                { Type::Console,    "config/console"    },
+                { Type::MainMenu,   "config/mainmenu"   },
+                { Type::Screenshot, "config/screenshot" }
+            }};
             double refresh_timer = 0.0;
 
 
@@ -50,10 +58,10 @@ namespace Vital::Engine {
             static int get_key_state(godot::Key key);
             static int get_x11_key_state(int keysym);
             static bool is_game_foreground();
-            bool is_available(int type);
-            int find(godot::Key keycode);
+            bool is_available(const Slot& slot);
+            Slot* find(godot::Key keycode);
             void refresh();
-            void run(int type);
+            void run(const Slot& slot);
         public:
             // Managers //
             bool handle_key(godot::InputEventKey* event);
