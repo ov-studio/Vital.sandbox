@@ -22,37 +22,6 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 
 
-///////////////
-// Helpers //
-///////////////
-
-#if defined(VSDK_LINUX)
-namespace {
-    // X11 is loaded at runtime (no build-time dependency, and nothing happens where it is missing or the session is Wayland)
-    struct X11 {
-        void* display = nullptr;
-        int (*query_keymap)(void*, char*) = nullptr;
-        unsigned char (*keysym_to_keycode)(void*, unsigned long) = nullptr;
-    };
-
-    X11* fetch_x11() {
-        static X11 x11;
-        static bool attempted = false;
-        if (attempted) return x11.display ? &x11 : nullptr;
-        attempted = true;
-        void* lib = dlopen("libX11.so.6", RTLD_LAZY);
-        if (!lib) return nullptr;
-        auto open_display = reinterpret_cast<void* (*)(const char*)>(dlsym(lib, "XOpenDisplay"));
-        x11.query_keymap = reinterpret_cast<int (*)(void*, char*)>(dlsym(lib, "XQueryKeymap"));
-        x11.keysym_to_keycode = reinterpret_cast<unsigned char (*)(void*, unsigned long)>(dlsym(lib, "XKeysymToKeycode"));
-        if (!open_display || !x11.query_keymap || !x11.keysym_to_keycode) return nullptr;
-        x11.display = open_display(nullptr);
-        return x11.display ? &x11 : nullptr;
-    }
-}
-#endif
-
-
 //////////////////////////
 // Vital: Engine: Bind //
 //////////////////////////
@@ -222,14 +191,41 @@ namespace Vital::Engine {
         #elif defined(VSDK_MACOS)
             return CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, static_cast<CGKeyCode>(code)) ? 1 : 0;
         #elif defined(VSDK_LINUX)
+            return get_x11_key_state(code);
+        #else
+            return -1;
+        #endif
+    }
+    
+    int Bind::get_x11_key_state(int keysym) {
+        #if defined(VSDK_LINUX)
+            struct X11 {
+                void* display = nullptr;
+                int (*query_keymap)(void*, char*) = nullptr;
+                unsigned char (*keysym_to_keycode)(void*, unsigned long) = nullptr;
+            };
+            static X11 x11;
+            static bool attempted = false;
+            if (!attempted) {
+                attempted = true;
+                if (void* lib = dlopen("libX11.so.6", RTLD_LAZY)) {
+                    auto open_display = reinterpret_cast<void* (*)(const char*)>(dlsym(lib, "XOpenDisplay"));
+                    auto query_keymap = reinterpret_cast<int (*)(void*, char*)>(dlsym(lib, "XQueryKeymap"));
+                    auto keysym_to_keycode = reinterpret_cast<unsigned char (*)(void*, unsigned long)>(dlsym(lib, "XKeysymToKeycode"));
+                    if (open_display && query_keymap && keysym_to_keycode) {
+                        x11.query_keymap = query_keymap;
+                        x11.keysym_to_keycode = keysym_to_keycode;
+                        x11.display = open_display(nullptr);
+                    }
+                }
+            }
+            if (!x11.display) return -1;
             auto display_server = godot::DisplayServer::get_singleton();
             if (!display_server || display_server -> get_name() != godot::String("X11")) return -1;
-            auto x11 = fetch_x11();
-            if (!x11) return -1;
-            const unsigned char keycode = x11 -> keysym_to_keycode(x11 -> display, static_cast<unsigned long>(code));
+            const unsigned char keycode = x11.keysym_to_keycode(x11.display, static_cast<unsigned long>(keysym));
             if (!keycode) return -1;
             char keymap[32] = {};
-            x11 -> query_keymap(x11 -> display, keymap);
+            x11.query_keymap(x11.display, keymap);
             return (keymap[keycode / 8] >> (keycode % 8)) & 1;
         #else
             return -1;
