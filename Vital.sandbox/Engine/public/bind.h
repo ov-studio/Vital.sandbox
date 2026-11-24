@@ -23,8 +23,6 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    // Engine key binds (console, main menu, screenshot). A bind is consumed once per physical press (latched), whether it arrives
-    // through the Godot input event or through the keyboard poll: a focused webview can delay the key or drop it during a focus hand-off
     class Bind : public Tool::Base<Bind> {
         friend class Tool::Base<Bind>;
         public:
