@@ -188,6 +188,18 @@ namespace Vital::Engine {
         if (!code) return -1;
         #if defined(VSDK_WINDOWS)
             return (GetAsyncKeyState(code) & 0x8000) ? 1 : 0;
+        #elif defined(VSDK_MACOS)
+            return CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, static_cast<CGKeyCode>(code)) ? 1 : 0;
+        #elif defined(VSDK_LINUX)
+            auto display_server = godot::DisplayServer::get_singleton();
+            if (!display_server || display_server -> get_name() != godot::String("X11")) return -1;
+            auto x11 = fetch_x11();
+            if (!x11) return -1;
+            const unsigned char keycode = x11 -> keysym_to_keycode(x11 -> display, static_cast<unsigned long>(code));
+            if (!keycode) return -1;
+            char keymap[32] = {};
+            x11 -> query_keymap(x11 -> display, keymap);
+            return (keymap[keycode / 8] >> (keycode % 8)) & 1;
         #else
             return -1;
         #endif
