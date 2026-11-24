@@ -38,10 +38,12 @@ if os_info["type"] == "Windows":
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["VSDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
+    env.Append(LINKFLAGS=["-framework", "CoreGraphics"])
 elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["VSDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
     env.Append(CXXFLAGS=["-fexceptions"])
+    env.Append(LIBS=["dl"])
 
 
 # Sandbox
