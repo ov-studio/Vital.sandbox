@@ -22,74 +22,11 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 
 
-///////////////
-// Helpers //
-///////////////
+//////////////////////////
+// Vital: Engine: Bind //
+//////////////////////////
 
 // TODO: Improve
-#if defined(VSDK_WINDOWS)
-namespace {
-    // Godot keycode -> Windows virtual key (0 when unknown): lets the binds be read straight from the keyboard
-    int to_virtual_key(godot::Key key) {
-        const int code = static_cast<int>(key);
-        if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F24)) return VK_F1 + (code - static_cast<int>(godot::Key::KEY_F1));
-        if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) return code;
-        switch (key) {
-            case godot::Key::KEY_ESCAPE: return VK_ESCAPE;
-            case godot::Key::KEY_TAB: return VK_TAB;
-            case godot::Key::KEY_BACKSPACE: return VK_BACK;
-            case godot::Key::KEY_ENTER: return VK_RETURN;
-            case godot::Key::KEY_SPACE: return VK_SPACE;
-            case godot::Key::KEY_INSERT: return VK_INSERT;
-            case godot::Key::KEY_DELETE: return VK_DELETE;
-            case godot::Key::KEY_PAUSE: return VK_PAUSE;
-            case godot::Key::KEY_PRINT: return VK_SNAPSHOT;
-            case godot::Key::KEY_HOME: return VK_HOME;
-            case godot::Key::KEY_END: return VK_END;
-            case godot::Key::KEY_LEFT: return VK_LEFT;
-            case godot::Key::KEY_UP: return VK_UP;
-            case godot::Key::KEY_RIGHT: return VK_RIGHT;
-            case godot::Key::KEY_DOWN: return VK_DOWN;
-            case godot::Key::KEY_PAGEUP: return VK_PRIOR;
-            case godot::Key::KEY_PAGEDOWN: return VK_NEXT;
-            case godot::Key::KEY_QUOTELEFT: return VK_OEM_3;
-            case godot::Key::KEY_MINUS: return VK_OEM_MINUS;
-            case godot::Key::KEY_EQUAL: return VK_OEM_PLUS;
-            case godot::Key::KEY_BRACKETLEFT: return VK_OEM_4;
-            case godot::Key::KEY_BRACKETRIGHT: return VK_OEM_6;
-            case godot::Key::KEY_BACKSLASH: return VK_OEM_5;
-            case godot::Key::KEY_SEMICOLON: return VK_OEM_1;
-            case godot::Key::KEY_APOSTROPHE: return VK_OEM_7;
-            case godot::Key::KEY_COMMA: return VK_OEM_COMMA;
-            case godot::Key::KEY_PERIOD: return VK_OEM_PERIOD;
-            case godot::Key::KEY_SLASH: return VK_OEM_2;
-            default: return 0;
-        }
-    }
-
-    // 1 = down, 0 = up, -1 = the key can't be read from the keyboard
-    int get_key_state(godot::Key key) {
-        const int code = to_virtual_key(key);
-        if (!code) return -1;
-        return (GetAsyncKeyState(code) & 0x8000) ? 1 : 0;
-    }
-
-    // The game window (or one of its webviews) has the keyboard, not another application
-    bool is_game_foreground() {
-        HWND window = GetForegroundWindow();
-        if (!window) return false;
-        DWORD process = 0;
-        GetWindowThreadProcessId(window, &process);
-        return process == GetCurrentProcessId();
-    }
-}
-#endif
-
-
-/////////////////////////
-// Vital: Engine: Bind //
-/////////////////////////
-
 namespace Vital::Engine {
     // Helpers //
     void Bind::refresh() {
@@ -125,6 +62,71 @@ namespace Vital::Engine {
     }
 
 
+    // Keyboard //
+    int Bind::to_virtual_key(godot::Key key) {
+        #if defined(VSDK_WINDOWS)
+        const int code = static_cast<int>(key);
+        if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F24)) return VK_F1 + (code - static_cast<int>(godot::Key::KEY_F1));
+        if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) return code;
+        switch (key) {
+            case godot::Key::KEY_ESCAPE: return VK_ESCAPE;
+            case godot::Key::KEY_TAB: return VK_TAB;
+            case godot::Key::KEY_BACKSPACE: return VK_BACK;
+            case godot::Key::KEY_ENTER: return VK_RETURN;
+            case godot::Key::KEY_SPACE: return VK_SPACE;
+            case godot::Key::KEY_INSERT: return VK_INSERT;
+            case godot::Key::KEY_DELETE: return VK_DELETE;
+            case godot::Key::KEY_PAUSE: return VK_PAUSE;
+            case godot::Key::KEY_PRINT: return VK_SNAPSHOT;
+            case godot::Key::KEY_HOME: return VK_HOME;
+            case godot::Key::KEY_END: return VK_END;
+            case godot::Key::KEY_LEFT: return VK_LEFT;
+            case godot::Key::KEY_UP: return VK_UP;
+            case godot::Key::KEY_RIGHT: return VK_RIGHT;
+            case godot::Key::KEY_DOWN: return VK_DOWN;
+            case godot::Key::KEY_PAGEUP: return VK_PRIOR;
+            case godot::Key::KEY_PAGEDOWN: return VK_NEXT;
+            case godot::Key::KEY_QUOTELEFT: return VK_OEM_3;
+            case godot::Key::KEY_MINUS: return VK_OEM_MINUS;
+            case godot::Key::KEY_EQUAL: return VK_OEM_PLUS;
+            case godot::Key::KEY_BRACKETLEFT: return VK_OEM_4;
+            case godot::Key::KEY_BRACKETRIGHT: return VK_OEM_6;
+            case godot::Key::KEY_BACKSLASH: return VK_OEM_5;
+            case godot::Key::KEY_SEMICOLON: return VK_OEM_1;
+            case godot::Key::KEY_APOSTROPHE: return VK_OEM_7;
+            case godot::Key::KEY_COMMA: return VK_OEM_COMMA;
+            case godot::Key::KEY_PERIOD: return VK_OEM_PERIOD;
+            case godot::Key::KEY_SLASH: return VK_OEM_2;
+            default: return 0;
+        }
+        #else
+        return 0;
+        #endif
+    }
+
+    int Bind::get_key_state(godot::Key key) {
+        const int code = to_virtual_key(key);
+        if (!code) return -1;
+        #if defined(VSDK_WINDOWS)
+        return (GetAsyncKeyState(code) & 0x8000) ? 1 : 0;
+        #else
+        return -1;
+        #endif
+    }
+
+    bool Bind::is_game_foreground() {
+        #if defined(VSDK_WINDOWS)
+        HWND window = GetForegroundWindow();
+        if (!window) return false;
+        DWORD process = 0;
+        GetWindowThreadProcessId(window, &process);
+        return process == GetCurrentProcessId();
+        #else
+        return true;
+        #endif
+    }
+
+
     // Managers //
     bool Bind::handle_key(godot::InputEventKey* event) {
         refresh();
@@ -134,25 +136,21 @@ namespace Vital::Engine {
         const auto keycode = event -> get_keycode();
         const int type = find(keycode);
         if (type < 0) return false;
-        #if defined(VSDK_WINDOWS)
         // The poll consumes the press first (and only it unlatches, once the key is really up). The page forwards the same key later,
-        // after a frame hitch even once it is released, so a copy is only acted on while the key is really down and not consumed yet
+        // after a frame hitch even once it is released, so a copy is only acted on while the key is really down and not consumed yet.
+        // A key that can't be read from the keyboard (state < 0, e.g. not on Windows) is acted on directly
         const int state = get_key_state(keycode);
         if (state < 0) run(type);
         else if (state == 1 && !latched[type]) {
             latched[type] = true;
             run(type);
         }
-        #else
-        run(type);
-        #endif
         return true;
     }
 
-    // Reads the binds straight from the keyboard every frame (Windows): while a webview owns the keyboard the key reaches the game only
+    // Reads the binds straight from the keyboard every frame (a no-op where the keys can't be read, i.e. not on Windows): while a webview owns the keyboard the key reaches the game only
     // through the page, which is delayed and loses the key whenever the focus is being handed over (console / menu opening, a click)
     void Bind::poll(double delta) {
-        #if defined(VSDK_WINDOWS)
         if (!Manager::Kit::get_singleton()) return;
         refresh_timer -= delta;
         if (refresh_timer <= 0.0) {
@@ -161,9 +159,9 @@ namespace Vital::Engine {
         }
         const bool foreground = is_game_foreground();
         for (int i = 0; i < count; ++i) {
-            const int key = to_virtual_key(keys[i]);
-            if (!key) continue;
-            const bool down = (GetAsyncKeyState(key) & 0x8000) != 0;
+            const int state = get_key_state(keys[i]);
+            if (state < 0) continue;
+            const bool down = state == 1;
             if (!down) latched[i] = false;
             else if (!foreground) latched[i] = true;
             else if (!latched[i]) {
@@ -171,7 +169,6 @@ namespace Vital::Engine {
                 if (is_available(i)) run(i);
             }
         }
-        #endif
     }
 }
 #endif
