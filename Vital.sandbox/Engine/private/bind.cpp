@@ -35,7 +35,7 @@ namespace Vital::Engine {
     #elif defined(VSDK_LINUX)
         #define NATIVE(key, win, mac, x11) { godot::Key::key, x11 }
     #else
-        #define NATIVE(key, win, mac, x11) { godot::Key::key, 0 }
+        #define NATIVE(key, win, mac, x11) { godot::Key::key, 0   }
     #endif
 
     int Bind::to_virtual_key(godot::Key key) {
@@ -57,6 +57,7 @@ namespace Vital::Engine {
             if (code >= 'A' && code <= 'Z') return code + ('a' - 'A');
             if (code >= '0' && code <= '9') return code;
         #endif
+
         static constexpr Native natives[] = {
             NATIVE(KEY_ESCAPE,        VK_ESCAPE,            53,  0xff1b),
             NATIVE(KEY_TAB,           VK_TAB,               48,  0xff09),
