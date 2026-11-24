@@ -14,14 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Manager/public/network.h>
-#include <Vital.sandbox/Manager/public/kit.h>
-#include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/Engine/public/display.h>
-#include <Vital.sandbox/Engine/public/mainmenu.h>
-#include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Engine/public/bind.h>
 #include <Vital.sandbox/Engine/public/webview.h>
-
 
 //////////////////////////////
 // Vital: Manager: Sandbox //
@@ -56,6 +50,7 @@ namespace Vital::Manager {
 
     void Sandbox::process(double delta) {
         #if defined(VSDK_Client)
+        Engine::Bind::get_singleton() -> poll(delta);
         if (!Engine::Core::get_singleton() -> is_sandbox_ui_ready()) return;
         #endif
         signal("sandbox:process", Tool::StackValue(delta));
@@ -78,31 +73,9 @@ namespace Vital::Manager {
         const bool forward_input = !Engine::Webview::get_key_forwarder();
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
-            if (event_key -> is_pressed()) {
-                bool handled = false;
-                auto keycode = event_key -> get_keycode();
-                auto resolve = [](const std::string& config, const std::string& key) {
-                    const auto bind = Manager::Kit::get_singleton() -> get_json_value(config, key);
-                    return godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()));
-                };
-
-                if (keycode == resolve("config/console", "bind")) {
-                    handled = true;
-                    Engine::Console::get_singleton() -> toggle();
-                }
-                else if (keycode == resolve("config/mainmenu", "bind") && Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected()) {
-                    handled = true;
-                    Engine::MainMenu::get_singleton() -> toggle();
-                }
-                else if ((keycode == resolve("config/screenshot", "bind"))) {
-                    if (Manager::Network::get_singleton() -> is_connected()) {
-                        handled = true;
-                        auto path = fmt::format("{}.png", Tool::get_timestamp_tag());
-                        Engine::Display::get_singleton() -> screenshot(Tool::get_directory("screenshots"), path);
-                        log("sbox", fmt::format("screenshot saved to `screenshots/{}`", path));
-                    }
-                }
-                if (handled) { Engine::Core::get_scene_root() -> set_input_as_handled(); return; }
+            if (Engine::Bind::get_singleton() -> handle_key(event_key)) {
+                Engine::Core::get_scene_root() -> set_input_as_handled();
+                return;
             }
 
             if (!forward_input) return;

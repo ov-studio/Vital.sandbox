@@ -87,6 +87,7 @@ void vsdk_initialize() {
         Vital::Engine::MainMenu::free_singleton();
         Vital::Engine::Canvas::free_singleton();
         Vital::Engine::Display::free_singleton();
+        Vital::Engine::Bind::free_singleton();
         Vital::Engine::Monitor::free_singleton();
         Vital::Manager::Discord::free_singleton();
         #endif
