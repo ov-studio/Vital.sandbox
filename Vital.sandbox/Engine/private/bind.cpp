@@ -22,6 +22,37 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 
 
+///////////////
+// Helpers //
+///////////////
+
+#if defined(VSDK_LINUX)
+namespace {
+    // X11 is loaded at runtime (no build-time dependency, and nothing happens where it is missing or the session is Wayland)
+    struct X11 {
+        void* display = nullptr;
+        int (*query_keymap)(void*, char*) = nullptr;
+        unsigned char (*keysym_to_keycode)(void*, unsigned long) = nullptr;
+    };
+
+    X11* fetch_x11() {
+        static X11 x11;
+        static bool attempted = false;
+        if (attempted) return x11.display ? &x11 : nullptr;
+        attempted = true;
+        void* lib = dlopen("libX11.so.6", RTLD_LAZY);
+        if (!lib) return nullptr;
+        auto open_display = reinterpret_cast<void* (*)(const char*)>(dlsym(lib, "XOpenDisplay"));
+        x11.query_keymap = reinterpret_cast<int (*)(void*, char*)>(dlsym(lib, "XQueryKeymap"));
+        x11.keysym_to_keycode = reinterpret_cast<unsigned char (*)(void*, unsigned long)>(dlsym(lib, "XKeysymToKeycode"));
+        if (!open_display || !x11.query_keymap || !x11.keysym_to_keycode) return nullptr;
+        x11.display = open_display(nullptr);
+        return x11.display ? &x11 : nullptr;
+    }
+}
+#endif
+
+
 //////////////////////////
 // Vital: Engine: Bind //
 //////////////////////////
