@@ -28,160 +28,109 @@
 
 namespace Vital::Engine {
     // Helpers //
+    // One row per key: the Windows virtual key, the macOS virtual keycode and the X11 keysym (0 = not mapped on that platform)
+    #if defined(VSDK_WINDOWS)
+        #define NATIVE(key, win, mac, x11) { godot::Key::key, win }
+    #elif defined(VSDK_MACOS)
+        #define NATIVE(key, win, mac, x11) { godot::Key::key, mac }
+    #elif defined(VSDK_LINUX)
+        #define NATIVE(key, win, mac, x11) { godot::Key::key, x11 }
+    #else
+        #define NATIVE(key, win, mac, x11) { godot::Key::key, 0 }
+    #endif
+
     int Bind::to_virtual_key(godot::Key key) {
         const int code = static_cast<int>(key);
+        const int function = code - static_cast<int>(godot::Key::KEY_F1);
+        const int keypad = code - static_cast<int>(godot::Key::KEY_KP_0);
         #if defined(VSDK_WINDOWS)
-            if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F24)) return VK_F1 + (code - static_cast<int>(godot::Key::KEY_F1));
-            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return VK_NUMPAD0 + (code - static_cast<int>(godot::Key::KEY_KP_0));
+            if (function >= 0 && function < 24) return VK_F1 + function;
+            if (keypad >= 0 && keypad < 10) return VK_NUMPAD0 + keypad;
             if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) return code;
-            switch (key) {
-                case godot::Key::KEY_ESCAPE: return VK_ESCAPE;
-                case godot::Key::KEY_TAB: return VK_TAB;
-                case godot::Key::KEY_BACKSPACE: return VK_BACK;
-                case godot::Key::KEY_ENTER: return VK_RETURN;
-                case godot::Key::KEY_KP_ENTER: return VK_RETURN;
-                case godot::Key::KEY_SPACE: return VK_SPACE;
-                case godot::Key::KEY_INSERT: return VK_INSERT;
-                case godot::Key::KEY_DELETE: return VK_DELETE;
-                case godot::Key::KEY_PAUSE: return VK_PAUSE;
-                case godot::Key::KEY_PRINT: return VK_SNAPSHOT;
-                case godot::Key::KEY_CLEAR: return VK_CLEAR;
-                case godot::Key::KEY_HELP: return VK_HELP;
-                case godot::Key::KEY_MENU: return VK_APPS;
-                case godot::Key::KEY_HOME: return VK_HOME;
-                case godot::Key::KEY_END: return VK_END;
-                case godot::Key::KEY_LEFT: return VK_LEFT;
-                case godot::Key::KEY_UP: return VK_UP;
-                case godot::Key::KEY_RIGHT: return VK_RIGHT;
-                case godot::Key::KEY_DOWN: return VK_DOWN;
-                case godot::Key::KEY_PAGEUP: return VK_PRIOR;
-                case godot::Key::KEY_PAGEDOWN: return VK_NEXT;
-                case godot::Key::KEY_SHIFT: return VK_SHIFT;
-                case godot::Key::KEY_CTRL: return VK_CONTROL;
-                case godot::Key::KEY_ALT: return VK_MENU;
-                case godot::Key::KEY_META: return VK_LWIN;
-                case godot::Key::KEY_CAPSLOCK: return VK_CAPITAL;
-                case godot::Key::KEY_NUMLOCK: return VK_NUMLOCK;
-                case godot::Key::KEY_SCROLLLOCK: return VK_SCROLL;
-                case godot::Key::KEY_KP_MULTIPLY: return VK_MULTIPLY;
-                case godot::Key::KEY_KP_ADD: return VK_ADD;
-                case godot::Key::KEY_KP_SUBTRACT: return VK_SUBTRACT;
-                case godot::Key::KEY_KP_PERIOD: return VK_DECIMAL;
-                case godot::Key::KEY_KP_DIVIDE: return VK_DIVIDE;
-                case godot::Key::KEY_QUOTELEFT: return VK_OEM_3;
-                case godot::Key::KEY_MINUS: return VK_OEM_MINUS;
-                case godot::Key::KEY_EQUAL: return VK_OEM_PLUS;
-                case godot::Key::KEY_BRACKETLEFT: return VK_OEM_4;
-                case godot::Key::KEY_BRACKETRIGHT: return VK_OEM_6;
-                case godot::Key::KEY_BACKSLASH: return VK_OEM_5;
-                case godot::Key::KEY_SEMICOLON: return VK_OEM_1;
-                case godot::Key::KEY_APOSTROPHE: return VK_OEM_7;
-                case godot::Key::KEY_COMMA: return VK_OEM_COMMA;
-                case godot::Key::KEY_PERIOD: return VK_OEM_PERIOD;
-                case godot::Key::KEY_SLASH: return VK_OEM_2;
-                case godot::Key::KEY_BACK: return VK_BROWSER_BACK;
-                case godot::Key::KEY_FORWARD: return VK_BROWSER_FORWARD;
-                case godot::Key::KEY_REFRESH: return VK_BROWSER_REFRESH;
-                case godot::Key::KEY_STOP: return VK_BROWSER_STOP;
-                case godot::Key::KEY_SEARCH: return VK_BROWSER_SEARCH;
-                case godot::Key::KEY_FAVORITES: return VK_BROWSER_FAVORITES;
-                case godot::Key::KEY_HOMEPAGE: return VK_BROWSER_HOME;
-                case godot::Key::KEY_VOLUMEDOWN: return VK_VOLUME_DOWN;
-                case godot::Key::KEY_VOLUMEMUTE: return VK_VOLUME_MUTE;
-                case godot::Key::KEY_VOLUMEUP: return VK_VOLUME_UP;
-                case godot::Key::KEY_MEDIAPLAY: return VK_MEDIA_PLAY_PAUSE;
-                case godot::Key::KEY_MEDIASTOP: return VK_MEDIA_STOP;
-                case godot::Key::KEY_MEDIAPREVIOUS: return VK_MEDIA_PREV_TRACK;
-                case godot::Key::KEY_MEDIANEXT: return VK_MEDIA_NEXT_TRACK;
-                default: return 0;
-            }
         #elif defined(VSDK_MACOS)
+            // Physical positions: letters, digits and symbols move with the keyboard layout (AZERTY...), so only layout independent keys are mapped
             static constexpr int function_keys[] = { 122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111, 105, 107, 113, 106, 64, 79, 80, 90 };
             static constexpr int keypad_keys[] = { 82, 83, 84, 85, 86, 87, 88, 89, 91, 92 };
-            if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F20)) return function_keys[code - static_cast<int>(godot::Key::KEY_F1)];
-            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return keypad_keys[code - static_cast<int>(godot::Key::KEY_KP_0)];
-            switch (key) {
-                case godot::Key::KEY_ESCAPE: return 53;
-                case godot::Key::KEY_TAB: return 48;
-                case godot::Key::KEY_BACKSPACE: return 51;
-                case godot::Key::KEY_ENTER: return 36;
-                case godot::Key::KEY_KP_ENTER: return 76;
-                case godot::Key::KEY_SPACE: return 49;
-                case godot::Key::KEY_INSERT: return 114;
-                case godot::Key::KEY_DELETE: return 117;
-                case godot::Key::KEY_HOME: return 115;
-                case godot::Key::KEY_END: return 119;
-                case godot::Key::KEY_PAGEUP: return 116;
-                case godot::Key::KEY_PAGEDOWN: return 121;
-                case godot::Key::KEY_LEFT: return 123;
-                case godot::Key::KEY_RIGHT: return 124;
-                case godot::Key::KEY_DOWN: return 125;
-                case godot::Key::KEY_UP: return 126;
-                case godot::Key::KEY_SHIFT: return 56;
-                case godot::Key::KEY_CTRL: return 59;
-                case godot::Key::KEY_ALT: return 58;
-                case godot::Key::KEY_META: return 55;
-                case godot::Key::KEY_CAPSLOCK: return 57;
-                case godot::Key::KEY_KP_PERIOD: return 65;
-                case godot::Key::KEY_KP_MULTIPLY: return 67;
-                case godot::Key::KEY_KP_ADD: return 69;
-                case godot::Key::KEY_KP_DIVIDE: return 75;
-                case godot::Key::KEY_KP_SUBTRACT: return 78;
-                default: return 0;
-            }
+            if (function >= 0 && function < 20) return function_keys[function];
+            if (keypad >= 0 && keypad < 10) return keypad_keys[keypad];
         #elif defined(VSDK_LINUX)
-            if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F35)) return 0xffbe + (code - static_cast<int>(godot::Key::KEY_F1));
-            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return 0xffb0 + (code - static_cast<int>(godot::Key::KEY_KP_0));
+            if (function >= 0 && function < 35) return 0xffbe + function;
+            if (keypad >= 0 && keypad < 10) return 0xffb0 + keypad;
             if (code >= 'A' && code <= 'Z') return code + ('a' - 'A');
             if (code >= '0' && code <= '9') return code;
-            switch (key) {
-                case godot::Key::KEY_ESCAPE: return 0xff1b;
-                case godot::Key::KEY_TAB: return 0xff09;
-                case godot::Key::KEY_BACKSPACE: return 0xff08;
-                case godot::Key::KEY_ENTER: return 0xff0d;
-                case godot::Key::KEY_KP_ENTER: return 0xff8d;
-                case godot::Key::KEY_SPACE: return 0x20;
-                case godot::Key::KEY_INSERT: return 0xff63;
-                case godot::Key::KEY_DELETE: return 0xffff;
-                case godot::Key::KEY_PAUSE: return 0xff13;
-                case godot::Key::KEY_PRINT: return 0xff61;
-                case godot::Key::KEY_MENU: return 0xff67;
-                case godot::Key::KEY_HOME: return 0xff50;
-                case godot::Key::KEY_LEFT: return 0xff51;
-                case godot::Key::KEY_UP: return 0xff52;
-                case godot::Key::KEY_RIGHT: return 0xff53;
-                case godot::Key::KEY_DOWN: return 0xff54;
-                case godot::Key::KEY_PAGEUP: return 0xff55;
-                case godot::Key::KEY_PAGEDOWN: return 0xff56;
-                case godot::Key::KEY_END: return 0xff57;
-                case godot::Key::KEY_SHIFT: return 0xffe1;
-                case godot::Key::KEY_CTRL: return 0xffe3;
-                case godot::Key::KEY_ALT: return 0xffe9;
-                case godot::Key::KEY_CAPSLOCK: return 0xffe5;
-                case godot::Key::KEY_NUMLOCK: return 0xff7f;
-                case godot::Key::KEY_SCROLLLOCK: return 0xff14;
-                case godot::Key::KEY_KP_MULTIPLY: return 0xffaa;
-                case godot::Key::KEY_KP_ADD: return 0xffab;
-                case godot::Key::KEY_KP_SUBTRACT: return 0xffad;
-                case godot::Key::KEY_KP_PERIOD: return 0xffae;
-                case godot::Key::KEY_KP_DIVIDE: return 0xffaf;
-                case godot::Key::KEY_QUOTELEFT: return 0x60;
-                case godot::Key::KEY_MINUS: return 0x2d;
-                case godot::Key::KEY_EQUAL: return 0x3d;
-                case godot::Key::KEY_BRACKETLEFT: return 0x5b;
-                case godot::Key::KEY_BACKSLASH: return 0x5c;
-                case godot::Key::KEY_BRACKETRIGHT: return 0x5d;
-                case godot::Key::KEY_SEMICOLON: return 0x3b;
-                case godot::Key::KEY_APOSTROPHE: return 0x27;
-                case godot::Key::KEY_COMMA: return 0x2c;
-                case godot::Key::KEY_PERIOD: return 0x2e;
-                case godot::Key::KEY_SLASH: return 0x2f;
-                default: return 0;
-            }
-        #else
-            return 0;
         #endif
+
+        struct Native {
+            godot::Key key;
+            int code;
+        };
+        
+        static constexpr Native natives[] = {
+            NATIVE(KEY_ESCAPE,        VK_ESCAPE,            53,  0xff1b),
+            NATIVE(KEY_TAB,           VK_TAB,               48,  0xff09),
+            NATIVE(KEY_BACKSPACE,     VK_BACK,              51,  0xff08),
+            NATIVE(KEY_ENTER,         VK_RETURN,            36,  0xff0d),
+            NATIVE(KEY_KP_ENTER,      VK_RETURN,            76,  0xff8d),
+            NATIVE(KEY_SPACE,         VK_SPACE,             49,  0x20),
+            NATIVE(KEY_INSERT,        VK_INSERT,            114, 0xff63),
+            NATIVE(KEY_DELETE,        VK_DELETE,            117, 0xffff),
+            NATIVE(KEY_PAUSE,         VK_PAUSE,             0,   0xff13),
+            NATIVE(KEY_PRINT,         VK_SNAPSHOT,          0,   0xff61),
+            NATIVE(KEY_CLEAR,         VK_CLEAR,             0,   0),
+            NATIVE(KEY_HELP,          VK_HELP,              0,   0),
+            NATIVE(KEY_MENU,          VK_APPS,              0,   0xff67),
+            NATIVE(KEY_HOME,          VK_HOME,              115, 0xff50),
+            NATIVE(KEY_END,           VK_END,               119, 0xff57),
+            NATIVE(KEY_LEFT,          VK_LEFT,              123, 0xff51),
+            NATIVE(KEY_UP,            VK_UP,                126, 0xff52),
+            NATIVE(KEY_RIGHT,         VK_RIGHT,             124, 0xff53),
+            NATIVE(KEY_DOWN,          VK_DOWN,              125, 0xff54),
+            NATIVE(KEY_PAGEUP,        VK_PRIOR,             116, 0xff55),
+            NATIVE(KEY_PAGEDOWN,      VK_NEXT,              121, 0xff56),
+            NATIVE(KEY_SHIFT,         VK_SHIFT,             56,  0xffe1),
+            NATIVE(KEY_CTRL,          VK_CONTROL,           59,  0xffe3),
+            NATIVE(KEY_ALT,           VK_MENU,              58,  0xffe9),
+            NATIVE(KEY_META,          VK_LWIN,              55,  0),
+            NATIVE(KEY_CAPSLOCK,      VK_CAPITAL,           57,  0xffe5),
+            NATIVE(KEY_NUMLOCK,       VK_NUMLOCK,           0,   0xff7f),
+            NATIVE(KEY_SCROLLLOCK,    VK_SCROLL,            0,   0xff14),
+            NATIVE(KEY_KP_MULTIPLY,   VK_MULTIPLY,          67,  0xffaa),
+            NATIVE(KEY_KP_ADD,        VK_ADD,               69,  0xffab),
+            NATIVE(KEY_KP_SUBTRACT,   VK_SUBTRACT,          78,  0xffad),
+            NATIVE(KEY_KP_PERIOD,     VK_DECIMAL,           65,  0xffae),
+            NATIVE(KEY_KP_DIVIDE,     VK_DIVIDE,            75,  0xffaf),
+            NATIVE(KEY_QUOTELEFT,     VK_OEM_3,             0,   0x60),
+            NATIVE(KEY_MINUS,         VK_OEM_MINUS,         0,   0x2d),
+            NATIVE(KEY_EQUAL,         VK_OEM_PLUS,          0,   0x3d),
+            NATIVE(KEY_BRACKETLEFT,   VK_OEM_4,             0,   0x5b),
+            NATIVE(KEY_BRACKETRIGHT,  VK_OEM_6,             0,   0x5d),
+            NATIVE(KEY_BACKSLASH,     VK_OEM_5,             0,   0x5c),
+            NATIVE(KEY_SEMICOLON,     VK_OEM_1,             0,   0x3b),
+            NATIVE(KEY_APOSTROPHE,    VK_OEM_7,             0,   0x27),
+            NATIVE(KEY_COMMA,         VK_OEM_COMMA,         0,   0x2c),
+            NATIVE(KEY_PERIOD,        VK_OEM_PERIOD,        0,   0x2e),
+            NATIVE(KEY_SLASH,         VK_OEM_2,             0,   0x2f),
+            NATIVE(KEY_BACK,          VK_BROWSER_BACK,      0,   0),
+            NATIVE(KEY_FORWARD,       VK_BROWSER_FORWARD,   0,   0),
+            NATIVE(KEY_REFRESH,       VK_BROWSER_REFRESH,   0,   0),
+            NATIVE(KEY_STOP,          VK_BROWSER_STOP,      0,   0),
+            NATIVE(KEY_SEARCH,        VK_BROWSER_SEARCH,    0,   0),
+            NATIVE(KEY_FAVORITES,     VK_BROWSER_FAVORITES, 0,   0),
+            NATIVE(KEY_HOMEPAGE,      VK_BROWSER_HOME,      0,   0),
+            NATIVE(KEY_VOLUMEDOWN,    VK_VOLUME_DOWN,       0,   0),
+            NATIVE(KEY_VOLUMEMUTE,    VK_VOLUME_MUTE,       0,   0),
+            NATIVE(KEY_VOLUMEUP,      VK_VOLUME_UP,         0,   0),
+            NATIVE(KEY_MEDIAPLAY,     VK_MEDIA_PLAY_PAUSE,  0,   0),
+            NATIVE(KEY_MEDIASTOP,     VK_MEDIA_STOP,        0,   0),
+            NATIVE(KEY_MEDIAPREVIOUS, VK_MEDIA_PREV_TRACK,  0,   0),
+            NATIVE(KEY_MEDIANEXT,     VK_MEDIA_NEXT_TRACK,  0,   0)
+        };
+        for (const auto& native : natives) {
+            if (native.key == key) return native.code;
+        }
+        return 0;
     }
+    #undef NATIVE
 
     int Bind::get_key_state(godot::Key key) {
         const int code = to_virtual_key(key);
