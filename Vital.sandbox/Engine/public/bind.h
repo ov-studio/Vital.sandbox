@@ -33,6 +33,11 @@ namespace Vital::Engine {
                 Screenshot
             };
 
+            struct Native {
+                godot::Key key;
+                int code;
+            };
+
             struct Slot {
                 Type type;
                 const char* config;
