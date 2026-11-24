@@ -28,7 +28,6 @@
 
 namespace Vital::Engine {
     // Helpers //
-    // One row per key: the Windows virtual key, the macOS virtual keycode and the X11 keysym (0 = not mapped on that platform)
     #if defined(VSDK_WINDOWS)
         #define NATIVE(key, win, mac, x11) { godot::Key::key, win }
     #elif defined(VSDK_MACOS)
@@ -48,7 +47,6 @@ namespace Vital::Engine {
             if (keypad >= 0 && keypad < 10) return VK_NUMPAD0 + keypad;
             if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) return code;
         #elif defined(VSDK_MACOS)
-            // Physical positions: letters, digits and symbols move with the keyboard layout (AZERTY...), so only layout independent keys are mapped
             static constexpr int function_keys[] = { 122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111, 105, 107, 113, 106, 64, 79, 80, 90 };
             static constexpr int keypad_keys[] = { 82, 83, 84, 85, 86, 87, 88, 89, 91, 92 };
             if (function >= 0 && function < 20) return function_keys[function];
@@ -64,7 +62,7 @@ namespace Vital::Engine {
             godot::Key key;
             int code;
         };
-        
+
         static constexpr Native natives[] = {
             NATIVE(KEY_ESCAPE,        VK_ESCAPE,            53,  0xff1b),
             NATIVE(KEY_TAB,           VK_TAB,               48,  0xff09),
