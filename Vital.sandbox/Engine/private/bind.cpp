@@ -38,11 +38,15 @@ namespace Vital::Engine {
                 case godot::Key::KEY_TAB: return VK_TAB;
                 case godot::Key::KEY_BACKSPACE: return VK_BACK;
                 case godot::Key::KEY_ENTER: return VK_RETURN;
+                case godot::Key::KEY_KP_ENTER: return VK_RETURN;
                 case godot::Key::KEY_SPACE: return VK_SPACE;
                 case godot::Key::KEY_INSERT: return VK_INSERT;
                 case godot::Key::KEY_DELETE: return VK_DELETE;
                 case godot::Key::KEY_PAUSE: return VK_PAUSE;
                 case godot::Key::KEY_PRINT: return VK_SNAPSHOT;
+                case godot::Key::KEY_CLEAR: return VK_CLEAR;
+                case godot::Key::KEY_HELP: return VK_HELP;
+                case godot::Key::KEY_MENU: return VK_APPS;
                 case godot::Key::KEY_HOME: return VK_HOME;
                 case godot::Key::KEY_END: return VK_END;
                 case godot::Key::KEY_LEFT: return VK_LEFT;
@@ -51,6 +55,18 @@ namespace Vital::Engine {
                 case godot::Key::KEY_DOWN: return VK_DOWN;
                 case godot::Key::KEY_PAGEUP: return VK_PRIOR;
                 case godot::Key::KEY_PAGEDOWN: return VK_NEXT;
+                case godot::Key::KEY_SHIFT: return VK_SHIFT;
+                case godot::Key::KEY_CTRL: return VK_CONTROL;
+                case godot::Key::KEY_ALT: return VK_MENU;
+                case godot::Key::KEY_META: return VK_LWIN;
+                case godot::Key::KEY_CAPSLOCK: return VK_CAPITAL;
+                case godot::Key::KEY_NUMLOCK: return VK_NUMLOCK;
+                case godot::Key::KEY_SCROLLLOCK: return VK_SCROLL;
+                case godot::Key::KEY_KP_MULTIPLY: return VK_MULTIPLY;
+                case godot::Key::KEY_KP_ADD: return VK_ADD;
+                case godot::Key::KEY_KP_SUBTRACT: return VK_SUBTRACT;
+                case godot::Key::KEY_KP_PERIOD: return VK_DECIMAL;
+                case godot::Key::KEY_KP_DIVIDE: return VK_DIVIDE;
                 case godot::Key::KEY_QUOTELEFT: return VK_OEM_3;
                 case godot::Key::KEY_MINUS: return VK_OEM_MINUS;
                 case godot::Key::KEY_EQUAL: return VK_OEM_PLUS;
@@ -62,6 +78,22 @@ namespace Vital::Engine {
                 case godot::Key::KEY_COMMA: return VK_OEM_COMMA;
                 case godot::Key::KEY_PERIOD: return VK_OEM_PERIOD;
                 case godot::Key::KEY_SLASH: return VK_OEM_2;
+                case godot::Key::KEY_BACK: return VK_BROWSER_BACK;
+                case godot::Key::KEY_FORWARD: return VK_BROWSER_FORWARD;
+                case godot::Key::KEY_REFRESH: return VK_BROWSER_REFRESH;
+                case godot::Key::KEY_STOP: return VK_BROWSER_STOP;
+                case godot::Key::KEY_SEARCH: return VK_BROWSER_SEARCH;
+                case godot::Key::KEY_FAVORITES: return VK_BROWSER_FAVORITES;
+                case godot::Key::KEY_HOMEPAGE: return VK_BROWSER_HOME;
+                case godot::Key::KEY_VOLUMEDOWN: return VK_VOLUME_DOWN;
+                case godot::Key::KEY_VOLUMEMUTE: return VK_VOLUME_MUTE;
+                case godot::Key::KEY_VOLUMEUP: return VK_VOLUME_UP;
+                case godot::Key::KEY_MEDIAPLAY: return VK_MEDIA_PLAY_PAUSE;
+                case godot::Key::KEY_MEDIASTOP: return VK_MEDIA_STOP;
+                case godot::Key::KEY_MEDIAPREVIOUS: return VK_MEDIA_PREV_TRACK;
+                case godot::Key::KEY_MEDIANEXT: return VK_MEDIA_NEXT_TRACK;
+                default: return 0;
+            }
                 default: return 0;
             }
         #else
