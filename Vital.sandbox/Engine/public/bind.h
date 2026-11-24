@@ -48,6 +48,7 @@ namespace Vital::Engine {
             // Helpers //
             static int to_virtual_key(godot::Key key);
             static int get_key_state(godot::Key key);
+            static int get_x11_key_state(int keysym);
             static bool is_game_foreground();
             bool is_available(int type);
             int find(godot::Key keycode);
