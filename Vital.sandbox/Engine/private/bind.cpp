@@ -94,6 +94,87 @@ namespace Vital::Engine {
                 case godot::Key::KEY_MEDIANEXT: return VK_MEDIA_NEXT_TRACK;
                 default: return 0;
             }
+        #elif defined(VSDK_MACOS)
+            static constexpr int function_keys[] = { 122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111, 105, 107, 113, 106, 64, 79, 80, 90 };
+            static constexpr int keypad_keys[] = { 82, 83, 84, 85, 86, 87, 88, 89, 91, 92 };
+            if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F20)) return function_keys[code - static_cast<int>(godot::Key::KEY_F1)];
+            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return keypad_keys[code - static_cast<int>(godot::Key::KEY_KP_0)];
+            switch (key) {
+                case godot::Key::KEY_ESCAPE: return 53;
+                case godot::Key::KEY_TAB: return 48;
+                case godot::Key::KEY_BACKSPACE: return 51;
+                case godot::Key::KEY_ENTER: return 36;
+                case godot::Key::KEY_KP_ENTER: return 76;
+                case godot::Key::KEY_SPACE: return 49;
+                case godot::Key::KEY_INSERT: return 114;
+                case godot::Key::KEY_DELETE: return 117;
+                case godot::Key::KEY_HOME: return 115;
+                case godot::Key::KEY_END: return 119;
+                case godot::Key::KEY_PAGEUP: return 116;
+                case godot::Key::KEY_PAGEDOWN: return 121;
+                case godot::Key::KEY_LEFT: return 123;
+                case godot::Key::KEY_RIGHT: return 124;
+                case godot::Key::KEY_DOWN: return 125;
+                case godot::Key::KEY_UP: return 126;
+                case godot::Key::KEY_SHIFT: return 56;
+                case godot::Key::KEY_CTRL: return 59;
+                case godot::Key::KEY_ALT: return 58;
+                case godot::Key::KEY_META: return 55;
+                case godot::Key::KEY_CAPSLOCK: return 57;
+                case godot::Key::KEY_KP_PERIOD: return 65;
+                case godot::Key::KEY_KP_MULTIPLY: return 67;
+                case godot::Key::KEY_KP_ADD: return 69;
+                case godot::Key::KEY_KP_DIVIDE: return 75;
+                case godot::Key::KEY_KP_SUBTRACT: return 78;
+                default: return 0;
+            }
+        #elif defined(VSDK_LINUX)
+            if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F35)) return 0xffbe + (code - static_cast<int>(godot::Key::KEY_F1));
+            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return 0xffb0 + (code - static_cast<int>(godot::Key::KEY_KP_0));
+            if (code >= 'A' && code <= 'Z') return code + ('a' - 'A');
+            if (code >= '0' && code <= '9') return code;
+            switch (key) {
+                case godot::Key::KEY_ESCAPE: return 0xff1b;
+                case godot::Key::KEY_TAB: return 0xff09;
+                case godot::Key::KEY_BACKSPACE: return 0xff08;
+                case godot::Key::KEY_ENTER: return 0xff0d;
+                case godot::Key::KEY_KP_ENTER: return 0xff8d;
+                case godot::Key::KEY_SPACE: return 0x20;
+                case godot::Key::KEY_INSERT: return 0xff63;
+                case godot::Key::KEY_DELETE: return 0xffff;
+                case godot::Key::KEY_PAUSE: return 0xff13;
+                case godot::Key::KEY_PRINT: return 0xff61;
+                case godot::Key::KEY_MENU: return 0xff67;
+                case godot::Key::KEY_HOME: return 0xff50;
+                case godot::Key::KEY_LEFT: return 0xff51;
+                case godot::Key::KEY_UP: return 0xff52;
+                case godot::Key::KEY_RIGHT: return 0xff53;
+                case godot::Key::KEY_DOWN: return 0xff54;
+                case godot::Key::KEY_PAGEUP: return 0xff55;
+                case godot::Key::KEY_PAGEDOWN: return 0xff56;
+                case godot::Key::KEY_END: return 0xff57;
+                case godot::Key::KEY_SHIFT: return 0xffe1;
+                case godot::Key::KEY_CTRL: return 0xffe3;
+                case godot::Key::KEY_ALT: return 0xffe9;
+                case godot::Key::KEY_CAPSLOCK: return 0xffe5;
+                case godot::Key::KEY_NUMLOCK: return 0xff7f;
+                case godot::Key::KEY_SCROLLLOCK: return 0xff14;
+                case godot::Key::KEY_KP_MULTIPLY: return 0xffaa;
+                case godot::Key::KEY_KP_ADD: return 0xffab;
+                case godot::Key::KEY_KP_SUBTRACT: return 0xffad;
+                case godot::Key::KEY_KP_PERIOD: return 0xffae;
+                case godot::Key::KEY_KP_DIVIDE: return 0xffaf;
+                case godot::Key::KEY_QUOTELEFT: return 0x60;
+                case godot::Key::KEY_MINUS: return 0x2d;
+                case godot::Key::KEY_EQUAL: return 0x3d;
+                case godot::Key::KEY_BRACKETLEFT: return 0x5b;
+                case godot::Key::KEY_BACKSLASH: return 0x5c;
+                case godot::Key::KEY_BRACKETRIGHT: return 0x5d;
+                case godot::Key::KEY_SEMICOLON: return 0x3b;
+                case godot::Key::KEY_APOSTROPHE: return 0x27;
+                case godot::Key::KEY_COMMA: return 0x2c;
+                case godot::Key::KEY_PERIOD: return 0x2e;
+                case godot::Key::KEY_SLASH: return 0x2f;
                 default: return 0;
             }
         #else
