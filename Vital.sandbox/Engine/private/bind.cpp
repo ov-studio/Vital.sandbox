@@ -212,6 +212,9 @@ namespace Vital::Engine {
             DWORD process = 0;
             GetWindowThreadProcessId(window, &process);
             return process == GetCurrentProcessId();
+        #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
+            auto display_server = godot::DisplayServer::get_singleton();
+            return display_server && display_server -> window_is_focused();
         #else
             return true;
         #endif
