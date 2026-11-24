@@ -57,12 +57,6 @@ namespace Vital::Engine {
             if (code >= 'A' && code <= 'Z') return code + ('a' - 'A');
             if (code >= '0' && code <= '9') return code;
         #endif
-
-        struct Native {
-            godot::Key key;
-            int code;
-        };
-
         static constexpr Native natives[] = {
             NATIVE(KEY_ESCAPE,        VK_ESCAPE,            53,  0xff1b),
             NATIVE(KEY_TAB,           VK_TAB,               48,  0xff09),
