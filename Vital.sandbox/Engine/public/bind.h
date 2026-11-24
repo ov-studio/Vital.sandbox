@@ -21,7 +21,6 @@
 // Vital: Engine: Bind //
 //////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     class Bind : public Tool::Base<Bind> {
         friend class Tool::Base<Bind>;
