@@ -26,7 +26,6 @@
 // Vital: Engine: Bind //
 //////////////////////////
 
-// TODO: Improve
 namespace Vital::Engine {
     // Helpers //
     int Bind::to_virtual_key(godot::Key key) {
@@ -92,14 +91,6 @@ namespace Vital::Engine {
         #endif
     }
 
-    void Bind::refresh() {
-        static constexpr const char* configs[count] = { "config/console", "config/mainmenu", "config/screenshot" };
-        for (int i = 0; i < count; ++i) {
-            const auto bind = Manager::Kit::get_singleton() -> get_json_value(configs[i], "bind");
-            keys[i] = bind.is<std::string>() ? godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>())) : godot::Key::KEY_NONE;
-        }
-    }
-
     bool Bind::is_available(int type) {
         if (keys[type] == godot::Key::KEY_NONE) return false;
         if (type == mainmenu) return Engine::MainMenu::has_singleton() && Manager::Network::get_singleton() -> is_connected();
@@ -112,6 +103,14 @@ namespace Vital::Engine {
             if (keycode == keys[i] && is_available(i)) return i;
         }
         return -1;
+    }
+
+    void Bind::refresh() {
+        static constexpr const char* configs[count] = { "config/console", "config/mainmenu", "config/screenshot" };
+        for (int i = 0; i < count; ++i) {
+            const auto bind = Manager::Kit::get_singleton() -> get_json_value(configs[i], "bind");
+            keys[i] = bind.is<std::string>() ? godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>())) : godot::Key::KEY_NONE;
+        }
     }
 
     void Bind::run(int type) {
@@ -128,15 +127,10 @@ namespace Vital::Engine {
     // Managers //
     bool Bind::handle_key(godot::InputEventKey* event) {
         refresh();
-        // Releases are ignored on purpose: Godot also sends one when the keyboard focus moves into a webview (the console that just opened)
-        // while the key is still down, which would unlatch the bind and make the poll toggle it a second time
         if (!event -> is_pressed()) return false;
         const auto keycode = event -> get_keycode();
         const int type = find(keycode);
         if (type < 0) return false;
-        // The poll consumes the press first (and only it unlatches, once the key is really up). The page forwards the same key later,
-        // after a frame hitch even once it is released, so a copy is only acted on while the key is really down and not consumed yet.
-        // A key that can't be read from the keyboard (state < 0, e.g. not on Windows) is acted on directly
         const int state = get_key_state(keycode);
         if (state < 0) run(type);
         else if (state == 1 && !latched[type]) {
@@ -146,8 +140,6 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Reads the binds straight from the keyboard every frame (a no-op where the keys can't be read, i.e. not on Windows): while a webview owns the keyboard the key reaches the game only
-    // through the page, which is delayed and loses the key whenever the focus is being handed over (console / menu opening, a click)
     void Bind::poll(double delta) {
         if (!Manager::Kit::get_singleton()) return;
         refresh_timer -= delta;
