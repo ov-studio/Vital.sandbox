@@ -28,8 +28,14 @@ namespace Vital::Engine {
         public:
             static constexpr const char* Name = "Bind.engine";
         private:
-            enum Type { console, mainmenu, screenshot, count };
+            enum Type { 
+                console, 
+                mainmenu, 
+                screenshot,
+                count 
+            };
 
+            
             godot::Key keys[count] = {};
             bool latched[count] = {};
             double refresh_timer = 0.0;
