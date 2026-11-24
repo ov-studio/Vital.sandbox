@@ -67,6 +67,14 @@
 #include <sys/utsname.h>
 #endif
 
+#if defined(VSDK_MACOS)
+#include <CoreGraphics/CoreGraphics.h>
+#endif
+
+#if defined(VSDK_LINUX)
+#include <dlfcn.h>
+#endif
+
 
 // Vendor: FMT //
 #include <fmt/core.h>
