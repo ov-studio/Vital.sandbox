@@ -32,6 +32,7 @@ namespace Vital::Engine {
         const int code = static_cast<int>(key);
         #if defined(VSDK_WINDOWS)
             if (code >= static_cast<int>(godot::Key::KEY_F1) && code <= static_cast<int>(godot::Key::KEY_F24)) return VK_F1 + (code - static_cast<int>(godot::Key::KEY_F1));
+            if (code >= static_cast<int>(godot::Key::KEY_KP_0) && code <= static_cast<int>(godot::Key::KEY_KP_9)) return VK_NUMPAD0 + (code - static_cast<int>(godot::Key::KEY_KP_0));
             if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) return code;
             switch (key) {
                 case godot::Key::KEY_ESCAPE: return VK_ESCAPE;
