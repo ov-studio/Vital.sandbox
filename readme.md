@@ -24,6 +24,7 @@
 - **Benchmarks**: See how Vital.sandbox performs against GDScript in the [Benchmarks](https://vital-sandbox.com/benchmarks).
 - **Vault**: Browse community resources and scripts in the [Vault](https://vital-sandbox.com/vault).
 - **Roadmap**: Track what's planned and in progress on the [Roadmap](https://vital-sandbox.com/roadmap).
+- **FAQ**: Find answers to common questions, including our views on AI usage, in the [FAQ](https://vital-sandbox.com/faq).
 - **Vendors**: View all third-party dependencies and licenses in [Vendor](https://github.com/ov-studio/Vital.sandbox/blob/main/vendor.md).
 - **Community**: Got questions or want to connect? Join us on [Discord](http://discord.vital-sandbox.com).
 
